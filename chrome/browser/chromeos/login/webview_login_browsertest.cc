@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -494,24 +495,20 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   // Requests |http_server_|'s client-cert test page in the webview with the id
-  // |webview_id|.  Returns the content of the client-cert test page.  If
-  // |watch_new_webcontents| is true, this function will watch for newly-created
-  // WebContents when determining if the navigation to the test page has
-  // finished. This can be used for webviews which have not navigated yet, as
-  // their WebContents will be created on-demand.
-  std::string RequestClientCertTestPageInFrame(std::string webview_id,
-                                               bool watch_new_webcontents) {
+  // |webview_id|. Returns the content of the client-cert test page.
+  std::string RequestClientCertTestPageInFrame(const std::string& webview_id) {
     const GURL url = https_server_->GetURL("client-cert");
     content::TestNavigationObserver navigation_observer(url);
-    if (watch_new_webcontents)
-      navigation_observer.StartWatchingNewWebContents();
-    else
-      navigation_observer.WatchExistingWebContents();
+    navigation_observer.WatchExistingWebContents();
+    navigation_observer.StartWatchingNewWebContents();
 
+    // TODO(https://crbug.com/830337): Remove the logs if flakiness is gone.
+    // If you see this after April 2019, please ping the owner of the above bug.
+    LOG(INFO) << "Triggering navigation to " << url.spec() << ".";
     test::OobeJS().Evaluate(base::StringPrintf(
         "$('%s').src='%s'", webview_id.c_str(), url.spec().c_str()));
-
     navigation_observer.Wait();
+    LOG(INFO) << "Navigation done.";
 
     content::WebContents* main_web_contents = GetLoginUI()->GetWebContents();
     content::WebContents* frame_web_contents =
@@ -519,6 +516,16 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     test::JSChecker frame_js_checker(frame_web_contents);
     const std::string https_reply_content =
         frame_js_checker.GetString("document.body.textContent");
+    // TODO(https://crbug.com/830337): Remove this is if flakiness does not
+    // reproduce.
+    // If you see this after April 2019, please ping the owner of the above bug.
+    if (https_reply_content.empty()) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
+      const std::string https_reply_content_after_sleep =
+          frame_js_checker.GetString("document.body.textContent");
+      if (!https_reply_content_after_sleep.empty())
+        LOG(INFO) << "Magic - textContent appeared after sleep.";
+    }
 
     return https_reply_content;
   }
@@ -611,15 +618,8 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
 // Test that client certificate authentication using certificates from the
 // system slot is enabled in the sign-in frame. The server does not request
 // certificates signed by a specific authority.
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameNoAuthorityGiven DISABLED_SigninFrameNoAuthorityGiven
-#else
-#define MAYBE_SigninFrameNoAuthorityGiven SigninFrameNoAuthorityGiven
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameNoAuthorityGiven) {
+                       SigninFrameNoAuthorityGiven) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -629,10 +629,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ(
       "got client cert with fingerprint: "
       "c66145f49caca4d1325db96ace0f12f615ba4981",
@@ -655,10 +655,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "foo baz bar"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ(
       "got client cert with fingerprint: "
       "c66145f49caca4d1325db96ace0f12f615ba4981",
@@ -667,25 +667,17 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 
 // Test that if no client certificate is auto-selected using policy on the
 // sign-in frame, the client does not send up any client certificate.
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameCertNotAutoSelected \
-  DISABLED_SigninFrameCertNotAutoSelected
-#else
-#define MAYBE_SigninFrameCertNotAutoSelected SigninFrameCertNotAutoSelected
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameCertNotAutoSelected) {
+                       SigninFrameCertNotAutoSelected) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
 
   EXPECT_EQ("got no client cert", https_reply_content);
 }
@@ -693,15 +685,7 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // Test that client certificate authentication using certificates from the
 // system slot is enabled in the sign-in frame. The server requests
 // a certificate signed by a specific authority.
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameAuthorityGiven DISABLED_SigninFrameAuthorityGiven
-#else
-#define MAYBE_SigninFrameAuthorityGiven SigninFrameAuthorityGiven
-#endif
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameAuthorityGiven) {
+IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest, SigninFrameAuthorityGiven) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -714,10 +698,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ(
       "got client cert with fingerprint: "
       "c66145f49caca4d1325db96ace0f12f615ba4981",
@@ -728,10 +712,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // system slot is enabled in the sign-in frame. The server requests
 // a certificate signed by a specific authority. The client doesn't have a
 // matching certificate.
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameAuthorityGivenNoMatchingCert) {
+                       SigninFrameAuthorityGivenNoMatchingCert) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -744,10 +726,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ("got no client cert", https_reply_content);
 }
 
@@ -756,17 +738,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // issued by an intermediate authority, and the intermediate authority is not
 // known on the device (it has not been made available through device ONC
 // policy).
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameIntermediateAuthorityUnknown \
-  DISABLED_SigninFrameIntermediateAuthorityUnknown
-#else
-#define MAYBE_SigninFrameIntermediateAuthorityUnknown \
-  SigninFrameIntermediateAuthorityUnknown
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameIntermediateAuthorityUnknown) {
+                       SigninFrameIntermediateAuthorityUnknown) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -779,10 +752,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ("got no client cert", https_reply_content);
 }
 
@@ -790,17 +763,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // certificates signed by a root authority, the installed certificate has been
 // issued by an intermediate authority, and the intermediate authority is
 // known on the device (it has been made available through device ONC policy).
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameIntermediateAuthorityKnown \
-  DISABLED_SigninFrameIntermediateAuthorityKnown
-#else
-#define MAYBE_SigninFrameIntermediateAuthorityKnown \
-  SigninFrameIntermediateAuthorityKnown
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameIntermediateAuthorityKnown) {
+                       SigninFrameIntermediateAuthorityKnown) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -818,10 +782,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ASSERT_NO_FATAL_FAILURE(
       SetIntermediateAuthorityInDeviceOncPolicy(intermediate_ca_path));
 
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      gaia_frame_parent_, false /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(gaia_frame_parent_);
   EXPECT_EQ(
       "got client cert with fingerprint: "
       "c66145f49caca4d1325db96ace0f12f615ba4981",
@@ -847,8 +811,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ShowEulaScreen();
 
   // Use |watch_new_webcontents| because the EULA webview has not navigated yet.
-  std::string https_reply_content = RequestClientCertTestPageInFrame(
-      "cros-eula-frame", true /* watch_new_webcontents */);
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame("cros-eula-frame");
   EXPECT_EQ("got no client cert", https_reply_content);
 }
 
