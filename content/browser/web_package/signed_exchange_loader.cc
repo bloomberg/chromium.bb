@@ -35,9 +35,9 @@ namespace content {
 
 namespace {
 
-constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
+constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchLoadResultHistogram[] =
-    "SignedExchange.Prefetch.LoadResult";
+    "SignedExchange.Prefetch.LoadResult2";
 constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
 constexpr char kNoSniffHeaderValue[] = "nosniff";
 
@@ -278,18 +278,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const GURL& request_url,
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
-  UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
-  // |metric_recorder_| could be null in some tests.
-  if ((outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
-    UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
-    metric_recorder_->OnSignedExchangePrefetchFinished(
-        outer_request_.url, outer_response_.response_time);
-  }
-
   if (error) {
     DCHECK_NE(result, SignedExchangeLoadResult::kSuccess);
-    if (reporter_)
-      reporter_->ReportResult(result);
+    ReportLoadResult(result);
+
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
         !should_redirect_on_failure_ || !request_url.is_valid()) {
       // Let the request fail.
@@ -372,12 +364,9 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
   if (!encoded_data_length_ || !decoded_body_read_result_)
     return;
 
-  if (reporter_) {
-    reporter_->ReportResult(
-        *decoded_body_read_result_ == net::OK
-            ? SignedExchangeLoadResult::kSuccess
-            : SignedExchangeLoadResult::kMerkleIntegrityError);
-  }
+  ReportLoadResult(*decoded_body_read_result_ == net::OK
+                       ? SignedExchangeLoadResult::kSuccess
+                       : SignedExchangeLoadResult::kMerkleIntegrityError);
 
   // TODO(https://crbug.com/803774): Fill the data length information (
   // encoded_body_length, decoded_body_length) too.
@@ -396,6 +385,19 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
 
   // This will eventually delete |this|.
   client_->OnComplete(status);
+}
+
+void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+  // |metric_recorder_| could be null in some tests.
+  if ((outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
+    UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
+    metric_recorder_->OnSignedExchangePrefetchFinished(
+        outer_request_.url, outer_response_.response_time);
+  }
+
+  if (reporter_)
+    reporter_->ReportResult(result);
 }
 
 void SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(
