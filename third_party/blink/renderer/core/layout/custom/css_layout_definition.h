@@ -20,6 +20,9 @@ class FragmentResultOptions;
 class LayoutCustom;
 class ScriptState;
 class SerializedScriptValue;
+class V8Function;
+class V8LayoutCallback;
+class V8NoArgumentConstructor;
 
 // Represents a javascript class registered on the LayoutWorkletGlobalScope by
 // the author.
@@ -30,9 +33,9 @@ class CSSLayoutDefinition final
  public:
   CSSLayoutDefinition(
       ScriptState*,
-      v8::Local<v8::Function> constructor,
-      v8::Local<v8::Function> intrinsic_sizes,
-      v8::Local<v8::Function> layout,
+      V8NoArgumentConstructor* constructor,
+      V8Function* intrinsic_sizes,
+      V8LayoutCallback* layout,
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSPropertyID>& child_native_invalidation_properties,
@@ -80,10 +83,6 @@ class CSSLayoutDefinition final
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  v8::Local<v8::Function> LayoutFunctionForTesting(v8::Isolate* isolate) {
-    return layout_.NewLocal(isolate);
-  }
-
   virtual void Trace(blink::Visitor* visitor);
 
   const char* NameInHeapSnapshot() const override {
@@ -96,13 +95,13 @@ class CSSLayoutDefinition final
   // This object keeps the class instances, constructor function, intrinsic
   // sizes function, and layout function alive. It participates in wrapper
   // tracing as it holds onto V8 wrappers.
-  TraceWrapperV8Reference<v8::Function> constructor_;
-  TraceWrapperV8Reference<v8::Function> intrinsic_sizes_;
-  TraceWrapperV8Reference<v8::Function> layout_;
+  TraceWrapperMember<V8NoArgumentConstructor> constructor_;
+  TraceWrapperMember<V8Function> unused_intrinsic_sizes_;
+  TraceWrapperMember<V8LayoutCallback> layout_;
 
   // If a constructor call ever fails, we'll refuse to create any more
   // instances of the web developer provided class.
-  bool constructor_has_failed_;
+  bool constructor_has_failed_ = false;
 
   Vector<CSSPropertyID> native_invalidation_properties_;
   Vector<AtomicString> custom_invalidation_properties_;

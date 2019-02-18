@@ -5,13 +5,17 @@
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_fragment_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -45,55 +49,46 @@ bool IsLogicalHeightDefinite(const LayoutCustom& layout_custom) {
 
 CSSLayoutDefinition::CSSLayoutDefinition(
     ScriptState* script_state,
-    v8::Local<v8::Function> constructor,
-    v8::Local<v8::Function> intrinsic_sizes,
-    v8::Local<v8::Function> layout,
+    V8NoArgumentConstructor* constructor,
+    V8Function* intrinsic_sizes,
+    V8LayoutCallback* layout,
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSPropertyID>& child_native_invalidation_properties,
     const Vector<AtomicString>& child_custom_invalidation_properties)
     : script_state_(script_state),
-      constructor_(script_state->GetIsolate(), constructor),
-      intrinsic_sizes_(script_state->GetIsolate(), intrinsic_sizes),
-      layout_(script_state->GetIsolate(), layout),
-      constructor_has_failed_(false) {
-  native_invalidation_properties_ = native_invalidation_properties;
-  custom_invalidation_properties_ = custom_invalidation_properties;
-  child_native_invalidation_properties_ = child_native_invalidation_properties;
-  child_custom_invalidation_properties_ = child_custom_invalidation_properties;
-}
+      constructor_(constructor),
+      unused_intrinsic_sizes_(intrinsic_sizes),
+      layout_(layout),
+      native_invalidation_properties_(native_invalidation_properties),
+      custom_invalidation_properties_(custom_invalidation_properties),
+      child_native_invalidation_properties_(
+          child_native_invalidation_properties),
+      child_custom_invalidation_properties_(
+          child_custom_invalidation_properties) {}
 
 CSSLayoutDefinition::~CSSLayoutDefinition() = default;
 
 CSSLayoutDefinition::Instance::Instance(CSSLayoutDefinition* definition,
                                         v8::Local<v8::Value> instance)
     : definition_(definition),
-      instance_(definition->script_state_->GetIsolate(), instance) {}
+      instance_(definition->GetScriptState()->GetIsolate(), instance) {}
 
 bool CSSLayoutDefinition::Instance::Layout(
     const LayoutCustom& layout_custom,
     FragmentResultOptions* fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
   ScriptState* script_state = definition_->GetScriptState();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
 
-  if (!script_state->ContextIsValid()) {
+  if (!script_state->ContextIsValid())
     return false;
-  }
 
   ScriptState::Scope scope(script_state);
 
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
-  v8::Local<v8::Context> context = script_state->GetContext();
-
-  v8::Local<v8::Function> layout = definition_->layout_.NewLocal(isolate);
-
   // TODO(ikilpatrick): Determine if knowing the size of the array ahead of
   // time improves performance in any noticable way.
-  v8::Local<v8::Array> children = v8::Array::New(isolate, 0);
-  uint32_t index = 0;
-
+  HeapVector<Member<CustomLayoutChild>> children;
   for (LayoutBox* child = layout_custom.FirstChildBox(); child;
        child = child->NextSiblingBox()) {
     if (child->IsOutOfFlowPositioned())
@@ -101,16 +96,11 @@ bool CSSLayoutDefinition::Instance::Layout(
 
     CustomLayoutChild* layout_child = child->GetCustomLayoutChild();
     DCHECK(layout_child);
-
-    bool success;
-    if (!children
-             ->CreateDataProperty(
-                 context, index++,
-                 ToV8(layout_child, context->Global(), isolate))
-             .To(&success) &&
-        success)
-      return false;
+    children.push_back(layout_child);
   }
+
+  // TODO(ikilpatrick): Fill in layout edges.
+  ScriptValue edges(script_state, v8::Undefined(isolate));
 
   LayoutUnit fixed_block_size(-1);
   if (IsLogicalHeightDefinite(layout_custom)) {
@@ -120,6 +110,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     fixed_block_size = computed_values.extent_;
   }
 
+  // TODO(ikilpatrick): Fill in layout constraints.
   CustomLayoutConstraints* constraints =
       MakeGarbageCollected<CustomLayoutConstraints>(
           layout_custom.LogicalWidth(), fixed_block_size,
@@ -133,28 +124,21 @@ bool CSSLayoutDefinition::Instance::Layout(
           layout_custom.GetNode(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
-  // TODO(ikilpatrick): Fill in layout constraints, and edges.
-  Vector<v8::Local<v8::Value>> argv = {
-      children,
-      v8::Undefined(isolate),  // edges
-      ToV8(constraints, context->Global(), isolate),
-      ToV8(style_map, context->Global(), isolate),
-  };
-
-  v8::Local<v8::Value> generator_value;
-  if (!V8ScriptRunner::CallFunction(layout, execution_context, instance,
-                                    argv.size(), argv.data(), isolate)
-           .ToLocal(&generator_value))
+  ScriptValue return_value;
+  if (!definition_->layout_
+           ->Invoke(instance_.NewLocal(isolate), children, edges, constraints,
+                    style_map)
+           .To(&return_value)) {
     return false;
+  }
 
-  DCHECK(generator_value->IsGeneratorObject());
-  v8::Local<v8::Object> generator =
-      v8::Local<v8::Object>::Cast(generator_value);
-
-  ScriptIterator iterator(generator, isolate);
+  DCHECK(return_value.V8Value()->IsGeneratorObject());
+  ScriptIterator iterator(return_value.V8Value().As<v8::Object>(), isolate);
   v8::Local<v8::Value> next_value;
 
   // We run the generator until it's exhausted.
+  v8::Local<v8::Context> context = script_state->GetContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "CSSLayoutAPI", "Layout");
   while (iterator.Next(execution_context, exception_state, next_value)) {
@@ -299,28 +283,18 @@ CSSLayoutDefinition::Instance* CSSLayoutDefinition::CreateInstance() {
     return nullptr;
 
   // Ensure that we don't create an instance on a detached context.
-  if (!GetScriptState()->ContextIsValid()) {
+  if (!GetScriptState()->ContextIsValid())
     return nullptr;
-  }
-
-  Instance* instance = nullptr;
 
   ScriptState::Scope scope(GetScriptState());
 
-  v8::Isolate* isolate = script_state_->GetIsolate();
-  v8::Local<v8::Function> constructor = constructor_.NewLocal(isolate);
-  DCHECK(!IsUndefinedOrNull(constructor));
-
-  v8::Local<v8::Value> layout_instance;
-  if (V8ScriptRunner::CallAsConstructor(
-          isolate, constructor, ExecutionContext::From(script_state_), 0, {})
-          .ToLocal(&layout_instance)) {
-    instance = MakeGarbageCollected<Instance>(this, layout_instance);
-  } else {
+  ScriptValue instance;
+  if (!constructor_->Construct().To(&instance)) {
     constructor_has_failed_ = true;
+    return nullptr;
   }
 
-  return instance;
+  return MakeGarbageCollected<Instance>(this, instance.V8Value());
 }
 
 void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
@@ -329,7 +303,7 @@ void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
 
 void CSSLayoutDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_);
-  visitor->Trace(intrinsic_sizes_);
+  visitor->Trace(unused_intrinsic_sizes_);
   visitor->Trace(layout_);
   visitor->Trace(script_state_);
 }

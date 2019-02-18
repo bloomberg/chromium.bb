@@ -9,7 +9,9 @@
     Global=(Worklet,LayoutWorklet),
     RuntimeEnabled=CSSLayoutAPI
 ] interface LayoutWorkletGlobalScope : WorkletGlobalScope {
-    // TODO(yukishiino): |layoutCtor| should be of callback function type
-    // (should be: callback T = any ()).
-    [RaisesException] void registerLayout(DOMString name, CallbackFunctionTreatedAsScriptValue layoutCtor);
+    [RaisesException] void registerLayout(DOMString name, NoArgumentConstructor layoutCtor);
 };
+
+// Blink-specific type for layout function
+// https://drafts.css-houdini.org/css-layout-api/#layout-definition-layout-function
+callback LayoutCallback = any (sequence<LayoutChild> children, any edges, LayoutConstraints constraints, StylePropertyMapReadOnly styleMap);
