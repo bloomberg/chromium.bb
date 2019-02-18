@@ -929,6 +929,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   const auto& original_client_settings_object =
       *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           KURL("https://example.com/foo.html"),
+          KURL("https://example.com/foo.html"),
           SecurityOrigin::Create(KURL("https://example.com/")),
           network::mojom::ReferrerPolicy::kDefault,
           "https://example.com/foo.html", HttpsState::kModern,
@@ -961,7 +962,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
 
   EXPECT_NE(&client_settings_object,
             &properties.GetFetchClientSettingsObject());
-  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseURL(),
+  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseUrl(),
             KURL("https://example.com/foo.html"));
   EXPECT_FALSE(properties.IsMainFrame());
   EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
@@ -977,6 +978,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
 TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   const auto& original_client_settings_object =
       *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          KURL("https://example.com/foo.html"),
           KURL("https://example.com/foo.html"),
           SecurityOrigin::Create(KURL("https://example.com/")),
           network::mojom::ReferrerPolicy::kDefault,
@@ -1020,7 +1022,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
 
   EXPECT_NE(&client_settings_object,
             &properties.GetFetchClientSettingsObject());
-  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseURL(),
+  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseUrl(),
             KURL("https://example.com/foo.html"));
   EXPECT_TRUE(properties.IsMainFrame());
   EXPECT_EQ(properties.GetControllerServiceWorkerMode(),

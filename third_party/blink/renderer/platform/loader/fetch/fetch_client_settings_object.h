@@ -33,10 +33,26 @@ class PLATFORM_EXPORT FetchClientSettingsObject
  public:
   virtual ~FetchClientSettingsObject() = default;
 
+  // The URL of the environment settings object's global object.
+  // https://html.spec.whatwg.org/#concept-settings-object-global
+  //
+  // Note: "global object's URL" is not explcitly defined in the spec.
+  // This currently returns what ExecutionContext::Url() returns, i.e.
+  // - Document's URL
+  //   https://dom.spec.whatwg.org/#concept-document-url
+  //   but can return a null URL in cases where "about:blank" should have
+  //   been returned.
+  // - WorkerGlobalScope's URL.
+  //   https://html.spec.whatwg.org/#concept-workerglobalscope-url
+  // - Worklet's parent Document's URL.
+  // TODO(crbug.com/931532): Fix spec issues and make the implementation
+  // spec-conformant.
+  virtual const KURL& GlobalObjectUrl() const = 0;
+
   // "A URL used by APIs called by scripts that use this environment settings
   // object to parse URLs."
   // https://html.spec.whatwg.org/C/#api-base-url
-  virtual const KURL& BaseURL() const = 0;
+  virtual const KURL& BaseUrl() const = 0;
 
   // "An origin used in security checks."
   // https://html.spec.whatwg.org/C/#concept-settings-object-origin

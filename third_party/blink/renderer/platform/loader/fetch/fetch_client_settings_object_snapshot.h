@@ -28,6 +28,7 @@ struct CrossThreadFetchClientSettingsObjectData {
 
  public:
   CrossThreadFetchClientSettingsObjectData(
+      KURL global_object_url,
       KURL base_url,
       scoped_refptr<const SecurityOrigin> security_origin,
       network::mojom::ReferrerPolicy referrer_policy,
@@ -35,7 +36,8 @@ struct CrossThreadFetchClientSettingsObjectData {
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
       base::Optional<mojom::IPAddressSpace> address_space)
-      : base_url(std::move(base_url)),
+      : global_object_url(std::move(global_object_url)),
+        base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
         referrer_policy(referrer_policy),
         outgoing_referrer(std::move(outgoing_referrer)),
@@ -44,6 +46,7 @@ struct CrossThreadFetchClientSettingsObjectData {
             mime_type_check_for_classic_worker_script),
         address_space(address_space) {}
 
+  const KURL global_object_url;
   const KURL base_url;
   const scoped_refptr<const SecurityOrigin> security_origin;
   const network::mojom::ReferrerPolicy referrer_policy;
@@ -71,6 +74,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   explicit FetchClientSettingsObjectSnapshot(
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>);
   FetchClientSettingsObjectSnapshot(
+      const KURL& global_object_url,
       const KURL& base_url,
       const scoped_refptr<const SecurityOrigin> security_origin,
       network::mojom::ReferrerPolicy referrer_policy,
@@ -81,7 +85,8 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
-  const KURL& BaseURL() const override { return base_url_; }
+  const KURL& GlobalObjectUrl() const override { return global_object_url_; }
+  const KURL& BaseUrl() const override { return base_url_; }
   const SecurityOrigin* GetSecurityOrigin() const override {
     return security_origin_.get();
   }
@@ -105,12 +110,14 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   // Gets a copy of the data suitable for passing to another thread.
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData> CopyData() const {
     return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
-        base_url_.Copy(), security_origin_->IsolatedCopy(), referrer_policy_,
+        global_object_url_.Copy(), base_url_.Copy(),
+        security_origin_->IsolatedCopy(), referrer_policy_,
         outgoing_referrer_.IsolatedCopy(), https_state_,
         mime_type_check_for_classic_worker_script_, address_space_);
   }
 
  private:
+  const KURL global_object_url_;
   const KURL base_url_;
   const scoped_refptr<const SecurityOrigin> security_origin_;
   const network::mojom::ReferrerPolicy referrer_policy_;

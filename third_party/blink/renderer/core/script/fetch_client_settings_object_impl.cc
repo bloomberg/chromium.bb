@@ -15,7 +15,12 @@ FetchClientSettingsObjectImpl::FetchClientSettingsObjectImpl(
   DCHECK(execution_context_->IsContextThread());
 }
 
-const KURL& FetchClientSettingsObjectImpl::BaseURL() const {
+const KURL& FetchClientSettingsObjectImpl::GlobalObjectUrl() const {
+  DCHECK(execution_context_->IsContextThread());
+  return execution_context_->Url();
+}
+
+const KURL& FetchClientSettingsObjectImpl::BaseUrl() const {
   DCHECK(execution_context_->IsContextThread());
   return execution_context_->BaseURL();
 }
