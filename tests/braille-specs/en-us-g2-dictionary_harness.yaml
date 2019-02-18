@@ -3247,7 +3247,7 @@ tests:
   - [antenna's, ⠁⠝⠞⠢⠝⠁⠄⠎]
   - [antennae, ⠁⠝⠞⠢⠝⠁⠑]
   - [antennas, ⠁⠝⠞⠢⠝⠁⠎]
-  - [anterior, ⠁⠝⠞⠻⠊⠕⠗, {xfail: true}]
+  - [anterior, ⠁⠝⠞⠻⠊⠕⠗]
   - [anteroom, ⠁⠝⠞⠑⠗⠕⠕⠍]
   - [anteroom's, ⠁⠝⠞⠑⠗⠕⠕⠍⠄⠎]
   - [anterooms, ⠁⠝⠞⠑⠗⠕⠕⠍⠎]
