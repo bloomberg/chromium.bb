@@ -1973,6 +1973,7 @@ jumbo_source_set("unit_tests") {
     "html/parser/html_document_parser_test.cc",
     "html/parser/html_entity_parser_test.cc",
     "html/parser/html_parser_idioms_test.cc",
+    "html/parser/html_preload_scanner_document_test.cc",
     "html/parser/html_preload_scanner_test.cc",
     "html/parser/html_resource_preloader_test.cc",
     "html/parser/html_srcset_parser_test.cc",

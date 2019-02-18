@@ -138,10 +138,23 @@ void HTMLLinkElement::ParseAttribute(
 }
 
 bool HTMLLinkElement::ShouldLoadLink() {
+  // Common case: We should load <link> on document that will be rendered.
+  if (!InActiveDocument()) {
+    // Handle rare cases.
+
+    if (!isConnected())
+      return false;
+
+    // Load:
+    // - <link> tags for stylesheets regardless of its document state
+    //   (TODO: document why this is the case. kouhei@ doesn't know.)
+    // - <link> tags on html import documents.
+    if (!rel_attribute_.IsStyleSheet() && !GetDocument().IsHTMLImport())
+      return false;
+  }
+
   const KURL& href = GetNonEmptyURLAttribute(kHrefAttr);
-  return (IsInDocumentTree() ||
-          (isConnected() && rel_attribute_.IsStyleSheet())) &&
-         !href.PotentiallyDanglingMarkup();
+  return !href.PotentiallyDanglingMarkup();
 }
 
 bool HTMLLinkElement::IsLinkCreatedByParser() {
