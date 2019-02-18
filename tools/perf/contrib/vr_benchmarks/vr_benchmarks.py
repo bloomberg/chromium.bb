@@ -188,7 +188,7 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
     return options
 
   def SetExtraBrowserOptions(self, options):
-    options.clear_sytem_cache_for_browser_and_profile_on_start = True
+    options.flush_os_page_caches_on_start = True
     options.AppendExtraBrowserArgs([
         '--enable-gpu-benchmarking',
         '--touch-events=enabled',
