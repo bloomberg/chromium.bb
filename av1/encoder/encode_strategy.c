@@ -436,9 +436,6 @@ static void update_fb_of_context_type(
 
   if (!encode_show_existing_frame(cm)) {
     // Refresh fb_of_context_type[]: see encoder.h for explanation
-    // Note that we want the value of refresh_frame_flags for the frame that
-    // just happened.  If we call get_refresh_frame_flags now we will get a
-    // different answer, because update_reference_frames() has happened.
     if (cm->current_frame.frame_type == KEY_FRAME) {
       // All ref frames are refreshed, pick one that will live long enough
       fb_of_context_type[REGULAR_FRAME] = 0;
@@ -996,6 +993,113 @@ static void update_reference_frames(AV1_COMP *cpi,
 #endif  // DUMP_REF_FRAME_IMAGES
 }
 
+static int get_refresh_frame_flags(const AV1_COMP *const cpi,
+                                   const EncodeFrameParams *const frame_params,
+                                   FRAME_UPDATE_TYPE frame_update_type) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  // Switch frames and shown key-frames overwrite all reference slots
+  if ((frame_params->frame_type == KEY_FRAME && frame_params->show_frame) ||
+      frame_params->frame_type == S_FRAME)
+    return 0xFF;
+
+  // show_existing_frames don't actually send refresh_frame_flags so set the
+  // flags to 0 to keep things consistent.
+  if (cm->show_existing_frame && (!frame_params->error_resilient_mode ||
+                                  frame_params->frame_type == KEY_FRAME)) {
+    return 0;
+  }
+
+  int refresh_mask = 0;
+
+  // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
+  // notified to get LAST3_FRAME refreshed and then the virtual indexes for all
+  // the 3 LAST reference frames will be updated accordingly, i.e.:
+  // (1) The original virtual index for LAST3_FRAME will become the new virtual
+  //     index for LAST_FRAME; and
+  // (2) The original virtual indexes for LAST_FRAME and LAST2_FRAME will be
+  //     shifted and become the new virtual indexes for LAST2_FRAME and
+  //     LAST3_FRAME.
+
+  // The new pyramid structure uses BWD, ALT2 and EXT refs like a stack, so
+  // we refresh EXT and update_reference_frames shuffles things around.
+  // For the old structure we just use the BWDREF buffer normally.
+  const int which_bwd_ref_frame =
+      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
+
+  if (cpi->ext_refresh_frame_flags_pending) {
+    // Unfortunately the encoder interface reflects the old refresh_*_frame
+    // flags so we have to replicate the old refresh_frame_flags logic here in
+    // order to preserve the behaviour of the flag overrides.
+    refresh_mask |= cpi->ext_refresh_last_frame
+                    << get_ref_frame_map_idx(cm, LAST3_FRAME);
+    refresh_mask |= cpi->ext_refresh_bwd_ref_frame
+                    << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+    refresh_mask |= cpi->ext_refresh_alt2_ref_frame
+                    << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
+    if (frame_update_type == OVERLAY_UPDATE) {
+      if (!cpi->preserve_arf_as_gld) {
+        refresh_mask |= cpi->ext_refresh_golden_frame
+                        << get_ref_frame_map_idx(cm, ALTREF_FRAME);
+      }
+    } else {
+      refresh_mask |= cpi->ext_refresh_golden_frame
+                      << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
+      refresh_mask |= cpi->ext_refresh_alt_ref_frame
+                      << get_ref_frame_map_idx(cm, ALTREF_FRAME);
+    }
+    return refresh_mask;
+  }
+
+  switch (frame_update_type) {
+    case KF_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
+      break;
+    case LF_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      break;
+    case GF_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
+      break;
+    case OVERLAY_UPDATE:
+      // if preserve_arf_as_gld then we keep the arf as our golden frame
+      // Otherwise, we overwrite the arf with the overlay frame.
+      if (!cpi->preserve_arf_as_gld) {
+        refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
+      }
+      break;
+    case ARF_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
+      break;
+    case BRF_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+      break;
+    case LAST_BIPRED_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      break;
+    case BIPRED_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      break;
+    case INTNL_OVERLAY_UPDATE:
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
+      break;
+    case INTNL_ARF_UPDATE:
+      if (cpi->new_bwdref_update_rule == 1 && cpi->oxcf.pass == 2) {
+        refresh_mask |= 1 << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+      } else {
+        refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
+      }
+      break;
+    default: assert(0); break;
+  }
+  return refresh_mask;
+}
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
@@ -1169,6 +1273,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);
     frame_params.order_offset = get_order_offset(cpi, &frame_params);
+
+    frame_params.refresh_frame_flags =
+        get_refresh_frame_flags(cpi, &frame_params, frame_update_type);
   }
 
   // The way frame_params->remapped_ref_idx is setup is a placeholder.

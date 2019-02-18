@@ -4110,64 +4110,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
 }
 
-static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-
-  // Switch frames and shown key-frames overwrite all reference slots
-  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
-      frame_is_sframe(cm))
-    return 0xFF;
-
-  // show_existing_frames don't actually send refresh_frame_flags so set the
-  // flags to 0 to keep things consistent.
-  if (encode_show_existing_frame(cm)) return 0;
-
-  int refresh_mask = 0;
-
-  // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
-  // notified to get LAST3_FRAME refreshed and then the virtual indexes for all
-  // the 3 LAST reference frames will be updated accordingly, i.e.:
-  // (1) The original virtual index for LAST3_FRAME will become the new virtual
-  //     index for LAST_FRAME; and
-  // (2) The original virtual indexes for LAST_FRAME and LAST2_FRAME will be
-  //     shifted and become the new virtual indexes for LAST2_FRAME and
-  //     LAST3_FRAME.
-  refresh_mask |=
-      (cpi->refresh_last_frame << get_ref_frame_map_idx(cm, LAST3_FRAME));
-
-  const int bwd_ref_frame =
-      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
-  refresh_mask |=
-      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cm, bwd_ref_frame));
-
-  refresh_mask |=
-      (cpi->refresh_alt2_ref_frame << get_ref_frame_map_idx(cm, ALTREF2_FRAME));
-
-  if (cpi->rc.is_src_frame_alt_ref && !cpi->rc.is_src_frame_ext_arf) {
-    // We have decided to preserve the previously existing golden frame as our
-    // new ARF frame. However, in the short term we leave it in the GF slot and,
-    // if we're updating the GF with the current decoded frame, we save it
-    // instead to the ARF slot.
-    // Later, in the function av1_encoder.c:av1_update_reference_frames() we
-    // will swap gld_fb_idx and alt_fb_idx to achieve our objective. We do it
-    // there so that it can be done outside of the recode loop.
-    // Note: This is highly specific to the use of ARF as a forward reference,
-    // and this needs to be generalized as other uses are implemented
-    // (like RTC/temporal scalability).
-
-    if (!cpi->preserve_arf_as_gld) {
-      refresh_mask |= (cpi->refresh_golden_frame
-                       << get_ref_frame_map_idx(cm, ALTREF_FRAME));
-    }
-  } else {
-    refresh_mask |=
-        (cpi->refresh_golden_frame << get_ref_frame_map_idx(cm, GOLDEN_FRAME));
-    refresh_mask |=
-        (cpi->refresh_alt_ref_frame << get_ref_frame_map_idx(cm, ALTREF_FRAME));
-  }
-  return refresh_mask;
-}
-
 static void fix_interp_filter(InterpFilter *const interp_filter,
                               const FRAME_COUNTS *const counts) {
   if (*interp_filter == SWITCHABLE) {
@@ -4194,10 +4136,6 @@ static void fix_interp_filter(InterpFilter *const interp_filter,
 static void finalize_encoded_frame(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
-
-  // This bitfield indicates which reference frame slots will be overwritten by
-  // the current frame
-  current_frame->refresh_frame_flags = get_refresh_frame_flags(cpi);
 
   if (!cm->seq_params.reduced_still_picture_hdr &&
       encode_show_existing_frame(cm)) {
@@ -5208,6 +5146,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->source = frame_input->source;
   cpi->unscaled_last_source = frame_input->last_source;
 
+  current_frame->refresh_frame_flags = frame_params->refresh_frame_flags;
   cm->error_resilient_mode = frame_params->error_resilient_mode;
   cm->primary_ref_frame = frame_params->primary_ref_frame;
   cm->current_frame.frame_type = frame_params->frame_type;

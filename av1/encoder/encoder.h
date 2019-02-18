@@ -1003,6 +1003,7 @@ struct EncodeFrameParams {
   int primary_ref_frame;
   int order_offset;
   int show_frame;
+  int refresh_frame_flags;
 
   // Bitmask of which reference buffers may be referenced by this frame
   int ref_frame_flags;
