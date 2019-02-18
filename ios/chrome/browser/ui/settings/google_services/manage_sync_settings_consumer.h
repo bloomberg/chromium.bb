@@ -16,6 +16,10 @@
 @property(nonatomic, strong, readonly)
     TableViewModel<TableViewItem*>* tableViewModel;
 
+// Reloads only a specific |item|. Does nothing if the model is not loaded
+// yet.
+- (void)reloadItem:(TableViewItem*)item;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_CONSUMER_H_

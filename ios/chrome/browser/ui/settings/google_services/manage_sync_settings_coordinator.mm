@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 
 #include "base/logging.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 
@@ -26,10 +28,16 @@
 @implementation ManageSyncSettingsCoordinator
 
 - (void)start {
-  self.mediator = [[ManageSyncSettingsMediator alloc] init];
+  syncer::SyncService* syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator =
+      [[ManageSyncSettingsMediator alloc] initWithSyncService:syncService];
+  self.mediator.syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   self.viewController = [[ManageSyncSettingsTableViewController alloc]
       initWithTableViewStyle:UITableViewStyleGrouped
                  appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self.viewController.serviceDelegate = self.mediator;
   self.viewController.presentationDelegate = self;
   self.viewController.modelDelegate = self.mediator;
   self.mediator.consumer = self.viewController;
