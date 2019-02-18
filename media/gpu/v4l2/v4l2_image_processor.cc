@@ -376,13 +376,13 @@ bool V4L2ImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
     int output_buffer_index,
     std::vector<base::ScopedFD> output_dmabuf_fds,
-    FrameReadyCB cb) {
+    LegacyFrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
 
   auto job_record = std::make_unique<JobRecord>();
   job_record->input_frame = frame;
   job_record->output_buffer_index = output_buffer_index;
-  job_record->ready_cb = std::move(cb);
+  job_record->legacy_ready_cb = std::move(cb);
 
   switch (output_memory_type_) {
     case V4L2_MEMORY_MMAP:
@@ -802,7 +802,12 @@ void V4L2ImageProcessor::Dequeue() {
 
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
-    std::move(job_record->ready_cb).Run(std::move(output_frame));
+    if (!job_record->legacy_ready_cb.is_null()) {
+      std::move(job_record->legacy_ready_cb)
+          .Run(dqbuf.index, std::move(output_frame));
+    } else {
+      std::move(job_record->ready_cb).Run(std::move(output_frame));
+    }
   }
 }
 

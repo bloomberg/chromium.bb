@@ -64,6 +64,14 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // Process() is responsible for making sure this invariant is
   // respected by using media::BindToCurrentLoop().
   using FrameReadyCB = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
+  // Callback to be used to return a processed image to the client.
+  // Used when calling the "legacy" Process() method with buffers that are
+  // managed by the IP. The first argument is the index of the returned buffer.
+  // FrameReadyCB is guaranteed to be executed on the "client thread".
+  // Process() is responsible for making sure this invariant is
+  // respected by using media::BindToCurrentLoop().
+  using LegacyFrameReadyCB =
+      base::OnceCallback<void(size_t, scoped_refptr<VideoFrame>)>;
 
   // Callback to be used to notify client when ImageProcess encounters error.
   // It should be assigned in subclass' factory method. ErrorCB is guaranteed to
@@ -114,7 +122,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   bool Process(scoped_refptr<VideoFrame> frame,
                int output_buffer_index,
                std::vector<base::ScopedFD> output_dmabuf_fds,
-               FrameReadyCB cb);
+               LegacyFrameReadyCB cb);
 #endif
 
   // Called by client to process |input_frame| and store in |output_frame|. This
@@ -159,7 +167,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   virtual bool ProcessInternal(scoped_refptr<VideoFrame> frame,
                                int output_buffer_index,
                                std::vector<base::ScopedFD> output_dmabuf_fds,
-                               FrameReadyCB cb) = 0;
+                               LegacyFrameReadyCB cb) = 0;
 #endif
   virtual bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                                scoped_refptr<VideoFrame> output_frame,

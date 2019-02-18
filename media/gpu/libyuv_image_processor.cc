@@ -104,7 +104,7 @@ bool LibYUVImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
     int output_buffer_index,
     std::vector<base::ScopedFD> output_dmabuf_fds,
-    FrameReadyCB cb) {
+    LegacyFrameReadyCB cb) {
   DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   NOTIMPLEMENTED();
   return false;

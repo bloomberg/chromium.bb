@@ -2492,8 +2492,7 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
   image_processor_->Process(
       input_frame, buf->BufferId(), std::move(output_fds),
       base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
-                     base::Unretained(this), bitstream_buffer_id,
-                     buf->BufferId()));
+                     base::Unretained(this), bitstream_buffer_id));
   return true;
 }
 
@@ -2677,7 +2676,7 @@ void V4L2VideoDecodeAccelerator::PictureCleared() {
 
 void V4L2VideoDecodeAccelerator::FrameProcessed(
     int32_t bitstream_buffer_id,
-    int ip_buffer_index,
+    size_t ip_buffer_index,
     scoped_refptr<VideoFrame> frame) {
   DVLOGF(4) << "ip_buffer_index=" << ip_buffer_index
             << ", bitstream_buffer_id=" << bitstream_buffer_id;
@@ -2703,8 +2702,8 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
               << bitstream_buffer_id;
     return;
   }
-  DCHECK_GE(ip_buffer_index, 0);
-  DCHECK_LT(ip_buffer_index, static_cast<int>(output_buffer_map_.size()));
+  DCHECK_GE(ip_buffer_index, 0u);
+  DCHECK_LT(ip_buffer_index, output_buffer_map_.size());
 
   // This is the output record for the buffer received from the IP, which index
   // may differ from the buffer used by the VDA.

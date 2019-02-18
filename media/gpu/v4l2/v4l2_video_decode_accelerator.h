@@ -419,7 +419,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // |bitstream_buffer_id| and stored in |output_buffer_index| buffer of
   // image processor.
   void FrameProcessed(int32_t bitstream_buffer_id,
-                      int output_buffer_index,
+                      size_t output_buffer_index,
                       scoped_refptr<VideoFrame> frame);
 
   // Image processor notifies an error.

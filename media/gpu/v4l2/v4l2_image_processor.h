@@ -100,6 +100,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
     int output_buffer_index;
     std::vector<base::ScopedFD> output_dmabuf_fds;
     FrameReadyCB ready_cb;
+    LegacyFrameReadyCB legacy_ready_cb;
   };
 
   V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
@@ -132,7 +133,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   bool ProcessInternal(scoped_refptr<VideoFrame> frame,
                        int output_buffer_index,
                        std::vector<base::ScopedFD> output_dmabuf_fds,
-                       FrameReadyCB cb) override;
+                       LegacyFrameReadyCB cb) override;
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                        scoped_refptr<VideoFrame> output_frame,
                        FrameReadyCB cb) override;

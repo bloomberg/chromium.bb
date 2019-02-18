@@ -117,7 +117,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // encode.
   void FrameProcessed(bool force_keyframe,
                       base::TimeDelta timestamp,
-                      int output_buffer_index,
+                      size_t output_buffer_index,
                       scoped_refptr<VideoFrame> frame);
 
   // Error callback for handling image processor errors.
@@ -218,7 +218,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool AllocateImageProcessorOutputBuffers();
 
   // Recycle output buffer of image processor with |output_buffer_index|.
-  void ReuseImageProcessorOutputBuffer(int output_buffer_index);
+  void ReuseImageProcessorOutputBuffer(size_t output_buffer_index);
 
   // Copy encoded stream data from an output V4L2 buffer at |bitstream_data|
   // of size |bitstream_size| into a BitstreamBuffer referenced by |buffer_ref|,
