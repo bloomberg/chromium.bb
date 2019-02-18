@@ -403,13 +403,17 @@ class UploadTestArtifactsStageMock(
   TARGET = 'chromite.cbuildbot.stages.artifact_stages.UploadTestArtifactsStage'
   ATTRS = (
       generic_stages_unittest.ArchivingStageMixinMock.ATTRS +
-      ('BuildAutotestTarballs',))
+      ('BuildAutotestTarballs', 'BuildTastTarball'))
 
   def BuildAutotestTarballs(self, *args, **kwargs):
     with patches(
         patch(commands, 'BuildTarball'),
         patch(commands, 'FindFilesWithPattern', return_value=['foo.txt'])):
       self.backup['BuildAutotestTarballs'](*args, **kwargs)
+
+  def BuildTastTarball(self, *args, **kwargs):
+    with patch(commands, 'BuildTarball'):
+      self.backup['BuildTastTarball'](*args, **kwargs)
 
 
 class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,

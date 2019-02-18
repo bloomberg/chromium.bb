@@ -714,6 +714,17 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             self._build_root, cwd, tempdir):
           queue.put([tarball])
 
+  def BuildTastTarball(self):
+    """Build the tarball containing private Tast test bundles."""
+    with osutils.TempDir(prefix='cbuildbot-tast') as tempdir:
+      cwd = os.path.abspath(
+          os.path.join(self._build_root, 'chroot', 'build',
+                       self._current_board, 'build'))
+      tarball = commands.BuildTastBundleTarball(
+          self._build_root, cwd, tempdir)
+      if tarball:
+        self.UploadArtifact(tarball)
+
   def _GeneratePayloads(self, image_name, **kwargs):
     """Generate and upload payloads for |image_name|.
 
@@ -762,6 +773,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     if (self._run.ShouldBuildAutotest() and
         self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
+      steps.append(self.BuildTastTarball)
 
     parallel.RunParallelSteps(steps)
     # If we encountered any exceptions with any of the steps, they should have

@@ -2738,6 +2738,28 @@ def BuildAutotestTarballsForHWTest(buildroot, cwd, tarball_dir):
   ]
 
 
+def BuildTastBundleTarball(buildroot, cwd, tarball_dir):
+  """Tar up the Tast private test bundles.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory pointing /build/$board/build.
+    tarball_dir: Location for storing the tarball.
+
+  Returns:
+    Path of the generated tarball, or None if there is no private test bundles.
+  """
+  dirs = []
+  for d in ('libexec/tast', 'share/tast'):
+    if os.path.exists(os.path.join(cwd, d)):
+      dirs.append(d)
+  if not dirs:
+    return None
+  tarball = os.path.join(tarball_dir, 'tast_bundles.tar.bz2')
+  BuildTarball(buildroot, dirs, tarball, cwd=cwd)
+  return tarball
+
+
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """Tar up the full autotest directory into image_dir.
 

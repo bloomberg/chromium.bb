@@ -1342,6 +1342,30 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
         os.path.join(self._tarball_dir, commands.AUTOTEST_SERVER_PACKAGE),
         cwd=self._cwd, extra_args=mock.ANY, error_code_ok=True)
 
+  def testBuildTastTarball(self):
+    """Tests that generating the Tast private bundles tarball is correct."""
+    expected_tarball = os.path.join(self._tarball_dir, 'tast_bundles.tar.bz2')
+
+    for d in ('libexec/tast', 'share/tast'):
+      os.makedirs(os.path.join(self._cwd, d))
+
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball = commands.BuildTastBundleTarball(self._buildroot, self._cwd,
+                                                self._tarball_dir)
+      self.assertEquals(expected_tarball, tarball)
+      m.assert_called_once_with(self._buildroot,
+                                ['libexec/tast', 'share/tast'],
+                                expected_tarball,
+                                cwd=self._cwd)
+
+  def testBuildTastTarballNoBundle(self):
+    """Tests the case when the Tast private bundles tarball is not generated."""
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball = commands.BuildTastBundleTarball(self._buildroot, self._cwd,
+                                                self._tarball_dir)
+      self.assertIs(tarball, None)
+      m.assert_not_called()
+
   def testBuildStrippedPackagesArchive(self):
     """Test generation of stripped package tarball using globs."""
     package_globs = ['chromeos-base/chromeos-chrome', 'sys-kernel/*kernel*']
