@@ -195,9 +195,15 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_Delete) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-// https://crbug.com/874929, flaky on all platform.
+// Flaky on TSAN: crbug.com/915219
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SetPassphraseAndThenSetupSync \
+  DISABLED_SetPassphraseAndThenSetupSync
+#else
+#define MAYBE_SetPassphraseAndThenSetupSync SetPassphraseAndThenSetupSync
+#endif
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
-                       DISABLED_SetPassphraseAndThenSetupSync) {
+                       MAYBE_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients());
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -207,7 +213,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
 
   // When client 1 hits a passphrase required state, we can infer that
   // client 0's passphrase has been committed. to the server.
-  ASSERT_FALSE(GetClient(1)->SetupSync());
+  ASSERT_TRUE(GetClient(1)->SetupSyncNoWaitForCompletion(
+      syncer::UserSelectableTypes()));
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
 
   // Get client 1 out of the passphrase required state.

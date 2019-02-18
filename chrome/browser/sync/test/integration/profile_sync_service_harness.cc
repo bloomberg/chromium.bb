@@ -305,13 +305,6 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
         LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
 
-  if (encryption_mode == EncryptionSetupMode::kNoEncryption &&
-      service()->GetUserSettings()->IsUsingSecondaryPassphrase()) {
-    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetDecryptionPassphrase is called.";
-    return false;
-  }
-
   return true;
 }
 
