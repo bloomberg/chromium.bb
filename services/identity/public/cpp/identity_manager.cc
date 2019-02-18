@@ -240,6 +240,11 @@ bool IdentityManager::IsAccountIdMigrationSupported() {
   return AccountTrackerService::IsMigrationSupported();
 }
 
+// static
+void IdentityManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  SigninManagerBase::RegisterPrefs(registry);
+}
+
 void IdentityManager::LegacySetAccountIdMigrationDone() {
   account_tracker_service_->SetMigrationDone();
 }

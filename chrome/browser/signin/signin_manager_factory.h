@@ -11,7 +11,6 @@
 
 class SigninManager;
 class SigninManagerBase;
-class PrefRegistrySimple;
 class Profile;
 
 // Singleton that owns all SigninManagers and associates them with
@@ -45,9 +44,6 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   // can call it).
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  // Registers the browser-global prefs used by SigninManager.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   friend struct base::DefaultSingletonTraits<SigninManagerFactory>;

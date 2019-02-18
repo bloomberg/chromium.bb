@@ -44,6 +44,7 @@ class TestURLLoaderFactory;
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
 class IdentityManagerFactory;
+class PrefRegistrySimple;
 
 namespace identity {
 
@@ -341,6 +342,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Returns |true| if migration of the account ID from normalized email is
   // supported for the current platform.
   static bool IsAccountIdMigrationSupported();
+
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Marks the migration state for account IDs as finished.
   void LegacySetAccountIdMigrationDone();
