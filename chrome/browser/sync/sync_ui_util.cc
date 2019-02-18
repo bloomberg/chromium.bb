@@ -218,50 +218,51 @@ MessageType GetStatusLabelsImpl(
     return SYNCED;
   }
 
-  MessageType result_type = SYNCED;
   // Either show auth error information with a link to re-login, auth in prog,
   // or provide a link to continue with setup.
   if (service->IsFirstSetupInProgress()) {
-    result_type = PRE_SYNCED;
-    if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
-    }
-
     if (auth_error.state() != GoogleServiceAuthError::NONE &&
         auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
       if (status_label && link_label) {
         GetStatusForAuthError(auth_error, status_label, link_label,
                               action_type);
       }
-      result_type = SYNC_ERROR;
+      return SYNC_ERROR;
     }
-  } else if (service->HasUnrecoverableError()) {
-    result_type = SYNC_ERROR;
+
+    if (status_label) {
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    }
+    return PRE_SYNCED;
+  }
+
+  if (service->HasUnrecoverableError()) {
     if (status_label && link_label) {
       GetStatusForUnrecoverableError(is_user_signout_allowed,
                                      status.sync_protocol_error.action,
                                      status_label, link_label, action_type);
     }
-  } else {
-    if (ShouldRequestSyncConfirmation(service)) {
-      if (status_label && link_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
-        *link_label = l10n_util::GetStringUTF16(
-            IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
-      }
-      *action_type = CONFIRM_SYNC_SETTINGS;
-      result_type = SYNC_ERROR;
-    } else {
-      // The user is signed in, but sync has been stopped.
-      result_type = PRE_SYNCED;
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-      }
-    }
+    return SYNC_ERROR;
   }
-  return result_type;
+
+  if (ShouldRequestSyncConfirmation(service)) {
+    if (status_label && link_label) {
+      *status_label =
+          l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
+      *link_label = l10n_util::GetStringUTF16(
+          IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
+    }
+    *action_type = CONFIRM_SYNC_SETTINGS;
+    return SYNC_ERROR;
+  }
+
+  // The user is signed in, but sync has been stopped.
+  if (status_label) {
+    *status_label =
+        l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+  }
+
+  return PRE_SYNCED;
 }
 
 }  // namespace
