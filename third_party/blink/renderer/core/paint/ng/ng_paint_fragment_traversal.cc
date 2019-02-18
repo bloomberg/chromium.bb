@@ -236,27 +236,10 @@ NGPaintFragmentTraversal::InclusiveAncestorsOf(const NGPaintFragment& start) {
 }
 
 Vector<NGPaintFragmentWithContainerOffset>
-NGPaintFragmentTraversal::DescendantsOf(const NGPaintFragment& container) {
-  Vector<NGPaintFragmentWithContainerOffset> result;
-  NotSelfPaintingFilter filter;
-  CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
-  return result;
-}
-
-Vector<NGPaintFragmentWithContainerOffset>
 NGPaintFragmentTraversal::InlineDescendantsOf(
     const NGPaintFragment& container) {
   Vector<NGPaintFragmentWithContainerOffset> result;
   InlineFilter filter;
-  CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
-  return result;
-}
-
-Vector<NGPaintFragmentWithContainerOffset>
-NGPaintFragmentTraversal::SelfFragmentsOf(const NGPaintFragment& container,
-                                          const LayoutObject* target) {
-  Vector<NGPaintFragmentWithContainerOffset> result;
-  LayoutObjectFilter filter(target);
   CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
   return result;
 }
