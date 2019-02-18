@@ -186,8 +186,14 @@ testcase.fileDisplayUsbPartition = async function() {
   // Open Files app on local downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
-  // Mount USB volume.
-  await sendTestMessage({name: 'mountFakePartitions'});
+  // Mount USB device containing partitions.
+  await sendTestMessage({name: 'mountUsbWithPartitions'});
+  // Mount unpartitioned USB device.
+  await sendTestMessage({name: 'mountFakeUsb'});
+
+  // Wait for removable root to appear in the directory tree.
+  const removableRoot = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="Drive Label"]');
 
   // Wait for removable partition-1 to appear in the directory tree.
   const partitionOne = await remoteCall.waitForElement(
@@ -201,28 +207,24 @@ testcase.fileDisplayUsbPartition = async function() {
   chrome.test.assertEq(
       'removable', partitionTwo.attributes['volume-type-for-testing']);
 
-  // Wait for removable volume to appear in the directory tree.
-  const singleUSB = await remoteCall.waitForElement(
-      appId, '#directory-tree [entry-label="singleUSB"]');
-  chrome.test.assertEq(
-      'removable', singleUSB.attributes['volume-type-for-testing']);
-
-  // Wait for removable root to appear in the directory tree.
-  const removableRoot = await remoteCall.waitForElement(
-      appId, '#directory-tree [entry-label="PARTITION_DRIVE_LABEL"]');
-
   // Check partitions are children of the root label.
   const childEntriesQuery =
-      ['[entry-label="PARTITION_DRIVE_LABEL"] .tree-children .tree-item'];
+      ['[entry-label="Drive Label"] .tree-children .tree-item'];
   const childEntries = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId, childEntriesQuery);
   const childEntryLabels =
       childEntries.map(child => child.attributes['entry-label']);
   chrome.test.assertEq(['partition-1', 'partition-2'], childEntryLabels);
 
-  // Check single USB does not have partitions as tree children.
+  // Wait for USB to appear in the directory tree.
+  const fakeUsb = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="fake-usb"]');
+  chrome.test.assertEq(
+      'removable', fakeUsb.attributes['volume-type-for-testing']);
+
+  // Check unpartitioned USB does not have partitions as tree children.
   const itemEntriesQuery =
-      ['[entry-label="singleUSB"] .tree-children .tree-item'];
+      ['[entry-label="fake-usb"] .tree-children .tree-item'];
   const itemEntries = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId, itemEntriesQuery);
   chrome.test.assertEq(1, itemEntries.length);
@@ -241,7 +243,7 @@ testcase.fileDisplayPartitionFileTable = async function() {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount removable partitions.
-  await sendTestMessage({name: 'mountFakePartitions'});
+  await sendTestMessage({name: 'mountUsbWithPartitions'});
 
   // Wait for removable group to appear in the directory tree.
   await remoteCall.waitForElement(appId, removableGroup);
@@ -253,7 +255,6 @@ testcase.fileDisplayPartitionFileTable = async function() {
   // Wait for removable partitions to appear in the file table.
   const partitionOne = await remoteCall.waitForElement(
       appId, '#file-list [file-name="partition-1"] .type');
-  console.log(JSON.stringify(partitionOne));
   chrome.test.assertEq('ext4', partitionOne.text);
 
   const partitionTwo = await remoteCall.waitForElement(
@@ -610,4 +611,97 @@ testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async function() {
   // Which should contain a file.
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
+};
+
+/**
+ * Navigates to a removable volume, then unmounts it. Check to see whether
+ * Files App switches away to the default Downloads directory.
+ *
+ * @param {string} removableDirectory The removable directory to be inside
+ *    before unmounting the USB.
+ */
+async function unmountRemovableVolume(removableDirectory) {
+  const removableRootQuery = '#directory-tree [root-type-icon="removable"]';
+
+  // Open Files app on Downloads containing ENTRIES.photos.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+  // Mount a device containing two partitions.
+  await sendTestMessage({name: 'mountUsbWithPartitions'});
+
+  // Wait for the removable root to appear in the directory tree.
+  await remoteCall.waitForElement(appId, removableRootQuery);
+
+  // Navigate to the removable root directory.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, [removableRootQuery]);
+
+  // Wait for the navigation to complete.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Drive Label');
+
+  // Wait for partition entries to appear in the directory.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="partition-1"]');
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="partition-2"]');
+
+  if (removableDirectory === 'partition-1' ||
+      removableDirectory === 'partition-2') {
+    const partitionQuery = `#file-list [file-name="${removableDirectory}"]`;
+    const partitionFiles = [ENTRIES.hello.getExpectedRow()];
+    await remoteCall.callRemoteTestUtil(
+        'fakeMouseDoubleClick', appId, [partitionQuery]);
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(
+        appId, `/Drive Label/${removableDirectory}`);
+    await remoteCall.waitForFiles(
+        appId, partitionFiles, {ignoreLastModifiedTime: true});
+  }
+
+  // Unmount partitioned device.
+  await sendTestMessage({name: 'unmountPartitions'});
+
+  // We should navigate to Downloads or MyFiles.
+  // TODO(crbug.com/880130): Remove this conditional.
+  let defaultFolder = '/My files/Downloads';
+  let expectedRows = [ENTRIES.photos.getExpectedRow()];
+  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
+    defaultFolder = '/My files';
+    expectedRows = [
+      ['Play files', '--', 'Folder'],
+      ['Downloads', '--', 'Folder'],
+      ['Linux files', '--', 'Folder'],
+    ];
+  }
+
+  // Ensure MyFiles or Downloads has loaded.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
+
+  // And contains the expected files.
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
+}
+
+/**
+ * Tests Files app switches away from a removable device root after the USB is
+ * unmounted.
+ */
+testcase.fileDisplayUnmountRemovableRoot = function() {
+  return unmountRemovableVolume('Drive Label');
+};
+
+/**
+ * Tests Files app switches away from a partition inside the USB after the USB
+ * is unmounted.
+ */
+testcase.fileDisplayUnmountFirstPartition = function() {
+  return unmountRemovableVolume('partition-1');
+};
+
+/**
+ * Tests Files app switches away from a partition inside the USB after the USB
+ * is unmounted. Partition-1 will be ejected first.
+ */
+testcase.fileDisplayUnmountLastPartition = function() {
+  return unmountRemovableVolume('partition-2');
 };
