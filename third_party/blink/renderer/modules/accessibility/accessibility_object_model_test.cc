@@ -86,7 +86,7 @@ TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
   ax::mojom::NameFrom name_from;
   AXObject::AXObjectVector name_objects;
   EXPECT_EQ("Combo", axTextBox->GetName(name_from, &name_objects));
-  EXPECT_EQ(axTextBox->Restriction(), kDisabled);
+  EXPECT_EQ(axTextBox->Restriction(), kRestrictionDisabled);
 
   // The AOM properties should still all be null.
   EXPECT_EQ(nullptr, textbox->accessibleNode()->role());
@@ -117,7 +117,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   ax::mojom::NameFrom name_from;
   AXObject::AXObjectVector name_objects;
   EXPECT_EQ("Check", axButton->GetName(name_from, &name_objects));
-  EXPECT_EQ(axButton->Restriction(), kDisabled);
+  EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
 
   // Now set the AOM properties to override.
   button->accessibleNode()->setRole("radio");
@@ -128,7 +128,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kRadioButton, axButton->RoleValue());
   EXPECT_EQ("Radio", axButton->GetName(name_from, &name_objects));
-  EXPECT_EQ(axButton->Restriction(), kNone);
+  EXPECT_EQ(axButton->Restriction(), kRestrictionNone);
 
   // Null the AOM properties.
   button->accessibleNode()->setRole(g_null_atom);
@@ -139,7 +139,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
   EXPECT_EQ("Check", axButton->GetName(name_from, &name_objects));
-  EXPECT_EQ(axButton->Restriction(), kDisabled);
+  EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
 }
 
 TEST_F(AccessibilityObjectModelTest, RangeProperties) {

@@ -315,7 +315,8 @@ bool AXLayoutObject::IsDefault() const {
     return false;
 
   // Checks for any kind of disabled, including aria-disabled.
-  if (Restriction() == kDisabled || RoleValue() != ax::mojom::Role::kButton)
+  if (Restriction() == kRestrictionDisabled ||
+      RoleValue() != ax::mojom::Role::kButton)
     return false;
 
   // Will only match :default pseudo class if it's the first default button in
@@ -1337,8 +1338,10 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
                NGPaintFragmentTraversalContext::Create(&fragments.back()));
        !runner.IsNull();
        runner = NGPaintFragmentTraversal::NextInlineLeafOf(runner)) {
-    LayoutObject* layout_object = runner.GetFragment()->GetLayoutObject();
-    if (AXObject* result = ax_object.AXObjectCache().GetOrCreate(layout_object))
+    LayoutObject* runner_layout_object =
+        runner.GetFragment()->GetLayoutObject();
+    if (AXObject* result =
+            ax_object.AXObjectCache().GetOrCreate(runner_layout_object))
       return result;
   }
   if (!ax_object.ParentObject())
@@ -1410,8 +1413,10 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
                NGPaintFragmentTraversalContext::Create(&fragments.front()));
        !runner.IsNull();
        runner = NGPaintFragmentTraversal::PreviousInlineLeafOf(runner)) {
-    LayoutObject* layout_object = runner.GetFragment()->GetLayoutObject();
-    if (AXObject* result = ax_object.AXObjectCache().GetOrCreate(layout_object))
+    LayoutObject* earlier_layout_object =
+        runner.GetFragment()->GetLayoutObject();
+    if (AXObject* result =
+            ax_object.AXObjectCache().GetOrCreate(earlier_layout_object))
       return result;
   }
   if (!ax_object.ParentObject())

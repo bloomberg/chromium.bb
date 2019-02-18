@@ -1228,7 +1228,7 @@ bool AXObject::CanSetValueAttribute() const {
     case ax::mojom::Role::kTextFieldWithComboBox:
     case ax::mojom::Role::kTime:
     case ax::mojom::Role::kSearchBox:
-      return Restriction() == kNone;
+      return Restriction() == kRestrictionNone;
     default:
       break;
   }
@@ -1337,7 +1337,7 @@ bool AXObject::HasIndirectChildren() const {
 
 bool AXObject::CanSetSelectedAttribute() const {
   // Sub-widget elements can be selected if not disabled (native or ARIA)
-  return IsSubWidget() && Restriction() != kDisabled;
+  return IsSubWidget() && Restriction() != kRestrictionDisabled;
 }
 
 bool AXObject::IsSubWidget() const {
@@ -1935,10 +1935,10 @@ AXRestriction AXObject::Restriction() const {
                                     is_disabled)) {
     // Has aria-disabled, overrides native markup determining disabled.
     if (is_disabled)
-      return kDisabled;
+      return kRestrictionDisabled;
   } else if (CanSetFocusAttribute() && IsDescendantOfDisabledNode()) {
     // No aria-disabled, but other markup says it's disabled.
-    return kDisabled;
+    return kRestrictionDisabled;
   }
 
   // Check aria-readonly if supported by current role.
@@ -1947,11 +1947,11 @@ AXRestriction AXObject::Restriction() const {
       HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
                                     is_read_only)) {
     // ARIA overrides other readonly state markup.
-    return is_read_only ? kReadOnly : kNone;
+    return is_read_only ? kRestrictionReadOnly : kRestrictionNone;
   }
 
   // This is a node that is not readonly and not disabled.
-  return kNone;
+  return kRestrictionNone;
 }
 
 ax::mojom::Role AXObject::DetermineAccessibilityRole() {
