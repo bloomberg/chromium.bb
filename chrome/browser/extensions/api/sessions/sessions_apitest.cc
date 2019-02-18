@@ -218,6 +218,7 @@ void ExtensionSessionsTest::CreateSessionModels() {
   syncer::MockModelTypeWorker worker(sync_pb::ModelTypeState(),
                                      activation_response->type_processor.get());
 
+  const base::Time time_now = base::Time::Now();
   syncer::SyncDataList initial_data;
   for (size_t index = 0; index < base::size(kSessionTags); ++index) {
     // Fill an instance of session specifics with a foreign session's data.
@@ -232,8 +233,23 @@ void ExtensionSessionsTest::CreateSessionModels() {
                         &tabs[i]);
     }
 
-    worker.UpdateFromServer(TagHashFromSpecifics(header_entity.session()),
-                            header_entity);
+    // We need to provide a recent timestamp to prevent garbage collection of
+    // sessions (anything older than 14 days), so we cannot use
+    // MockModelTypeWorker's convenience functions, which internally use very
+    // old timestamps.
+    syncer::EntityData header_entity_data;
+    header_entity_data.client_tag_hash =
+        TagHashFromSpecifics(header_entity.session());
+    header_entity_data.id = "FakeId:" + header_entity_data.client_tag_hash;
+    header_entity_data.specifics = header_entity;
+    header_entity_data.creation_time =
+        time_now - base::TimeDelta::FromSeconds(index);
+    header_entity_data.modification_time = header_entity_data.creation_time;
+
+    syncer::UpdateResponseData header_update;
+    header_update.entity = header_entity_data.PassToPtr();
+    header_update.response_version = 1;
+    worker.UpdateFromServer({header_update});
 
     for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics tab_entity;

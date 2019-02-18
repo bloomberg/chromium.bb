@@ -30,6 +30,10 @@ namespace history {
 class HistoryService;
 }  // namespace history
 
+namespace sync_sessions {
+class SessionSyncService;
+}  // namespace sync_sessions
+
 namespace syncer {
 class ModelTypeStoreService;
 }  // namespace syncer
@@ -57,6 +61,7 @@ class BrowserSyncClient : public syncer::SyncClient {
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
+  virtual sync_sessions::SessionSyncService* GetSessionSyncService() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoService() = 0;
   virtual base::RepeatingClosure GetPasswordStateChangedCallback() = 0;

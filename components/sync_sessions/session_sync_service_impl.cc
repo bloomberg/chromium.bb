@@ -51,10 +51,6 @@ SessionSyncServiceImpl::SubscribeToForeignSessionsChanged(
   return foreign_sessions_changed_callback_list_.Add(cb);
 }
 
-void SessionSyncServiceImpl::ScheduleGarbageCollection() {
-  bridge_->ScheduleGarbageCollection();
-}
-
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 SessionSyncServiceImpl::GetControllerDelegate() {
   return bridge_->change_processor()->GetControllerDelegate();

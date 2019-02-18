@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_client.h"
 
 namespace sync_sessions {
 

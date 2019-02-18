@@ -1008,14 +1008,6 @@ void ProfileSyncService::OnSyncCycleCompleted(
     sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
   }
 
-  if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
-      snapshot.model_neutral_state().get_updates_request_types.Has(
-          syncer::SESSIONS) &&
-      !syncer::HasSyncerError(snapshot.model_neutral_state())) {
-    // Trigger garbage collection of old sessions now that we've downloaded
-    // any new session data.
-    sync_client_->GetSessionSyncService()->ScheduleGarbageCollection();
-  }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
 }

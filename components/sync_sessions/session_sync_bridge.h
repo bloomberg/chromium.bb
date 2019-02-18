@@ -45,7 +45,6 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
 
-  void ScheduleGarbageCollection();
   FaviconCache* GetFaviconCache();
   SessionsGlobalIdMapper* GetGlobalIdMapper();
   OpenTabsUIDelegate* GetOpenTabsUIDelegate();
@@ -84,7 +83,7 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void StartLocalSessionEventHandler();
   void DeleteForeignSessionFromUI(const std::string& tag);
-  void DoGarbageCollection();
+  void DoGarbageCollection(SessionStore::WriteBatch* write_batch);
   std::unique_ptr<SessionStore::WriteBatch> CreateSessionStoreWriteBatch();
   void DeleteForeignSessionWithBatch(const std::string& session_tag,
                                      SessionStore::WriteBatch* batch);
