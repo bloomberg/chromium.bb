@@ -4,6 +4,21 @@
 
 import("//net/features.gni")
 
+source_set("network") {
+  sources = [
+    "net/network_chromium.h",
+    "net/network_impl.cc",
+    "net/network_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//services/network/public/cpp:cpp",
+    "//url",
+  ]
+}
+
 static_library("update_client") {
   sources = [
     "action_runner.cc",
@@ -26,7 +41,6 @@ static_library("update_client") {
     "crx_downloader.cc",
     "crx_downloader.h",
     "crx_update_item.h",
-    "network.cc",
     "network.h",
     "persisted_data.cc",
     "persisted_data.h",
@@ -79,6 +93,7 @@ static_library("update_client") {
   ]
 
   deps = [
+    ":network",
     "//base",
     "//components/client_update_protocol",
     "//components/crx_file",
@@ -94,17 +109,19 @@ static_library("update_client") {
     "//third_party/libxml",
     "//url",
   ]
+
+  allow_circular_includes_from = [ ":network" ]
 }
 
 static_library("test_support") {
   testonly = true
   sources = [
+    "net/url_loader_post_interceptor.cc",
+    "net/url_loader_post_interceptor.h",
     "test_configurator.cc",
     "test_configurator.h",
     "test_installer.cc",
     "test_installer.h",
-    "url_loader_post_interceptor.cc",
-    "url_loader_post_interceptor.h",
   ]
 
   public_deps = [

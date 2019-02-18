@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include <limits>
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 
 class GURL;
 
@@ -23,42 +23,48 @@ class FilePath;
 
 namespace network {
 class SharedURLLoaderFactory;
-}  // namespace network
+}
 
 namespace update_client {
 
 class NetworkFetcher {
  public:
-  NetworkFetcher(
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory,
-      std::unique_ptr<network::ResourceRequest> resource_request);
-  ~NetworkFetcher();
+  using PostRequestCompleteCallback =
+      base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
+  using DownloadToFileCompleteCallback =
+      base::OnceCallback<void(base::FilePath path)>;
+  using ResponseStartedCallback = base::OnceCallback<
+      void(const GURL& final_url, int response_code, int64_t content_length)>;
 
-  // These functions are delegating to the corresponding members of
-  // network::SimpleURLLoader.
-  void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      network::SimpleURLLoader::BodyAsStringCallback body_as_string_callback);
-  void DownloadToFile(
-      network::SimpleURLLoader::DownloadToFileCompleteCallback
-          download_to_file_complete_callback,
+  virtual ~NetworkFetcher() = default;
+
+  virtual void PostRequest(
+      const GURL& url,
+      const std::string& post_data,
+      const base::flat_map<std::string, std::string>& post_additional_headers,
+      ResponseStartedCallback response_started_callback,
+      PostRequestCompleteCallback post_request_complete_callback) = 0;
+  virtual void DownloadToFile(
+      const GURL& url,
       const base::FilePath& file_path,
-      int64_t max_body_size = std::numeric_limits<int64_t>::max());
-  void AttachStringForUpload(const std::string& upload_data,
-                             const std::string& upload_content_type);
-  void SetOnResponseStartedCallback(
-      network::SimpleURLLoader::OnResponseStartedCallback
-          on_response_started_callback);
-  void SetAllowPartialResults(bool allow_partial_results);
-  void SetRetryOptions(int max_retries, int retry_mode);
-  int NetError() const;
-  const network::ResourceResponseHead* ResponseInfo() const;
-  const GURL& GetFinalURL() const;
-  int64_t GetContentSize() const;
+      ResponseStartedCallback response_started_callback,
+      DownloadToFileCompleteCallback download_to_file_complete_callback) = 0;
+  virtual int NetError() const = 0;
+
+  // Returns the string value of a header of the server response or an empty
+  // string if the header is not available. Only the first header is returned
+  // if multiple instances of the same header are present.
+  virtual std::string GetStringHeaderValue(const char* header_name) const = 0;
+
+  // Returns the integral value of a header of the server response or -1 if
+  // if the header is not available or a conversion error has occured.
+  virtual int64_t GetInt64HeaderValue(const char* header_name) const = 0;
+  virtual int64_t GetContentSize() const = 0;
+
+ protected:
+  NetworkFetcher() = default;
 
  private:
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory_;
-  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcher);
 };
 
@@ -67,8 +73,9 @@ class NetworkFetcherFactory : public base::RefCounted<NetworkFetcherFactory> {
   explicit NetworkFetcherFactory(scoped_refptr<network::SharedURLLoaderFactory>
                                      shared_url_network_factory);
 
-  std::unique_ptr<NetworkFetcher> Create(
-      std::unique_ptr<network::ResourceRequest> resource_request) const;
+  // TODO(sorin): make this class pure virtual. Instead of this
+  // class, instantiate NetworkFetcherChromiumFactory from update_client/net.
+  virtual std::unique_ptr<NetworkFetcher> Create() const;
 
  protected:
   friend class base::RefCounted<NetworkFetcherFactory>;
@@ -76,7 +83,6 @@ class NetworkFetcherFactory : public base::RefCounted<NetworkFetcherFactory> {
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 

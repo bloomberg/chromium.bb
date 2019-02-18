@@ -12,13 +12,12 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "components/update_client/net/url_loader_post_interceptor.h"
 #include "components/update_client/protocol_handler.h"
-#include "components/update_client/url_loader_post_interceptor.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/browser/updater/update_service_factory.h"
 #include "extensions/common/extension_features.h"
-#include "net/url_request/test_url_request_interceptor.h"
 
 namespace extensions {
 

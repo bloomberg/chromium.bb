@@ -53,7 +53,6 @@ Refer to README.md for content description and update process.
  <item id="cloud_print_privet_register" hash_code="24978481" type="0" content_hash_code="131359002" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
  <item id="cloud_print_proxy" hash_code="50859288" type="1" second_id="111712433" content_hash_code="90868083" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/cloud_print_proxy.cc"/>
  <item id="cloud_print_search" hash_code="132055347" type="0" content_hash_code="123783474" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
- <item id="component_updater_utils" hash_code="125596241" type="0" content_hash_code="12311195" os_list="linux,windows" file_path="components/update_client/network.cc"/>
  <item id="content_hash_verification_job" hash_code="64733114" type="0" content_hash_code="127912411" os_list="linux,windows" file_path="extensions/browser/content_hash_fetcher.cc"/>
  <item id="content_resource_fetcher" hash_code="70796791" type="0" deprecated="2017-09-16" content_hash_code="135648626" file_path=""/>
  <item id="content_suggestion_get_favicon" hash_code="16653985" type="0" content_hash_code="134280933" os_list="linux,windows" file_path="components/ntp_snippets/content_suggestions_service.cc"/>
@@ -278,6 +277,7 @@ Refer to README.md for content description and update process.
  <item id="ui_devtools_server" hash_code="4986170" type="0" content_hash_code="62670263" os_list="linux,windows" file_path="components/ui_devtools/devtools_server.cc"/>
  <item id="undefined" hash_code="45578882" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="unwanted_software_report" hash_code="43759504" type="0" content_hash_code="43217092" os_list="windows" file_path="chrome/chrome_cleaner/logging/reporter_logging_service.cc"/>
+ <item id="update_client" hash_code="54845618" type="0" content_hash_code="10382647" os_list="linux,windows" file_path="components/update_client/net/network_impl.cc"/>
  <item id="url_fetcher_downloader" hash_code="113231892" type="0" deprecated="2019-02-09" content_hash_code="61085066" file_path=""/>
  <item id="url_prevision_fetcher" hash_code="118389509" type="0" content_hash_code="66145513" os_list="linux,windows" file_path="content/browser/media/url_provision_fetcher.cc"/>
  <item id="user_info_fetcher" hash_code="22265491" type="0" content_hash_code="72016232" os_list="linux,windows" file_path="components/policy/core/common/cloud/user_info_fetcher.cc"/>

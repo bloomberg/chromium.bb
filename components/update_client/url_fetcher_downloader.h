@@ -16,10 +16,6 @@
 #include "base/time/time.h"
 #include "components/update_client/crx_downloader.h"
 
-namespace network {
-struct ResourceResponseHead;
-}  // namespace network
-
 namespace update_client {
 
 class NetworkFetcher;
@@ -41,7 +37,8 @@ class UrlFetcherDownloader : public CrxDownloader {
   void StartURLFetch(const GURL& url);
   void OnNetworkFetcherComplete(base::FilePath file_path);
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head);
+                         int response_code,
+                         int64_t content_length);
   THREAD_CHECKER(thread_checker_);
 
   scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
@@ -52,6 +49,8 @@ class UrlFetcherDownloader : public CrxDownloader {
 
   base::TimeTicks download_start_time_;
 
+  GURL final_url_;
+  int response_code_ = -1;
   int64_t total_bytes_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetcherDownloader);

@@ -18,8 +18,6 @@
 #include "components/update_client/network.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
-#include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 
 namespace update_client {
 
@@ -53,7 +51,7 @@ constexpr int64_t kMaxRetryAfterSec = 24 * 60 * 60;
 }  // namespace
 
 RequestSender::RequestSender(scoped_refptr<Configurator> config)
-    : config_(config), use_signing_(false) {}
+    : config_(config) {}
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -105,19 +103,20 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
-  update_client::LoadCompleteCallback callback = base::BindOnce(
-      &RequestSender::OnNetworkFetcherComplete, base::Unretained(this), url);
-
-  network_fetcher_ = SendProtocolRequest(url, request_extra_headers_,
-                                         request_body_, std::move(callback),
-                                         config_->GetNetworkFetcherFactory());
-  if (!network_fetcher_)
+  network_fetcher_ = config_->GetNetworkFetcherFactory()->Create();
+  if (!network_fetcher_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&RequestSender::SendInternalComplete,
                        base::Unretained(this),
                        static_cast<int>(ProtocolError::URL_FETCHER_FAILED),
                        std::string(), std::string(), 0));
+  }
+  network_fetcher_->PostRequest(
+      url, request_body_, request_extra_headers_,
+      base::BindOnce(&RequestSender::OnResponseStarted, base::Unretained(this)),
+      base::BindOnce(&RequestSender::OnNetworkFetcherComplete,
+                     base::Unretained(this), url));
 }
 
 void RequestSender::SendInternalComplete(int error,
@@ -158,6 +157,12 @@ void RequestSender::SendInternalComplete(int error,
   HandleSendError(error, retry_after_sec);
 }
 
+void RequestSender::OnResponseStarted(const GURL& final_url,
+                                      int response_code,
+                                      int64_t content_length) {
+  response_code_ = response_code;
+}
+
 void RequestSender::OnNetworkFetcherComplete(
     const GURL& original_url,
     std::unique_ptr<std::string> response_body) {
@@ -165,25 +170,18 @@ void RequestSender::OnNetworkFetcherComplete(
 
   VLOG(1) << "request completed from url: " << original_url.spec();
 
-  int response_code = -1;
-  if (network_fetcher_->ResponseInfo() &&
-      network_fetcher_->ResponseInfo()->headers) {
-    response_code = network_fetcher_->ResponseInfo()->headers->response_code();
-  }
-
   int fetch_error = -1;
-  if (response_body && response_code == 200) {
+  if (response_body && response_code_ == 200) {
     fetch_error = 0;
-  } else if (response_code != -1) {
-    fetch_error = response_code;
+  } else if (response_code_ != -1) {
+    fetch_error = response_code_;
   } else {
     fetch_error = network_fetcher_->NetError();
   }
 
   int64_t retry_after_sec(-1);
   if (original_url.SchemeIsCryptographic() && fetch_error > 0) {
-    retry_after_sec =
-        GetInt64HeaderValue(network_fetcher_.get(), kHeaderXRetryAfter);
+    retry_after_sec = network_fetcher_->GetInt64HeaderValue(kHeaderXRetryAfter);
     retry_after_sec = std::min(retry_after_sec, kMaxRetryAfterSec);
   }
 
@@ -192,7 +190,7 @@ void RequestSender::OnNetworkFetcherComplete(
       base::BindOnce(&RequestSender::SendInternalComplete,
                      base::Unretained(this), fetch_error,
                      response_body ? *response_body : std::string(),
-                     GetStringHeaderValue(network_fetcher_.get(), kHeaderEtag),
+                     network_fetcher_->GetStringHeaderValue(kHeaderEtag),
                      static_cast<int>(retry_after_sec)));
 }
 
@@ -219,34 +217,6 @@ GURL RequestSender::BuildUpdateUrl(const GURL& url,
   replacements.SetQueryStr(query_string);
 
   return url.ReplaceComponents(replacements);
-}
-
-std::string RequestSender::GetStringHeaderValue(
-    const NetworkFetcher* network_fetcher,
-    const char* header_name) {
-  DCHECK(network_fetcher);
-  if (network_fetcher->ResponseInfo() &&
-      network_fetcher->ResponseInfo()->headers) {
-    std::string etag;
-    return network_fetcher->ResponseInfo()->headers->EnumerateHeader(
-               nullptr, header_name, &etag)
-               ? etag
-               : std::string();
-  }
-
-  return std::string();
-}
-
-int64_t RequestSender::GetInt64HeaderValue(
-    const NetworkFetcher* network_fetcher,
-    const char* header_name) {
-  DCHECK(network_fetcher);
-  if (network_fetcher->ResponseInfo() &&
-      network_fetcher->ResponseInfo()->headers) {
-    return network_fetcher->ResponseInfo()->headers->GetInt64HeaderValue(
-        header_name);
-  }
-  return -1;
 }
 
 }  // namespace update_client

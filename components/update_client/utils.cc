@@ -29,39 +29,9 @@
 #include "components/update_client/update_client_errors.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "net/base/load_flags.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace update_client {
-
-std::unique_ptr<NetworkFetcher> SendProtocolRequest(
-    const GURL& url,
-    const base::flat_map<std::string, std::string>&
-        protocol_request_extra_headers,
-    const std::string& protocol_request,
-    network::SimpleURLLoader::BodyAsStringCallback callback,
-    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
-  resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
-  for (const auto& header : protocol_request_extra_headers)
-    resource_request->headers.SetHeader(header.first, header.second);
-  auto network_fetcher =
-      network_fetcher_factory->Create(std::move(resource_request));
-  const int max_retry_on_network_change = 3;
-  network_fetcher->SetRetryOptions(
-      max_retry_on_network_change,
-      network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  network_fetcher->AttachStringForUpload(protocol_request, "application/xml");
-  network_fetcher->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      std::move(callback));
-  return network_fetcher;
-}
 
 bool HasDiffUpdate(const Component& component) {
   return !component.crx_diffurls().empty();

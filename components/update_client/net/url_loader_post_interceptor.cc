@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/url_loader_post_interceptor.h"
-
-#include <memory>
-#include <utility>
-#include <vector>
+#include "components/update_client/net/url_loader_post_interceptor.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
