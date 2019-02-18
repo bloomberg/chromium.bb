@@ -1018,7 +1018,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // a specified set of sites.
     if (filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
       // Will be completed in OnDeauthorizeFlashContentLicensesCompleted()
-      num_pending_tasks_ += 1;
+      OnTaskStarted(TracingDataType::kFlashDeauthorization);
       if (!pepper_flash_settings_manager_.get()) {
         pepper_flash_settings_manager_.reset(
             new PepperFlashSettingsManager(this, profile_));
@@ -1116,6 +1116,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     ExternalProtocolHandler::ClearData(profile_);
 }
 
+void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
+    TracingDataType data_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  num_pending_tasks_++;
+  TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
+                           static_cast<int>(data_type), "data_type",
+                           static_cast<int>(data_type));
+}
+
 void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1134,11 +1143,7 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
 base::OnceClosure
 ChromeBrowsingDataRemoverDelegate::CreateTaskCompletionClosure(
     TracingDataType data_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  num_pending_tasks_++;
-  TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
-                           static_cast<int>(data_type), "data_type",
-                           static_cast<int>(data_type));
+  OnTaskStarted(data_type);
   return base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
                         weak_ptr_factory_.GetWeakPtr(), data_type);
 }

@@ -225,6 +225,9 @@ class ChromeBrowsingDataRemoverDelegate
     kTpmAttestationKeys = 30,
   };
 
+  // Called by CreateTaskCompletionClosure().
+  void OnTaskStarted(TracingDataType data_type);
+
   // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls callback_.
   void OnTaskComplete(TracingDataType data_type);
