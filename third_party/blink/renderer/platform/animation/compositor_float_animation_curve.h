@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
@@ -29,8 +29,6 @@ namespace blink {
 // A keyframed float animation curve.
 class PLATFORM_EXPORT CompositorFloatAnimationCurve
     : public CompositorAnimationCurve {
-  WTF_MAKE_NONCOPYABLE(CompositorFloatAnimationCurve);
-
  public:
   static std::unique_ptr<CompositorFloatAnimationCurve> Create() {
     return base::WrapUnique(new CompositorFloatAnimationCurve());
@@ -60,6 +58,8 @@ class PLATFORM_EXPORT CompositorFloatAnimationCurve
       std::unique_ptr<cc::KeyframedFloatAnimationCurve>);
 
   std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorFloatAnimationCurve);
 };
 
 }  // namespace blink

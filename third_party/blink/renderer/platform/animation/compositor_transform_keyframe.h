@@ -5,18 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_KEYFRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_KEYFRAME_H_
 
+#include "base/macros.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_operations.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT CompositorTransformKeyframe : public CompositorKeyframe {
-  WTF_MAKE_NONCOPYABLE(CompositorTransformKeyframe);
-
  public:
   CompositorTransformKeyframe(double time,
                               CompositorTransformOperations value,
@@ -31,6 +29,8 @@ class PLATFORM_EXPORT CompositorTransformKeyframe : public CompositorKeyframe {
 
  private:
   std::unique_ptr<cc::TransformKeyframe> transform_keyframe_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorTransformKeyframe);
 };
 
 }  // namespace blink
