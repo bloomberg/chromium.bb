@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -750,8 +751,19 @@ void TextControlElement::ParseAttribute(
     UpdatePlaceholderText();
     UpdatePlaceholderVisibility();
     UseCounter::Count(GetDocument(), WebFeature::kPlaceholderAttribute);
+  } else if (params.name == kReadonlyAttr || params.name == kDisabledAttr) {
+    DisabledOrReadonlyAttributeChanged(params.name);
+    HTMLFormControlElementWithState::ParseAttribute(params);
   } else {
     HTMLFormControlElementWithState::ParseAttribute(params);
+  }
+}
+
+void TextControlElement::DisabledOrReadonlyAttributeChanged(
+    const QualifiedName& attr) {
+  if (Element* inner_editor = InnerEditorElement()) {
+    inner_editor->SetNeedsStyleRecalc(
+        kLocalStyleChange, StyleChangeReasonForTracing::FromAttribute(attr));
   }
 }
 
