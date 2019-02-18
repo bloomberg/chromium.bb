@@ -1680,12 +1680,6 @@ const char kServiceWorkerImportedScriptUpdateCheckDescription[] =
     "Extend byte-for-byte update check for scripts that are imported by the "
     "service worker script via importScripts().";
 
-const char kServiceWorkerServicificationName[] = "Servicified service workers";
-const char kServiceWorkerServicificationDescription[] =
-    "Enable the servicified service workers. A servicified service worker can "
-    "have direct connection from its clients, so that fetch events can be "
-    "dispatched through the connection without hopping to the browser process.";
-
 const char kServiceWorkerLongRunningMessageName[] =
     "Service worker long running message dispatch.";
 const char kServiceWorkerLongRunningMessageDescription[] =
