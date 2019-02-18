@@ -25,6 +25,8 @@ extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kSnapshotDrawView;
 
 // Feature to rework handling of copied content (url/string/image) in the ui.
+// This feature is used in extensions. If you modify it significantly, you may
+// want to update the version in |app_group_field_trial_version|.
 extern const base::Feature kCopiedContentBehavior;
 
 // Feature to apply UI Refresh theme to the settings.

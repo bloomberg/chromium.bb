@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/chrome/search_widget_extension/copied_content_view.h"
@@ -31,6 +32,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 @property(nonatomic) CopiedContentType copiedContentType;
 @property(nonatomic, strong)
     ClipboardRecentContentImplIOS* clipboardRecentContent;
+@property(nonatomic, copy, nullable) NSDictionary* fieldTrialValues;
+@property(nonatomic, readonly) BOOL copiedContentBehaviorEnabled;
 
 // Updates the widget with latest data from the clipboard. Returns whether any
 // visual updates occurred.
@@ -118,21 +121,34 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   completionHandler([self updateWidget] ? NCUpdateResultNewData
                                         : NCUpdateResultNoData);
 }
-
 - (BOOL)updateWidget {
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
+  NSString* fieldTrialKey =
+      base::SysUTF8ToNSString(app_group::kChromeExtensionFieldTrialPreference);
+  self.fieldTrialValues = [sharedDefaults dictionaryForKey:fieldTrialKey];
+
   NSString* copiedText;
   CopiedContentType type = CopiedContentTypeNone;
 
   if (NSURL* url = [self.clipboardRecentContent recentURLFromClipboard]) {
     copiedText = url.absoluteString;
     type = CopiedContentTypeURL;
-  } else if (NSString* text =
-                 [self.clipboardRecentContent recentTextFromClipboard]) {
+  } else if (NSString* text = [self getCopiedTextUsingFlag]) {
     copiedText = text;
     type = CopiedContentTypeString;
   }
 
   return [self setCopiedContentType:type copiedText:copiedText];
+}
+
+// Helper method to encapsulate both checking the flag and getting the copied
+// text.
+// TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
+- (NSString*)getCopiedTextUsingFlag {
+  if (!self.copiedContentBehaviorEnabled) {
+    return nil;
+  }
+  return [self.clipboardRecentContent recentTextFromClipboard];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -285,6 +301,16 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   [self.widgetView setCopiedContentType:self.copiedContentType
                              copiedText:self.copiedText];
   return YES;
+}
+
+- (BOOL)copiedContentBehaviorEnabled {
+  NSDictionary* storedData = self.fieldTrialValues[@"CopiedContentBehavior"];
+  if (![kCopiedContentBehaviorVersion
+          isEqualToNumber:storedData[kFieldTrialVersionKey]]) {
+    return NO;
+  }
+
+  return [storedData[kFieldTrialValueKey] boolValue];
 }
 
 @end
