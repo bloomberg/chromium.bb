@@ -44,9 +44,6 @@ class SessionSyncService : public KeyedService {
   SubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb)
       WARN_UNUSED_RESULT = 0;
 
-  // Schedules garbage collection of foreign sessions.
-  virtual void ScheduleGarbageCollection() = 0;
-
   // For ProfileSyncService to initialize the controller for SESSIONS.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;

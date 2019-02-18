@@ -21,10 +21,6 @@ namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
 
-namespace sync_sessions {
-class SessionSyncService;
-}  // namespace sync_sessions
-
 namespace syncer {
 
 class DeviceInfoSyncService;
@@ -54,9 +50,6 @@ class SyncClient {
 
   // TODO(crbug.com/922971): Move this away elsewhere.
   virtual syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() = 0;
-
-  // TODO(crbug.com/915154): Move this away elsewhere.
-  virtual sync_sessions::SessionSyncService* GetSessionSyncService() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
   virtual DataTypeController::TypeVector CreateDataTypeControllers(

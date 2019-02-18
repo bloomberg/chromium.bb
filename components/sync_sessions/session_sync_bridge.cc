@@ -123,15 +123,6 @@ SessionSyncBridge::~SessionSyncBridge() {
   }
 }
 
-void SessionSyncBridge::ScheduleGarbageCollection() {
-  if (!syncing_) {
-    return;
-  }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&SessionSyncBridge::DoGarbageCollection,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
 FaviconCache* SessionSyncBridge::GetFaviconCache() {
   return &favicon_cache_;
 }
@@ -262,6 +253,9 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
 
   static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
       ->TransferChangesTo(batch->GetMetadataChangeList());
+
+  DoGarbageCollection(batch.get());
+
   SessionStore::WriteBatch::Commit(std::move(batch));
 
   if (!entity_changes.empty()) {
@@ -419,13 +413,9 @@ void SessionSyncBridge::DeleteForeignSessionFromUI(const std::string& tag) {
   SessionStore::WriteBatch::Commit(std::move(batch));
 }
 
-void SessionSyncBridge::DoGarbageCollection() {
-  if (!syncing_) {
-    return;
-  }
-
-  std::unique_ptr<SessionStore::WriteBatch> batch =
-      CreateSessionStoreWriteBatch();
+void SessionSyncBridge::DoGarbageCollection(SessionStore::WriteBatch* batch) {
+  DCHECK(syncing_);
+  DCHECK(batch);
 
   // Iterate through all the sessions and delete any with age older than
   // |kStaleSessionThreshold|.
@@ -437,11 +427,9 @@ void SessionSyncBridge::DoGarbageCollection() {
       const std::string session_tag = session->session_tag;
       DVLOG(1) << "Found stale session " << session_tag << " with age "
                << session_age.InDays() << " days, deleting.";
-      DeleteForeignSessionWithBatch(session_tag, batch.get());
+      DeleteForeignSessionWithBatch(session_tag, batch);
     }
   }
-
-  SessionStore::WriteBatch::Commit(std::move(batch));
 }
 
 void SessionSyncBridge::DeleteForeignSessionWithBatch(

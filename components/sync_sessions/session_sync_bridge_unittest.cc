@@ -54,6 +54,7 @@ using syncer::MetadataBatch;
 using syncer::MetadataChangeList;
 using syncer::MockModelTypeChangeProcessor;
 using testing::_;
+using testing::AtLeast;
 using testing::Contains;
 using testing::ElementsAre;
 using testing::Eq;
@@ -1468,7 +1469,6 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
       CreateTabSpecifics(kRecentSessionTag, kWindowId, kTabId, kTabNodeId,
                          "http://baz.com/"),
       recent_mtime));
-  real_processor()->OnUpdateReceived(state, updates);
 
   // During garbage collection, we expect |kStaleSessionTag| to be deleted.
   EXPECT_CALL(mock_processor(),
@@ -1476,10 +1476,9 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
   EXPECT_CALL(
       mock_processor(),
       Delete(SessionStore::GetTabStorageKey(kStaleSessionTag, kTabNodeId), _));
-  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
 
-  bridge()->ScheduleGarbageCollection();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(AtLeast(1));
+  real_processor()->OnUpdateReceived(state, updates);
 }
 
 }  // namespace
