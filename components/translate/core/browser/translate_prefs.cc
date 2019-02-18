@@ -947,12 +947,9 @@ void TranslatePrefs::PurgeUnsupportedLanguagesInLanguageFamily(
                    languages_in_same_family.end(), [](const std::string& lang) {
                      return TranslateAcceptLanguages::CanBeAcceptLanguage(lang);
                    })) {
-    list->erase(
-        std::remove_if(list->begin(), list->end(),
-                       [&languages_in_same_family](const std::string& lang) {
-                         return languages_in_same_family.count(lang) > 0;
-                       }),
-        list->end());
+    base::EraseIf(*list, [&languages_in_same_family](const std::string& lang) {
+      return languages_in_same_family.count(lang) > 0;
+    });
   }
 }
 

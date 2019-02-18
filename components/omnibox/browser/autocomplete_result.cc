@@ -470,15 +470,11 @@ void AutocompleteResult::SortAndDedupMatches(
   }
 
   // Erase duplicate matches.
-  matches->erase(
-      std::remove_if(
-          matches->begin(), matches->end(),
-          [&url_to_matches](const AutocompleteMatch& m) {
-            std::pair<GURL, bool> p = GetMatchComparisonFields(m);
-            return !m.stripped_destination_url.is_empty() &&
-                   &(*url_to_matches[p].front()) != &m;
-          }),
-      matches->end());
+  base::EraseIf(*matches, [&url_to_matches](const AutocompleteMatch& m) {
+    std::pair<GURL, bool> p = GetMatchComparisonFields(m);
+    return !m.stripped_destination_url.is_empty() &&
+           &(*url_to_matches[p].front()) != &m;
+  });
 }
 
 void AutocompleteResult::InlineTailPrefixes() {
