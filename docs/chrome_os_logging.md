@@ -10,10 +10,11 @@ locations depending on Chrome's state:
   that are written very early in Chrome's startup process, before logging has
   been initialized.
 * `/var/log/chrome/chrome` contains messages that are written before a user has
-  logged in.
+  logged in. It also contains messages written after login on test images, where
+  chrome runs with `--disable-logging-redirect`.
 * `/home/chronos/user/log/chrome` contains messages that are written while a
-  user is logged in. Note that this path is within the user's encrypted home
-  directory and is only accessible while the user is logged in.
+  user is logged in on non-test images. Note that this path is within the user's
+  encrypted home directory and is only accessible while the user is logged in.
 
 All of the above files are actually symlinks. Older log files can be found
 alongside them in the same directories.
