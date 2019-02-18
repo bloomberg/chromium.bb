@@ -588,6 +588,17 @@ class AutotestPrivateGetPrimaryDisplayScaleFactorFunction
   ResponseAction Run() override;
 };
 
+// Returns if tablet mode is enabled.
+class AutotestPrivateIsTabletModeEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isTabletModeEnabled",
+                             AUTOTESTPRIVATE_ISTABLETMODEENABLED)
+ private:
+  ~AutotestPrivateIsTabletModeEnabledFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

@@ -290,6 +290,14 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  // Check if tablet mode is enabled.
+  function isTabletModeEnabled() {
+    chrome.autotestPrivate.isTabletModeEnabled(
+        function(enabled) {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
 ];
 
 var arcEnabledTests = [
