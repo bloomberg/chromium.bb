@@ -4211,13 +4211,13 @@
     "pref_mappings": [{ "pref": "certificate_management_allowed" }]
   },
 
-  "DeviceRebootAfterUserSignout": {
+  "DeviceRebootOnUserSignout": {
     "os": ["chromeos"],
     "test_policy": {
-      "DeviceRebootAfterUserSignout": 0
+      "DeviceRebootOnUserSignout": 0
     },
     "pref_mappings": [
-      { "pref": "cros.device.reboot_after_user_signout"}
+      { "pref": "cros.device.reboot_on_user_signout"}
     ]
   },
 

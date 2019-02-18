@@ -14613,42 +14613,42 @@
     },
     {
       'id': 520,
-      'name': 'DeviceRebootAfterUserSignout',
+      'name': 'DeviceRebootOnUserSignout',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2 ],
+        'enum': [ 1, 2, 3 ],
       },
       'items': [
         {
           'name': 'Never',
-          'value': 0,
-          'caption': '''Do not reboot after user sign out.''',
+          'value': 1,
+          'caption': '''Do not reboot on user sign out.''',
         },
         {
           'name': 'ArcSession',
-          'value': 1,
-          'caption': '''Reboot after user sign out if Android has started.''',
+          'value': 2,
+          'caption': '''Reboot on user sign out if Android has started.''',
         },
         {
           'name': 'Always',
-          'value': 2,
-          'caption': '''Always reboot after user sign out.''',
+          'value': 3,
+          'caption': '''Always reboot on user sign out.''',
         },
       ],
       'device_only': True,
-      'example_value': 0,
+      'example_value': 2,
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
       'supported_on': ['chrome_os:74-'],
-      'caption': '''Force device reboot after user sign out''',
+      'caption': '''Force device reboot when user sign out''',
       'tags': ['system-security'],
       'desc': '''
-      This policy, when set to ArcSession, forces the device to reboot after user sign out if Android has started.
-      When set to Always, it forces the device to reboot after every user sign out.
-      If left unset, it has no effect and no reboot is forced after user sign out. The same applies if set to Never.
+      This policy, when set to ArcSession, forces the device to reboot when a user sign out if Android has started.
+      When set to Always, it forces the device to reboot on every user sign out.
+      If left unset, it has no effect and no reboot is forced on user sign out. The same applies if set to Never.
       ''',
     },
     {

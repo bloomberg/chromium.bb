@@ -209,7 +209,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmLicenseKey[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kDeviceRebootAfterUserSignout[];
+extern const char kDeviceRebootOnUserSignout[];
 
 }  // namespace chromeos
 

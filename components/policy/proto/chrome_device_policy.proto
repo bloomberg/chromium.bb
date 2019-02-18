@@ -1131,15 +1131,20 @@ message PluginVmLicenseKeyProto {
   optional string plugin_vm_license_key = 1;
 }
 
-// Setting that controls whether the device should reboot after user sign out.
-message DeviceRebootAfterUserSignoutProto {
+// Setting that controls whether the device should reboot when user sign out.
+message DeviceRebootOnUserSignoutProto {
   enum RebootOnSignoutMode {
-    NEVER = 0;
-    ARC_SESSION = 1;
-    ALWAYS = 2;
+    // No value set. Default is NEVER.
+    REBOOT_ON_SIGNOUT_MODE_UNSPECIFIED = 0;
+    // Do not reboot on signout.
+    NEVER = 1;
+    // Reboot on signout if an ARC session was active during the user session.
+    ARC_SESSION = 2;
+    // Always reboot on signout.
+    ALWAYS = 3;
   }
 
-  optional RebootOnSignoutMode reboot_after_signout_mode = 1 [default = NEVER];
+  optional RebootOnSignoutMode reboot_on_signout_mode = 1 [default = NEVER];
 }
 
 message ChromeDeviceSettingsProto {
@@ -1242,6 +1247,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceAuthDataCacheLifetimeProto device_auth_data_cache_lifetime =
       77;
   optional PluginVmLicenseKeyProto plugin_vm_license_key = 78;
-  optional DeviceRebootAfterUserSignoutProto device_reboot_after_user_signout =
-      79;
+  optional DeviceRebootOnUserSignoutProto device_reboot_on_user_signout = 79;
 }

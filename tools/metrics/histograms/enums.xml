@@ -15441,7 +15441,7 @@ Called by update_net_error_codes.py.-->
   <int value="517" label="BrowserSwitcherEnabled"/>
   <int value="518" label="CertificateManagementAllowed"/>
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
-  <int value="520" label="DeviceRebootAfterArcSession"/>
+  <int value="520" label="DeviceRebootOnUserSignout"/>
   <int value="521" label="ForceNetworkInProcess"/>
   <int value="522" label="SchedulerConfiguration"/>
   <int value="523" label="CrostiniExportImportUIAllowed"/>
