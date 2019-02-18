@@ -141,9 +141,6 @@ bool MediaWebContentsObserver::OnMessageReceived(
         OnMediaEffectivelyFullscreenChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                         OnMediaSizeChanged)
-    IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls,
-        OnSetPictureInPictureCustomControls)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -271,17 +268,6 @@ void MediaWebContentsObserver::OnMediaSizeChanged(
     const gfx::Size& size) {
   const MediaPlayerId id(render_frame_host, delegate_id);
   web_contents_impl()->MediaResized(size, id);
-}
-
-void MediaWebContentsObserver::OnSetPictureInPictureCustomControls(
-    RenderFrameHost* render_frame_host,
-    int delegate_id,
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  PictureInPictureWindowControllerImpl* pip_controller =
-      PictureInPictureWindowControllerImpl::FromWebContents(
-          web_contents_impl());
-  if (pip_controller)
-    pip_controller->SetPictureInPictureCustomControls(controls);
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(

@@ -3903,7 +3903,6 @@ interface HTMLVideoElement : HTMLMediaElement
     getter intrinsicSize
     getter onenterpictureinpicture
     getter onleavepictureinpicture
-    getter onpictureinpicturecontrolclick
     getter poster
     getter videoHeight
     getter videoWidth
@@ -3915,7 +3914,6 @@ interface HTMLVideoElement : HTMLMediaElement
     method constructor
     method getVideoPlaybackQuality
     method requestPictureInPicture
-    method setPictureInPictureControls
     method webkitEnterFullScreen
     method webkitEnterFullscreen
     method webkitExitFullScreen
@@ -3926,7 +3924,6 @@ interface HTMLVideoElement : HTMLMediaElement
     setter intrinsicSize
     setter onenterpictureinpicture
     setter onleavepictureinpicture
-    setter onpictureinpicturecontrolclick
     setter poster
     setter width
 interface HashChangeEvent : Event
@@ -5411,11 +5408,6 @@ interface PhotoCapabilities
     getter imageWidth
     getter redEyeReduction
     method constructor
-interface PictureInPictureControlEvent : Event
-    attribute @@toStringTag
-    getter id
-    method constructor
-    setter id
 interface PictureInPictureWindow : EventTarget
     attribute @@toStringTag
     getter height

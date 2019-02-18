@@ -26,7 +26,6 @@
 #include "media/base/video_frame.h"
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -112,10 +111,6 @@ class FakeWebMediaPlayerDelegate
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
-
-  MOCK_METHOD2(DidSetPictureInPictureCustomControls,
-               void(int,
-                    const std::vector<blink::PictureInPictureControlInfo>&));
 
   void DidPause(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
@@ -589,8 +584,6 @@ class WebMediaPlayerMSTest
   void MediaRemotingStopped(
       blink::WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStopped() override {}
-  void PictureInPictureControlClicked(
-      const blink::WebString& control_id) override {}
   void RequestPlay() override {}
   void RequestPause() override {}
 

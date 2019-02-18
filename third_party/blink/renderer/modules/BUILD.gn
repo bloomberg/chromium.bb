@@ -322,7 +322,6 @@ jumbo_source_set("unit_tests") {
     "peerconnection/rtc_quic_stream_test.cc",
     "peerconnection/rtc_quic_transport_test.cc",
     "peerconnection/rtc_quic_transport_test.h",
-    "picture_in_picture/html_video_element_picture_in_picture_test.cc",
     "picture_in_picture/picture_in_picture_controller_test.cc",
     "presentation/mock_presentation_service.h",
     "presentation/presentation_availability_state_test.cc",

@@ -17,25 +17,12 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerDelegateMsgStart
-
-IPC_STRUCT_TRAITS_BEGIN(blink::PictureInPictureControlInfo::Icon)
-  IPC_STRUCT_TRAITS_MEMBER(src)
-  IPC_STRUCT_TRAITS_MEMBER(sizes)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::PictureInPictureControlInfo)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(label)
-  IPC_STRUCT_TRAITS_MEMBER(icons)
-IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType, media::MediaContentType::Max)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFullscreenVideoStatus,
@@ -72,10 +59,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                     int /* delegate_id, distinguishes instances */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
-                    int /* delegate_id, distinguishes instances */,
-                    std::string /* control_id */)
-
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
 // ----------------------------------------------------------------------------
@@ -106,10 +89,5 @@ IPC_MESSAGE_ROUTED2(
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
-
-IPC_MESSAGE_ROUTED2(
-    MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls,
-    int /* delegate id */,
-    std::vector<blink::PictureInPictureControlInfo> /* custom controls */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

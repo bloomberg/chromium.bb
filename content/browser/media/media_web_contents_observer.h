@@ -24,7 +24,6 @@
 
 namespace blink {
 enum class WebFullscreenVideoStatus;
-struct PictureInPictureControlInfo;
 }  // namespace blink
 
 namespace media {
@@ -126,10 +125,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
                                  int delegate_id,
                                  bool muted);
-  void OnSetPictureInPictureCustomControls(
-      RenderFrameHost* render_frame_host,
-      int delegate_id,
-      const std::vector<blink::PictureInPictureControlInfo>& controls);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

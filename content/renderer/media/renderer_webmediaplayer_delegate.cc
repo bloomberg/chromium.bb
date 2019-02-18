@@ -16,7 +16,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
@@ -118,13 +117,6 @@ void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
                                                                 bool muted) {
   Send(new MediaPlayerDelegateHostMsg_OnMutedStatusChanged(routing_id(),
                                                            delegate_id, muted));
-}
-
-void RendererWebMediaPlayerDelegate::DidSetPictureInPictureCustomControls(
-    int delegate_id,
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  Send(new MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls(
-      routing_id(), delegate_id, controls));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
@@ -247,8 +239,6 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateBecamePersistentVideo)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                         OnPictureInPictureModeEnded)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
-                        OnPictureInPictureControlClicked)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -358,14 +348,6 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEnded(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnPictureInPictureModeEnded();
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureControlClicked(
-    int player_id,
-    const std::string& control_id) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnPictureInPictureControlClicked(control_id);
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

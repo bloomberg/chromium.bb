@@ -655,11 +655,6 @@ void WebMediaPlayerMS::OnRequestPictureInPicture() {
   DCHECK(bridge_->GetSurfaceId().is_valid());
 }
 
-void WebMediaPlayerMS::SetPictureInPictureCustomControls(
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
-}
-
 void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
     std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) {
@@ -937,11 +932,6 @@ void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
     return;
 
   client_->PictureInPictureStopped();
-}
-
-void WebMediaPlayerMS::OnPictureInPictureControlClicked(
-    const std::string& control_id) {
-  NOTIMPLEMENTED();
 }
 
 bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(

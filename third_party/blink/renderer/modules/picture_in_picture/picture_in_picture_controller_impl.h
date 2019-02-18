@@ -68,9 +68,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
   void AddToAutoPictureInPictureElementsList(HTMLVideoElement*) override;
   void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*) override;
-  void SetPictureInPictureCustomControls(
-      HTMLVideoElement*,
-      const std::vector<PictureInPictureControlInfo>&) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
   void OnPictureInPictureStateChange() override;
@@ -96,7 +93,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
                                  ScriptPromiseResolver*,
                                  const WebSize& picture_in_picture_window_size);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
-  void OnPictureInPictureControlClicked(const WebString& control_id) override;
 
   // Makes sure the `picture_in_picture_service_` is set. Returns whether it was
   // initialized successfully.
