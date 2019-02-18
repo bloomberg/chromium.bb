@@ -58,7 +58,7 @@ std::unique_ptr<InterpolableValue> TranslateToInterpolableValue(
 SVGTransform* TranslateFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(kSvgTransformTranslate);
+  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kTranslate);
   transform->SetTranslate(ToInterpolableNumber(list.Get(0))->Value(),
                           ToInterpolableNumber(list.Get(1))->Value());
   return transform;
@@ -76,7 +76,7 @@ std::unique_ptr<InterpolableValue> ScaleToInterpolableValue(
 SVGTransform* ScaleFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(kSvgTransformScale);
+  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kScale);
   transform->SetScale(ToInterpolableNumber(list.Get(0))->Value(),
                       ToInterpolableNumber(list.Get(1))->Value());
   return transform;
@@ -95,7 +95,7 @@ std::unique_ptr<InterpolableValue> RotateToInterpolableValue(
 SVGTransform* RotateFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(kSvgTransformRotate);
+  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kRotate);
   transform->SetRotate(ToInterpolableNumber(list.Get(0))->Value(),
                        ToInterpolableNumber(list.Get(1))->Value(),
                        ToInterpolableNumber(list.Get(2))->Value());
@@ -108,7 +108,7 @@ std::unique_ptr<InterpolableValue> SkewXToInterpolableValue(
 }
 
 SVGTransform* SkewXFromInterpolableValue(const InterpolableValue& value) {
-  SVGTransform* transform = SVGTransform::Create(kSvgTransformSkewx);
+  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kSkewx);
   transform->SetSkewX(ToInterpolableNumber(value).Value());
   return transform;
 }
@@ -119,7 +119,7 @@ std::unique_ptr<InterpolableValue> SkewYToInterpolableValue(
 }
 
 SVGTransform* SkewYFromInterpolableValue(const InterpolableValue& value) {
-  SVGTransform* transform = SVGTransform::Create(kSvgTransformSkewy);
+  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kSkewy);
   transform->SetSkewY(ToInterpolableNumber(value).Value());
   return transform;
 }
@@ -128,18 +128,18 @@ std::unique_ptr<InterpolableValue> ToInterpolableValue(
     SVGTransform* transform,
     SVGTransformType transform_type) {
   switch (transform_type) {
-    case kSvgTransformTranslate:
+    case SVGTransformType::kTranslate:
       return TranslateToInterpolableValue(transform);
-    case kSvgTransformScale:
+    case SVGTransformType::kScale:
       return ScaleToInterpolableValue(transform);
-    case kSvgTransformRotate:
+    case SVGTransformType::kRotate:
       return RotateToInterpolableValue(transform);
-    case kSvgTransformSkewx:
+    case SVGTransformType::kSkewx:
       return SkewXToInterpolableValue(transform);
-    case kSvgTransformSkewy:
+    case SVGTransformType::kSkewy:
       return SkewYToInterpolableValue(transform);
-    case kSvgTransformMatrix:
-    case kSvgTransformUnknown:
+    case SVGTransformType::kMatrix:
+    case SVGTransformType::kUnknown:
       NOTREACHED();
   }
   NOTREACHED();
@@ -149,18 +149,18 @@ std::unique_ptr<InterpolableValue> ToInterpolableValue(
 SVGTransform* FromInterpolableValue(const InterpolableValue& value,
                                     SVGTransformType transform_type) {
   switch (transform_type) {
-    case kSvgTransformTranslate:
+    case SVGTransformType::kTranslate:
       return TranslateFromInterpolableValue(value);
-    case kSvgTransformScale:
+    case SVGTransformType::kScale:
       return ScaleFromInterpolableValue(value);
-    case kSvgTransformRotate:
+    case SVGTransformType::kRotate:
       return RotateFromInterpolableValue(value);
-    case kSvgTransformSkewx:
+    case SVGTransformType::kSkewx:
       return SkewXFromInterpolableValue(value);
-    case kSvgTransformSkewy:
+    case SVGTransformType::kSkewy:
       return SkewYFromInterpolableValue(value);
-    case kSvgTransformMatrix:
-    case kSvgTransformUnknown:
+    case SVGTransformType::kMatrix:
+    case SVGTransformType::kUnknown:
       NOTREACHED();
   }
   NOTREACHED();
@@ -224,7 +224,7 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSVGValue(
   for (wtf_size_t i = 0; i < svg_list.length(); i++) {
     const SVGTransform* transform = svg_list.at(i);
     SVGTransformType transform_type(transform->TransformType());
-    if (transform_type == kSvgTransformMatrix) {
+    if (transform_type == SVGTransformType::kMatrix) {
       // TODO(ericwilligers): Support matrix interpolation.
       return nullptr;
     }

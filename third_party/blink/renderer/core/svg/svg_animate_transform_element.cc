@@ -31,7 +31,7 @@ namespace blink {
 inline SVGAnimateTransformElement::SVGAnimateTransformElement(
     Document& document)
     : SVGAnimateElement(svg_names::kAnimateTransformTag, document),
-      transform_type_(kSvgTransformUnknown) {}
+      transform_type_(SVGTransformType::kUnknown) {}
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
 
@@ -69,8 +69,8 @@ void SVGAnimateTransformElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == svg_names::kTypeAttr) {
     transform_type_ = ParseTransformType(params.new_value);
-    if (transform_type_ == kSvgTransformMatrix)
-      transform_type_ = kSvgTransformUnknown;
+    if (transform_type_ == SVGTransformType::kMatrix)
+      transform_type_ = SVGTransformType::kUnknown;
     return;
   }
 

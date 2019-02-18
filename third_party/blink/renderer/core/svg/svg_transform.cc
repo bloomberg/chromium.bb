@@ -28,7 +28,7 @@
 namespace blink {
 
 SVGTransform::SVGTransform()
-    : transform_type_(kSvgTransformUnknown), angle_(0) {}
+    : transform_type_(SVGTransformType::kUnknown), angle_(0) {}
 
 SVGTransform::SVGTransform(SVGTransformType transform_type,
                            ConstructionMode mode)
@@ -38,7 +38,7 @@ SVGTransform::SVGTransform(SVGTransformType transform_type,
 }
 
 SVGTransform::SVGTransform(const AffineTransform& matrix)
-    : transform_type_(kSvgTransformMatrix), angle_(0), matrix_(matrix) {}
+    : transform_type_(SVGTransformType::kMatrix), angle_(0), matrix_(matrix) {}
 
 SVGTransform::SVGTransform(SVGTransformType transform_type,
                            float angle,
@@ -68,12 +68,12 @@ void SVGTransform::SetMatrix(const AffineTransform& matrix) {
 }
 
 void SVGTransform::OnMatrixChange() {
-  transform_type_ = kSvgTransformMatrix;
+  transform_type_ = SVGTransformType::kMatrix;
   angle_ = 0;
 }
 
 void SVGTransform::SetTranslate(float tx, float ty) {
-  transform_type_ = kSvgTransformTranslate;
+  transform_type_ = SVGTransformType::kTranslate;
   angle_ = 0;
 
   matrix_.MakeIdentity();
@@ -85,7 +85,7 @@ FloatPoint SVGTransform::Translate() const {
 }
 
 void SVGTransform::SetScale(float sx, float sy) {
-  transform_type_ = kSvgTransformScale;
+  transform_type_ = SVGTransformType::kScale;
   angle_ = 0;
   center_ = FloatPoint();
 
@@ -98,7 +98,7 @@ FloatSize SVGTransform::Scale() const {
 }
 
 void SVGTransform::SetRotate(float angle, float cx, float cy) {
-  transform_type_ = kSvgTransformRotate;
+  transform_type_ = SVGTransformType::kRotate;
   angle_ = angle;
   center_ = FloatPoint(cx, cy);
 
@@ -110,7 +110,7 @@ void SVGTransform::SetRotate(float angle, float cx, float cy) {
 }
 
 void SVGTransform::SetSkewX(float angle) {
-  transform_type_ = kSvgTransformSkewx;
+  transform_type_ = SVGTransformType::kSkewx;
   angle_ = angle;
 
   matrix_.MakeIdentity();
@@ -118,7 +118,7 @@ void SVGTransform::SetSkewX(float angle) {
 }
 
 void SVGTransform::SetSkewY(float angle) {
-  transform_type_ = kSvgTransformSkewy;
+  transform_type_ = SVGTransformType::kSkewy;
   angle_ = angle;
 
   matrix_.MakeIdentity();
@@ -129,19 +129,19 @@ namespace {
 
 const char* TransformTypePrefixForParsing(SVGTransformType type) {
   switch (type) {
-    case kSvgTransformUnknown:
+    case SVGTransformType::kUnknown:
       return "";
-    case kSvgTransformMatrix:
+    case SVGTransformType::kMatrix:
       return "matrix(";
-    case kSvgTransformTranslate:
+    case SVGTransformType::kTranslate:
       return "translate(";
-    case kSvgTransformScale:
+    case SVGTransformType::kScale:
       return "scale(";
-    case kSvgTransformRotate:
+    case SVGTransformType::kRotate:
       return "rotate(";
-    case kSvgTransformSkewx:
+    case SVGTransformType::kSkewx:
       return "skewX(";
-    case kSvgTransformSkewy:
+    case SVGTransformType::kSkewy:
       return "skewY(";
   }
   NOTREACHED();
@@ -154,9 +154,9 @@ String SVGTransform::ValueAsString() const {
   double arguments[6];
   size_t argument_count = 0;
   switch (transform_type_) {
-    case kSvgTransformUnknown:
+    case SVGTransformType::kUnknown:
       return g_empty_string;
-    case kSvgTransformMatrix: {
+    case SVGTransformType::kMatrix: {
       arguments[argument_count++] = matrix_.A();
       arguments[argument_count++] = matrix_.B();
       arguments[argument_count++] = matrix_.C();
@@ -165,17 +165,17 @@ String SVGTransform::ValueAsString() const {
       arguments[argument_count++] = matrix_.F();
       break;
     }
-    case kSvgTransformTranslate: {
+    case SVGTransformType::kTranslate: {
       arguments[argument_count++] = matrix_.E();
       arguments[argument_count++] = matrix_.F();
       break;
     }
-    case kSvgTransformScale: {
+    case SVGTransformType::kScale: {
       arguments[argument_count++] = matrix_.A();
       arguments[argument_count++] = matrix_.D();
       break;
     }
-    case kSvgTransformRotate: {
+    case SVGTransformType::kRotate: {
       arguments[argument_count++] = angle_;
 
       double angle_in_rad = deg2rad(angle_);
@@ -196,10 +196,10 @@ String SVGTransform::ValueAsString() const {
       }
       break;
     }
-    case kSvgTransformSkewx:
+    case SVGTransformType::kSkewx:
       arguments[argument_count++] = angle_;
       break;
-    case kSvgTransformSkewy:
+    case SVGTransformType::kSkewy:
       arguments[argument_count++] = angle_;
       break;
   }

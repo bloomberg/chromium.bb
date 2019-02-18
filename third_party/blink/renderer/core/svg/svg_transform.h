@@ -31,14 +31,14 @@ namespace blink {
 class FloatSize;
 class SVGTransformTearOff;
 
-enum SVGTransformType {
-  kSvgTransformUnknown = 0,
-  kSvgTransformMatrix = 1,
-  kSvgTransformTranslate = 2,
-  kSvgTransformScale = 3,
-  kSvgTransformRotate = 4,
-  kSvgTransformSkewx = 5,
-  kSvgTransformSkewy = 6
+enum class SVGTransformType {
+  kUnknown = 0,
+  kMatrix = 1,
+  kTranslate = 2,
+  kScale = 3,
+  kRotate = 4,
+  kSkewx = 5,
+  kSkewy = 6
 };
 
 class SVGTransform final : public SVGPropertyBase {
