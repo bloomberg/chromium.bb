@@ -20,7 +20,7 @@ base::LazyInstance<ClientHintsFactory>::DestructorAtExit
 content::ClientHintsControllerDelegate*
 ClientHintsFactory::GetForBrowserContext(content::BrowserContext* context) {
   return static_cast<client_hints::ClientHints*>(
-      GetInstance()->GetServiceForContext(context, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
