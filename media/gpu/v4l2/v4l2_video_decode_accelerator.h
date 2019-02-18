@@ -243,6 +243,14 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                                   std::vector<base::ScopedFD> dmabuf_fds,
                                   int32_t stride);
 
+  // Check |planes| and |dmabuf_fds| are valid in import mode, besides
+  // ImportBufferForPicture.
+  void ImportBufferForPictureForImportTask(
+      int32_t picture_buffer_id,
+      VideoPixelFormat pixel_format,
+      std::vector<base::ScopedFD> dmabuf_fds,
+      std::vector<gfx::NativePixmapPlane> planes);
+
   // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in
   // |passed_dmabuf_fds|, taking ownership of them.
