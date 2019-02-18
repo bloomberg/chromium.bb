@@ -45,24 +45,18 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
 }
 
 void StatusAreaWidget::Initialize() {
-  // Create the child views, right to left.
-  overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
+  // Create the child views, left to right.
 
-  unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
+  if (::features::IsMultiProcessMash()) {
+    flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
+    status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
+  }
 
-  palette_tray_ = std::make_unique<PaletteTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(palette_tray_.get());
+  logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
-
-  ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
-
-  select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
+  dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalAccessibilityAutoclick)) {
@@ -70,16 +64,23 @@ void StatusAreaWidget::Initialize() {
     status_area_widget_delegate_->AddChildView(autoclick_tray_.get());
   }
 
-  dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
+  select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
 
-  logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
+  ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
 
-  if (::features::IsMultiProcessMash()) {
-    flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
-  }
+  virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
+
+  palette_tray_ = std::make_unique<PaletteTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(palette_tray_.get());
+
+  unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
+
+  overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
 
   // The layout depends on the number of children, so build it once after
   // adding all of them.
