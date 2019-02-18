@@ -271,12 +271,18 @@ void RawResource::ResponseReceived(const ResourceResponse& response) {
 
 void RawResource::ResponseBodyReceived(
     ResponseBodyLoaderDrainableInterface& body_loader) {
+  DCHECK_LE(Clients().size(), 1u);
+  RawResourceClient* client =
+      ResourceClientWalker<RawResourceClient>(Clients()).Next();
   if (IsUnusedPreload()) {
     // For preload, we want to store the body while dispatching
     // onload and onerror events.
     bytes_consumer_for_preload_ = MakeGarbageCollected<BufferingBytesConsumer>(
         &body_loader.DrainAsBytesConsumer());
+    return;
+  }
 
+  if (!client) {
     return;
   }
 
@@ -285,6 +291,14 @@ void RawResource::ResponseBodyReceived(
     // The loading was initiated as a preload (hence UseStreamOnResponse is
     // set), but this resource has been matched with a request without
     // UseStreamOnResponse set.
+    auto* bytes_consumer_for_preload =
+        MakeGarbageCollected<BufferingBytesConsumer>(
+            &body_loader.DrainAsBytesConsumer());
+    auto* bytes_consumer_client =
+        MakeGarbageCollected<PreloadBytesConsumerClient>(
+            *bytes_consumer_for_preload, *this, *client);
+    bytes_consumer_for_preload->SetClient(bytes_consumer_client);
+    bytes_consumer_client->OnStateChange();
     return;
   }
 
@@ -292,12 +306,7 @@ void RawResource::ResponseBodyReceived(
     return;
   }
 
-  BytesConsumer& bytes_consumer = body_loader.DrainAsBytesConsumer();
-  DCHECK_LE(Clients().size(), 1u);
-  ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next()) {
-    c->ResponseBodyReceived(this, bytes_consumer);
-  }
+  client->ResponseBodyReceived(this, body_loader.DrainAsBytesConsumer());
 }
 
 CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
