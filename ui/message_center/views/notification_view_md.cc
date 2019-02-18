@@ -1021,8 +1021,7 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
     for (auto* item : action_buttons_)
       delete item;
     action_buttons_.clear();
-    if (buttons.empty())
-      actions_row_->SetVisible(false);
+    actions_row_->SetVisible(expanded_ && !buttons.empty());
   }
 
   DCHECK_EQ(this, actions_row_->parent());
