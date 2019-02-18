@@ -45,7 +45,7 @@ void DependencyManager::RegisterPrefsForServices(
   for (auto* dependency_node : construction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
-    factory->RegisterPrefsIfNecessaryForContext(context, pref_registry);
+    factory->RegisterPrefs(pref_registry);
   }
 }
 
