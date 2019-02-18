@@ -66,6 +66,7 @@ class FileTableList extends cr.ui.table.TableList {
  */
 FileTableList.decorate = self => {
   self.__proto__ = FileTableList.prototype;
+  self.setAttribute('aria-multiselectable', true);
   self.onMergeItems_ = null;
 };
 
