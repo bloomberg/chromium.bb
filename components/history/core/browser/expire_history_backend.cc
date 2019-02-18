@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
@@ -212,10 +213,8 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls,
     size_t total_visits = visits_to_delete.size();
     if (!end_time.is_null() && !end_time.is_max()) {
       // Remove all items that should not be deleted from |visits_to_delete|.
-      visits_to_delete.erase(
-          std::remove_if(visits_to_delete.begin(), visits_to_delete.end(),
-                         [=](auto& v) { return v.visit_time > end_time; }),
-          visits_to_delete.end());
+      base::EraseIf(visits_to_delete,
+                    [=](auto& v) { return v.visit_time > end_time; });
     }
     DeleteVisitRelatedInfo(visits_to_delete, &effects);
 

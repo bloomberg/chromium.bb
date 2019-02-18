@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"
@@ -65,7 +66,7 @@ void DOMAgentAura::OnHostInitialized(aura::WindowTreeHost* host) {
 }
 
 void DOMAgentAura::OnWindowDestroying(aura::Window* window) {
-  roots_.erase(std::remove(roots_.begin(), roots_.end(), window), roots_.end());
+  base::Erase(roots_, window);
 }
 
 std::vector<UIElement*> DOMAgentAura::CreateChildrenForRoot() {

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -125,10 +126,7 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
   auto card_is_selected = [&selected_card_guids](MigratableCreditCard& card) {
     return !base::ContainsValue(selected_card_guids, card.credit_card().guid());
   };
-  migratable_credit_cards_.erase(
-      std::remove_if(migratable_credit_cards_.begin(),
-                     migratable_credit_cards_.end(), card_is_selected),
-      migratable_credit_cards_.end());
+  base::EraseIf(migratable_credit_cards_, card_is_selected);
   // Populating risk data and offering migration two-round pop-ups occur
   // asynchronously. If |migration_risk_data_| has already been loaded, send the
   // migrate local cards request. Otherwise, continue to wait and let
