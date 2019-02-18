@@ -16,98 +16,104 @@ chrome.test.runTests(function() {
       chrome.test.assertEq('test_histogram_log', metric.type);
       chrome.test.assertEq(1, metric.min);
       chrome.test.assertEq(
-          window.PDFMetrics.UserAction.NUMBER_OF_ACTIONS, metric.max);
+          PDFMetrics.UserAction.NUMBER_OF_ACTIONS, metric.max);
       chrome.test.assertEq(
-          window.PDFMetrics.UserAction.NUMBER_OF_ACTIONS + 1, metric.buckets);
+          PDFMetrics.UserAction.NUMBER_OF_ACTIONS + 1, metric.buckets);
       this.actionCounter[value] = (this.actionCounter[value] + 1) || 1;
     }
   };
 
   return [
     function testMetricsDocumentOpened() {
+      PDFMetrics.resetForTesting();
+
       chrome.metricsPrivate = new MockMetricsPrivate();
-      let metrics = new PDFMetricsImpl();
-      metrics.onDocumentOpened();
+
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
       chrome.test.assertEq(
-          {[window.PDFMetrics.UserAction.DOCUMENT_OPENED]: 1},
+          {[PDFMetrics.UserAction.DOCUMENT_OPENED]: 1},
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();
     },
 
     function testMetricsRotation() {
+      PDFMetrics.resetForTesting();
+
       chrome.metricsPrivate = new MockMetricsPrivate();
-      let metrics = new PDFMetricsImpl();
-      metrics.onDocumentOpened();
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
       for (var i = 0; i < 4; i++)
-        metrics.onRotation();
+        PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
 
       chrome.test.assertEq(
           {
-            [window.PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
-            [window.PDFMetrics.UserAction.ROTATE_FIRST]: 1,
-            [window.PDFMetrics.UserAction.ROTATE]: 4
+            [PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
+            [PDFMetrics.UserAction.ROTATE_FIRST]: 1,
+            [PDFMetrics.UserAction.ROTATE]: 4
           },
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();
     },
 
     function testMetricsFitTo() {
+      PDFMetrics.resetForTesting();
+
       chrome.metricsPrivate = new MockMetricsPrivate();
-      let metrics = new PDFMetricsImpl();
-      metrics.onDocumentOpened();
-      metrics.onFitTo(FittingType.FIT_TO_HEIGHT);
-      metrics.onFitTo(FittingType.FIT_TO_PAGE);
-      metrics.onFitTo(FittingType.FIT_TO_WIDTH);
-      metrics.onFitTo(FittingType.FIT_TO_PAGE);
-      metrics.onFitTo(FittingType.FIT_TO_WIDTH);
-      metrics.onFitTo(FittingType.FIT_TO_PAGE);
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_HEIGHT);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_PAGE);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_WIDTH);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_PAGE);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_WIDTH);
+      PDFMetrics.recordFitTo(FittingType.FIT_TO_PAGE);
 
       chrome.test.assertEq(
           {
-            [window.PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
-            [window.PDFMetrics.UserAction.FIT_TO_PAGE_FIRST]: 1,
-            [window.PDFMetrics.UserAction.FIT_TO_PAGE]: 3,
-            [window.PDFMetrics.UserAction.FIT_TO_WIDTH_FIRST]: 1,
-            [window.PDFMetrics.UserAction.FIT_TO_WIDTH]: 2
+            [PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
+            [PDFMetrics.UserAction.FIT_TO_PAGE_FIRST]: 1,
+            [PDFMetrics.UserAction.FIT_TO_PAGE]: 3,
+            [PDFMetrics.UserAction.FIT_TO_WIDTH_FIRST]: 1,
+            [PDFMetrics.UserAction.FIT_TO_WIDTH]: 2
           },
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();
     },
 
     function testMetricsBookmarks() {
+      PDFMetrics.resetForTesting();
+
       chrome.metricsPrivate = new MockMetricsPrivate();
-      let metrics = new PDFMetricsImpl();
-      metrics.onDocumentOpened();
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
-      metrics.onOpenBookmarksPanel();
-      metrics.onFollowBookmark();
-      metrics.onFollowBookmark();
+      PDFMetrics.record(PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL);
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
 
-      metrics.onOpenBookmarksPanel();
-      metrics.onFollowBookmark();
-      metrics.onFollowBookmark();
-      metrics.onFollowBookmark();
+      PDFMetrics.record(PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL);
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
 
       chrome.test.assertEq(
           {
-            [window.PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
-            [window.PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL_FIRST]: 1,
-            [window.PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL]: 2,
-            [window.PDFMetrics.UserAction.FOLLOW_BOOKMARK_FIRST]: 1,
-            [window.PDFMetrics.UserAction.FOLLOW_BOOKMARK]: 5
+            [PDFMetrics.UserAction.DOCUMENT_OPENED]: 1,
+            [PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL_FIRST]: 1,
+            [PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL]: 2,
+            [PDFMetrics.UserAction.FOLLOW_BOOKMARK_FIRST]: 1,
+            [PDFMetrics.UserAction.FOLLOW_BOOKMARK]: 5
           },
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();
     },
 
     function testMetricsPageSelector() {
-      chrome.metricsPrivate = new MockMetricsPrivate();
-      let metrics = new PDFMetricsImpl();
-      metrics.onDocumentOpened();
+      PDFMetrics.resetForTesting();
 
-      metrics.onPageSelectorNavigation();
-      metrics.onPageSelectorNavigation();
+      chrome.metricsPrivate = new MockMetricsPrivate();
+      PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
+
+      PDFMetrics.record(PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE);
+      PDFMetrics.record(PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE);
 
       chrome.test.assertEq(
           {
