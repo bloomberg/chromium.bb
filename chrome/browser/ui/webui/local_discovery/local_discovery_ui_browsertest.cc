@@ -36,7 +36,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -304,12 +303,9 @@ void SetURLLoaderFactoryForTest(
 
 class TestMessageLoopCondition {
  public:
-  TestMessageLoopCondition() : signaled_(false),
-                               waiting_(false) {
-  }
+  TestMessageLoopCondition() : signaled_(false), waiting_(false) {}
 
-  ~TestMessageLoopCondition() {
-  }
+  ~TestMessageLoopCondition() {}
 
   // Signal a waiting method that it can continue executing.
   void Signal() {
@@ -339,12 +335,8 @@ class TestMessageLoopCondition {
 class LocalDiscoveryUITest : public WebUIBrowserTest {
  public:
   LocalDiscoveryUITest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
-        set_url_loader_factory_(test_shared_loader_factory_) {}
-
-  ~LocalDiscoveryUITest() override { test_shared_loader_factory_->Detach(); }
+      : set_url_loader_factory_(test_url_loader_factory_.GetSafeWeakWrapper()) {
+  }
 
   void SetUp() override {
     // We need to stub out DualMediaSinkService here, because the profile setup
@@ -391,12 +383,11 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
     SetURLLoaderFactoryForTest(
         ProfileManager::GetActiveUserProfile() /* profile */,
-        test_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
   }
 
   void TearDownOnMainThread() override {
     test_service_discovery_client_ = nullptr;
-    test_shared_loader_factory_->Detach();
     WebUIBrowserTest::TearDownOnMainThread();
   }
 
@@ -439,8 +430,6 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
   scoped_refptr<TestServiceDiscoveryClient> test_service_discovery_client_;
   TestMessageLoopCondition condition_devices_listed_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   local_discovery::LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting
       set_url_loader_factory_;
 
@@ -448,26 +437,24 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, EmptyTest) {
-  ui_test_utils::NavigateToURL(browser(), GURL(
-      chrome::kChromeUIDevicesURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
-  ui_test_utils::NavigateToURL(browser(), GURL(
-      chrome::kChromeUIDevicesURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
 
-  test_service_discovery_client()->SimulateReceive(
-      kAnnouncePacket, sizeof(kAnnouncePacket));
+  test_service_discovery_client()->SimulateReceive(kAnnouncePacket,
+                                                   sizeof(kAnnouncePacket));
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkOneDevice"));
 
-  test_service_discovery_client()->SimulateReceive(
-      kGoodbyePacket, sizeof(kGoodbyePacket));
+  test_service_discovery_client()->SimulateReceive(kGoodbyePacket,
+                                                   sizeof(kGoodbyePacket));
 
   RunFor(base::TimeDelta::FromMilliseconds(1100));
 
@@ -478,8 +465,8 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
 
-  test_service_discovery_client()->SimulateReceive(
-      kAnnouncePacket, sizeof(kAnnouncePacket));
+  test_service_discovery_client()->SimulateReceive(kAnnouncePacket,
+                                                   sizeof(kAnnouncePacket));
 
   base::RunLoop().RunUntilIdle();
 
