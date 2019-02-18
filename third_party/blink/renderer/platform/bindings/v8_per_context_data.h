@@ -58,7 +58,6 @@ struct WrapperTypeInfo;
 // has a 1:1 relationship with v8::Context.
 class PLATFORM_EXPORT V8PerContextData final {
   USING_FAST_MALLOC(V8PerContextData);
-  WTF_MAKE_NONCOPYABLE(V8PerContextData);
 
  public:
   static std::unique_ptr<V8PerContextData> Create(v8::Local<v8::Context>);
@@ -158,6 +157,8 @@ class PLATFORM_EXPORT V8PerContextData final {
 
   using DataMap = HeapHashMap<const char*, Member<Data>>;
   Persistent<DataMap> data_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8PerContextData);
 };
 
 }  // namespace blink

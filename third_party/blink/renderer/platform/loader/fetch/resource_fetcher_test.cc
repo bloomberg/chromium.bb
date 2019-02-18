@@ -445,7 +445,6 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
 
 class ScopedMockRedirectRequester {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ScopedMockRedirectRequester);
 
  public:
   ScopedMockRedirectRequester(
@@ -484,6 +483,8 @@ class ScopedMockRedirectRequester {
  private:
   Member<MockFetchContext> context_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMockRedirectRequester);
 };
 
 TEST_F(ResourceFetcherTest, SameOriginRedirect) {

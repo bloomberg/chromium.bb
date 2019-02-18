@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
 #include <memory>
+
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -337,7 +338,6 @@ static void ProgressMonitor(j_common_ptr info) {
 
 class JPEGImageReader final {
   USING_FAST_MALLOC(JPEGImageReader);
-  WTF_MAKE_NONCOPYABLE(JPEGImageReader);
 
  public:
   JPEGImageReader(JPEGImageDecoder* decoder)
@@ -807,6 +807,8 @@ class JPEGImageReader final {
 
   JSAMPARRAY samples_;
   IntSize uv_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(JPEGImageReader);
 };
 
 void error_exit(

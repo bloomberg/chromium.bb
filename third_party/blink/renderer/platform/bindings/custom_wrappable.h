@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CUSTOM_WRAPPABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CUSTOM_WRAPPABLE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -15,8 +15,6 @@ namespace blink {
 class PLATFORM_EXPORT CustomWrappable
     : public GarbageCollectedFinalized<CustomWrappable>,
       public NameClient {
-  WTF_MAKE_NONCOPYABLE(CustomWrappable);
-
  public:
   virtual ~CustomWrappable() = default;
   virtual void Trace(Visitor*) {}
@@ -24,6 +22,9 @@ class PLATFORM_EXPORT CustomWrappable
 
  protected:
   CustomWrappable() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomWrappable);
 };
 
 }  // namespace blink

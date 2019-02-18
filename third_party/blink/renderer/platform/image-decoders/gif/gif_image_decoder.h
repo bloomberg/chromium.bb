@@ -27,8 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_GIF_GIF_IMAGE_DECODER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/codec/SkCodec.h"
 
@@ -38,8 +39,6 @@ class SegmentStream;
 
 // This class decodes the GIF image format.
 class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
-
  public:
   GIFImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~GIFImageDecoder() override;
@@ -81,6 +80,8 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   SegmentStream* segment_stream_ = nullptr;
   mutable int repetition_count_ = kAnimationLoopOnce;
   int prior_frame_ = SkCodec::kNoFrame;
+
+  DISALLOW_COPY_AND_ASSIGN(GIFImageDecoder);
 };
 
 }  // namespace blink

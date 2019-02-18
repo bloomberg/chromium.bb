@@ -74,8 +74,6 @@ class V8PerContextData;
 // all V8 proxy objects that have references to the ScriptState are destructed.
 class PLATFORM_EXPORT ScriptState final
     : public GarbageCollectedFinalized<ScriptState> {
-  WTF_MAKE_NONCOPYABLE(ScriptState);
-
  public:
   class Scope {
     STACK_ALLOCATED();
@@ -201,6 +199,8 @@ class PLATFORM_EXPORT ScriptState final
   static constexpr int kV8ContextPerContextDataIndex = static_cast<int>(
       gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
       gin::kEmbedderBlink);             // NOLINT(readability/enum_casing)
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptState);
 };
 
 // ScriptStateProtectingContext keeps the context associated with the
@@ -208,8 +208,6 @@ class PLATFORM_EXPORT ScriptState final
 // context. Otherwise, the context will leak.
 class ScriptStateProtectingContext
     : public GarbageCollectedFinalized<ScriptStateProtectingContext> {
-  WTF_MAKE_NONCOPYABLE(ScriptStateProtectingContext);
-
  public:
   static ScriptStateProtectingContext* Create(ScriptState* script_state) {
     return MakeGarbageCollected<ScriptStateProtectingContext>(script_state);
@@ -242,6 +240,8 @@ class ScriptStateProtectingContext
  private:
   Member<ScriptState> script_state_;
   ScopedPersistent<v8::Context> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptStateProtectingContext);
 };
 
 }  // namespace blink

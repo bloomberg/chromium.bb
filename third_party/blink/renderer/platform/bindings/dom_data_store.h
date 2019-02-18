@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_DATA_STORE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_DATA_STORE_H_
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8.h"
@@ -51,7 +51,6 @@ namespace blink {
 // and manage wrappers in a single world. Each world (DOMWrapperWorld) holds a
 // single DOMWrapperMap instance to hold wrappers only for that world.
 class DOMDataStore {
-  WTF_MAKE_NONCOPYABLE(DOMDataStore);
   USING_FAST_MALLOC(DOMDataStore);
 
  public:
@@ -193,6 +192,8 @@ class DOMDataStore {
 
   bool is_main_world_;
   base::Optional<DOMWrapperMap<ScriptWrappable>> wrapper_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMDataStore);
 };
 
 template <>

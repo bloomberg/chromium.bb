@@ -96,7 +96,6 @@ enum class ResourceType : uint8_t {
 class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
                                  public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(Resource);
-  WTF_MAKE_NONCOPYABLE(Resource);
 
  public:
   // An enum representing whether a resource match with another resource.
@@ -578,6 +577,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   scoped_refptr<SharedBuffer> data_;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
+
+  DISALLOW_COPY_AND_ASSIGN(Resource);
 };
 
 class ResourceFactory {
