@@ -461,13 +461,24 @@ TEST_F(NotificationViewMDTest, TestIconSizing) {
 
 TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_buttons(CreateButtons(2));
   notification_view()->CreateOrUpdateViews(*notification);
   widget()->Show();
 
-  // Action buttons are hidden by collapsed state.
-  if (!notification_view()->expanded_)
-    notification_view()->ToggleExpanded();
+  // When collapsed, new buttons are not shown.
+  EXPECT_FALSE(notification_view()->expanded_);
+  notification->set_buttons(CreateButtons(2));
+  notification_view()->CreateOrUpdateViews(*notification);
+  EXPECT_FALSE(notification_view()->actions_row_->visible());
+
+  // Adding buttons when expanded makes action buttons visible.
+  // Reset back to zero buttons first.
+  notification->set_buttons(CreateButtons(0));
+  notification_view()->CreateOrUpdateViews(*notification);
+  // Expand, and add buttons.
+  notification_view()->ToggleExpanded();
+  EXPECT_TRUE(notification_view()->expanded_);
+  notification->set_buttons(CreateButtons(2));
+  notification_view()->CreateOrUpdateViews(*notification);
   EXPECT_TRUE(notification_view()->actions_row_->visible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
