@@ -653,6 +653,12 @@ class RemovableTestVolume : public LocalTestVolume {
     return true;
   }
 
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_);
+  }
+
  private:
   storage::ExternalMountPoints* GetMountPoints() {
     return storage::ExternalMountPoints::GetSystemInstance();
@@ -827,6 +833,11 @@ class FakeTestVolume : public LocalTestVolume {
                                                      device_type_, read_only_);
     base::RunLoop().RunUntilIdle();
     return true;
+  }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_);
   }
 
  private:
@@ -1636,43 +1647,40 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "mountFakePartitions") {
+  if (name == "unmountUsb") {
+    DCHECK(usb_volume_);
+    usb_volume_->Unmount(profile());
+  }
+
+  if (name == "mountUsbWithPartitions") {
     // Create a device path to mimic a realistic device path.
-    constexpr char kMultiPartitionDevicePath[] =
+    constexpr char kDevicePath[] =
         "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/host0/"
         "target0:0:0/0:0:0:0";
-    const base::FilePath partition_device_path(kMultiPartitionDevicePath);
-
-    constexpr char kSingleUsbDevicePath[] =
-        "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.4/1-2.4:1.0/host1/"
-        "target1:0:0/1:0:0:0";
-    const base::FilePath usb_device_path(kSingleUsbDevicePath);
+    const base::FilePath device_path(kDevicePath);
 
     // Create partition volumes with the same device path and drive label.
     partition_1_ = std::make_unique<RemovableTestVolume>(
         "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, partition_device_path,
-        "PARTITION_DRIVE_LABEL");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
     partition_2_ = std::make_unique<RemovableTestVolume>(
         "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, partition_device_path,
-        "PARTITION_DRIVE_LABEL");
-
-    // Create an unpartitioned usb volume with a unique device path and
-    // unique device label.
-    single_usb_volume_ = std::make_unique<RemovableTestVolume>(
-        "singleUSB", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, usb_device_path, "SINGLE_DRIVE_LABEL");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
 
     // Create fake entries on partitions.
     ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));
     ASSERT_TRUE(partition_2_->PreparePartitionTestEntries(profile()));
-    ASSERT_TRUE(single_usb_volume_->PrepareUsbTestEntries(profile()));
 
     ASSERT_TRUE(partition_1_->Mount(profile()));
     ASSERT_TRUE(partition_2_->Mount(profile()));
-    ASSERT_TRUE(single_usb_volume_->Mount(profile()));
+    return;
+  }
 
+  if (name == "unmountPartitions") {
+    DCHECK(partition_1_);
+    DCHECK(partition_2_);
+    partition_1_->Unmount(profile());
+    partition_2_->Unmount(profile());
     return;
   }
 
