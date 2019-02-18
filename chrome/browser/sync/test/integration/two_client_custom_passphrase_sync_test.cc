@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -86,6 +87,38 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {
   ASSERT_TRUE(
       GetClient(kEncryptingClientId)
           ->AwaitMutualSyncCycleCompletion(GetClient(kDecryptingClientId)));
+  EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
+                       SetPassphraseAndThenSetupSync) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(kEncryptingClientId)->SetupSync());
+
+  // Set up a sync client with custom passphrase and one bookmark.
+  GetSyncService(kEncryptingClientId)
+      ->GetUserSettings()
+      ->SetEncryptionPassphrase("hunter2");
+  ASSERT_TRUE(
+      PassphraseAcceptedChecker(GetSyncService(kEncryptingClientId)).Wait());
+  AddTestBookmarksToClient(kEncryptingClientId);
+
+  // Set up a new sync client.
+  ASSERT_TRUE(
+      GetClient(kDecryptingClientId)
+          ->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypes()));
+  ASSERT_TRUE(
+      PassphraseRequiredChecker(GetSyncService(kDecryptingClientId)).Wait());
+
+  // Get client |kDecryptingClientId| out of the passphrase required state.
+  ASSERT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->SetDecryptionPassphrase("hunter2"));
+  ASSERT_TRUE(
+      PassphraseAcceptedChecker(GetSyncService(kDecryptingClientId)).Wait());
+  GetClient(kDecryptingClientId)->FinishSyncSetup();
+
+  // Wait for bookmarks to converge.
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
