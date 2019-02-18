@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
@@ -63,7 +64,10 @@
     self.containerViewController = container;
   } else {
     LegacyInfobarContainerViewController* legacyContainer =
-        [[LegacyInfobarContainerViewController alloc] init];
+        [[LegacyInfobarContainerViewController alloc]
+            initWithFullscreenController:
+                FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+                    self.browserState)];
     [self.baseViewController addChildViewController:legacyContainer];
     // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC
     // needs to handle this.
