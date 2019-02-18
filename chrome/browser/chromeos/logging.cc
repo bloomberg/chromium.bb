@@ -61,6 +61,9 @@ void RedirectChromeLogging(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableLoggingRedirect))
     return;
 
+  LOG(WARNING)
+      << "Redirecting post-login logging to /home/chronos/user/log/chrome/";
+
   // Redirect logs to the session log directory, if set.  Otherwise
   // defaults to the profile dir.
   const base::FilePath log_path = GetSessionLogFile(command_line);
