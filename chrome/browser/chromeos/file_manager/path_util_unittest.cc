@@ -386,6 +386,7 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
 }
 
 TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
+  content::TestServiceManagerContext service_manager_context;
   base::FilePath home("/home/chronos/u-0123456789abcdef");
   base::FilePath other("/some/other/path");
   base::FilePath old_drive("/special/drive-0123456789abcdef");
@@ -395,15 +396,17 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
   // DriveFS disabled, no changes.
   base::FilePath result;
   {
-    drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get())
-        ->SetEnabled(true);
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(chromeos::features::kDriveFs);
+    drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get())
+        ->SetEnabled(true);
     EXPECT_FALSE(MigrateToDriveFs(profile_.get(), other, &result));
     EXPECT_FALSE(MigrateToDriveFs(profile_.get(), my_drive, &result));
   }
-  // MyFilesVolume enabled, migrate paths under Downloads.
+  // DriveFS enabled, migrate paths under old drive mount.
   {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(chromeos::features::kDriveFs);
     TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
     chromeos::FakeChromeUserManager user_manager;
     user_manager.AddUser(
@@ -413,8 +416,6 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
     drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
         true);
 
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(chromeos::features::kDriveFs);
     EXPECT_FALSE(MigrateToDriveFs(&profile2, other, &result));
     EXPECT_TRUE(MigrateToDriveFs(&profile2, my_drive, &result));
     EXPECT_EQ(base::FilePath(
@@ -429,6 +430,8 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
 }
 
 TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
+  base::test::ScopedFeatureList initial_features;
+  initial_features.InitAndEnableFeature(chromeos::features::kDriveFs);
   content::TestServiceManagerContext service_manager_context;
 
   storage::ExternalMountPoints* mount_points =
