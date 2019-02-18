@@ -190,6 +190,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
                          WebFocusType,
                          InputDeviceCapabilities* source_capabilities) final;
   void ScheduleSelectEvent();
+  void DisabledOrReadonlyAttributeChanged(const QualifiedName&);
 
   // Returns true if user-editable value is empty. Used to check placeholder
   // visibility.
