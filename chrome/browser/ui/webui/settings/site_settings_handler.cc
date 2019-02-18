@@ -441,17 +441,19 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Site Details Page does not display the number of cookies for the origin.
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  std::string usage_string = "";
   for (int i = 0; i < root->child_count(); ++i) {
     const CookieTreeNode* site = root->GetChild(i);
     std::string title = base::UTF16ToUTF8(site->GetTitle());
-    if (title == usage_host_) {
-      CallJavascriptFunction(
-          "settings.WebsiteUsagePrivateApi.returnUsageTotal",
-          base::Value(usage_host_),
-          base::Value(ui::FormatBytes(site->InclusiveSize())));
-      return;
-    }
+    if (title != usage_host_)
+      continue;
+    int64_t size = site->InclusiveSize();
+    if (size != 0)
+      usage_string = base::UTF16ToUTF8(ui::FormatBytes(size));
+    break;
   }
+  CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
+                         base::Value(usage_host_), base::Value(usage_string));
 }
 
 #if defined(OS_CHROMEOS)
@@ -554,7 +556,6 @@ void SiteSettingsHandler::HandleFetchUsageTotal(
   usage_host_ = host;
 
   update_site_details_ = true;
-
   if (cookies_tree_model_ && !send_sites_list_) {
     cookies_tree_model_->RemoveCookiesTreeObserver(this);
     cookies_tree_model_.reset();
@@ -567,7 +568,6 @@ void SiteSettingsHandler::HandleClearUsage(
   CHECK_EQ(1U, args->GetSize());
   std::string origin;
   CHECK(args->GetString(0, &origin));
-
   GURL url(origin);
   if (!url.is_valid())
     return;
@@ -650,7 +650,6 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   all_sites_map_.clear();
   origin_permission_set_.clear();
-
   // Convert |types| to a list of ContentSettingsTypes.
   std::vector<ContentSettingsType> content_types;
   for (size_t i = 0; i < types->GetSize(); ++i) {

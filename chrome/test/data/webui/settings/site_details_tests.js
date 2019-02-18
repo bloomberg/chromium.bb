@@ -103,6 +103,9 @@ suite('SiteDetails', function() {
     const siteDetailsElement = document.createElement('site-details');
     document.body.appendChild(siteDetailsElement);
     siteDetailsElement.origin = origin;
+    settings.navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DETAILS,
+        new URLSearchParams('site=' + origin));
     return siteDetailsElement;
   }
 
@@ -231,7 +234,7 @@ suite('SiteDetails', function() {
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
-    testElement.onOriginChanged_(testElement.site);
+    testElement.currentRouteChanged(settings.Route);
     return browserProxy.whenCalled('getOriginPermissions').then(() => {
       // Ensure the mock's methods were called and check usage was cleared on
       // clicking the trash button.
@@ -426,14 +429,12 @@ suite('SiteDetails', function() {
     browserProxy.setIsOriginValid(false);
 
     settings.navigateTo(settings.routes.SITE_SETTINGS);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DETAILS);
-    assertEquals(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
-        settings.getCurrentRoute().path);
 
     loadTimeData.overrideValues({enableSiteSettings: false});
     testElement = createSiteDetails(invalid_url);
-
+    assertEquals(
+        settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
+        settings.getCurrentRoute().path);
     return browserProxy.whenCalled('isOriginValid')
         .then((args) => {
           assertEquals(invalid_url, args);

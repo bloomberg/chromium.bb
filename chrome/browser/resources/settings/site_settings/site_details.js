@@ -22,15 +22,6 @@ Polymer({
     blockAutoplayEnabled: Boolean,
 
     /**
-     * The origin that this widget is showing details for.
-     * @private
-     */
-    origin: {
-      type: String,
-      observer: 'onOriginChanged_',
-    },
-
-    /**
      * Use the string representing the origin or extension name as the page
      * title of the settings-subpage parent.
      */
@@ -38,6 +29,12 @@ Polymer({
       type: String,
       notify: true,
     },
+
+    /**
+     * The origin that this widget is showing details for.
+     * @private
+     */
+    origin_: String,
 
     /**
      * The amount of data stored for the origin.
@@ -91,20 +88,13 @@ Polymer({
     if (!site) {
       return;
     }
-    this.origin = site;
-  },
-
-  /**
-   * Handler for when the origin changes.
-   * @private
-   */
-  onOriginChanged_: function() {
-    this.browserProxy.isOriginValid(this.origin).then((valid) => {
+    this.origin_ = site;
+    this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {
         settings.navigateToPreviousRoute();
       } else {
         if (this.enableSiteSettings_) {
-          this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
+          this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin_).hostname);
         }
 
         this.updatePermissions_(this.getCategoryList());
@@ -122,7 +112,7 @@ Polymer({
    * @private
    */
   onPermissionChanged_: function(category, origin, embeddingOrigin) {
-    if (this.origin === undefined || this.origin == '' ||
+    if (this.origin_ === undefined || this.origin_ == '' ||
         origin === undefined || origin == '') {
       return;
     }
@@ -132,9 +122,7 @@ Polymer({
 
     // Site details currently doesn't support embedded origins, so ignore it
     // and just check whether the origins are the same.
-    if (this.toUrl(origin).origin == this.toUrl(this.origin).origin) {
-      this.updatePermissions_([category]);
-    }
+    this.updatePermissions_([category]);
   },
 
   // <if expr="chromeos">
@@ -145,7 +133,7 @@ Polymer({
 
   /**
    * Retrieves the permissions listed in |categoryList| from the backend for
-   * |this.origin|.
+   * |this.origin_|.
    * @param {!Array<!settings.ContentSettingsTypes>} categoryList The list
    *     of categories to update permissions for.
    * @private
@@ -166,7 +154,7 @@ Polymer({
             },
             {}));
 
-    this.browserProxy.getOriginPermissions(this.origin, categoryList)
+    this.browserProxy.getOriginPermissions(this.origin_, categoryList)
         .then((exceptionList) => {
           exceptionList.forEach((exception, i) => {
             // |exceptionList| should be in the same order as
@@ -212,10 +200,10 @@ Polymer({
    */
   onResetSettings_: function(e) {
     this.browserProxy.setOriginPermissions(
-        this.origin, this.getCategoryList(), settings.ContentSetting.DEFAULT);
+        this.origin_, this.getCategoryList(), settings.ContentSetting.DEFAULT);
     if (this.getCategoryList().includes(
             settings.ContentSettingsTypes.PLUGINS)) {
-      this.browserProxy.clearFlashPref(this.origin);
+      this.browserProxy.clearFlashPref(this.origin_);
     }
 
     this.onCloseDialog_(e);
@@ -229,7 +217,7 @@ Polymer({
     // Since usage is only shown when "Site Settings" is enabled, don't
     // clear it when it's not shown.
     if (this.enableSiteSettings_ && this.storedData_ != '') {
-      this.$.usageApi.clearUsage(this.toUrl(this.origin).href);
+      this.$.usageApi.clearUsage(this.toUrl(this.origin_).href);
     }
 
     this.onCloseDialog_(e);
@@ -242,7 +230,7 @@ Polymer({
    * @private
    */
   onUsageDeleted_: function(event) {
-    if (event.detail.origin == this.toUrl(this.origin).href) {
+    if (event.detail.origin == this.toUrl(this.origin_).href) {
       this.storedData_ = '';
     }
   },
