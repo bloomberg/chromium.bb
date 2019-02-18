@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -132,7 +133,7 @@ class KeyboardAccessoryTabLayoutMediator
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        mModel.set(ACTIVE_TAB, tab.getPosition());
+        mModel.set(ACTIVE_TAB, validateActiveTab(tab.getPosition()));
     }
 
     @Override
@@ -141,7 +142,7 @@ class KeyboardAccessoryTabLayoutMediator
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
         if (mModel.get(ACTIVE_TAB) == null) {
-            mModel.set(ACTIVE_TAB, tab.getPosition());
+            mModel.set(ACTIVE_TAB, validateActiveTab(tab.getPosition()));
         } else if (mAccessoryTabObserver != null) {
             mAccessoryTabObserver.onActiveTabReselected();
         }
@@ -158,5 +159,16 @@ class KeyboardAccessoryTabLayoutMediator
     public void removePageChangeListener(
             TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
         mPageChangeListeners.remove(pageChangeListener);
+    }
+
+    @VisibleForTesting
+    Integer validateActiveTab(int tabLayoutPosition) {
+        // The tab was detached but the object stayed in the pool and was reset:
+        if (tabLayoutPosition == TabLayout.Tab.INVALID_POSITION) return null;
+
+        // The tab was removed but the removeTabAt dispatched a onTabSelected event on it:
+        if (tabLayoutPosition >= mModel.get(TABS).size()) return null;
+
+        return tabLayoutPosition;
     }
 }
