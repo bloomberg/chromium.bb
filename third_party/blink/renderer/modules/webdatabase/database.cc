@@ -842,18 +842,18 @@ void Database::RunTransaction(
   SQLTransactionBackend* transaction_backend =
       RunTransaction(transaction, read_only, change_version_data);
   if (!transaction_backend) {
-    SQLTransaction::OnErrorCallback* callback =
+    SQLTransaction::OnErrorCallback* transaction_error_callback =
         transaction->ReleaseErrorCallback();
 #if DCHECK_IS_ON()
-    DCHECK_EQ(callback, original_error_callback);
+    DCHECK_EQ(transaction_error_callback, original_error_callback);
 #endif
-    if (callback) {
+    if (transaction_error_callback) {
       std::unique_ptr<SQLErrorData> error = SQLErrorData::Create(
           SQLError::kUnknownErr, "database has been closed");
       GetDatabaseTaskRunner()->PostTask(
-          FROM_HERE,
-          WTF::Bind(&CallTransactionErrorCallback, WrapPersistent(callback),
-                    WTF::Passed(std::move(error))));
+          FROM_HERE, WTF::Bind(&CallTransactionErrorCallback,
+                               WrapPersistent(transaction_error_callback),
+                               WTF::Passed(std::move(error))));
     }
   }
 }

@@ -193,14 +193,15 @@ void IDBDatabase::OnChanges(
   }
 
   for (const auto& map_entry : observation_index_map) {
-    auto it = observers_.find(map_entry.first);
-    if (it != observers_.end()) {
-      IDBObserver* observer = it->value;
+    auto observer_lookup_result = observers_.find(map_entry.first);
+    if (observer_lookup_result != observers_.end()) {
+      IDBObserver* observer = observer_lookup_result->value;
 
       IDBTransaction* transaction = nullptr;
-      auto it = transactions.find(map_entry.first);
-      if (it != transactions.end()) {
-        const std::pair<int64_t, Vector<int64_t>>& obs_txn = it->second;
+      auto transactions_lookup_result = transactions.find(map_entry.first);
+      if (transactions_lookup_result != transactions.end()) {
+        const std::pair<int64_t, Vector<int64_t>>& obs_txn =
+            transactions_lookup_result->second;
         HashSet<String> stores;
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);
