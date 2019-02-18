@@ -448,7 +448,6 @@ filelist.handlePointerDownUp = function(e, index) {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handleKeyDown = function(e) {
-  const SPACE_KEY_CODE = 32;
   const tagName = e.target.tagName;
 
   // If focus is in an input field of some kind, only handle navigation keys
@@ -458,7 +457,7 @@ filelist.handleKeyDown = function(e) {
     const inputType = e.target.type;
     // Just protect space (for toggling) for checkbox and radio.
     if (inputType == 'checkbox' || inputType == 'radio') {
-      if (e.keyCode == SPACE_KEY_CODE) {
+      if (e.key == ' ') {
         return;
       }
       // Protect all but the most basic navigation commands in anything else.
@@ -487,14 +486,14 @@ filelist.handleKeyDown = function(e) {
   }
 
   // Esc
-  if (e.keyCode === 27 && !e.ctrlKey && !e.shiftKey) {
+  if (e.key === 'Escape' && !e.ctrlKey && !e.shiftKey) {
     sm.unselectAll();
     e.preventDefault();
     return;
   }
 
   // Space
-  if (e.keyCode == SPACE_KEY_CODE) {
+  if (e.key == ' ') {
     if (leadIndex != -1) {
       const selected = sm.getIndexSelected(leadIndex);
       if (e.ctrlKey || !selected) {
