@@ -22,6 +22,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 class LoginUIService;
@@ -45,7 +46,8 @@ class PeopleHandler : public SettingsPageUIHandler,
                       public identity::IdentityManager::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
-                      public syncer::SyncServiceObserver {
+                      public syncer::SyncServiceObserver,
+                      public content::WebContentsObserver {
  public:
   // TODO(tommycli): Remove these strings and instead use WebUIListener events.
   // These string constants are used from JavaScript (sync_browser_proxy.js).
@@ -138,6 +140,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  // content::WebContentsObserver implementation
+  void BeforeUnloadDialogCancelled() override;
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
