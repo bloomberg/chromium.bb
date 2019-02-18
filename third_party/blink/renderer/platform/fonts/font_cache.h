@@ -31,7 +31,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_H_
 
 #include <limits.h>
-
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
@@ -99,7 +98,6 @@ typedef HashMap<FallbackListCompositeKey,
 class PLATFORM_EXPORT FontCache {
   friend class FontCachePurgePreventer;
 
-  WTF_MAKE_NONCOPYABLE(FontCache);
   USING_FAST_MALLOC(FontCache);
 
  public:
@@ -346,15 +344,19 @@ class PLATFORM_EXPORT FontCache {
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
   friend class FontFallbackList;
+
+  DISALLOW_COPY_AND_ASSIGN(FontCache);
 };
 
 class PLATFORM_EXPORT FontCachePurgePreventer {
   USING_FAST_MALLOC(FontCachePurgePreventer);
-  WTF_MAKE_NONCOPYABLE(FontCachePurgePreventer);
 
  public:
   FontCachePurgePreventer() { FontCache::GetFontCache()->DisablePurging(); }
   ~FontCachePurgePreventer() { FontCache::GetFontCache()->EnablePurging(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FontCachePurgePreventer);
 };
 
 AtomicString ToAtomicString(const SkString&);

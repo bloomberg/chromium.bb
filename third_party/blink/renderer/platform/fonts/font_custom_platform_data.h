@@ -32,12 +32,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -54,7 +54,6 @@ class FontVariationSettings;
 class PLATFORM_EXPORT FontCustomPlatformData
     : public RefCounted<FontCustomPlatformData> {
   USING_FAST_MALLOC(FontCustomPlatformData);
-  WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 
  public:
   static scoped_refptr<FontCustomPlatformData> Create(SharedBuffer*,
@@ -79,6 +78,8 @@ class PLATFORM_EXPORT FontCustomPlatformData
   FontCustomPlatformData(sk_sp<SkTypeface>, size_t data_size);
   sk_sp<SkTypeface> base_typeface_;
   size_t data_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontCustomPlatformData);
 };
 
 }  // namespace blink

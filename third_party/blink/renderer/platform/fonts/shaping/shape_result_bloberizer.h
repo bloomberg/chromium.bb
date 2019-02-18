@@ -21,7 +21,6 @@ class Font;
 struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT ShapeResultBloberizer {
-  WTF_MAKE_NONCOPYABLE(ShapeResultBloberizer);
   STACK_ALLOCATED();
 
  public:
@@ -139,6 +138,8 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
 
   // Constructed blobs.
   BlobBuffer blobs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShapeResultBloberizer);
 };
 
 }  // namespace blink

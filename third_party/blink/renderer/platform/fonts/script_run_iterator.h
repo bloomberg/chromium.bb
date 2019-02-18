@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SCRIPT_RUN_ITERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SCRIPT_RUN_ITERATOR_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <unicode/uchar.h>
@@ -21,7 +21,6 @@ class ScriptData;
 
 class PLATFORM_EXPORT ScriptRunIterator {
   USING_FAST_MALLOC(ScriptRunIterator);
-  WTF_MAKE_NONCOPYABLE(ScriptRunIterator);
 
  public:
   ScriptRunIterator(const UChar* text, wtf_size_t length);
@@ -72,6 +71,8 @@ class PLATFORM_EXPORT ScriptRunIterator {
   UScriptCode common_preferred_;
 
   const ScriptData* script_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptRunIterator);
 };
 
 // ScriptData is a wrapper which returns a set of scripts for a particular
@@ -81,7 +82,6 @@ class PLATFORM_EXPORT ScriptRunIterator {
 // method to work correctly.
 class PLATFORM_EXPORT ScriptData {
   USING_FAST_MALLOC(ScriptData);
-  WTF_MAKE_NONCOPYABLE(ScriptData);
 
  protected:
   ScriptData() = default;
@@ -104,6 +104,9 @@ class PLATFORM_EXPORT ScriptData {
   virtual UChar32 GetPairedBracket(UChar32) const = 0;
 
   virtual PairedBracketType GetPairedBracketType(UChar32) const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScriptData);
 };
 
 class PLATFORM_EXPORT ICUScriptData : public ScriptData {

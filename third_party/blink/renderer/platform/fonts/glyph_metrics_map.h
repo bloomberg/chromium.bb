@@ -46,7 +46,6 @@ const float kCGlyphSizeUnknown = -1;
 template <class T>
 class GlyphMetricsMap {
   USING_FAST_MALLOC(GlyphMetricsMap);
-  WTF_MAKE_NONCOPYABLE(GlyphMetricsMap);
 
  public:
   GlyphMetricsMap() : filled_primary_page_(false) {}
@@ -62,7 +61,7 @@ class GlyphMetricsMap {
  private:
   class GlyphMetricsPage {
     USING_FAST_MALLOC(GlyphMetricsPage);
-    WTF_MAKE_NONCOPYABLE(GlyphMetricsPage);
+    DISALLOW_COPY_AND_ASSIGN(GlyphMetricsPage);
 
    public:
     static const size_t kSize =
@@ -96,6 +95,8 @@ class GlyphMetricsMap {
   // We optimize for the page that contains glyph indices 0-255.
   GlyphMetricsPage primary_page_;
   std::unique_ptr<HashMap<int, std::unique_ptr<GlyphMetricsPage>>> pages_;
+
+  DISALLOW_COPY_AND_ASSIGN(GlyphMetricsMap);
 };
 
 template <>

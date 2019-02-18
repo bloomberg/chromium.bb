@@ -22,8 +22,6 @@ enum CreateIfNeeded { kDoNotCreate, kCreate };
 // FontGlobalContext contains non-thread-safe, thread-specific data used for
 // font formatting.
 class PLATFORM_EXPORT FontGlobalContext {
-  WTF_MAKE_NONCOPYABLE(FontGlobalContext);
-
  public:
   static FontGlobalContext* Get(CreateIfNeeded = kCreate);
 
@@ -56,6 +54,8 @@ class PLATFORM_EXPORT FontGlobalContext {
   HarfBuzzFontCache harfbuzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
   std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontGlobalContext);
 };
 
 }  // namespace blink

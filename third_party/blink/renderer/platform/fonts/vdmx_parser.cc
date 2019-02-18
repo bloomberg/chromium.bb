@@ -30,9 +30,9 @@
 
 #include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
+#include "base/macros.h"
 #include "base/sys_byteorder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -47,7 +47,6 @@ namespace {
 // updating the current offset otherwise.
 class Buffer {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(Buffer);
 
  public:
   Buffer(const uint8_t* buffer, size_t length)
@@ -89,6 +88,8 @@ class Buffer {
   const uint8_t* const buffer_;
   const size_t length_;
   size_t offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
 }  // namespace

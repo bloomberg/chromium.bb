@@ -30,18 +30,18 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_ARRAY_H_
 
 #include <string.h>
+
+#include "base/macros.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 template <typename T>
 class AudioArray {
   USING_FAST_MALLOC(AudioArray);
-  WTF_MAKE_NONCOPYABLE(AudioArray);
 
  public:
   AudioArray() : allocation_(nullptr), aligned_data_(nullptr), size_(0) {}
@@ -149,6 +149,8 @@ class AudioArray {
   T* allocation_;
   T* aligned_data_;
   uint32_t size_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioArray);
 };
 
 typedef AudioArray<float> AudioFloatArray;

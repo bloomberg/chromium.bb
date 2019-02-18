@@ -69,7 +69,6 @@ struct FontDataCacheKeyHash {
 
 class FontDataCache {
   USING_FAST_MALLOC(FontDataCache);
-  WTF_MAKE_NONCOPYABLE(FontDataCache);
 
  public:
   FontDataCache() = default;
@@ -93,6 +92,8 @@ class FontDataCache {
       Cache;
   Cache cache_;
   LinkedHashSet<scoped_refptr<SimpleFontData>> inactive_font_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontDataCache);
 };
 
 }  // namespace blink

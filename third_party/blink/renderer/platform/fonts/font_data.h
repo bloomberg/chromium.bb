@@ -26,11 +26,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DATA_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
@@ -39,8 +39,6 @@ namespace blink {
 class SimpleFontData;
 
 class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
-  WTF_MAKE_NONCOPYABLE(FontData);
-
  public:
   FontData() = default;
 
@@ -54,6 +52,9 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
   virtual bool IsLoadingFallback() const = 0;
   virtual bool IsSegmented() const = 0;
   virtual bool ShouldSkipDrawing() const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FontData);
 };
 
 #define DEFINE_FONT_DATA_TYPE_CASTS(thisType, predicate)     \

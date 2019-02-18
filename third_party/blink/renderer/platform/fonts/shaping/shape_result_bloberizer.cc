@@ -112,12 +112,14 @@ inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
 }
 
 class GlyphCallbackContext {
-  WTF_MAKE_NONCOPYABLE(GlyphCallbackContext);
   STACK_ALLOCATED();
 
  public:
   ShapeResultBloberizer* bloberizer;
   const StringView& text;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GlyphCallbackContext);
 };
 
 void AddGlyphToBloberizer(void* context,
@@ -171,7 +173,6 @@ float FillGlyphsForResult(ShapeResultBloberizer* bloberizer,
 }
 
 class ClusterCallbackContext {
-  WTF_MAKE_NONCOPYABLE(ClusterCallbackContext);
   STACK_ALLOCATED();
 
  public:
@@ -179,6 +180,9 @@ class ClusterCallbackContext {
   const StringView& text;
   const GlyphData& emphasis_data;
   FloatPoint glyph_center;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClusterCallbackContext);
 };
 
 void AddEmphasisMarkToBloberizer(void* context,

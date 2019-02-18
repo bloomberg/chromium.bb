@@ -38,7 +38,6 @@ namespace blink {
 
 class PLATFORM_EXPORT CachingWordShapeIterator final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(CachingWordShapeIterator);
 
  public:
   CachingWordShapeIterator(ShapeCache* cache,
@@ -211,6 +210,8 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
   float width_so_far_;  // Used only when allowTabs()
   unsigned start_index_ : 31;
   unsigned shape_by_word_ : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingWordShapeIterator);
 };
 
 }  // namespace blink

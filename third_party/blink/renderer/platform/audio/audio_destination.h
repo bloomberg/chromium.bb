@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_H_
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
@@ -59,7 +60,6 @@ class PLATFORM_EXPORT AudioDestination
     : public ThreadSafeRefCounted<AudioDestination>,
       public WebAudioDevice::RenderCallback {
   USING_FAST_MALLOC(AudioDestination);
-  WTF_MAKE_NONCOPYABLE(AudioDestination);
 
  public:
   AudioDestination(AudioIOCallback&,
@@ -154,6 +154,8 @@ class PLATFORM_EXPORT AudioDestination
 
   // Accessed by rendering thread.
   size_t frames_elapsed_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioDestination);
 };
 
 }  // namespace blink

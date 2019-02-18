@@ -178,7 +178,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   struct DerivedFontData {
     USING_FAST_MALLOC(DerivedFontData);
-    WTF_MAKE_NONCOPYABLE(DerivedFontData);
 
    public:
     static std::unique_ptr<DerivedFontData> Create();
@@ -188,6 +187,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
    private:
     DerivedFontData() = default;
+
+    DISALLOW_COPY_AND_ASSIGN(DerivedFontData);
   };
 
   mutable std::unique_ptr<DerivedFontData> derived_font_data_;

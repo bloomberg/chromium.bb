@@ -30,10 +30,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_ELEVATION_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_kernel.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -44,7 +45,6 @@ namespace blink {
 
 class PLATFORM_EXPORT HRTFElevation {
   USING_FAST_MALLOC(HRTFElevation);
-  WTF_MAKE_NONCOPYABLE(HRTFElevation);
 
  public:
   // Loads and returns an HRTFElevation with the given HRTF database subject
@@ -125,6 +125,8 @@ class PLATFORM_EXPORT HRTFElevation {
   std::unique_ptr<HRTFKernelList> kernel_list_r_;
   double elevation_angle_;
   float sample_rate_;
+
+  DISALLOW_COPY_AND_ASSIGN(HRTFElevation);
 };
 
 }  // namespace blink
