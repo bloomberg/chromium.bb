@@ -17592,12 +17592,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_AbortAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user closes the tab, quits Chrome, reloads the page, etc.
+    during the advanced sync opt-in flow.
+  </description>
+</action>
+
 <action name="Signin_Signin_BackOnAdvancedSyncSettings">
   <owner>tangltom@chromium.org</owner>
   <description>
     Recorded when the user clicks the &quot;browser back&quot; or the
     &quot;settings back&quot; button to leave the sync settings page during the
     advanced sync opt-in flow.
+  </description>
+</action>
+
+<action name="Signin_Signin_CancelAbortAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user hits 'Cancel' on the 'Leave site?' dialog during the
+    advanced sync opt-in flow. This means the user continues their sync setup.
   </description>
 </action>
 

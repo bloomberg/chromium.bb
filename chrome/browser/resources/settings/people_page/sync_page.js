@@ -343,6 +343,9 @@ Polymer({
             !!this.syncStatus.setupInProgress) {
           event.preventDefault();
           event.returnValue = '';
+
+          chrome.metricsPrivate.recordUserAction(
+              'Signin_Signin_AbortAdvancedSyncSettings');
         }
       };
       window.addEventListener('beforeunload', this.beforeunloadCallback_);
