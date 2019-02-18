@@ -6,17 +6,17 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTENT_SETTING_CALLBACKS_H_
 
 #include <memory>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT ContentSettingCallbacks {
   USING_FAST_MALLOC(ContentSettingCallbacks);
-  WTF_MAKE_NONCOPYABLE(ContentSettingCallbacks);
 
  public:
   static std::unique_ptr<ContentSettingCallbacks> Create(
@@ -32,6 +32,8 @@ class PLATFORM_EXPORT ContentSettingCallbacks {
 
   base::OnceClosure allowed_;
   base::OnceClosure denied_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingCallbacks);
 };
 
 }  // namespace blink

@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_CHUNK_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_CHUNK_READER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -43,7 +43,6 @@ class SharedBuffer;
 
 class PLATFORM_EXPORT SharedBufferChunkReader final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(SharedBufferChunkReader);
 
  public:
   SharedBufferChunkReader(scoped_refptr<const SharedBuffer>,
@@ -76,6 +75,9 @@ class PLATFORM_EXPORT SharedBufferChunkReader final {
   bool reached_end_of_file_;
   Vector<char> separator_;
   uint32_t separator_index_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferChunkReader);
 };
 
 }  // namespace blink

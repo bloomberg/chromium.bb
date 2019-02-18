@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
 
+#include "base/macros.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -16,8 +16,6 @@ class InterfaceProvider;
 namespace blink {
 
 class PLATFORM_EXPORT FrameResourceCoordinator final {
-  WTF_MAKE_NONCOPYABLE(FrameResourceCoordinator);
-
  public:
   static std::unique_ptr<FrameResourceCoordinator> Create(
       service_manager::InterfaceProvider*);
@@ -35,6 +33,8 @@ class PLATFORM_EXPORT FrameResourceCoordinator final {
   explicit FrameResourceCoordinator(service_manager::InterfaceProvider*);
 
   resource_coordinator::mojom::blink::FrameCoordinationUnitPtr service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameResourceCoordinator);
 };
 
 }  // namespace blink

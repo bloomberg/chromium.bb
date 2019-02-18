@@ -21,11 +21,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -91,8 +91,6 @@ class PLATFORM_EXPORT PluginInfo final
 
 class PLATFORM_EXPORT PluginData final
     : public GarbageCollectedFinalized<PluginData> {
-  WTF_MAKE_NONCOPYABLE(PluginData);
-
  public:
   void Trace(blink::Visitor*);
 
@@ -117,6 +115,8 @@ class PLATFORM_EXPORT PluginData final
   HeapVector<Member<PluginInfo>> plugins_;
   HeapVector<Member<MimeClassInfo>> mimes_;
   scoped_refptr<const SecurityOrigin> main_frame_origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginData);
 };
 
 }  // namespace blink

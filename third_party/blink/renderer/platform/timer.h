@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIMER_H_
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -34,7 +35,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -43,8 +43,6 @@ namespace blink {
 // Time intervals are all in seconds.
 
 class PLATFORM_EXPORT TimerBase {
-  WTF_MAKE_NONCOPYABLE(TimerBase);
-
  public:
   explicit TimerBase(scoped_refptr<base::SingleThreadTaskRunner>);
   virtual ~TimerBase();
@@ -109,6 +107,8 @@ class PLATFORM_EXPORT TimerBase {
   friend class ThreadTimers;
   friend class TimerHeapLessThanFunction;
   friend class TimerHeapReference;
+
+  DISALLOW_COPY_AND_ASSIGN(TimerBase);
 };
 
 template <typename T, bool = IsGarbageCollectedType<T>::value>

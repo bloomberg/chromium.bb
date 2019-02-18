@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -40,13 +40,15 @@ namespace blink {
 // a nested run loop.
 class PLATFORM_EXPORT PluginScriptForbiddenScope final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(PluginScriptForbiddenScope);
 
  public:
   PluginScriptForbiddenScope();
   ~PluginScriptForbiddenScope();
 
   static bool IsForbidden();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PluginScriptForbiddenScope);
 };
 
 }  // namespace blink

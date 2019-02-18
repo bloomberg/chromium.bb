@@ -98,8 +98,6 @@ void GenerateBitmapForPaintImage(cc::PaintImage paint_image,
 // return value of MaxDecodedImageBytes().
 class TestingPlatformSupportWithMaxDecodedBytes
     : public TestingPlatformSupportWithMockScheduler {
-  WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMaxDecodedBytes);
-
  public:
   TestingPlatformSupportWithMaxDecodedBytes() {}
   ~TestingPlatformSupportWithMaxDecodedBytes() override {}
@@ -112,6 +110,8 @@ class TestingPlatformSupportWithMaxDecodedBytes
 
  private:
   size_t max_decoded_image_bytes_ = Platform::kNoDecodedImageByteLimit;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingPlatformSupportWithMaxDecodedBytes);
 };
 
 class BitmapImageTest : public testing::Test {

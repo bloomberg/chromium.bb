@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_PRESSURE_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_PRESSURE_LISTENER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/web_memory_pressure_level.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -27,8 +27,6 @@ class PLATFORM_EXPORT MemoryPressureListener : public GarbageCollectedMixin {
 // opportunities for reducing memory consumption and notifies its clients.
 class PLATFORM_EXPORT MemoryPressureListenerRegistry final
     : public GarbageCollectedFinalized<MemoryPressureListenerRegistry> {
-  WTF_MAKE_NONCOPYABLE(MemoryPressureListenerRegistry);
-
  public:
   static MemoryPressureListenerRegistry& Instance();
 
@@ -73,6 +71,8 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
   HeapHashSet<WeakMember<MemoryPressureListener>> clients_;
   HashSet<Thread*> threads_;
   Mutex threads_mutex_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryPressureListenerRegistry);
 };
 
 }  // namespace blink

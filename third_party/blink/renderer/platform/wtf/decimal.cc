@@ -33,9 +33,9 @@
 #include <algorithm>
 #include <cfloat>
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -52,7 +52,6 @@ static const uint64_t kMaxCoefficient =
 // This class handles Decimal special values.
 class SpecialValueHandler {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SpecialValueHandler);
 
  public:
   enum HandleResult {
@@ -77,6 +76,8 @@ class SpecialValueHandler {
   const Decimal& lhs_;
   const Decimal& rhs_;
   Result result_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpecialValueHandler);
 };
 
 SpecialValueHandler::SpecialValueHandler(const Decimal& lhs, const Decimal& rhs)

@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -46,7 +46,6 @@
 namespace blink {
 
 class PLATFORM_EXPORT NetworkStateNotifier {
-  WTF_MAKE_NONCOPYABLE(NetworkStateNotifier);
   USING_FAST_MALLOC(NetworkStateNotifier);
 
  public:
@@ -369,6 +368,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   ObserverListMap on_line_state_observers_;
 
   const uint8_t randomization_salt_ = base::RandInt(1, 20);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
 PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();

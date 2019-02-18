@@ -34,12 +34,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -58,7 +58,7 @@ class JSONObject;
 
 class PLATFORM_EXPORT JSONValue {
   USING_FAST_MALLOC(JSONValue);
-  WTF_MAKE_NONCOPYABLE(JSONValue);
+  DISALLOW_COPY_AND_ASSIGN(JSONValue);
 
  public:
   static const int kMaxDepth = 1000;
