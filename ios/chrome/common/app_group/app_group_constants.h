@@ -30,6 +30,10 @@ enum ShareExtensionItemType {
 // command.
 extern const char kChromeAppGroupXCallbackCommand[];
 
+// The key of a preference containing a dictionary of field trial values needed
+// in extensions.
+extern const char kChromeExtensionFieldTrialPreference[];
+
 // The key of a preference containing a dictionary containing app group command
 // parameters.
 extern const char kChromeAppGroupCommandPreference[];

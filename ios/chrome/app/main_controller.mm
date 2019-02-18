@@ -129,6 +129,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -137,6 +138,8 @@
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
@@ -187,6 +190,9 @@ NSString* const kMemoryDebuggingToolsStartup = @"MemoryDebuggingToolsStartup";
 
 // Constants for deferring mailto handling initialization.
 NSString* const kMailtoHandlingInitialization = @"MailtoHandlingInitialization";
+
+// Constants for deferring saving field trial values
+NSString* const kSaveFieldTrialValues = @"SaveFieldTrialValues";
 
 // Constants for deferred check if it is necessary to send pings to
 // Chrome distribution related services.
@@ -1149,6 +1155,49 @@ enum class EnterTabSwitcherSnapshotResult {
                   }];
 }
 
+/**
+ Schedule a call to |saveFieldTrialValuesForExtensions| for deferred execution.
+ */
+- (void)scheduleSaveFieldTrialValuesForExtensions {
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kSaveFieldTrialValues
+                  block:^{
+                    [self saveFieldTrialValuesForExtensions];
+                  }];
+}
+
+/**
+ Some extensions need the value of field trials but can't get them because
+ the field trial infrastruction isn't in extensions. Save the necessary
+ values to NSUserDefaults here.
+ */
+- (void)saveFieldTrialValuesForExtensions {
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
+
+  NSString* fieldTrialValueKey =
+      base::SysUTF8ToNSString(app_group::kChromeExtensionFieldTrialPreference);
+  NSNumber* copiedContentBehaviorValue = [NSNumber
+      numberWithBool:base::FeatureList::IsEnabled(kCopiedContentBehavior)];
+
+  /**
+   Add other field trial values here if they are needed by extensions.
+   The general format is
+   {
+     name: {
+       value: bool,
+       version: bool
+     }
+   }
+   */
+  NSDictionary* fieldTrialValues = @{
+    base::SysUTF8ToNSString(kCopiedContentBehavior.name) : @{
+      kFieldTrialValueKey : copiedContentBehaviorValue,
+      kFieldTrialVersionKey : kCopiedContentBehaviorVersion
+    }
+  };
+  [sharedDefaults setObject:fieldTrialValues forKey:fieldTrialValueKey];
+}
+
 - (void)startFreeMemoryMonitoring {
   // No need for a post-task or a deferred initialisation as the memory
   // monitoring already happens on a background sequence.
@@ -1174,6 +1223,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
   [self initializeMailtoHandling];
+  [self scheduleSaveFieldTrialValuesForExtensions];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
