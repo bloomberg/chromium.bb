@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/css/font_face_set.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 

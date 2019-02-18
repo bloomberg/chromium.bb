@@ -44,8 +44,8 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -168,7 +168,7 @@ class MODULES_EXPORT Notification final
 
   // Verifies that permission has been granted, then asynchronously starts
   // loading the resources associated with this notification.
-  void PrepareShow();
+  void PrepareShow(TimerBase* timer);
 
   // Shows the notification through the embedder using the loaded resources.
   void DidLoadResources(NotificationResourcesLoader* loader);
@@ -184,7 +184,7 @@ class MODULES_EXPORT Notification final
 
   String token_;
 
-  Member<AsyncMethodRunner<Notification>> prepare_show_method_runner_;
+  TaskRunnerTimer<Notification> prepare_show_method_runner_;
 
   Member<NotificationResourcesLoader> loader_;
 
