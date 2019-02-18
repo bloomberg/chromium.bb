@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -233,6 +234,8 @@ class AutofillCapturedSitesInteractiveTest
     feature_list_.InitWithFeatures({features::kAutofillShowTypePredictions},
                                    {features::kAutofillCacheQueryResponses});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
+    command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
+                                    "AutofillFieldMetadata/Enabled/");
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
   }
