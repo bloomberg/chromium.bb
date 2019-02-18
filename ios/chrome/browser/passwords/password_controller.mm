@@ -76,6 +76,8 @@ using autofill::NewPasswordFormGenerationData;
 using autofill::PasswordForm;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
+using l10n_util::GetNSString;
+using l10n_util::GetNSStringF;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
@@ -408,8 +410,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                        fieldIdentifier:fieldIdentifier
                              fieldType:fieldType]) {
     // Add "Suggest Password...".
-    NSString* suggestPassword =
-        l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD);
+    NSString* suggestPassword = GetNSString(IDS_IOS_SUGGEST_PASSWORD);
     [suggestions
         addObject:
             [FormSuggestion
@@ -424,7 +425,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // option in the new passwords UI.
   if (!autofill::features::IsPasswordManualFallbackEnabled()) {
     // Add "Show all".
-    NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
+    NSString* showAll = GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
     [suggestions
         addObject:
             [FormSuggestion
@@ -679,35 +680,39 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
-  if (![self hasFormForGenerationForFormName:formName])
+  const NewPasswordFormGenerationData* generation_data =
+      [self getFormForGenerationFromFormName:formName];
+  if (!generation_data)
     return NO;
 
-  // TODO(crbug.com/886583): validate field against _formGenerationData
+  NSString* newPasswordIdentifier =
+      SysUTF16ToNSString(generation_data->new_password_element);
+  if ([fieldIdentifier isEqualToString:newPasswordIdentifier])
+    return YES;
 
-  return YES;
+  // Don't show password generation if the field is 'confirm password'.
+  return NO;
 }
 
-- (BOOL)hasFormForGenerationForFormName:(NSString*)formName {
-  const base::string16 name = SysNSStringToUTF16(formName);
-  return _formGenerationData.find(name) != _formGenerationData.end();
-}
-
-- (const NewPasswordFormGenerationData)getFormForGenerationFromFormName:
+- (const NewPasswordFormGenerationData*)getFormForGenerationFromFormName:
     (NSString*)formName {
   const base::string16 name = SysNSStringToUTF16(formName);
-  return _formGenerationData[name];
+  if (_formGenerationData.find(name) != _formGenerationData.end()) {
+    return &_formGenerationData[name];
+  }
+  return nullptr;
 }
 
 - (void)generatePasswordForFormName:(NSString*)formName
                   completionHandler:(void (^)(BOOL))completionHandler {
-  if (![self hasFormForGenerationForFormName:formName])
-    return;
-  const NewPasswordFormGenerationData form =
+  const NewPasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
+  if (!generation_data)
+    return;
   NSString* newPasswordIdentifier =
-      SysUTF16ToNSString(form.new_password_element);
+      SysUTF16ToNSString(generation_data->new_password_element);
   NSString* confirmPasswordIdentifier =
-      SysUTF16ToNSString(form.confirmation_password_element);
+      SysUTF16ToNSString(generation_data->confirmation_password_element);
   [self generatePasswordForFormName:formName
               newPasswordIdentifier:newPasswordIdentifier
           confirmPasswordIdentifier:confirmPasswordIdentifier
@@ -725,13 +730,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       _passwordGenerationManager->GeneratePassword([self lastCommittedURL], 0,
                                                    0, 0, nullptr);
 
-  NSString* displayPassword = SysUTF16ToNSString(generatedPassword);
-
-  // TODO(crbug.com/886583): i18n
-  NSString* title = [NSString
-      stringWithFormat:@"Chrome Suggested Password: %@", displayPassword];
-  NSString* message = @"Chrome will remember this password for you. You don't "
-                      @"have to remember it.";
+  NSString* title = GetNSStringF(IDS_IOS_SUGGESTED_PASSWORD, generatedPassword);
+  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
 
   // TODO(crbug.com/886583): add eg tests
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
@@ -745,28 +745,28 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       IsIPadIdiom() ? UIAlertControllerStyleAlert
                     : UIAlertControllerStyleActionSheet;
 
+  NSString* nsPassword = SysUTF16ToNSString(generatedPassword);
+
   __weak PasswordController* weakSelf = self;
-  // TODO(crbug.com/886583): i18n
   [self.actionSheetCoordinator
-      addItemWithTitle:@"Use Suggested Password"
+      addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
                   [weakSelf
                       injectGeneratedPasswordForFormName:formName
                                    newPasswordIdentifier:newPasswordIdentifier
                                confirmPasswordIdentifier:
                                    confirmPasswordIdentifier
-                                       generatedPassword:displayPassword
+                                       generatedPassword:nsPassword
                                        completionHandler:completionHandler];
                 }
                  style:UIAlertActionStyleDefault];
 
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:^{
-                  if (completionHandler)
-                    completionHandler(NO);
-                }
-                 style:UIAlertActionStyleCancel];
+  [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
+                                         action:^{
+                                           if (completionHandler)
+                                             completionHandler(NO);
+                                         }
+                                          style:UIAlertActionStyleCancel];
 
   [self.actionSheetCoordinator start];
 }
@@ -774,14 +774,14 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName
                          generatedPassword:(NSString*)generatedPassword
                          completionHandler:(void (^)(BOOL))completionHandler {
-  if (![self hasFormForGenerationForFormName:formName])
-    return;
-  const autofill::NewPasswordFormGenerationData form =
+  const autofill::NewPasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
+  if (!generation_data)
+    return;
   NSString* newPasswordIdentifier =
-      SysUTF16ToNSString(form.new_password_element);
+      SysUTF16ToNSString(generation_data->new_password_element);
   NSString* confirmPasswordIdentifier =
-      SysUTF16ToNSString(form.confirmation_password_element);
+      SysUTF16ToNSString(generation_data->confirmation_password_element);
   [self injectGeneratedPasswordForFormName:formName
                      newPasswordIdentifier:newPasswordIdentifier
                  confirmPasswordIdentifier:confirmPasswordIdentifier
