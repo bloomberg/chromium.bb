@@ -19,6 +19,7 @@ extern const char kSyncNotificationHostPort[];
 extern const char kSyncAllowInsecureXmppConnection[];
 extern const base::Feature kFCMInvalidations;
 extern const base::Feature kFCMInvalidationsConservativeEnabling;
+extern const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable;
 
 }  // namespace switches
 }  // namespace invalidation
