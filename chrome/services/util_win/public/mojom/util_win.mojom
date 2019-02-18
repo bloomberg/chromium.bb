@@ -61,8 +61,8 @@ struct InspectionResult {
   // Path to the file containing the certificate. Empty if |certificate_type| is
   // kNoCertificate.
   mojo_base.mojom.FilePath certificate_path;
-  // The "Subject" name of the certificate. This is the signer (ie,
-  // "Google Inc." or "Microsoft Inc.").
+  // The "Subject" name of the certificate. This is the signer (e.g.,
+  // "Google LLC" or "Microsoft Corporation").
   mojo_base.mojom.String16 certificate_subject;
 };
 
