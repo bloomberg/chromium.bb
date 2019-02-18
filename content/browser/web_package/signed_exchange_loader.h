@@ -121,6 +121,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   void FinishReadingBody(int result);
   void NotifyClientOnCompleteIfReady();
+  void ReportLoadResult(SignedExchangeLoadResult result);
 
   const network::ResourceRequest outer_request_;
 
