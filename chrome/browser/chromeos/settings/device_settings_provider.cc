@@ -84,7 +84,7 @@ const char* const kKnownSettings[] = {
     kDeviceQuirksDownloadEnabled,
     kDeviceUnaffiliatedCrostiniAllowed,
     kDeviceDisplayResolution,
-    kDeviceRebootAfterUserSignout,
+    kDeviceRebootOnUserSignout,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -753,13 +753,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetValue(kDeviceNativePrintersWhitelist, std::move(list));
   }
 
-  if (policy.has_device_reboot_after_user_signout()) {
-    const em::DeviceRebootAfterUserSignoutProto& container(
-        policy.device_reboot_after_user_signout());
-    if (container.has_reboot_after_signout_mode()) {
+  if (policy.has_device_reboot_on_user_signout()) {
+    const em::DeviceRebootOnUserSignoutProto& container(
+        policy.device_reboot_on_user_signout());
+    if (container.has_reboot_on_signout_mode()) {
       new_values_cache->SetValue(
-          kDeviceRebootAfterUserSignout,
-          base::Value(container.reboot_after_signout_mode()));
+          kDeviceRebootOnUserSignout,
+          base::Value(container.reboot_on_signout_mode()));
     }
   }
 }
