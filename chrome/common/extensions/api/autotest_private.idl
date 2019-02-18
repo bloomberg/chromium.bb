@@ -160,6 +160,8 @@ namespace autotestPrivate {
 
   callback GetPrimaryDisplayScaleFactorCallback = void (double scaleFactor);
 
+  callback IsTabletModeEnabledCallback = void (boolean tabletMode);
+
   callback VoidCallback = void ();
 
   interface Functions {
@@ -330,5 +332,9 @@ namespace autotestPrivate {
     // |callback| is invoked with the scale factor.
     static void getPrimaryDisplayScaleFactor(
         GetPrimaryDisplayScaleFactorCallback callback);
+
+    // Returns the tablet mode enabled status.
+    // |callback| is invoked with the table mode enablement status.
+    static void isTabletModeEnabled(IsTabletModeEnabledCallback callback);
   };
 };
