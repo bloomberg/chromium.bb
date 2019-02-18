@@ -37,8 +37,8 @@ struct CertificateInfo {
   // NO_CERTIFICATE.
   base::FilePath path;
 
-  // The "Subject" name of the certificate. This is the signer (ie,
-  // "Google Inc." or "Microsoft Inc.").
+  // The "Subject" name of the certificate. This is the signer (e.g.,
+  // "Google LLC" or "Microsoft Corporation").
   base::string16 subject;
 };
 

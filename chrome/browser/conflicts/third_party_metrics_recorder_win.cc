@@ -22,10 +22,14 @@
 #endif
 
 namespace {
+
 // Returns true if the module is signed by Google.
 bool IsGoogleModule(base::StringPiece16 subject) {
-  static const wchar_t kGoogle[] = L"Google Inc";
-  return subject == kGoogle;
+  static constexpr base::StringPiece16 kGoogleLlc(
+      STRING16_LITERAL("Google LLC"));
+  static constexpr base::StringPiece16 kGoogleInc(
+      STRING16_LITERAL("Google Inc"));
+  return subject == kGoogleLlc || subject == kGoogleInc;
 }
 
 }  // namespace
