@@ -18,6 +18,32 @@
 #error "This file requires ARC support."
 #endif
 
+@interface UrlLoadingServiceUrlLoader : NSObject <UrlLoader>
+- (instancetype)initWithUrlLoadingService:(UrlLoadingService*)service;
+@end
+
+@implementation UrlLoadingServiceUrlLoader {
+  UrlLoadingService* service_;
+}
+
+- (instancetype)initWithUrlLoadingService:(UrlLoadingService*)service {
+  DCHECK(service);
+  if (self = [super init]) {
+    service_ = service;
+  }
+  return self;
+}
+
+- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
+  service_->LoadUrlInCurrentTab(chromeParams);
+}
+
+- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
+  service_->OpenUrlInNewTab(command);
+}
+
+@end
+
 UrlLoadingService::UrlLoadingService(UrlLoadingNotifier* notifier)
     : notifier_(notifier) {}
 
@@ -151,4 +177,12 @@ void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
   } else {
     [delegate_ animateOpenBackgroundTabFromCommand:command completion:openTab];
   }
+}
+
+id<UrlLoader> UrlLoadingService::GetUrlLoader() {
+  if (!url_loader_) {
+    url_loader_ =
+        [[UrlLoadingServiceUrlLoader alloc] initWithUrlLoadingService:this];
+  }
+  return url_loader_;
 }

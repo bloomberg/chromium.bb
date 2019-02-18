@@ -37,8 +37,7 @@ class ChromeBrowserState;
     : UIViewController <LogoAnimationControllerOwnerOwner,
                         PageInfoPresentation,
                         SyncPresenter,
-                        ToolbarCoordinatorDelegate,
-                        UrlLoader>
+                        ToolbarCoordinatorDelegate>
 
 // Initializes a new BVC from its nib. |model| must not be nil. The
 // webUsageSuspended property for this BVC will be based on |model|, and future

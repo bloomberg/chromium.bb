@@ -133,6 +133,8 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
@@ -1416,7 +1418,9 @@ enum class EnterTabSwitcherSnapshotResult {
   _historyCoordinator =
       [[HistoryCoordinator alloc] initWithBaseViewController:self.currentBVC
                                                 browserState:_mainBrowserState];
-  _historyCoordinator.loader = self.currentBVC;
+  _historyCoordinator.loader = UrlLoadingServiceFactory::GetForBrowserState(
+                                   [self.currentBVC browserState])
+                                   ->GetUrlLoader();
   _historyCoordinator.dispatcher = self.mainBVC.dispatcher;
   [_historyCoordinator start];
 }
@@ -1518,7 +1522,9 @@ enum class EnterTabSwitcherSnapshotResult {
       [self
           dismissModalDialogsWithCompletion:^{
             [self setCurrentInterfaceForMode:mode];
-            [self.currentBVC webPageOrderedOpen:command];
+            UrlLoadingServiceFactory::GetForBrowserState(
+                [self.currentBVC browserState])
+                ->OpenUrlInNewTab(command);
           }
                              dismissOmnibox:YES];
     }

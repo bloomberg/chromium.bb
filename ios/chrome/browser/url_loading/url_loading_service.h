@@ -10,6 +10,7 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 #import "ios/chrome/browser/ui/chrome_load_params.h"
+#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -43,6 +44,8 @@ class UrlLoadingService : public KeyedService {
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
   void SetBrowser(Browser* browser);
 
+  id<UrlLoader> GetUrlLoader();
+
   // Opens a url based on |chrome_params|.
   virtual void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
 
@@ -57,6 +60,7 @@ class UrlLoadingService : public KeyedService {
   __weak id<URLLoadingServiceDelegate> delegate_;
   Browser* browser_;
   UrlLoadingNotifier* notifier_;
+  id<UrlLoader> url_loader_;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_
