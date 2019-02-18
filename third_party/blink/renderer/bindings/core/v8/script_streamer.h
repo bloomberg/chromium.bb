@@ -55,6 +55,7 @@ class CORE_EXPORT ScriptStreamer final
     kStreamingDisabled,
     kSecondScriptResourceUse,
     kWorkerTopLevelScript,
+    kModuleScript,
 
     // Pseudo values that should never be seen in reported metrics
     kCount,

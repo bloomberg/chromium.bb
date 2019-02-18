@@ -42,6 +42,7 @@ class ExecutionContext;
 class ReferrerScriptInfo;
 class ScriptSourceCode;
 class ScriptState;
+class SingleCachedMetadataHandler;
 
 class CORE_EXPORT V8ScriptRunner final {
   STATIC_ONLY(V8ScriptRunner);
@@ -56,11 +57,15 @@ class CORE_EXPORT V8ScriptRunner final {
       v8::ScriptCompiler::CompileOptions,
       v8::ScriptCompiler::NoCacheReason,
       const ReferrerScriptInfo&);
-  static v8::MaybeLocal<v8::Module> CompileModule(v8::Isolate*,
-                                                  const String& source,
-                                                  const String& file_name,
-                                                  const WTF::TextPosition&,
-                                                  const ReferrerScriptInfo&);
+  static v8::MaybeLocal<v8::Module> CompileModule(
+      v8::Isolate*,
+      const String& source,
+      SingleCachedMetadataHandler*,
+      const String& file_name,
+      const WTF::TextPosition&,
+      v8::ScriptCompiler::CompileOptions,
+      v8::ScriptCompiler::NoCacheReason,
+      const ReferrerScriptInfo&);
   static v8::MaybeLocal<v8::Value> RunCompiledScript(v8::Isolate*,
                                                      v8::Local<v8::Script>,
                                                      ExecutionContext*);

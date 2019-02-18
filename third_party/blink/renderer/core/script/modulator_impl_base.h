@@ -89,6 +89,10 @@ class ModulatorImplBase : public Modulator {
   // modification of |reason|.
   virtual bool IsDynamicImportForbidden(String* reason) = 0;
 
+  void ProduceCacheModuleTreeTopLevel(ModuleScript*);
+  void ProduceCacheModuleTree(ModuleScript*,
+                              HeapHashSet<Member<const ModuleScript>>*);
+
   Member<ScriptState> script_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TraceWrapperMember<ModuleMap> map_;

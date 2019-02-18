@@ -406,6 +406,8 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "already used streamed data";
     case ScriptStreamer::kWorkerTopLevelScript:
       return "worker top-level scripts are not streamable";
+    case ScriptStreamer::kModuleScript:
+      return "module script";
     case ScriptStreamer::kAlreadyLoaded:
     case ScriptStreamer::kCount:
     case ScriptStreamer::kInvalid:
