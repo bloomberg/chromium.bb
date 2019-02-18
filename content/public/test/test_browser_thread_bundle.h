@@ -129,7 +129,7 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   NOINLINE TestBrowserThreadBundle(const ArgTypes... args)
       : TestBrowserThreadBundle(
             base::test::ScopedTaskEnvironment(
-                // Override the default MainThreadType.
+                SubclassCreatesDefaultTaskRunner{},
                 base::trait_helpers::GetEnum<MainThreadType,
                                              MainThreadType::UI>(args...),
                 base::trait_helpers::Exclude<MainThreadType, Options>::Filter(

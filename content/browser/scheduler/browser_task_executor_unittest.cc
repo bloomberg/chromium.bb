@@ -4,12 +4,15 @@
 
 #include "content/browser/scheduler/browser_task_executor.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
@@ -19,11 +22,13 @@ namespace content {
 
 class BrowserTaskExecutorTest : public testing::Test {
  public:
-  void SetUp() override {
+  BrowserTaskExecutorTest() {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
-  void TearDown() override { SetBrowserClientForTesting(old_browser_client_); }
+  ~BrowserTaskExecutorTest() override {
+    SetBrowserClientForTesting(old_browser_client_);
+  }
 
  protected:
   class AfterStartupBrowserClient : public TestContentBrowserClient {
@@ -54,7 +59,7 @@ class BrowserTaskExecutorTest : public testing::Test {
   };
 
   TestBrowserThreadBundle thread_bundle_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME};
   AfterStartupBrowserClient browser_client_;
   ContentBrowserClient* old_browser_client_;
 };
@@ -154,6 +159,54 @@ TEST_F(BrowserTaskExecutorTest, BestEffortTasksRunAfterStartup) {
   ui_best_effort_runner->PostTask(FROM_HERE, base::DoNothing());
   EXPECT_EQ(browser_client_.tasks_.size(), 0u);
   EXPECT_EQ(thread_bundle_.GetPendingMainThreadTaskCount(), 1u);
+}
+
+class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
+ private:
+  class ScopedTaskEnvironmentWithCustomScheduler
+      : public base::test::ScopedTaskEnvironment {
+   public:
+    ScopedTaskEnvironmentWithCustomScheduler()
+        : base::test::ScopedTaskEnvironment(
+              SubclassCreatesDefaultTaskRunner{},
+              base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME) {
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
+          BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
+                                                     GetTimeDomain());
+      DeferredInitFromSubclass(
+          browser_ui_thread_scheduler->GetTaskRunnerForTesting(
+              QueueType::kDefault));
+      browser_ui_thread_scheduler_ = browser_ui_thread_scheduler.get();
+      BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
+          std::move(browser_ui_thread_scheduler));
+    }
+
+    BrowserUIThreadScheduler* browser_ui_thread_scheduler() const {
+      return browser_ui_thread_scheduler_;
+    }
+
+   private:
+    BrowserUIThreadScheduler* browser_ui_thread_scheduler_;
+  };
+
+ public:
+  using QueueType = BrowserUIThreadTaskQueue::QueueType;
+
+  ~BrowserTaskExecutorWithCustomSchedulerTest() override {
+    BrowserTaskExecutor::ResetForTesting();
+  }
+
+ protected:
+  ScopedTaskEnvironmentWithCustomScheduler scoped_task_environment_;
+};
+
+TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
+       EnsureUIThreadTraitPointsToExpectedQueue) {
+  EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+            scoped_task_environment_.browser_ui_thread_scheduler()
+                ->GetTaskRunnerForTesting(QueueType::kDefault));
+  EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+            scoped_task_environment_.GetMainThreadTaskRunner());
 }
 
 }  // namespace content
