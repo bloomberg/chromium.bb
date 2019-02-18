@@ -111,6 +111,9 @@ public class HistoryNavigationLayout extends FrameLayout {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            // onScroll needs handling only after the state moves away from none state.
+            if (mState == GestureState.NONE) return true;
+
             if (wasLastSideSwipeGestureConsumed()) {
                 reset();
                 mState = GestureState.NONE;
