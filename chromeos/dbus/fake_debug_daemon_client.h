@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
-                     VoidDBusMethodCallback callback) override;
+                     DBusMethodCallback<uint64_t> callback) override;
   void GetScrubbedLogs(const GetLogsCallback& callback) override;
   void GetScrubbedBigLogs(const GetLogsCallback& callback) override;
   void GetAllLogs(const GetLogsCallback& callback) override;

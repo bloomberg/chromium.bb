@@ -38,7 +38,7 @@ class PerfOutputCall {
  private:
   // Internal callbacks.
   void OnIOComplete(base::Optional<std::string> data);
-  void OnGetPerfOutput(bool success);
+  void OnGetPerfOutput(base::Optional<uint64_t> result);
 
   // Used to capture perf data written to a pipe.
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
