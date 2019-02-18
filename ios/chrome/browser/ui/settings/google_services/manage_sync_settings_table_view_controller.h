@@ -11,6 +11,7 @@
 
 @class ManageSyncSettingsTableViewController;
 @protocol ManageSyncSettingsTableViewControllerModelDelegate;
+@protocol ManageSyncSettingsServiceDelegate;
 
 // Delegate for presentation events related to
 // ManageSyncSettingsTableViewController.
@@ -30,9 +31,13 @@
 @property(nonatomic, weak)
     id<ManageSyncSettingsTableViewControllerPresentationDelegate>
         presentationDelegate;
+// Model delegate.
 @property(nonatomic, weak)
     id<ManageSyncSettingsTableViewControllerModelDelegate>
         modelDelegate;
+// Service delegate.
+@property(nonatomic, weak) id<ManageSyncSettingsServiceDelegate>
+    serviceDelegate;
 
 @end
 
