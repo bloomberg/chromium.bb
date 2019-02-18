@@ -43,11 +43,11 @@ void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
-void PerfOutputCall::OnGetPerfOutput(bool success) {
+void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Signal pipe reader to shut down.
-  if (!success && perf_data_pipe_reader_.get()) {
+  if (!result.has_value() && perf_data_pipe_reader_.get()) {
     perf_data_pipe_reader_.reset();
     std::move(done_callback_).Run(std::string());
   }

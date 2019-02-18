@@ -112,7 +112,7 @@ void FakeDebugDaemonClient::GetPerfOutput(
     base::TimeDelta duration,
     const std::vector<std::string>& perf_args,
     int file_descriptor,
-    VoidDBusMethodCallback error_callback) {}
+    DBusMethodCallback<uint64_t> error_callback) {}
 
 void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;

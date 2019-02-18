@@ -203,7 +203,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
-                     VoidDBusMethodCallback callback) override {
+                     DBusMethodCallback<uint64_t> callback) override {
     DCHECK(file_descriptor);
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetPerfOutputFd);
@@ -214,7 +214,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+        base::BindOnce(&DebugDaemonClientImpl::OnUint64Method,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -617,6 +617,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // completed or on its error.
   void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
     std::move(callback).Run(response);
+  }
+
+  void OnUint64Method(DBusMethodCallback<uint64_t> callback,
+                      dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(0);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    uint64_t result;
+    if (!reader.PopUint64(&result)) {
+      result = 0;
+    }
+
+    std::move(callback).Run(std::move(result));
   }
 
   // Called when D-Bus method call which returns a string is completed or on

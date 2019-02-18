@@ -79,7 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   virtual void GetPerfOutput(base::TimeDelta duration,
                              const std::vector<std::string>& perf_args,
                              int file_descriptor,
-                             VoidDBusMethodCallback callback) = 0;
+                             DBusMethodCallback<uint64_t> callback) = 0;
 
   // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   using GetLogsCallback =
