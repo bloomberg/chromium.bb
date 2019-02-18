@@ -973,11 +973,11 @@ bool AXNodeObject::IsClickable() const {
 AXRestriction AXNodeObject::Restriction() const {
   Element* elem = GetElement();
   if (!elem)
-    return kNone;
+    return kRestrictionNone;
 
   // An <optgroup> is not exposed directly in the AX tree.
   if (IsHTMLOptGroupElement(elem))
-    return kNone;
+    return kRestrictionNone;
 
   // According to ARIA, all elements of the base markup can be disabled.
   // According to CORE-AAM, any focusable descendant of aria-disabled
@@ -987,11 +987,11 @@ AXRestriction AXNodeObject::Restriction() const {
                                     is_disabled)) {
     // Has aria-disabled, overrides native markup determining disabled.
     if (is_disabled)
-      return kDisabled;
+      return kRestrictionDisabled;
   } else if (elem->IsDisabledFormControl() ||
              (CanSetFocusAttribute() && IsDescendantOfDisabledNode())) {
     // No aria-disabled, but other markup says it's disabled.
-    return kDisabled;
+    return kRestrictionDisabled;
   }
 
   // Check aria-readonly if supported by current role.
@@ -1000,15 +1000,15 @@ AXRestriction AXNodeObject::Restriction() const {
       HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
                                     is_read_only)) {
     // ARIA overrides other readonly state markup.
-    return is_read_only ? kReadOnly : kNone;
+    return is_read_only ? kRestrictionReadOnly : kRestrictionNone;
   }
 
   // Only editable fields can be marked @readonly (unlike @aria-readonly).
   if (IsHTMLTextAreaElement(*elem) && ToHTMLTextAreaElement(*elem).IsReadOnly())
-    return kReadOnly;
+    return kRestrictionReadOnly;
   if (const auto* input = ToHTMLInputElementOrNull(*elem)) {
     if (input->IsTextField() && input->IsReadOnly())
-      return kReadOnly;
+      return kRestrictionReadOnly;
   }
 
   // If a grid cell does not have it's own ARIA input restriction,
@@ -1021,14 +1021,14 @@ AXRestriction AXNodeObject::Restriction() const {
       if (table->IsTableLikeRole() &&
           (table->RoleValue() == ax::mojom::Role::kGrid ||
            table->RoleValue() == ax::mojom::Role::kTreeGrid)) {
-        if (table->Restriction() == kReadOnly)
-          return kReadOnly;
+        if (table->Restriction() == kRestrictionReadOnly)
+          return kRestrictionReadOnly;
       }
     }
   }
 
   // This is a node that is not readonly and not disabled.
-  return kNone;
+  return kRestrictionNone;
 }
 
 AccessibilityExpanded AXNodeObject::IsExpanded() const {
@@ -1290,9 +1290,9 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   if (!node_ || RoleValue() != ax::mojom::Role::kRadioButton)
     return radio_buttons;
 
-  if (auto* radio_button = ToHTMLInputElementOrNull(node_)) {
+  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_)) {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
-        FindAllRadioButtonsWithSameName(radio_button);
+        FindAllRadioButtonsWithSameName(node_radio_button);
     for (HTMLInputElement* radio_button : html_radio_buttons) {
       AXObject* ax_radio_button = AXObjectCache().GetOrCreate(radio_button);
       if (ax_radio_button)
@@ -3117,11 +3117,11 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
     // Fields inside a datetime control need to merge the field description
     // with the description of the <input> element.
     const AXObject* datetime_ancestor = DatetimeAncestor();
-    ax::mojom::NameFrom name_from;
-    datetime_ancestor->GetName(name_from, nullptr);
+    ax::mojom::NameFrom datetime_ancestor_name_from;
+    datetime_ancestor->GetName(datetime_ancestor_name_from, nullptr);
     description_objects->clear();
     String ancestor_description = DatetimeAncestor()->Description(
-        name_from, description_from, description_objects);
+        datetime_ancestor_name_from, description_from, description_objects);
     if (!result.IsEmpty() && !ancestor_description.IsEmpty())
       return result + " " + ancestor_description;
     if (!ancestor_description.IsEmpty())
