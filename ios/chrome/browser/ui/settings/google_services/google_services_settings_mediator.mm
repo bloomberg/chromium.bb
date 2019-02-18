@@ -48,7 +48,11 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   NonPersonalizedSectionIdentifier,
 };
 
-// List of items.
+// List of items. For implementation details in
+// GoogleServicesSettingsViewController, two SyncSwitchItem items should not
+// share the same type. The cell UISwitch tag is used to save the item type, and
+// when the user taps on the switch, this tag is used to retreive the item based
+// on the type.
 typedef NS_ENUM(NSInteger, ItemType) {
   // IdentitySectionIdentifier section.
   IdentityItemType = kItemTypeEnumZero,

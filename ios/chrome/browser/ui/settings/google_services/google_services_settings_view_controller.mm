@@ -16,14 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Constants used to convert NSIndexPath into a tag. Used as:
-// item + section * kSectionOffset
-constexpr NSInteger kSectionOffset = 1000;
-
-}  // namespace
-
 @implementation GoogleServicesSettingsViewController
 
 - (void)viewDidLoad {
@@ -35,18 +27,10 @@ constexpr NSInteger kSectionOffset = 1000;
 
 #pragma mark - Private
 
-- (NSInteger)tagForIndexPath:(NSIndexPath*)indexPath {
-  return indexPath.item + indexPath.section * kSectionOffset;
-}
-
-- (NSIndexPath*)indexPathForTag:(NSInteger)tag {
-  NSInteger section = tag / kSectionOffset;
-  NSInteger item = tag - (section * kSectionOffset);
-  return [NSIndexPath indexPathForItem:item inSection:section];
-}
-
 - (void)switchAction:(UISwitch*)sender {
-  NSIndexPath* indexPath = [self indexPathForTag:sender.tag];
+  NSIndexPath* indexPath =
+      [self.tableViewModel indexPathForItemType:sender.tag];
+  DCHECK(indexPath);
   SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
       [self.tableViewModel itemAtIndexPath:indexPath]);
   [self.serviceDelegate toggleSwitchItem:syncSwitchItem withValue:sender.isOn];
@@ -64,7 +48,8 @@ constexpr NSInteger kSectionOffset = 1000;
     [switchCell.switchView addTarget:self
                               action:@selector(switchAction:)
                     forControlEvents:UIControlEventValueChanged];
-    switchCell.switchView.tag = [self tagForIndexPath:indexPath];
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    switchCell.switchView.tag = item.type;
   }
   return cell;
 }
