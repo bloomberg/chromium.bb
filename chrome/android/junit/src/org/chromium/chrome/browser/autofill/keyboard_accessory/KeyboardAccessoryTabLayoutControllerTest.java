@@ -15,6 +15,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutProperties.TABS;
 
+import android.support.design.widget.TabLayout;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -123,6 +125,18 @@ public class KeyboardAccessoryTabLayoutControllerTest {
         assertThat(mModel.get(ACTIVE_TAB), is(nullValue()));
         verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB);
         verify(mMockAccessoryTabObserver).onActiveTabChanged(null);
+    }
+
+    @Test
+    public void testConvertsInvalidTabPositionToNull() {
+        // Asserts that the helper used to validate tab positions converts the invalid position to
+        // null. It would be better to call onTabSelected() with a tab having this position but Tab
+        // is final and has a private constructor, so this works only in mockito V2 or newer.
+        assertThat(mMediator.validateActiveTab(TabLayout.Tab.INVALID_POSITION), is(nullValue()));
+
+        mMediator.setTabs(new KeyboardAccessoryData.Tab[0]);
+        // Simulate a call when a removed tab was marked selected before the view picked it up:
+        assertThat(mMediator.validateActiveTab(0), is(nullValue()));
     }
 
     @Test
