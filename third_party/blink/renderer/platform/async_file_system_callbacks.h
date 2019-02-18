@@ -32,19 +32,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_FILE_SYSTEM_CALLBACKS_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class AsyncFileSystemCallbacks {
   USING_FAST_MALLOC(AsyncFileSystemCallbacks);
-  WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 
  public:
   AsyncFileSystemCallbacks() = default;
@@ -94,6 +94,9 @@ class AsyncFileSystemCallbacks {
   virtual void DidFail(base::File::Error) = 0;
 
   virtual ~AsyncFileSystemCallbacks() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AsyncFileSystemCallbacks);
 };
 
 }  // namespace blink

@@ -30,10 +30,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -139,7 +139,6 @@ class PODArena final : public RefCounted<PODArena> {
   // Manages a chunk of memory and individual allocations out of it.
   class Chunk final {
     USING_FAST_MALLOC(Chunk);
-    WTF_MAKE_NONCOPYABLE(Chunk);
 
    public:
     // Allocates a block of memory of the given size from the passed
@@ -173,6 +172,9 @@ class PODArena final : public RefCounted<PODArena> {
     uint8_t* base_;
     size_t size_;
     size_t current_offset_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Chunk);
   };
 
   scoped_refptr<Allocator> allocator_;

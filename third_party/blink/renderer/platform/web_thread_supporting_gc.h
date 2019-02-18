@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_THREAD_SUPPORTING_GC_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -28,7 +29,6 @@ namespace blink {
 // WebThreadSupportingGC internally creates and owns Thread.
 class PLATFORM_EXPORT WebThreadSupportingGC final {
   USING_FAST_MALLOC(WebThreadSupportingGC);
-  WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 
  public:
   static std::unique_ptr<WebThreadSupportingGC> Create(
@@ -83,6 +83,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   std::unique_ptr<Thread> thread_;
 
   THREAD_CHECKER(thread_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(WebThreadSupportingGC);
 };
 
 }  // namespace blink

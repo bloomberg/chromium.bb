@@ -33,8 +33,8 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "url/origin.h"
@@ -57,8 +57,6 @@ struct SecurityOriginHash;
 //
 // See also: https://html.spec.whatwg.org/C/#concept-origin
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
-  WTF_MAKE_NONCOPYABLE(SecurityOrigin);
-
  public:
   enum class AccessResultDomainDetail {
     kDomainNotRelevant,
@@ -354,6 +352,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // For opaque origins, tracks the non-opaque origin from which the opaque
   // origin is derived.
   const scoped_refptr<const SecurityOrigin> precursor_origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityOrigin);
 };
 
 }  // namespace blink

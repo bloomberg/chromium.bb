@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_TREE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_INTERVAL_TREE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/pod_arena.h"
 #include "third_party/blink/renderer/platform/wtf/pod_interval.h"
 #include "third_party/blink/renderer/platform/wtf/pod_red_black_tree.h"
@@ -70,8 +70,6 @@ class PODIntervalSearchAdapter {
 // intervals in the tree.
 template <class T, class UserData = void*>
 class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
-  WTF_MAKE_NONCOPYABLE(PODIntervalTree);
-
  public:
   // Typedef to reduce typing when declaring intervals to be stored in
   // this tree.
@@ -241,6 +239,8 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
       *current_max_value = local_max_value;
     return true;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(PODIntervalTree);
 };
 
 #ifndef NDEBUG

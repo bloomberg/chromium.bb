@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_THEME_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_THEME_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length_box.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/renderer/platform/theme_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -47,7 +47,6 @@ class ScrollableArea;
 // This design allows a platform to switch between multiple themes at runtime.
 class PLATFORM_EXPORT Theme {
   USING_FAST_MALLOC(Theme);
-  WTF_MAKE_NONCOPYABLE(Theme);
 
  public:
   Theme() = default;
@@ -150,6 +149,8 @@ class PLATFORM_EXPORT Theme {
  private:
   mutable Color active_selection_color_;
   mutable Color inactive_selection_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(Theme);
 };
 
 PLATFORM_EXPORT Theme* PlatformTheme();

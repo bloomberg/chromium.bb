@@ -29,7 +29,6 @@ std::string GetPartitionDumpName(const char* partition_name) {
 // be called with memory statistics for each bucket in the allocator.
 class PartitionStatsDumperImpl final : public base::PartitionStatsDumper {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(PartitionStatsDumperImpl);
 
  public:
   PartitionStatsDumperImpl(
@@ -50,6 +49,8 @@ class PartitionStatsDumperImpl final : public base::PartitionStatsDumper {
   base::trace_event::ProcessMemoryDump* memory_dump_;
   unsigned long uid_;
   size_t total_active_bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(PartitionStatsDumperImpl);
 };
 
 void PartitionStatsDumperImpl::PartitionDumpTotals(
