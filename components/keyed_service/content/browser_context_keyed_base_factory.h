@@ -9,7 +9,6 @@
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class BrowserContextDependencyManager;
-class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -34,17 +33,6 @@ class PrefRegistrySyncable;
 // on KeyedServiceBaseFactory instead.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
     : public KeyedServiceBaseFactory {
- public:
-  // Registers preferences used in this service on the pref service of
-  // |context|. This is the public interface and is safe to be called multiple
-  // times because testing code can have multiple services of the same type
-  // attached to a single |context|. Only test code is allowed to call this
-  // method.
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnBrowserContextForTest(
-      content::BrowserContext* context);
-
  protected:
   BrowserContextKeyedBaseFactory(const char* name,
                                  BrowserContextDependencyManager* manager);

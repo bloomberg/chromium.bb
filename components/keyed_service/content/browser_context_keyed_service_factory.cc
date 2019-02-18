@@ -71,12 +71,6 @@ BrowserContextKeyedServiceFactory::GetBrowserContextToUse(
   return context;
 }
 
-void
-BrowserContextKeyedServiceFactory::RegisterUserPrefsOnBrowserContextForTest(
-    content::BrowserContext* context) {
-  KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(context);
-}
-
 bool BrowserContextKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
     const {
   return KeyedServiceBaseFactory::ServiceIsCreatedWithContext();
