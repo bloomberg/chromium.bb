@@ -25,7 +25,7 @@ WorkerScriptLoader::WorkerScriptLoader(
     network::mojom::URLLoaderClientPtr client,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     base::WeakPtr<AppCacheHost> appcache_host,
-    ResourceContext* resource_context,
+    const ResourceContextGetter& resource_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : process_id_(process_id),
@@ -35,7 +35,7 @@ WorkerScriptLoader::WorkerScriptLoader(
       resource_request_(resource_request),
       client_(std::move(client)),
       service_worker_provider_host_(service_worker_provider_host),
-      resource_context_(resource_context),
+      resource_context_getter_(resource_context_getter),
       default_loader_factory_(std::move(default_loader_factory)),
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this),
@@ -68,10 +68,16 @@ base::WeakPtr<WorkerScriptLoader> WorkerScriptLoader::GetWeakPtr() {
 }
 
 void WorkerScriptLoader::Start() {
+  ResourceContext* resource_context = resource_context_getter_.Run();
+  if (!resource_context) {
+    client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    return;
+  }
+
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
-        resource_request_, resource_context_,
+        resource_request_, resource_context,
         base::BindOnce(&WorkerScriptLoader::MaybeStartLoader,
                        weak_factory_.GetWeakPtr(), interceptor),
         base::BindOnce(&WorkerScriptLoader::LoadFromNetwork,

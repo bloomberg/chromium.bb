@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "base/feature_list.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/worker_host/worker_script_loader.h"
@@ -24,12 +23,12 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     base::WeakPtr<AppCacheHost> appcache_host,
-    ResourceContext* resource_context,
+    const ResourceContextGetter& resource_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : process_id_(process_id),
       service_worker_provider_host_(std::move(service_worker_provider_host)),
       appcache_host_(std::move(appcache_host)),
-      resource_context_(resource_context),
+      resource_context_getter_(resource_context_getter),
       loader_factory_(std::move(loader_factory)) {
 #if DCHECK_IS_ON()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -82,17 +81,11 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
       << resource_request.resource_type;
   DCHECK(!script_loader_);
 
-  // TODO(falken): There's no guarantee |resource_context_| is still valid here.
-  // WorkerScriptLoaderFactory needs access to an IO thread class that
-  // can tell it if shutdown has started (e.g.,
-  // ServiceWorkerContextWrapper::resource_context(), though it's weird to
-  // depend on service worker infra for this.
-
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(
       process_id_, routing_id, request_id, options, resource_request,
       std::move(client), service_worker_provider_host_, appcache_host_,
-      resource_context_, loader_factory_, traffic_annotation);
+      resource_context_getter_, loader_factory_, traffic_annotation);
   script_loader_ = script_loader->GetWeakPtr();
   mojo::MakeStrongBinding(std::move(script_loader), std::move(request));
 }

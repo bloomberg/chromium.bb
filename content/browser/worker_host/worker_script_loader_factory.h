@@ -32,6 +32,10 @@ class WorkerScriptLoader;
 class CONTENT_EXPORT WorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
+  // Returns the resource context, or nullptr during shutdown. Must be called on
+  // the IO thread.
+  using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
+
   // |loader_factory| is used to load the script if the load is not intercepted
   // by a feature like service worker. Typically it will load the script from
   // the NetworkService. However, it may internally contain non-NetworkService
@@ -40,7 +44,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
       int process_id,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
-      ResourceContext* resource_context,
+      const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~WorkerScriptLoaderFactory() override;
 
@@ -61,7 +65,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   const int process_id_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   base::WeakPtr<AppCacheHost> appcache_host_;
-  ResourceContext* resource_context_ = nullptr;
+  ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // This is owned by StrongBinding associated with the given URLLoaderRequest,

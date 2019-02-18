@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
@@ -71,6 +72,8 @@ class MockNetworkURLLoaderFactory final
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
 
+const int kProcessId = 1;
+
 }  // namespace
 
 class WorkerScriptLoaderFactoryTest : public testing::Test {
@@ -80,11 +83,17 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   ~WorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
+    // Set up the service worker system.
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     ServiceWorkerContextCore* context = helper_->context();
     context->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
+    resource_context_getter_ =
+        base::BindRepeating(&ServiceWorkerContextWrapper::resource_context,
+                            helper_->context_wrapper());
+
+    // Set up the network factory.
     network_loader_factory_instance_ =
         std::make_unique<MockNetworkURLLoaderFactory>();
     network::mojom::URLLoaderFactoryPtrInfo factory;
@@ -93,6 +102,14 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
         std::move(factory));
     network_loader_factory_ =
         network::SharedURLLoaderFactory::Create(std::move(info));
+
+    // Set up a service worker host for the shared worker.
+    service_worker_provider_info_ =
+        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+    service_worker_provider_host_ =
+        ServiceWorkerProviderHost::PreCreateForSharedWorker(
+            helper_->context()->AsWeakPtr(), kProcessId,
+            &service_worker_provider_info_);
   }
 
  protected:
@@ -116,25 +133,19 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<MockNetworkURLLoaderFactory> network_loader_factory_instance_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
+
+  blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      service_worker_provider_info_;
+  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+
+  WorkerScriptLoaderFactory::ResourceContextGetter resource_context_getter_;
 };
 
 TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
-  // Make a service worker provider host for the shared worker.
-  auto service_worker_provider_info =
-      blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host =
-      ServiceWorkerProviderHost::PreCreateForSharedWorker(
-          helper_->context()->AsWeakPtr(), 1 /* process_id */,
-          &service_worker_provider_info);
-
-  // Skip AppCache host as it's not worth testing.
-  base::WeakPtr<AppCacheHost> appcache_host;
-
   // Make the factory.
-  std::unique_ptr<WorkerScriptLoaderFactory> factory =
-      std::make_unique<WorkerScriptLoaderFactory>(
-          1 /* process_id */, service_worker_provider_host, appcache_host,
-          nullptr /* resource_context */, network_loader_factory_);
+  auto factory = std::make_unique<WorkerScriptLoaderFactory>(
+      kProcessId, service_worker_provider_host_, nullptr /* appcache_host */,
+      resource_context_getter_, network_loader_factory_);
 
   // Load the script.
   GURL url("https://www.example.com/worker.js");
@@ -145,25 +156,19 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 
   // The provider host should be set up.
-  EXPECT_TRUE(service_worker_provider_host->is_response_committed());
-  EXPECT_TRUE(service_worker_provider_host->is_execution_ready());
-  EXPECT_EQ(url, service_worker_provider_host->url());
+  EXPECT_TRUE(service_worker_provider_host_->is_response_committed());
+  EXPECT_TRUE(service_worker_provider_host_->is_execution_ready());
+  EXPECT_EQ(url, service_worker_provider_host_->url());
 }
 
 // Test a null service worker provider host. This typically only happens during
 // shutdown or after a fatal error occurred in the service worker system.
 TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerProviderHost) {
-  // Use a null service worker provider host.
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
-
-  // Skip AppCache host as it's not worth testing.
-  base::WeakPtr<AppCacheHost> appcache_host;
-
-  // Make the factory.
-  std::unique_ptr<WorkerScriptLoaderFactory> factory =
-      std::make_unique<WorkerScriptLoaderFactory>(
-          1 /* process_id */, service_worker_provider_host, appcache_host,
-          nullptr /* resource_context */, network_loader_factory_);
+  // Make the factory with null provider host.
+  auto factory = std::make_unique<WorkerScriptLoaderFactory>(
+      kProcessId, nullptr /* service_worker_provider_host */,
+      nullptr /* appcache_host */, resource_context_getter_,
+      network_loader_factory_);
 
   // Load the script.
   GURL url("https://www.example.com/worker.js");
@@ -172,6 +177,27 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerProviderHost) {
       CreateTestLoaderAndStart(url, factory.get(), &client);
   client.RunUntilComplete();
   EXPECT_EQ(net::OK, client.completion_status().error_code);
+}
+
+// Test a null resource context when the request starts. This happens when
+// shutdown starts between the constructor and when CreateLoaderAndStart is
+// invoked.
+TEST_F(WorkerScriptLoaderFactoryTest, NullResourceContext) {
+  // Make the factory.
+  auto factory = std::make_unique<WorkerScriptLoaderFactory>(
+      kProcessId, service_worker_provider_host_, nullptr /* appcache_host */,
+      resource_context_getter_, network_loader_factory_);
+
+  // Set a null resource context.
+  helper_->context_wrapper()->InitializeResourceContext(nullptr);
+
+  // Load the script.
+  GURL url("https://www.example.com/worker.js");
+  network::TestURLLoaderClient client;
+  network::mojom::URLLoaderPtr loader =
+      CreateTestLoaderAndStart(url, factory.get(), &client);
+  client.RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
 
 // TODO(falken): Add a test for a shared worker that's controlled by a service
