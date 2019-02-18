@@ -260,6 +260,46 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   return requests;
 }
 
+void ModulatorImplBase::ProduceCacheModuleTreeTopLevel(
+    ModuleScript* module_script) {
+  DCHECK(module_script);
+  HeapHashSet<Member<const ModuleScript>> discovered_set;
+  ProduceCacheModuleTree(module_script, &discovered_set);
+}
+
+void ModulatorImplBase::ProduceCacheModuleTree(
+    ModuleScript* module_script,
+    HeapHashSet<Member<const ModuleScript>>* discovered_set) {
+  DCHECK(module_script);
+
+  discovered_set->insert(module_script);
+
+  ScriptModule record = module_script->Record();
+  DCHECK(!record.IsNull());
+
+  module_script->ProduceCache();
+
+  Vector<Modulator::ModuleRequest> child_specifiers =
+      ModuleRequestsFromScriptModule(record);
+
+  for (const auto& module_request : child_specifiers) {
+    KURL child_url =
+        module_script->ResolveModuleSpecifier(module_request.specifier);
+
+    CHECK(child_url.IsValid())
+        << "ModuleScript::ResolveModuleSpecifier() impl must "
+           "return a valid url.";
+
+    ModuleScript* child_module = GetFetchedModuleScript(child_url);
+    CHECK(child_module);
+
+    if (discovered_set->Contains(child_module))
+      continue;
+
+    ProduceCacheModuleTree(child_module, discovered_set);
+  }
+}
+
 // <specdef href="https://html.spec.whatwg.org/C/#run-a-module-script">
 ScriptValue ModulatorImplBase::ExecuteModule(
     ModuleScript* module_script,
@@ -304,6 +344,14 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // user agent aborting the running script, then set evaluationStatus to
     // Completion { [[Type]]: throw, [[Value]]: a new "QuotaExceededError"
     // DOMException, [[Target]]: empty }.</spec>
+
+    // [not specced] Store V8 code cache on successful evaluation.
+    if (error.IsEmpty()) {
+      TaskRunner()->PostTask(
+          FROM_HERE,
+          WTF::Bind(&ModulatorImplBase::ProduceCacheModuleTreeTopLevel,
+                    WrapWeakPersistent(this), WrapPersistent(module_script)));
+    }
   }
 
   // <spec step="8">If evaluationStatus is an abrupt completion, then:</spec>

@@ -12,12 +12,15 @@
 namespace blink {
 
 // <specdef href="https://html.spec.whatwg.org/C/#creating-a-module-script">
-ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
-                                   Modulator* modulator,
-                                   const KURL& source_url,
-                                   const KURL& base_url,
-                                   const ScriptFetchOptions& options,
-                                   const TextPosition& start_position) {
+ModuleScript* ModuleScript::Create(
+    const ParkableString& original_source_text,
+    SingleCachedMetadataHandler* cache_handler,
+    ScriptSourceLocationType source_location_type,
+    Modulator* modulator,
+    const KURL& source_url,
+    const KURL& base_url,
+    const ScriptFetchOptions& options,
+    const TextPosition& start_position) {
   // <spec step="1">If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string.</spec>
   ParkableString source_text;
@@ -39,9 +42,12 @@ ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScript", "Create");
 
-  ScriptModule result =
-      ScriptModule::Compile(isolate, source_text.ToString(), source_url,
-                            base_url, options, start_position, exception_state);
+  ScriptModuleProduceCacheData* produce_cache_data = nullptr;
+
+  ScriptModule result = ScriptModule::Compile(
+      isolate, source_text.ToString(), source_url, base_url, options,
+      start_position, exception_state, modulator->GetV8CacheOptions(),
+      cache_handler, source_location_type, &produce_cache_data);
 
   // CreateInternal processes Steps 4 and 8-10.
   //
@@ -51,7 +57,7 @@ ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
   // be used for the speced algorithms, but may be used from inspector.
   ModuleScript* script =
       CreateInternal(source_text, modulator, result, source_url, base_url,
-                     options, start_position);
+                     options, start_position, produce_cache_data);
 
   // <spec step="8">If result is a list of errors, then:</spec>
   if (exception_state.HadException()) {
@@ -103,17 +109,20 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
   ParkableString dummy_source_text(String("").ReleaseImpl());
   KURL dummy_source_url;
   return CreateInternal(dummy_source_text, modulator, record, dummy_source_url,
-                        base_url, options, TextPosition::MinimumPosition());
+                        base_url, options, TextPosition::MinimumPosition(),
+                        nullptr);
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#creating-a-module-script">
-ModuleScript* ModuleScript::CreateInternal(const ParkableString& source_text,
-                                           Modulator* modulator,
-                                           ScriptModule result,
-                                           const KURL& source_url,
-                                           const KURL& base_url,
-                                           const ScriptFetchOptions& options,
-                                           const TextPosition& start_position) {
+ModuleScript* ModuleScript::CreateInternal(
+    const ParkableString& source_text,
+    Modulator* modulator,
+    ScriptModule result,
+    const KURL& source_url,
+    const KURL& base_url,
+    const ScriptFetchOptions& options,
+    const TextPosition& start_position,
+    ScriptModuleProduceCacheData* produce_cache_data) {
   // <spec step="6">Set script's parse error and error to rethrow to
   // null.</spec>
   //
@@ -126,7 +135,7 @@ ModuleScript* ModuleScript::CreateInternal(const ParkableString& source_text,
   // [nospec] |source_text| is saved for CSP checks.
   ModuleScript* module_script = MakeGarbageCollected<ModuleScript>(
       modulator, result, source_url, base_url, options, source_text,
-      start_position);
+      start_position, produce_cache_data);
 
   // Step 7, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.
@@ -141,12 +150,14 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options,
                            const ParkableString& source_text,
-                           const TextPosition& start_position)
+                           const TextPosition& start_position,
+                           ScriptModuleProduceCacheData* produce_cache_data)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
       source_text_(source_text),
       start_position_(start_position),
-      source_url_(source_url) {
+      source_url_(source_url),
+      produce_cache_data_(produce_cache_data) {
   if (record.IsNull()) {
     // We allow empty records for module infra tests which never touch records.
     // This should never happen outside unit tests.
@@ -223,6 +234,7 @@ void ModuleScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(record_.UnsafeCast<v8::Value>());
   visitor->Trace(parse_error_);
   visitor->Trace(error_to_rethrow_);
+  visitor->Trace(produce_cache_data_);
   Script::Trace(visitor);
 }
 
@@ -234,6 +246,20 @@ void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) {
 
 String ModuleScript::InlineSourceTextForCSP() const {
   return source_text_.ToString();
+}
+
+void ModuleScript::ProduceCache() {
+  if (!produce_cache_data_)
+    return;
+
+  ScriptState* script_state = settings_object_->GetScriptState();
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ScriptState::Scope scope(script_state);
+
+  V8CodeCache::ProduceCache(isolate, produce_cache_data_, source_text_.length(),
+                            source_url_, StartPosition());
+
+  produce_cache_data_ = nullptr;
 }
 
 std::ostream& operator<<(std::ostream& stream,

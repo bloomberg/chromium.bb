@@ -5,8 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -21,6 +25,42 @@ class ScriptFetchOptions;
 class ScriptState;
 class ScriptValue;
 
+// ScriptModuleProduceCacheData is a parameter object for
+// ScriptModule::ProduceCache().
+class CORE_EXPORT ScriptModuleProduceCacheData final
+    : public GarbageCollectedFinalized<ScriptModuleProduceCacheData> {
+ public:
+  ScriptModuleProduceCacheData(v8::Isolate*,
+                               SingleCachedMetadataHandler*,
+                               v8::ScriptCompiler::CompileOptions,
+                               V8CodeCache::ProduceCacheOptions,
+                               v8::Local<v8::Module>);
+
+  void Trace(blink::Visitor*);
+
+  SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
+  v8::ScriptCompiler::CompileOptions GetCompileOptions() const {
+    return compile_options_;
+  }
+  V8CodeCache::ProduceCacheOptions GetProduceCacheOptions() const {
+    return produce_cache_options_;
+  }
+  v8::Local<v8::UnboundModuleScript> UnboundScript(v8::Isolate* isolate) const {
+    return unbound_script_.NewLocal(isolate);
+  }
+
+ private:
+  Member<SingleCachedMetadataHandler> cache_handler_;
+
+  v8::ScriptCompiler::CompileOptions compile_options_;
+  V8CodeCache::ProduceCacheOptions produce_cache_options_;
+
+  // TODO(keishi): Visitor only defines a trace method for v8::Value so this
+  // needs to be cast.
+  GC_PLUGIN_IGNORE("757708")
+  TraceWrapperV8Reference<v8::UnboundModuleScript> unbound_script_;
+};
+
 // ScriptModule wraps a handle to a v8::Module for use in core.
 //
 // Using ScriptModules needs a ScriptState and its scope to operate in. You
@@ -32,13 +72,19 @@ class CORE_EXPORT ScriptModule final {
   DISALLOW_NEW();
 
  public:
-  static ScriptModule Compile(v8::Isolate*,
-                              const String& source,
-                              const KURL& source_url,
-                              const KURL& base_url,
-                              const ScriptFetchOptions&,
-                              const TextPosition&,
-                              ExceptionState&);
+  static ScriptModule Compile(
+      v8::Isolate*,
+      const String& source,
+      const KURL& source_url,
+      const KURL& base_url,
+      const ScriptFetchOptions&,
+      const TextPosition&,
+      ExceptionState&,
+      V8CacheOptions = kV8CacheOptionsDefault,
+      SingleCachedMetadataHandler* = nullptr,
+      ScriptSourceLocationType source_location_type =
+          ScriptSourceLocationType::kInternal,
+      ScriptModuleProduceCacheData** out_produce_cache_data = nullptr);
 
   // TODO(kouhei): Remove copy ctor
   ScriptModule();

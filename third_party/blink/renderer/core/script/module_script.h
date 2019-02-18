@@ -14,10 +14,12 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -28,6 +30,8 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   // https://html.spec.whatwg.org/C/#creating-a-module-script
   static ModuleScript* Create(
       const ParkableString& source_text,
+      SingleCachedMetadataHandler*,
+      ScriptSourceLocationType,
       Modulator*,
       const KURL& source_url,
       const KURL& base_url,
@@ -48,7 +52,8 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
                const KURL& base_url,
                const ScriptFetchOptions&,
                const ParkableString& source_text,
-               const TextPosition& start_position);
+               const TextPosition& start_position,
+               ScriptModuleProduceCacheData*);
   ~ModuleScript() override = default;
 
   ScriptModule Record() const;
@@ -77,6 +82,8 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
+  void ProduceCache();
+
  private:
   static ModuleScript* CreateInternal(const ParkableString& source_text,
                                       Modulator*,
@@ -84,7 +91,8 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
                                       const KURL& source_url,
                                       const KURL& base_url,
                                       const ScriptFetchOptions&,
-                                      const TextPosition&);
+                                      const TextPosition&,
+                                      ScriptModuleProduceCacheData*);
 
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kModule;
@@ -94,6 +102,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
 
   friend class ModulatorImplBase;
   friend class ModuleTreeLinkerTestModulator;
+  friend class ModuleScriptTest;
 
   // https://html.spec.whatwg.org/C/#settings-object
   Member<Modulator> settings_object_;
@@ -150,6 +159,18 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   const TextPosition start_position_;
   mutable HashMap<String, KURL> specifier_to_url_cache_;
   KURL source_url_;
+
+  // Only for ProduceCache(). ModuleScript keeps |produce_cache_data| because:
+  // - CompileModule() and ProduceCache() should be called at different
+  //   timings, and
+  // - There are no persistent object that can hold this in
+  //   bindings/core/v8 side. ScriptModule should be short-lived and is
+  //   constructed every time in ModuleScript::Record().
+  //
+  // Cleared once ProduceCache() is called, to avoid
+  // calling V8CodeCache::ProduceCache() multiple times, as a ModuleScript
+  // can appear multiple times in multiple module graphs.
+  Member<ScriptModuleProduceCacheData> produce_cache_data_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);

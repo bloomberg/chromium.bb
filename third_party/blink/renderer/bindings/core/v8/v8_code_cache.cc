@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
@@ -89,11 +90,23 @@ std::tuple<v8::ScriptCompiler::CompileOptions,
            v8::ScriptCompiler::NoCacheReason>
 V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
                                const ScriptSourceCode& source) {
+  return GetCompileOptions(cache_options, source.CacheHandler(),
+                           source.Source().length(),
+                           source.SourceLocationType());
+}
+
+std::tuple<v8::ScriptCompiler::CompileOptions,
+           V8CodeCache::ProduceCacheOptions,
+           v8::ScriptCompiler::NoCacheReason>
+V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
+                               const SingleCachedMetadataHandler* cache_handler,
+                               size_t source_text_length,
+                               ScriptSourceLocationType source_location_type) {
   static const int kMinimalCodeLength = 1024;
   static const int kHotHours = 72;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
 
-  switch (source.SourceLocationType()) {
+  switch (source_location_type) {
     case ScriptSourceLocationType::kInline:
       no_cache_reason = v8::ScriptCompiler::kNoCacheBecauseInlineScript;
       break;
@@ -111,7 +124,6 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
       break;
   }
 
-  SingleCachedMetadataHandler* cache_handler = source.CacheHandler();
   if (!cache_handler) {
     return std::make_tuple(v8::ScriptCompiler::kNoCompileOptions,
                            ProduceCacheOptions::kNoProduceCache,
@@ -125,7 +137,7 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
                            no_cache_reason);
   }
 
-  if (source.Source().length() < kMinimalCodeLength) {
+  if (source_text_length < kMinimalCodeLength) {
     no_cache_reason = v8::ScriptCompiler::kNoCacheBecauseScriptTooSmall;
     return std::make_tuple(v8::ScriptCompiler::kNoCompileOptions,
                            ProduceCacheOptions::kNoProduceCache,
@@ -180,40 +192,45 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
                          v8::ScriptCompiler::kNoCacheNoReason);
 }
 
-void V8CodeCache::ProduceCache(
+template <typename UnboundScript>
+static void ProduceCacheInternal(
     v8::Isolate* isolate,
-    v8::Local<v8::Script> script,
-    const ScriptSourceCode& source,
-    ProduceCacheOptions produce_cache_options,
-    v8::ScriptCompiler::CompileOptions compile_options) {
+    UnboundScript unbound_script,
+    SingleCachedMetadataHandler* cache_handler,
+    size_t source_text_length,
+    const KURL& source_url,
+    const TextPosition& source_start_position,
+    bool is_streamed,
+    V8CodeCache::ProduceCacheOptions produce_cache_options,
+    v8::ScriptCompiler::CompileOptions compile_options,
+    ScriptStreamer::NotStreamingReason not_streaming_reason) {
   TRACE_EVENT0("v8", "v8.compile");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   switch (produce_cache_options) {
-    case ProduceCacheOptions::kSetTimeStamp:
-      V8CodeCache::SetCacheTimeStamp(source.CacheHandler());
+    case V8CodeCache::ProduceCacheOptions::kSetTimeStamp:
+      V8CodeCache::SetCacheTimeStamp(cache_handler);
       break;
-    case ProduceCacheOptions::kProduceCodeCache: {
+    case V8CodeCache::ProduceCacheOptions::kProduceCodeCache: {
       constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
       TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
-                         source.Url().GetString().Utf8());
+                         source_url.GetString().Utf8());
 
       std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
-          v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));
+          v8::ScriptCompiler::CreateCodeCache(unbound_script));
       if (cached_data) {
         const uint8_t* data = cached_data->data;
         int length = cached_data->length;
         if (length > 1024) {
           // Omit histogram samples for small cache data to avoid outliers.
           int cache_size_ratio =
-              static_cast<int>(100.0 * length / source.Source().length());
+              static_cast<int>(100.0 * length / source_text_length);
           DEFINE_THREAD_SAFE_STATIC_LOCAL(
               CustomCountHistogram, code_cache_size_histogram,
               ("V8.CodeCacheSizeRatio", 0, 10000, 50));
           code_cache_size_histogram.Count(cache_size_ratio);
         }
-        SingleCachedMetadataHandler* cache_handler = source.CacheHandler();
         cache_handler->ClearCachedMetadata(
             CachedMetadataHandler::kCacheLocally);
         cache_handler->SetCachedMetadata(
@@ -224,18 +241,44 @@ void V8CodeCache::ProduceCache(
       TRACE_EVENT_END1(
           kTraceEventCategoryGroup, "v8.compile", "data",
           inspector_compile_script_event::Data(
-              source.Url().GetString(), source.StartPosition(),
+              source_url.GetString(), source_start_position,
               inspector_compile_script_event::V8CacheResult(
                   inspector_compile_script_event::V8CacheResult::ProduceResult(
                       compile_options, cached_data ? cached_data->length : 0),
                   base::Optional<inspector_compile_script_event::V8CacheResult::
                                      ConsumeResult>()),
-              source.Streamer(), source.NotStreamingReason()));
+              is_streamed, not_streaming_reason));
       break;
     }
-    case ProduceCacheOptions::kNoProduceCache:
+    case V8CodeCache::ProduceCacheOptions::kNoProduceCache:
       break;
   }
+}
+
+void V8CodeCache::ProduceCache(
+    v8::Isolate* isolate,
+    v8::Local<v8::Script> script,
+    const ScriptSourceCode& source,
+    ProduceCacheOptions produce_cache_options,
+    v8::ScriptCompiler::CompileOptions compile_options) {
+  ProduceCacheInternal(isolate, script->GetUnboundScript(),
+                       source.CacheHandler(), source.Source().length(),
+                       source.Url(), source.StartPosition(), source.Streamer(),
+                       produce_cache_options, compile_options,
+                       source.NotStreamingReason());
+}
+
+void V8CodeCache::ProduceCache(v8::Isolate* isolate,
+                               ScriptModuleProduceCacheData* produce_cache_data,
+                               size_t source_text_length,
+                               const KURL& source_url,
+                               const TextPosition& source_start_position) {
+  ProduceCacheInternal(isolate, produce_cache_data->UnboundScript(isolate),
+                       produce_cache_data->CacheHandler(), source_text_length,
+                       source_url, source_start_position, false,
+                       produce_cache_data->GetProduceCacheOptions(),
+                       produce_cache_data->GetCompileOptions(),
+                       ScriptStreamer::kModuleScript);
 }
 
 uint32_t V8CodeCache::TagForCodeCache(

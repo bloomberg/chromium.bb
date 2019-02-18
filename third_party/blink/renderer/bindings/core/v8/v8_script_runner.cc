@@ -222,9 +222,12 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
 v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     v8::Isolate* isolate,
-    const String& source,
+    const String& source_text,
+    SingleCachedMetadataHandler* cache_handler,
     const String& file_name,
     const TextPosition& start_position,
+    v8::ScriptCompiler::CompileOptions compile_options,
+    v8::ScriptCompiler::NoCacheReason no_cache_reason,
     const ReferrerScriptInfo& referrer_info) {
   TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
                file_name.Utf8());
@@ -243,8 +246,34 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       v8::True(isolate),                 // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
-  v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);
-  return v8::ScriptCompiler::CompileModule(isolate, &script_source);
+  v8::Local<v8::String> code = V8String(isolate, source_text);
+
+  switch (compile_options) {
+    case v8::ScriptCompiler::kNoCompileOptions:
+    case v8::ScriptCompiler::kEagerCompile: {
+      v8::ScriptCompiler::Source source(code, origin);
+      return v8::ScriptCompiler::CompileModule(
+          isolate, &source, compile_options, no_cache_reason);
+    }
+
+    case v8::ScriptCompiler::kConsumeCodeCache: {
+      // Compile a script, and consume a V8 cache that was generated previously.
+      DCHECK(cache_handler);
+      v8::ScriptCompiler::CachedData* cached_data =
+          V8CodeCache::CreateCachedData(cache_handler);
+      v8::ScriptCompiler::Source source(code, origin, cached_data);
+      v8::MaybeLocal<v8::Module> script = v8::ScriptCompiler::CompileModule(
+          isolate, &source, compile_options, no_cache_reason);
+      if (cached_data->rejected) {
+        cache_handler->ClearCachedMetadata(
+            CachedMetadataHandler::kSendToPlatform);
+      }
+      return script;
+    }
+  }
+
+  NOTREACHED();
+  return v8::MaybeLocal<v8::Module>();
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(

@@ -17,6 +17,32 @@
 
 namespace blink {
 
+ScriptModuleProduceCacheData::ScriptModuleProduceCacheData(
+    v8::Isolate* isolate,
+    SingleCachedMetadataHandler* cache_handler,
+    v8::ScriptCompiler::CompileOptions compile_options,
+    V8CodeCache::ProduceCacheOptions produce_cache_options,
+    v8::Local<v8::Module> module)
+    : cache_handler_(cache_handler),
+      compile_options_(compile_options),
+      produce_cache_options_(produce_cache_options) {
+  v8::HandleScope scope(isolate);
+
+  if (produce_cache_options ==
+          V8CodeCache::ProduceCacheOptions::kProduceCodeCache &&
+      module->GetStatus() == v8::Module::kUninstantiated) {
+    v8::Local<v8::UnboundModuleScript> unbound_script =
+        module->GetUnboundModuleScript();
+    if (!unbound_script.IsEmpty())
+      unbound_script_.Set(isolate, unbound_script);
+  }
+}
+
+void ScriptModuleProduceCacheData::Trace(blink::Visitor* visitor) {
+  visitor->Trace(cache_handler_);
+  visitor->Trace(unbound_script_.UnsafeCast<v8::Value>());
+}
+
 ScriptModule::ScriptModule() = default;
 
 ScriptModule::ScriptModule(v8::Isolate* isolate,
@@ -30,17 +56,38 @@ ScriptModule::ScriptModule(v8::Isolate* isolate,
 
 ScriptModule::~ScriptModule() = default;
 
-ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
-                                   const String& source,
-                                   const KURL& source_url,
-                                   const KURL& base_url,
-                                   const ScriptFetchOptions& options,
-                                   const TextPosition& text_position,
-                                   ExceptionState& exception_state) {
+ScriptModule ScriptModule::Compile(
+    v8::Isolate* isolate,
+    const String& source,
+    const KURL& source_url,
+    const KURL& base_url,
+    const ScriptFetchOptions& options,
+    const TextPosition& text_position,
+    ExceptionState& exception_state,
+    V8CacheOptions v8_cache_options,
+    SingleCachedMetadataHandler* cache_handler,
+    ScriptSourceLocationType source_location_type,
+    ScriptModuleProduceCacheData** out_produce_cache_data) {
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
-  if (!V8ScriptRunner::CompileModule(isolate, source, source_url, text_position,
+  // Module scripts currently don't support |kEagerCompile| which can be
+  // used for |kV8CacheOptionsFullCodeWithoutHeatCheck|, so use
+  // |kV8CacheOptionsCodeWithoutHeatCheck| instead.
+  if (v8_cache_options == kV8CacheOptionsFullCodeWithoutHeatCheck) {
+    v8_cache_options = kV8CacheOptionsCodeWithoutHeatCheck;
+  }
+
+  v8::ScriptCompiler::CompileOptions compile_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
+  v8::ScriptCompiler::NoCacheReason no_cache_reason;
+  std::tie(compile_options, produce_cache_options, no_cache_reason) =
+      V8CodeCache::GetCompileOptions(v8_cache_options, cache_handler,
+                                     source.length(), source_location_type);
+
+  if (!V8ScriptRunner::CompileModule(isolate, source, cache_handler, source_url,
+                                     text_position, compile_options,
+                                     no_cache_reason,
                                      ReferrerScriptInfo(base_url, options))
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
@@ -48,6 +95,14 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
     return ScriptModule();
   }
   DCHECK(!try_catch.HasCaught());
+
+  if (out_produce_cache_data) {
+    *out_produce_cache_data =
+        MakeGarbageCollected<ScriptModuleProduceCacheData>(
+            isolate, cache_handler, compile_options, produce_cache_options,
+            module);
+  }
+
   return ScriptModule(isolate, module, source_url);
 }
 
