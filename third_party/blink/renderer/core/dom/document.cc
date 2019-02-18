@@ -2281,6 +2281,16 @@ void Document::UpdateStyle() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
+  // All of layout tree dirtiness and rebuilding needs to happen on a stable
+  // flat tree. We have an invariant that all of that happens in this method
+  // as a result of style recalc and the following layout tree rebuild.
+  //
+  // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
+  // slotting on a dirty tree could break ancestor chains and fail to update
+  // the tree properly.
+  DCHECK(!ChildNeedsReattachLayoutTree());
+  DCHECK(!NeedsReattachLayoutTree());
+
   NthIndexCache nth_index_cache(*this);
 
   StyleRecalcChange change;
@@ -2304,7 +2314,6 @@ void Document::UpdateStyle() {
   }
 
   ClearNeedsStyleRecalc();
-  ClearNeedsReattachLayoutTree();
 
   StyleResolver& resolver = EnsureStyleResolver();
 
