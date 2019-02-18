@@ -123,8 +123,9 @@ void PollingSensorReader::PollForData() {
 
   if (is_reading_active_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PlatformSensorLinux::UpdatePlatformSensorReading,
-                              sensor_, readings));
+        FROM_HERE,
+        base::BindOnce(&PlatformSensorLinux::UpdatePlatformSensorReading,
+                       sensor_, readings));
   }
 }
 
@@ -157,7 +158,8 @@ void SensorReader::NotifyReadError() {
   if (is_reading_active_) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PlatformSensorLinux::NotifyPlatformSensorError, sensor_));
+        base::BindOnce(&PlatformSensorLinux::NotifyPlatformSensorError,
+                       sensor_));
   }
 }
 

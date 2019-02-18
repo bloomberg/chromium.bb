@@ -93,8 +93,8 @@ class MockSensorDeviceManager : public SensorDeviceManager {
   void EnumerationReady() {
     bool success = task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SensorDeviceManager::Delegate::OnSensorNodesEnumerated,
-                   base::Unretained(delegate_)));
+        base::BindOnce(&SensorDeviceManager::Delegate::OnSensorNodesEnumerated,
+                       base::Unretained(delegate_)));
     ASSERT_TRUE(success);
   }
 
@@ -296,8 +296,9 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     }
     udev_device* dev = nullptr;
     bool success = base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockSensorDeviceManager::DeviceRemoved,
-                              base::Unretained(manager_), dev /* not used */));
+        FROM_HERE,
+        base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
+                       base::Unretained(manager_), dev /* not used */));
     ASSERT_TRUE(success);
   }
 

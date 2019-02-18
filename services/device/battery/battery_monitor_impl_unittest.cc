@@ -59,7 +59,7 @@ class FakeBatteryStatusManager : public BatteryStatusManager {
   void InvokeUpdateCallback() {
     // Invoke asynchronously to mimic the OS-specific battery managers.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, status_));
+        FROM_HERE, base::BindOnce(callback_, status_));
   }
 
   void set_battery_status(const mojom::BatteryStatus& status) {

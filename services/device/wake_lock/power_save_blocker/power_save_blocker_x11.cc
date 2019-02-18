@@ -187,7 +187,7 @@ void PowerSaveBlocker::Delegate::Init() {
   unblock_inflight_ = false;
   enqueue_unblock_ = false;
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::InitOnUIThread, this));
+                            base::BindOnce(&Delegate::InitOnUIThread, this));
 }
 
 void PowerSaveBlocker::Delegate::CleanUp() {
@@ -199,12 +199,12 @@ void PowerSaveBlocker::Delegate::CleanUp() {
     enqueue_apply_ = false;
   } else {
     if (ShouldBlock()) {
-      blocking_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(&Delegate::RemoveBlock, this));
+      blocking_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
     }
 
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Delegate::XSSSuspendSet, this, false));
+        FROM_HERE, base::BindOnce(&Delegate::XSSSuspendSet, this, false));
   }
 }
 
@@ -219,8 +219,8 @@ void PowerSaveBlocker::Delegate::InitOnUIThread() {
       // D-Bus library, so we need to use the same thread above for
       // RemoveBlock(). It must be a thread that allows I/O operations, so we
       // use the FILE thread.
-      blocking_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(&Delegate::ApplyBlock, this));
+      blocking_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&Delegate::ApplyBlock, this));
     }
     XSSSuspendSet(true);
   }
@@ -334,8 +334,8 @@ void PowerSaveBlocker::Delegate::ApplyBlockFinished(dbus::Response* response) {
     enqueue_unblock_ = false;
     // RemoveBlock() was called while the Inhibit operation was in flight,
     // so go ahead and remove the block now.
-    blocking_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&Delegate::RemoveBlock, this));
+    blocking_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
   }
 }
 

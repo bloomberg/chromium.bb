@@ -70,8 +70,9 @@ void BatteryStatusService::NotifyConsumers(const mojom::BatteryStatus& status) {
   DCHECK(!is_shutdown_);
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BatteryStatusService::NotifyConsumersOnMainThread,
-                            base::Unretained(this), status));
+      FROM_HERE,
+      base::BindOnce(&BatteryStatusService::NotifyConsumersOnMainThread,
+                     base::Unretained(this), status));
 }
 
 void BatteryStatusService::NotifyConsumersOnMainThread(

@@ -111,12 +111,12 @@ PowerSaveBlocker::PowerSaveBlocker(
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
   g_power_thread.Pointer()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Delegate::ApplyBlock, delegate_));
+      FROM_HERE, base::BindOnce(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlocker::~PowerSaveBlocker() {
   g_power_thread.Pointer()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Delegate::RemoveBlock, delegate_));
+      FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace device

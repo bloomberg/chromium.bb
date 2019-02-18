@@ -440,8 +440,8 @@ bool PlatformSensorReaderWin::StartSensor(
 
   if (!sensor_active_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PlatformSensorReaderWin::ListenSensorEvent,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&PlatformSensorReaderWin::ListenSensorEvent,
+                                  weak_factory_.GetWeakPtr()));
     sensor_active_ = true;
   }
 

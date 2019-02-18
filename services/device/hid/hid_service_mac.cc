@@ -132,7 +132,7 @@ void HidServiceMac::Connect(const std::string& device_guid,
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, nullptr));
+        FROM_HERE, base::BindOnce(callback, nullptr));
     return;
   }
 

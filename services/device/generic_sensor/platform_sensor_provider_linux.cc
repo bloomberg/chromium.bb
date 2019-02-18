@@ -66,8 +66,8 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
     if (!sensor_nodes_enumeration_started_) {
       sensor_nodes_enumeration_started_ = file_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&SensorDeviceManager::Start,
-                     base::Unretained(sensor_device_manager_.get()), this));
+          base::BindOnce(&SensorDeviceManager::Start,
+                         base::Unretained(sensor_device_manager_.get()), this));
     }
     return;
   }
@@ -119,8 +119,8 @@ void PlatformSensorProviderLinux::FreeResources() {
   // Stop() can only be called on a different thread that allows I/O.
   // Thus, browser's file thread is used for this purpose.
   file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PlatformSensorProviderLinux::StopPollingThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&PlatformSensorProviderLinux::StopPollingThread,
+                                base::Unretained(this)));
 }
 
 bool PlatformSensorProviderLinux::StartPollingThread() {

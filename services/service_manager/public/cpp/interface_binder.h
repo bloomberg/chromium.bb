@@ -100,8 +100,8 @@ class GenericCallbackBinder : public InterfaceBinder<BinderArgs...> {
     if (task_runner_) {
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&GenericCallbackBinder::RunCallback, callback_,
-                     interface_name, base::Passed(&handle), args...));
+          base::BindOnce(&GenericCallbackBinder::RunCallback, callback_,
+                         interface_name, std::move(handle), args...));
       return;
     }
     RunCallback(callback_, interface_name, std::move(handle), args...);

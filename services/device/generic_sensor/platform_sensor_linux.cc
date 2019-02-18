@@ -72,16 +72,16 @@ bool PlatformSensorLinux::StartSensor(
   DCHECK(task_runner_->BelongsToCurrentThread());
   polling_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SensorReader::StartFetchingData,
-                 base::Unretained(sensor_reader_.get()), configuration));
+      base::BindOnce(&SensorReader::StartFetchingData,
+                     base::Unretained(sensor_reader_.get()), configuration));
   return true;
 }
 
 void PlatformSensorLinux::StopSensor() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   polling_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SensorReader::StopFetchingData,
-                            base::Unretained(sensor_reader_.get())));
+      FROM_HERE, base::BindOnce(&SensorReader::StopFetchingData,
+                                base::Unretained(sensor_reader_.get())));
 }
 
 bool PlatformSensorLinux::CheckSensorConfiguration(
