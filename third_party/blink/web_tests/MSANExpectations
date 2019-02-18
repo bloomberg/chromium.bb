@@ -223,3 +223,9 @@ crbug.com/925600 [ Linux ] external/wpt/webrtc-quic/RTCQuicStream.https.html [ P
 crbug.com/931660 [ Linux ] external/wpt/payment-handler/idlharness.https.any.sharedworker.html [ Pass Timeout ]
 crbug.com/931660 [ Linux ] external/wpt/trusted-types/idlharness.window.html [ Pass Timeout ]
 crbug.com/931660 [ Linux ] fast/history/replacestate-nocrash.html [ Pass Timeout ]
+
+# Sheriff 2019-02-18
+crbug.com/856601 [ Linux ] external/wpt/fetch/api/idl.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ]  external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ]  external/wpt/secure-contexts/idlharness.any.sharedworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ]  external/wpt/wake-lock/idlharness.https.window.html [ Pass Timeout ]
