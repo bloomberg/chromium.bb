@@ -303,9 +303,15 @@ void RenderFrameProxyHost::OnOpenURL(
     return;
   }
 
+  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
+
+  // The current_rfh may be pending deletion. In this case, ignore the
+  // navigation, because the frame is going to disappear soon anyway.
+  if (!current_rfh->is_active())
+    return;
+
   // Verify that we are in the same BrowsingInstance as the current
   // RenderFrameHost.
-  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
   if (!site_instance_->IsRelatedSiteInstance(current_rfh->GetSiteInstance()))
     return;
 
