@@ -254,13 +254,15 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   constexpr float kSeparatorOpacity = 0.15f;
 
   gfx::Rect bounds = GetLocalBounds();
+  const gfx::Size separator_size = gfx::Size(bounds.width(), 1);
+
   // Inset the bounds by 1 on the bottom, so we draw the bottom border inside
   // the custom tab bar.
   bounds.Inset(0, 0, 0, 1);
 
   // Custom tab/content separator (bottom border).
-  canvas->DrawLine(
-      bounds.bottom_left(), bounds.bottom_right(),
+  canvas->FillRect(
+      gfx::Rect(bounds.bottom_left(), separator_size),
       color_utils::AlphaBlend(kSeparatorColor, kCustomTabBarViewBackgroundColor,
                               kSeparatorOpacity));
 
@@ -274,7 +276,7 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   }
 
   // Frame/Custom tab separator (top border).
-  canvas->DrawLine(bounds.origin(), bounds.top_right(),
+  canvas->FillRect(gfx::Rect(bounds.origin(), separator_size),
                    color_utils::AlphaBlend(kSeparatorColor, title_bar_color_,
                                            kSeparatorOpacity));
 }
