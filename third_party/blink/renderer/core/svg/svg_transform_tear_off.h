@@ -43,13 +43,14 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
 
  public:
   enum SVGTransformType {
-    kSvgTransformUnknown = blink::kSvgTransformUnknown,
-    kSvgTransformMatrix = blink::kSvgTransformMatrix,
-    kSvgTransformTranslate = blink::kSvgTransformTranslate,
-    kSvgTransformScale = blink::kSvgTransformScale,
-    kSvgTransformRotate = blink::kSvgTransformRotate,
-    kSvgTransformSkewx = blink::kSvgTransformSkewx,
-    kSvgTransformSkewy = blink::kSvgTransformSkewy,
+    kSvgTransformUnknown = static_cast<int>(blink::SVGTransformType::kUnknown),
+    kSvgTransformMatrix = static_cast<int>(blink::SVGTransformType::kMatrix),
+    kSvgTransformTranslate =
+        static_cast<int>(blink::SVGTransformType::kTranslate),
+    kSvgTransformScale = static_cast<int>(blink::SVGTransformType::kScale),
+    kSvgTransformRotate = static_cast<int>(blink::SVGTransformType::kRotate),
+    kSvgTransformSkewx = static_cast<int>(blink::SVGTransformType::kSkewx),
+    kSvgTransformSkewy = static_cast<int>(blink::SVGTransformType::kSkewy),
   };
 
   static SVGTransformTearOff* Create(
@@ -67,7 +68,9 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
                       PropertyIsAnimValType);
   ~SVGTransformTearOff() override;
 
-  unsigned short transformType() { return Target()->TransformType(); }
+  unsigned short transformType() {
+    return static_cast<unsigned short>(Target()->TransformType());
+  }
   SVGMatrixTearOff* matrix();
   float angle() { return Target()->Angle(); }
 

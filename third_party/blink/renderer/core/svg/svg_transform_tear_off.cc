@@ -48,7 +48,7 @@ void SVGTransformTearOff::Trace(blink::Visitor* visitor) {
 }
 
 SVGTransformTearOff* SVGTransformTearOff::CreateDetached() {
-  return Create(SVGTransform::Create(blink::kSvgTransformMatrix), nullptr,
+  return Create(SVGTransform::Create(blink::SVGTransformType::kMatrix), nullptr,
                 kPropertyIsNotAnimVal);
 }
 
