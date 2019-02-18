@@ -39,6 +39,10 @@ class ServiceWorkerProviderHost;
 class WorkerScriptLoader : public network::mojom::URLLoader,
                            public network::mojom::URLLoaderClient {
  public:
+  // Returns the resource context, or nullptr during shutdown. Must be called on
+  // the IO thread.
+  using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
+
   // |default_loader_factory| is used to load the script if the load is not
   // intercepted by a feature like service worker. Typically it will load the
   // script from the NetworkService. However, it may internally contain
@@ -53,7 +57,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       network::mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
-      ResourceContext* resource_context,
+      const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~WorkerScriptLoader() override;
@@ -123,7 +127,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   network::ResourceRequest resource_request_;
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
-  ResourceContext* const resource_context_;
+  ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 

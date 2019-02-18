@@ -299,6 +299,12 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       appcache_handle_core ? appcache_handle_core->host()->GetWeakPtr()
                            : nullptr;
 
+  // Create a ResourceContext getter using |service_worker_context|.
+  // This context is aware of shutdown and safely returns a nullptr
+  // instead of a destroyed ResourceContext in that case.
+  auto resource_context_getter = base::BindRepeating(
+      &ServiceWorkerContextWrapper::resource_context, service_worker_context);
+
   // NetworkService (PlzWorker):
   // Start loading a shared worker main script.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -314,7 +320,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     WorkerScriptFetcher::CreateAndStart(
         std::make_unique<WorkerScriptLoaderFactory>(
             process_id, std::move(service_worker_host),
-            std::move(appcache_host), resource_context,
+            std::move(appcache_host), resource_context_getter,
             std::move(url_loader_factory)),
         std::move(throttles), std::move(resource_request),
         base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO,
@@ -329,7 +335,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<WorkerScriptLoaderFactory>(
           process_id, std::move(service_worker_host), std::move(appcache_host),
-          resource_context, std::move(url_loader_factory)),
+          resource_context_getter, std::move(url_loader_factory)),
       mojo::MakeRequest(&main_script_loader_factory));
 
   DidCreateScriptLoaderOnIO(std::move(callback), std::move(provider_info),
