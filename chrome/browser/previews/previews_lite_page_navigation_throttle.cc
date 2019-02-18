@@ -301,7 +301,8 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   PreviewsUITabHelper* tab_helper = PreviewsUITabHelper::FromWebContents(
       navigation_handle()->GetWebContents());
   previews::PreviewsUserData* previews_data =
-      tab_helper->GetPreviewsUserData(navigation_handle());
+      tab_helper ? tab_helper->GetPreviewsUserData(navigation_handle())
+                 : nullptr;
   if (!previews_data || !(previews_data->allowed_previews_state() &
                           content::LITE_PAGE_REDIRECT_ON)) {
     ineligible_reasons.push_back(IneligibleReason::kPreviewsState);
