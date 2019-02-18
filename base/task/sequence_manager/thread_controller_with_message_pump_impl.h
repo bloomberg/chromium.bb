@@ -11,10 +11,10 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/run_loop.h"
-#include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "base/task/sequence_manager/work_deduplicator.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -25,9 +25,7 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-// EXPERIMENTAL ThreadController implementation which doesn't use
-// MessageLoop or a task runner to schedule their DoWork calls.
-// See https://crbug.com/828835.
+// This is the interface between the SequenceManager and the MessagePump.
 class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     : public ThreadController,
       public MessagePump::Delegate,
@@ -37,6 +35,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   ThreadControllerWithMessagePumpImpl(std::unique_ptr<MessagePump> message_pump,
                                       const TickClock* time_source);
   ~ThreadControllerWithMessagePumpImpl() override;
+
+  using ShouldScheduleWork = WorkDeduplicator::ShouldScheduleWork;
 
   static std::unique_ptr<ThreadControllerWithMessagePumpImpl> CreateUnbound(
       const TickClock* time_source);
@@ -94,8 +94,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // will be returned.
   TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now, bool* ran_task);
 
-  bool InTopLevelDoWork() const;
-
   void InitializeThreadTaskRunnerHandle()
       EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
 
@@ -114,23 +112,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     // Whether high resolution timing is enabled or not.
     bool in_high_res_mode = false;
 
-    // Used to prevent redundant calls to ScheduleWork / ScheduleDelayedWork.
-    bool immediate_do_work_posted = false;
-
-    // Whether we're currently executing delayed work (as opposed to immediate
-    // work).
-    bool doing_delayed_work = false;
-
     // Number of tasks processed in a single DoWork invocation.
     int work_batch_size = 1;
 
-    // Number of DoWorks on the stack. Must be >= |nesting_depth|.
-    int do_work_running_count = 0;
-
-    // Number of nested RunLoops on the stack.
-    int nesting_depth = 0;
-
-    // Should always be < |nesting_depth|.
     int runloop_count = 0;
 
     // When the next scheduled delayed work should run, if any.
@@ -157,12 +141,11 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   scoped_refptr<SingleThreadTaskRunner> task_runner_
       GUARDED_BY(task_runner_lock_);
 
-  // OperationsController will only be started after |pump_| is set.
-  base::internal::OperationsController operations_controller_;
+  WorkDeduplicator work_deduplicator_;
 
   // Can only be set once (just before calling
-  // operations_controller_.StartAcceptingOperations()). After that only read
-  // access is allowed.
+  // work_deduplicator_.BindToCurrentThread()). After that only read access is
+  // allowed.
   std::unique_ptr<MessagePump> pump_;
 
   debug::TaskAnnotator task_annotator_;

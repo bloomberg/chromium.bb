@@ -16,18 +16,21 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "base/task/sequence_manager/work_deduplicator.h"
 #include "build/build_config.h"
 
 namespace base {
 
-// TODO(kraynov): https://crbug.com/828835
-// Consider going away from using MessageLoop in the renderer process.
 class MessageLoopBase;
 
 namespace sequence_manager {
 namespace internal {
 
-// TODO(kraynov): Rename to ThreadControllerWithMessageLoopImpl.
+// This is the interface between a SequenceManager which sits on top of an
+// underlying MessageLoop or SingleThreadTaskRunner. Currently it's only used
+// for workers in blink although we'd intend to migrate those to
+// ThreadControllerWithMessagePumpImpl. Long term we intend to use this for
+// sequence funneling.
 class BASE_EXPORT ThreadControllerImpl : public ThreadController,
                                          public RunLoop::NestingObserver {
  public:
@@ -83,23 +86,12 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
 
   void DoWork(WorkType work_type);
 
-  struct AnySequence {
-    AnySequence();
-    ~AnySequence();
-
-    int do_work_running_count = 0;
-    int nesting_depth = 0;
-    bool immediate_do_work_posted = false;
-  };
-
-  mutable Lock any_sequence_lock_;
-  AnySequence any_sequence_ GUARDED_BY(any_sequence_lock_);
-
+  // TODO(scheduler-dev): Maybe fold this into the main class and use
+  // thread annotations.
   struct MainSequenceOnly {
     MainSequenceOnly();
     ~MainSequenceOnly();
 
-    int do_work_running_count = 0;
     int nesting_depth = 0;
     int work_batch_size_ = 1;
 
@@ -125,6 +117,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   CancelableClosure cancelable_delayed_do_work_closure_;
   SequencedTaskSource* sequence_ = nullptr;  // Not owned.
   debug::TaskAnnotator task_annotator_;
+  WorkDeduplicator work_deduplicator_;
 
 #if DCHECK_IS_ON()
   bool default_task_runner_set_ = false;

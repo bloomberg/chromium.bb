@@ -1681,9 +1681,7 @@ bool DelayedQuitOnSystemTimer(UINT message,
 // This is a regression test for
 // https://crrev.com/c/1455266/9/base/message_loop/message_pump_win.cc#125
 // See below for the delayed task version.
-// TODO(alexclarke): This test never ends up calling
-// MessagePumpForUI::ScheduleWork().
-TEST_F(MessageLoopTest, DISABLED_PostImmediateTaskFromSystemPump) {
+TEST_F(MessageLoopTest, PostImmediateTaskFromSystemPump) {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   RunLoop run_loop;
@@ -1708,9 +1706,7 @@ TEST_F(MessageLoopTest, DISABLED_PostImmediateTaskFromSystemPump) {
 // https://crrev.com/c/1455266/9/base/message_loop/message_pump_win.cc#125 This
 // is the delayed task equivalent of the above PostImmediateTaskFromSystemPump
 // test.
-// TODO(alexclarke): This test never ends up calling
-// MessagePumpForUI::ScheduleDelayedWork().
-TEST_F(MessageLoopTest, DISABLED_PostDelayedTaskFromSystemPump) {
+TEST_F(MessageLoopTest, PostDelayedTaskFromSystemPump) {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   RunLoop run_loop;

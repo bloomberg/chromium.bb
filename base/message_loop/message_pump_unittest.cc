@@ -266,6 +266,62 @@ TEST_P(MessagePumpTest, TimerSlackWithLongDelays) {
   message_pump_->Run(&delegate);
 }
 
+TEST_P(MessagePumpTest, RunWithoutScheduleWorkInvokesDoWork) {
+  testing::StrictMock<MockMessagePumpDelegate> delegate;
+#if defined(OS_IOS)
+  EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
+#endif
+  if (pump_uses_do_some_work_) {
+    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+  } else {
+    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return false;
+    }));
+  }
+  message_pump_->Run(&delegate);
+}
+
+TEST_P(MessagePumpTest, NestedRunWithoutScheduleWorkInvokesDoWork) {
+  testing::StrictMock<MockMessagePumpDelegate> delegate;
+#if defined(OS_IOS)
+  EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
+#endif
+  if (pump_uses_do_some_work_) {
+    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+      testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
+#if defined(OS_IOS)
+      EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
+#endif
+      EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([this] {
+        message_pump_->Quit();
+        return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+      }));
+      message_pump_->Run(&nested_delegate);
+      message_pump_->Quit();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+  } else {
+    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+      testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
+#if defined(OS_IOS)
+      EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
+#endif
+      EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
+        message_pump_->Quit();
+        return false;
+      }));
+      message_pump_->Run(&nested_delegate);
+      message_pump_->Quit();
+      return false;
+    }));
+  }
+  message_pump_->Run(&delegate);
+}
+
 INSTANTIATE_TEST_SUITE_P(,
                          MessagePumpTest,
                          ::testing::Values(MessageLoop::TYPE_DEFAULT,
