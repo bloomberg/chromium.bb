@@ -847,7 +847,8 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
   }
 }
 
-static void update_reference_frames(AV1_COMP *cpi) {
+static void update_reference_frames(AV1_COMP *cpi,
+                                    FRAME_UPDATE_TYPE frame_update_type) {
   AV1_COMMON *const cm = &cpi->common;
 
   // If check_frame_refs_short_signaling() decided to set
@@ -868,7 +869,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     return;
   }
 
-  if (cpi->rc.is_src_frame_alt_ref && !cpi->rc.is_src_frame_ext_arf) {
+  if (frame_update_type == OVERLAY_UPDATE) {
     // We have decided to preserve the previously existing golden frame as our
     // new ARF frame. However, in the short term in function
     // av1_bitstream.c::get_refresh_mask() we left it in the GF slot and, if
@@ -885,7 +886,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[ALTREF_FRAME - LAST_FRAME] =
         get_ref_frame_map_idx(cm, GOLDEN_FRAME);
     cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] = tmp;
-  } else if (cpi->rc.is_src_frame_ext_arf && encode_show_existing_frame(cm)) {
+  } else if (frame_update_type == INTNL_OVERLAY_UPDATE &&
+             encode_show_existing_frame(cm)) {
     const int bwdref_to_show =
         (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
     // Deal with the special case for showing existing internal ALTREF_FRAME
@@ -906,8 +908,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
       cm->remapped_ref_idx[bwdref_to_show - LAST_FRAME] = last3_remapped_idx;
     }
   } else { /* For non key/golden frames */
-    if (cpi->refresh_bwd_ref_frame && !cm->show_existing_frame &&
-        cpi->new_bwdref_update_rule) {
+    if (frame_update_type == INTNL_ARF_UPDATE && cpi->new_bwdref_update_rule &&
+        !cm->show_existing_frame) {
       // === BWDREF_FRAME ===
       // (Nothing to do for BWDREF_FRAME show_existing_frame because the
       // reference frame update has been done previously when handling the
@@ -922,8 +924,13 @@ static void update_reference_frames(AV1_COMP *cpi) {
     }
   }
 
-  if (cpi->refresh_last_frame && !encode_show_existing_frame(cm) &&
-      (!cm->show_existing_frame || cpi->rc.is_src_frame_ext_arf)) {
+  // This set of frame_update_types refresh the last_frame buffer.
+  if ((frame_update_type == LF_UPDATE || frame_update_type == GF_UPDATE ||
+       frame_update_type == LAST_BIPRED_UPDATE ||
+       frame_update_type == BIPRED_UPDATE ||
+       frame_update_type == INTNL_OVERLAY_UPDATE) &&
+      !encode_show_existing_frame(cm) &&
+      (!cm->show_existing_frame || frame_update_type == INTNL_OVERLAY_UPDATE)) {
     // NOTE(zoeliu): We have two layers of mapping (1) from the per-frame
     // reference to the reference frame buffer virtual index; and then (2) from
     // the virtual index to the reference frame buffer (RefCntBuffer):
@@ -963,10 +970,11 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // If the new structure is used, we will always have overlay frames coupled
     // with bwdref frames. Therefore, we won't have to perform this update
     // in advance (we do this update when the overlay frame shows up).
-    if (cpi->new_bwdref_update_rule == 0 && cpi->rc.is_last_bipred_frame &&
-        !cm->show_existing_frame) {
+    if (cpi->new_bwdref_update_rule == 0 && !cm->show_existing_frame &&
+        frame_update_type == LAST_BIPRED_UPDATE) {
       // Refresh the LAST_FRAME with the BWDREF_FRAME and retire the
-      // LAST3_FRAME by updating the virtual indices.
+      // LAST3_FRAME by updating the virtual indices.  This branch only executes
+      // when allow_show_existing() == 0
       //
       // NOTE: The source frame for BWDREF does not have a holding position as
       //       the OVERLAY frame for ALTREF's. Hence, to resolve the reference
@@ -1183,7 +1191,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     // First pass doesn't modify reference buffer assignment or produce frame
     // flags
     update_frame_flags(cpi, frame_flags);
-    update_reference_frames(cpi);
+    update_reference_frames(cpi, frame_update_type);
   }
 
   if (oxcf->pass == 2) {
