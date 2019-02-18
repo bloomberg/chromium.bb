@@ -416,6 +416,13 @@ cvox.CommandStore.CMD_WHITELIST = {
     'disallowOOBE': true,
     category: 'help_commands'
   },
+  'showLogPage': {
+    announce: false,
+    disallowContinuation: true,
+    msgId: 'show_log_page',
+    'disallowOOBE': true,
+    category: 'help_commands'
+  },
   'showKbExplorerPage': {
     announce: false,
     disallowContinuation: true,
