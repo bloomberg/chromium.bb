@@ -23,6 +23,11 @@
     'fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7',
   ],
 
+  'linux_component': [
+    # https://crbug.com/900696
+    'remoting-webapp.v2.zip',
+  ],
+
   # https://crbug.com/330262
   'mac': [
     # ld64 in current Xcode versions is not deterministic. Most smaller binaries
