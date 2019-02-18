@@ -8,8 +8,6 @@ import subprocess
 import json
 import sys
 
-from third_party import httplib2
-
 import ninjalog_uploader
 
 THIS_DIR = os.path.dirname(__file__)
