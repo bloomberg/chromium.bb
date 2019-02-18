@@ -157,6 +157,14 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   bool AccessibilityPerformAction(const AXActionData& data) override;
 
   //
+  // Localized strings.
+  //
+
+  base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const override;
+  base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
+
+  //
   // Testing.
   //
 

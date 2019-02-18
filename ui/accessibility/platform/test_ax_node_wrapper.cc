@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -365,6 +366,35 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
   }
 
   return true;
+}
+
+base::string16 TestAXNodeWrapper::GetLocalizedRoleDescriptionForUnlabeledImage()
+    const {
+  return base::ASCIIToUTF16("Unlabeled image");
+}
+
+base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
+    ax::mojom::ImageAnnotationStatus status) const {
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+      return base::ASCIIToUTF16(
+          "To get missing image descriptions, open the context menu.");
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+      return base::ASCIIToUTF16("Getting description...");
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+      return base::ASCIIToUTF16("No description is available.");
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+      return base::ASCIIToUTF16("Appears to be adult content.");
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      return base::ASCIIToUTF16("Unable to get a description.");
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      return base::string16();
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {

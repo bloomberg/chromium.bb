@@ -76,6 +76,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int32_t CellIndexToId(int32_t cell_index) const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
+  base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
+  base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
   std::set<AXPlatformNode*> GetReverseRelations(

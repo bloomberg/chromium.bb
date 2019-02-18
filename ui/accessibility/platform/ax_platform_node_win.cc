@@ -184,6 +184,18 @@ constexpr int kLargeChangeScaleFactor = 10;
 // cursor keys are used to scroll a webpage.
 constexpr float kSmallScrollIncrement = 40.0f;
 
+void AppendTextToString(base::string16 extra_text, base::string16* string) {
+  if (extra_text.empty())
+    return;
+
+  if (string->empty()) {
+    *string = extra_text;
+    return;
+  }
+
+  *string += base::string16(L". ") + extra_text;
+}
+
 }  // namespace
 
 void AXPlatformNodeWin::AddAttributeToList(const char* name,
@@ -797,18 +809,47 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accKeyboardShortcut(VARIANT var_id,
       ax::mojom::StringAttribute::kKeyShortcuts, acc_key);
 }
 
-IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name) {
+IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_NAME);
   AXPlatformNodeWin* target;
-  COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name, target);
+  COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name_bstr, target);
 
   for (IAccessible2UsageObserver& observer :
        GetIAccessible2UsageObserverList()) {
     observer.OnAccNameCalled();
   }
 
-  return target->GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                                          name);
+  bool has_name = target->HasStringAttribute(ax::mojom::StringAttribute::kName);
+  base::string16 name =
+      target->GetString16Attribute(ax::mojom::StringAttribute::kName);
+  auto status = GetData().GetImageAnnotationStatus();
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      AppendTextToString(
+          GetDelegate()->GetLocalizedStringForImageAnnotationStatus(status),
+          &name);
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      AppendTextToString(
+          GetString16Attribute(ax::mojom::StringAttribute::kImageAnnotation),
+          &name);
+      break;
+  }
+
+  if (name.empty() && !has_name)
+    return S_FALSE;
+
+  *name_bstr = SysAllocString(name.c_str());
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_accParent(IDispatch** disp_parent) {
@@ -1258,8 +1299,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   COM_OBJECT_VALIDATE_1_ARG(localized_extended_role);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  return GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
-                                  localized_extended_role);
+  base::string16 role_description = GetRoleDescription();
+  *localized_extended_role = SysAllocString(role_description.c_str());
+  return S_OK;
 }
 
 //

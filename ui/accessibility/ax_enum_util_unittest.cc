@@ -195,4 +195,9 @@ TEST(AXEnumUtilTest, TreeOrder) {
   TestEnumStringConversion<ax::mojom::TreeOrder>(ParseTreeOrder);
 }
 
+TEST(AXEnumUtilTest, ImageAnnotationStatus) {
+  TestEnumStringConversion<ax::mojom::ImageAnnotationStatus>(
+      ParseImageAnnotationStatus);
+}
+
 }  // namespace ui

@@ -391,6 +391,15 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() const {
   return value;
 }
 
+base::string16 AXPlatformNodeBase::GetRoleDescription() const {
+  if (GetData().GetImageAnnotationStatus() ==
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation) {
+    return GetDelegate()->GetLocalizedRoleDescriptionForUnlabeledImage();
+  }
+
+  return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+}
+
 AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {
   if (!delegate_)
     return nullptr;
@@ -671,8 +680,13 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
-  AddAttributeToList(ax::mojom::StringAttribute::kRoleDescription,
-                     "roledescription", attributes);
+  base::string16 role_description = GetRoleDescription();
+  if (!role_description.empty() ||
+      HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
+    AddAttributeToList("roledescription", base::UTF16ToUTF8(role_description),
+                       attributes);
+  }
+
   AddAttributeToList(ax::mojom::StringAttribute::kKeyShortcuts, "keyshortcuts",
                      attributes);
 
