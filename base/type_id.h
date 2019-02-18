@@ -67,7 +67,11 @@ class BASE_EXPORT TypeId {
  public:
   template <typename T>
   static TypeId From() {
-    return TypeId(PRETTY_FUNCTION, internal::UniqueIdFromType<T>());
+    return TypeId(
+#if DCHECK_IS_ON()
+        PRETTY_FUNCTION,
+#endif
+        internal::UniqueIdFromType<T>());
   }
 
   TypeId();
@@ -84,7 +88,11 @@ class BASE_EXPORT TypeId {
   std::string ToString() const;
 
  private:
-  TypeId(const char* function_name, internal::TypeUniqueId unique_type_id);
+  TypeId(
+#if DCHECK_IS_ON()
+      const char* function_name,
+#endif
+      internal::TypeUniqueId unique_type_id);
 
 #if DCHECK_IS_ON()
   const char* function_name_;

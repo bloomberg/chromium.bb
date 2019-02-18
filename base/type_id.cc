@@ -8,7 +8,11 @@
 
 namespace base {
 
-TypeId::TypeId(const char* function_name, internal::TypeUniqueId unique_type_id)
+TypeId::TypeId(
+#if DCHECK_IS_ON()
+    const char* function_name,
+#endif
+    internal::TypeUniqueId unique_type_id)
     :
 #if DCHECK_IS_ON()
       function_name_(function_name),
@@ -16,7 +20,13 @@ TypeId::TypeId(const char* function_name, internal::TypeUniqueId unique_type_id)
       unique_type_id_(unique_type_id) {
 }
 
-TypeId::TypeId() : TypeId("", internal::UniqueIdFromType<internal::NoType>()) {}
+TypeId::TypeId()
+    : TypeId(
+#if DCHECK_IS_ON()
+          "",
+#endif
+          internal::UniqueIdFromType<internal::NoType>()) {
+}
 
 std::string TypeId::ToString() const {
 #if DCHECK_IS_ON()
