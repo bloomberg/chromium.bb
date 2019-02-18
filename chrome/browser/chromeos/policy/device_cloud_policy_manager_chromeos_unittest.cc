@@ -69,6 +69,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
 using testing::DoAll;
@@ -79,7 +80,6 @@ using testing::SaveArg;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::WithArgs;
-using testing::_;
 
 namespace em = enterprise_management;
 
@@ -127,10 +127,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   DeviceCloudPolicyManagerChromeOSTest()
       : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         state_keys_broker_(&fake_session_manager_client_),
-        store_(nullptr),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
+        store_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
@@ -171,13 +168,13 @@ class DeviceCloudPolicyManagerChromeOSTest
     // SharedURLLoaderFactory and LocalState singletons have to be set since
     // they are accessed by EnrollmentHandlerChromeOS and StartupUtils.
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
-        test_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
     chromeos::SystemSaltGetter::Initialize();
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
-        test_shared_loader_factory_, &local_state_);
+        test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
 
     url_fetcher_response_code_ = net::HTTP_OK;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
@@ -209,7 +206,6 @@ class DeviceCloudPolicyManagerChromeOSTest
     chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-    test_shared_loader_factory_->Detach();
   }
 
   void LockDevice() {
@@ -239,7 +235,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     initializer_->SetSigningServiceForTesting(
         std::make_unique<FakeSigningService>());
     initializer_->SetSystemURLLoaderFactoryForTesting(
-        test_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
     initializer_->Init();
   }
 
@@ -288,8 +284,6 @@ class DeviceCloudPolicyManagerChromeOSTest
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
   session_manager::SessionManager session_manager_;
@@ -663,8 +657,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
                 data.certificate_type());
       req->CopyFrom(data.device_register_request());
     } else {
-      req->CopyFrom(
-          register_request_.register_request());
+      req->CopyFrom(register_request_.register_request());
     }
     return req;
   }
@@ -766,16 +759,14 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
   session_manager_client_.set_store_policy_success(false);
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
-  EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,
-            status_.store_status());
+  EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR, status_.store_status());
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   loaded_blob_.clear();
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
-  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
-            status_.store_status());
+  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, status_.store_status());
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
