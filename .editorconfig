@@ -9,7 +9,7 @@ indent_style = tab
 indent_size = 8
 max_line_length = 80
 
-[*.xml,meson.build,meson_options.txt]
+[*.xml]
 indent_style = space
 indent_size = 2
 tab_width = 8
