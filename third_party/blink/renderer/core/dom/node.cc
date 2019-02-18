@@ -1176,6 +1176,7 @@ void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
 void Node::SetNeedsReattachLayoutTree() {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
+  DCHECK(IsElementNode() || IsTextNode());
   SetFlag(kNeedsReattachLayoutTree);
   MarkAncestorsWithChildNeedsReattachLayoutTree();
 }
