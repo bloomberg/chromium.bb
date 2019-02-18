@@ -52,7 +52,7 @@ def SetExtraBrowserOptionsForMemoryMeasurement(options):
   # has anomalous results. This option causes us to flush caches
   # each time before Chrome starts so we effect even the first page
   # - avoiding the bug.
-  options.clear_sytem_cache_for_browser_and_profile_on_start = True
+  options.flush_os_page_caches_on_start = True
 
 
 def DefaultShouldAddValueForMemoryMeasurement(name):
