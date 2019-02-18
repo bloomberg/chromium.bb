@@ -28,9 +28,8 @@ AccountsMutatorImpl::AccountsMutatorImpl(
   DCHECK(account_tracker_service_);
   DCHECK(signin_manager_);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // TODO(myid.shin): Ensure a non-null PrefService is passed in tests and add
-  // DCHECK here.
   pref_service_ = pref_service;
+  DCHECK(pref_service_);
 #endif
 }
 
@@ -98,7 +97,6 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
   target_impl->account_tracker_service_->SeedAccountInfo(account_info);
   token_service_->ExtractCredentials(target_impl->token_service_, account_id);
 
-  DCHECK(pref_service_);
   // Reset the device ID from the source mutator: the exported token is linked
   // to the device ID of the current mutator on the server. Reset the device ID
   // of the current mutator to avoid tying it with the new mutator. See

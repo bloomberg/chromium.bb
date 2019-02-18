@@ -16,6 +16,7 @@
 
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
+class PrefService;
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -82,6 +83,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // that constructor once possible (e.g., when an incremental conversion is
   // completed). NOTE: The passed-in objects must all outlive this object.
   IdentityTestEnvironment(
+      PrefService* pref_service,
       AccountTrackerService* account_tracker_service,
       FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
@@ -315,6 +317,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Profile/ChromeBrowserState. If you think you have another use case for it,
   // contact blundell@chromium.org.
   IdentityTestEnvironment(
+      PrefService* pref_service,
       AccountTrackerService* account_tracker_service,
       FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
@@ -335,6 +338,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // this object will create and own an IdentityManager instance from the
   // supplied dependencies.
   IdentityTestEnvironment(
+      PrefService* pref_service,
       AccountTrackerService* account_tracker_service,
       FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
@@ -366,6 +370,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // pointed to below in the case where those objects are not passed in via
   // the IdentityTestEnvironment constructor.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
+  PrefService* pref_service_ = nullptr;
   AccountTrackerService* account_tracker_service_ = nullptr;
   FakeAccountFetcherService* account_fetcher_service_ = nullptr;
   FakeProfileOAuth2TokenService* token_service_ = nullptr;

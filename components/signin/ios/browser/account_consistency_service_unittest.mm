@@ -172,7 +172,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
                               &account_tracker_service_, nullptr));
     signin_manager_->Initialize(nullptr);
     identity_test_env_.reset(new identity::IdentityTestEnvironment(
-        &account_tracker_service_, &account_fetcher_service_,
+        &prefs_, &account_tracker_service_, &account_fetcher_service_,
         token_service_.get(), signin_manager_.get(),
         gaia_cookie_manager_service_.get()));
     settings_map_ = new HostContentSettingsMap(
