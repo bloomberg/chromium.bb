@@ -5,17 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_GLOBAL_SCOPE_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/layout/custom/pending_layout_registry.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class CSSLayoutDefinition;
+class V8NoArgumentConstructor;
 class WorkerReportingProxy;
 
 class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
@@ -41,7 +40,7 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
 
   // Implements LayoutWorkletGlobalScope.idl
   void registerLayout(const AtomicString& name,
-                      const ScriptValue& constructor_value,
+                      V8NoArgumentConstructor* layout_ctor,
                       ExceptionState&);
 
   CSSLayoutDefinition* FindDefinition(const AtomicString& name);

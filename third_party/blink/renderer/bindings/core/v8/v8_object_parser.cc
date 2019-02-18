@@ -109,7 +109,7 @@ bool V8ObjectParser::ParseGeneratorFunction(v8::Local<v8::Context> context,
 
 bool V8ObjectParser::ParseCSSPropertyList(
     v8::Local<v8::Context> context,
-    v8::Local<v8::Function> constructor,
+    v8::Local<v8::Object> constructor,
     const AtomicString list_name,
     Vector<CSSPropertyID>* native_properties,
     Vector<AtomicString>* custom_properties,

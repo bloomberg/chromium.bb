@@ -47,7 +47,7 @@ class CORE_EXPORT V8ObjectParser final {
   // Vector<String> type. It does not fail if the list contains invalid CSS
   // properties, to ensure forward compatibility.
   static bool ParseCSSPropertyList(v8::Local<v8::Context>,
-                                   v8::Local<v8::Function> constructor,
+                                   v8::Local<v8::Object> constructor,
                                    const AtomicString list_name,
                                    Vector<CSSPropertyID>* native_properties,
                                    Vector<AtomicString>* custom_properties,

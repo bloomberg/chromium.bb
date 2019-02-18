@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -16,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 
 namespace blink {
 
@@ -59,7 +63,7 @@ void LayoutWorkletGlobalScope::Dispose() {
 // https://drafts.css-houdini.org/css-layout-api/#dom-layoutworkletglobalscope-registerlayout
 void LayoutWorkletGlobalScope::registerLayout(
     const AtomicString& name,
-    const ScriptValue& constructor_value,
+    V8NoArgumentConstructor* layout_ctor,
     ExceptionState& exception_state) {
   if (name.IsEmpty()) {
     exception_state.ThrowTypeError("The empty string is not a valid name.");
@@ -73,17 +77,14 @@ void LayoutWorkletGlobalScope::registerLayout(
     return;
   }
 
-  v8::Local<v8::Context> context = ScriptController()->GetContext();
-
-  DCHECK(constructor_value.V8Value()->IsFunction());
-  v8::Local<v8::Function> constructor =
-      v8::Local<v8::Function>::Cast(constructor_value.V8Value());
+  v8::Local<v8::Context> current_context =
+      layout_ctor->GetIsolate()->GetCurrentContext();
 
   Vector<CSSPropertyID> native_invalidation_properties;
   Vector<AtomicString> custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          context, constructor, "inputProperties",
+          current_context, layout_ctor->CallbackObject(), "inputProperties",
           &native_invalidation_properties, &custom_invalidation_properties,
           &exception_state))
     return;
@@ -92,29 +93,47 @@ void LayoutWorkletGlobalScope::registerLayout(
   Vector<AtomicString> child_custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          context, constructor, "childInputProperties",
-          &child_native_invalidation_properties,
+          current_context, layout_ctor->CallbackObject(),
+          "childInputProperties", &child_native_invalidation_properties,
           &child_custom_invalidation_properties, &exception_state))
     return;
 
-  v8::Local<v8::Object> prototype;
-  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
-                                      &exception_state))
+  CallbackMethodRetriever retriever(layout_ctor);
+  retriever.GetPrototypeObject(exception_state);
+  if (exception_state.HadException())
     return;
 
-  v8::Local<v8::Function> intrinsic_sizes;
-  if (!V8ObjectParser::ParseGeneratorFunction(
-          context, prototype, "intrinsicSizes", &intrinsic_sizes,
-          &exception_state))
+  v8::Local<v8::Function> v8_intrinsic_sizes =
+      retriever.GetMethodOrThrow("intrinsicSizes", exception_state);
+  if (exception_state.HadException())
     return;
+  // TODO(ikilpatrick): Make it clear if we really need to check the function
+  // is a generator function or not.  Non generator function can return an
+  // iterator.
+  if (!v8_intrinsic_sizes->IsGeneratorFunction()) {
+    exception_state.ThrowTypeError(
+        "The 'intrinsicSizes' property on the prototype is not a generator "
+        "function.");
+    return;
+  }
+  V8Function* intrinsic_sizes = V8Function::Create(v8_intrinsic_sizes);
 
-  v8::Local<v8::Function> layout;
-  if (!V8ObjectParser::ParseGeneratorFunction(context, prototype, "layout",
-                                              &layout, &exception_state))
+  v8::Local<v8::Function> v8_layout =
+      retriever.GetMethodOrThrow("layout", exception_state);
+  if (exception_state.HadException())
     return;
+  // TODO(ikilpatrick): Make it clear if we really need to check the function
+  // is a generator function or not.  Non generator function can return an
+  // iterator.
+  if (!v8_layout->IsGeneratorFunction()) {
+    exception_state.ThrowTypeError(
+        "The 'layout' property on the prototype is not a generator function.");
+    return;
+  }
+  V8LayoutCallback* layout = V8LayoutCallback::Create(v8_layout);
 
   CSSLayoutDefinition* definition = MakeGarbageCollected<CSSLayoutDefinition>(
-      ScriptController()->GetScriptState(), constructor, intrinsic_sizes,
+      ScriptController()->GetScriptState(), layout_ctor, intrinsic_sizes,
       layout, native_invalidation_properties, custom_invalidation_properties,
       child_native_invalidation_properties,
       child_custom_invalidation_properties);
