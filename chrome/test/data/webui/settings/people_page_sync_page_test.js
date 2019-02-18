@@ -72,8 +72,10 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(syncPage.$$('#' + settings.PageStatus.TIMEOUT).hidden);
       assertTrue(syncPage.$$('#' + settings.PageStatus.SPINNER).hidden);
 
-      // Start with Sync All with no encryption selected.
+      // Start with Sync All with no encryption selected. Also, ensure that
+      // this is not a supervised user, so that Sync Passphrase is enabled.
       cr.webUIListenerCallback('sync-prefs-changed', getSyncAllPrefs());
+      syncPage.set('syncStatus', {supervisedUser: false});
       Polymer.dom.flush();
 
       return test_util.waitForRender().then(() => {
@@ -89,6 +91,10 @@ cr.define('settings_people_page_sync_page', function() {
     teardown(function() {
       syncPage.remove();
     });
+
+    // #######################
+    // TESTS FOR ALL PLATFORMS
+    // #######################
 
     test('NotifiesHandlerOfNavigation', function() {
       function testNavigateAway() {
@@ -361,7 +367,7 @@ cr.define('settings_people_page_sync_page', function() {
               syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
 
           // Assert that the radio boxes are disabled after encryption enabled.
-          assertTrue(syncPage.$$('cr-radio-group').disabled);
+          assertTrue(syncPage.$$('#encryptionRadioGroup').disabled);
           assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
           assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
         });
@@ -470,7 +476,7 @@ cr.define('settings_people_page_sync_page', function() {
         Polymer.dom.flush();
 
         // Verify that the encryption radio boxes are shown but disabled.
-        assertTrue(syncPage.$$('cr-radio-group').disabled);
+        assertTrue(syncPage.$$('#encryptionRadioGroup').disabled);
         assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
         assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
       });
@@ -489,18 +495,99 @@ cr.define('settings_people_page_sync_page', function() {
       assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
     });
 
+    // This test checks whether the passphrase encryption options are
+    // disabled. This is important for supervised accounts. Because sync
+    // is required for supervision, passphrases should remain disabled.
+    test('DisablingSyncPassphrase', function() {
+      // We initialize a new SyncPrefs object for each case, because
+      // otherwise the webUIListener doesn't update.
+
+      // 1) Normal user (full data encryption allowed)
+      // EXPECTED: encryptionOptions enabled
+      const prefs1 = getSyncAllPrefs();
+      prefs1.encryptAllDataAllowed = true;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs1);
+      syncPage.syncStatus = {supervisedUser: false};
+      Polymer.dom.flush();
+      assertFalse(encryptWithGoogle.disabled);
+      assertFalse(encryptWithPassphrase.disabled);
+
+      // 2) Normal user (full data encryption not allowed)
+      // encryptAllDataAllowed is usually false only for supervised
+      // users, but it's better to be check this case.
+      // EXPECTED: encryptionOptions disabled
+      const prefs2 = getSyncAllPrefs();
+      prefs2.encryptAllDataAllowed = false;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs2);
+      syncPage.syncStatus = {supervisedUser: false};
+      Polymer.dom.flush();
+      assertTrue(encryptWithGoogle.disabled);
+      assertTrue(encryptWithPassphrase.disabled);
+
+      // 3) Supervised user (full data encryption not allowed)
+      // EXPECTED: encryptionOptions disabled
+      const prefs3 = getSyncAllPrefs();
+      prefs3.encryptAllDataAllowed = false;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs3);
+      syncPage.syncStatus = {supervisedUser: true};
+      Polymer.dom.flush();
+      assertTrue(encryptWithGoogle.disabled);
+      assertTrue(encryptWithPassphrase.disabled);
+
+      // 4) Supervised user (full data encryption allowed)
+      // This never happens in practice, but just to be safe.
+      // EXPECTED: encryptionOptions disabled
+      const prefs4 = getSyncAllPrefs();
+      prefs4.encryptAllDataAllowed = true;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs4);
+      syncPage.syncStatus = {supervisedUser: true};
+      Polymer.dom.flush();
+      assertTrue(encryptWithGoogle.disabled);
+      assertTrue(encryptWithPassphrase.disabled);
+    });
+
+    // The sync dashboard is not accessible by supervised
+    // users, so it should remain hidden.
+    test('SyncDashboardHiddenFromSupervisedUsers', function() {
+      const dashboardLink = syncPage.$$('#syncDashboardLink');
+
+      const prefs = getSyncAllPrefs();
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+
+      // Normal user
+      syncPage.syncStatus = {supervisedUser: false};
+      Polymer.dom.flush();
+      assertFalse(dashboardLink.hidden);
+
+      // Supervised user
+      syncPage.syncStatus = {supervisedUser: true};
+      Polymer.dom.flush();
+      assertTrue(dashboardLink.hidden);
+    });
+
+    // ##################################
+    // TESTS THAT ARE SKIPPED ON CHROMEOS
+    // ##################################
+
     if (!cr.isChromeOS) {
       test('SyncSetupCancel_UnifiedConsentDisabled', function() {
         syncPage.unifiedConsentEnabled = false;
         Polymer.dom.flush();
 
         const toast = syncPage.$$('cr-toast');
+
+        // During initialization, the toast values start as undefined/false.
+        syncPage.syncStatus = {};
+        Polymer.dom.flush();
         assertTrue(!!toast);
-        assertFalse(toast.open);
+        assertFalse(!!toast.open);
+
+        // Next, the toast shows up during setup.
         syncPage.syncStatus = {setupInProgress: true};
         Polymer.dom.flush();
         assertTrue(toast.open);
 
+        // At the end, confirm that setup can be cancelled.
         toast.querySelector('paper-button').click();
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
