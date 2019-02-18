@@ -3543,6 +3543,9 @@
   </message>
 
   <!-- Crostini export and import -->
+  <message name="IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING" desc="Message to display in a notification when the operation is starting and we don't yet have an estimate for how long it will take">
+    Starting...
+  </message>
   <message name="IDS_CROSTINI_EXPORT_TITLE" desc="Title for exporting (backing up) the crostini container.">
     Backup
   </message>

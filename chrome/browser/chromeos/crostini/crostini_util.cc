@@ -35,9 +35,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 
 namespace {
 
@@ -459,6 +462,26 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
       vm_name, container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
       vm_name, container_name);
+}
+
+base::string16 GetTimeRemainingMessage(base::Time start, int percent) {
+  // Only estimate once we've spent at least 3 seconds OR gotten 10% of the way
+  // through.
+  constexpr base::TimeDelta kMinTimeForEstimate =
+      base::TimeDelta::FromSeconds(3);
+  constexpr base::TimeDelta kTimeDeltaZero = base::TimeDelta::FromSeconds(0);
+  constexpr int kMinPercentForEstimate = 10;
+  base::TimeDelta elapsed = base::Time::Now() - start;
+  if ((elapsed >= kMinTimeForEstimate && percent > 0) ||
+      (percent >= kMinPercentForEstimate && elapsed > kTimeDeltaZero)) {
+    base::TimeDelta total_time_expected = (elapsed * 100) / percent;
+    base::TimeDelta time_remaining = total_time_expected - elapsed;
+    return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                                  ui::TimeFormat::LENGTH_SHORT, time_remaining);
+  } else {
+    return l10n_util::GetStringUTF16(
+        IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING);
+  }
 }
 
 }  // namespace crostini
