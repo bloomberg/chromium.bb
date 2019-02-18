@@ -17,10 +17,10 @@ class EmptyScriptModuleResolver final : public ScriptModuleResolver {
 
   // We ignore {Unr,R}egisterModuleScript() calls caused by
   // ModuleScript::CreateForTest().
-  void RegisterModuleScript(ModuleScript*) override {}
-  void UnregisterModuleScript(ModuleScript*) override {}
+  void RegisterModuleScript(const ModuleScript*) override {}
+  void UnregisterModuleScript(const ModuleScript*) override {}
 
-  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
     NOTREACHED();
     return nullptr;
   }

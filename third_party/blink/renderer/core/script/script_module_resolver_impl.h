@@ -42,9 +42,9 @@ class CORE_EXPORT ScriptModuleResolverImpl final
  private:
   // Implements ScriptModuleResolver:
 
-  void RegisterModuleScript(ModuleScript*) final;
-  void UnregisterModuleScript(ModuleScript*) final;
-  ModuleScript* GetHostDefined(const ScriptModule&) const final;
+  void RegisterModuleScript(const ModuleScript*) final;
+  void UnregisterModuleScript(const ModuleScript*) final;
+  const ModuleScript* GetHostDefined(const ScriptModule&) const final;
 
   // Implements "Runtime Semantics: HostResolveImportedModule" per HTML spec.
   // https://html.spec.whatwg.org/C/#hostresolveimportedmodule(referencingscriptormodule,-specifier))
@@ -60,7 +60,8 @@ class CORE_EXPORT ScriptModuleResolverImpl final
   // should not use ScriptModule as the map key. We currently rely on Detach()
   // to clear the refs, but we should implement a key type which keeps a
   // weak-ref to v8::Module.
-  HeapHashMap<ScriptModule, Member<ModuleScript>> record_to_module_script_map_;
+  HeapHashMap<ScriptModule, Member<const ModuleScript>>
+      record_to_module_script_map_;
   Member<Modulator> modulator_;
 };
 

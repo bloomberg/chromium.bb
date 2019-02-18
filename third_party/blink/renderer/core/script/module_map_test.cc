@@ -56,15 +56,15 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
     return register_module_script_call_count_;
   }
 
-  void RegisterModuleScript(ModuleScript*) override {
+  void RegisterModuleScript(const ModuleScript*) override {
     register_module_script_call_count_++;
   }
 
-  void UnregisterModuleScript(ModuleScript*) override {
+  void UnregisterModuleScript(const ModuleScript*) override {
     FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
   }
 
-  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
     NOTREACHED();
     return nullptr;
   }

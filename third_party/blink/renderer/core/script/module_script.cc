@@ -204,7 +204,7 @@ ScriptValue ModuleScript::CreateErrorToRethrow() const {
 }
 
 KURL ModuleScript::ResolveModuleSpecifier(const String& module_request,
-                                          String* failure_reason) {
+                                          String* failure_reason) const {
   auto found = specifier_to_url_cache_.find(module_request);
   if (found != specifier_to_url_cache_.end())
     return found->value;

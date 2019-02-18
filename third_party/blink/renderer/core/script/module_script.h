@@ -72,7 +72,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
 
   // Resolves a module specifier with the module script's base URL.
   KURL ResolveModuleSpecifier(const String& module_request,
-                              String* failure_reason = nullptr);
+                              String* failure_reason = nullptr) const;
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
@@ -148,7 +148,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   const ParkableString source_text_;
 
   const TextPosition start_position_;
-  HashMap<String, KURL> specifier_to_url_cache_;
+  mutable HashMap<String, KURL> specifier_to_url_cache_;
   KURL source_url_;
 };
 

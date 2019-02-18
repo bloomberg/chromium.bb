@@ -35,9 +35,9 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
  private:
   // Implements ScriptModuleResolver:
 
-  void RegisterModuleScript(ModuleScript*) override { NOTREACHED(); }
-  void UnregisterModuleScript(ModuleScript*) override { NOTREACHED(); }
-  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+  void RegisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
+  void UnregisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
+  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
     NOTREACHED();
     return nullptr;
   }
