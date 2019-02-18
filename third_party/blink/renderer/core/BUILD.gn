@@ -2236,6 +2236,7 @@ jumbo_source_set("unit_tests") {
     "workers/worker_thread_test_helper.h",
     "workers/worklet_module_responses_map_test.cc",
     "xml/parser/shared_buffer_reader_test.cc",
+    "xml/parser/xml_document_parser_test.cc",
     "xml/xpath_functions_test.cc",
   ]
 

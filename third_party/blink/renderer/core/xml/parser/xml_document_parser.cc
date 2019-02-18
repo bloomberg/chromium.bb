@@ -985,6 +985,8 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
   }
 
   QualifiedName q_name(prefix, local_name, adjusted_uri);
+  if (!prefix.IsEmpty() && adjusted_uri.IsEmpty())
+    q_name = QualifiedName(g_null_atom, prefix + ":" + local_name, g_null_atom);
   Element* new_element = current_node_->GetDocument().CreateElement(
       q_name,
       parsing_fragment_ ? CreateElementFlags::ByFragmentParser()
