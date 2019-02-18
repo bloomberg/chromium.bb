@@ -112,6 +112,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
   void LoadFromNetwork(bool reset_subresource_loader_params);
+  void CommitCompleted(const network::URLLoaderCompletionStatus& status);
 
   // The order of the interceptors is important. The former interceptor can
   // preferentially get a chance to intercept a network request.
@@ -140,6 +141,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // |default_loader_factory_| if a service worker or other interceptor didn't
   // elect to handle the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  bool completed_ = false;
 
   base::WeakPtrFactory<WorkerScriptLoader> weak_factory_;
 
