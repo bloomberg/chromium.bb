@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraint_set.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 

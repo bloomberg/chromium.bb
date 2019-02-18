@@ -155,21 +155,21 @@ Notification::Notification(ExecutionContext* context,
       type_(type),
       state_(State::kLoading),
       data_(std::move(data)),
+      prepare_show_method_runner_(
+          context->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          this,
+          &Notification::PrepareShow),
       listener_binding_(this) {}
 
 Notification::~Notification() = default;
 
 void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
-  DCHECK(!prepare_show_method_runner_);
 
-  prepare_show_method_runner_ = AsyncMethodRunner<Notification>::Create(
-      this, &Notification::PrepareShow,
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
-  prepare_show_method_runner_->RunAsync();
+  prepare_show_method_runner_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
-void Notification::PrepareShow() {
+void Notification::PrepareShow(TimerBase*) {
   DCHECK_EQ(state_, State::kLoading);
   if (!GetExecutionContext()->IsSecureContext()) {
     DispatchErrorEvent();
@@ -470,8 +470,8 @@ void Notification::ContextDestroyed(ExecutionContext* context) {
 
   state_ = State::kClosed;
 
-  if (prepare_show_method_runner_)
-    prepare_show_method_runner_->Stop();
+  if (prepare_show_method_runner_.IsActive())
+    prepare_show_method_runner_.Stop();
 
   if (loader_)
     loader_->Stop();
@@ -487,7 +487,6 @@ bool Notification::HasPendingActivity() const {
 }
 
 void Notification::Trace(blink::Visitor* visitor) {
-  visitor->Trace(prepare_show_method_runner_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
