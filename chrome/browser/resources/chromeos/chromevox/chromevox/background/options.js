@@ -120,19 +120,39 @@ cvox.OptionsPage.init = function() {
     });
   };
 
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-chromevox-developer-option', function(enable) {
-        if (!enable) {
-          $('developerDescription').hidden = true;
-          $('developerSpeechLogging').hidden = true;
-          $('developerEarconLogging').hidden = true;
-          $('developerBrailleLogging').hidden = true;
-          $('developerEventStream').hidden = true;
-          return;
-        }
-        registerEventStreamFiltersListener();
-      });
+  var toggleShowDeveloperOptions = function() {
+    $('developerSpeechLogging').hidden = !$('developerSpeechLogging').hidden;
+    $('developerEarconLogging').hidden = !$('developerEarconLogging').hidden;
+    $('developerBrailleLogging').hidden = !$('developerBrailleLogging').hidden;
+    $('developerEventStream').hidden = !$('developerEventStream').hidden;
+    $('showDeveloperLog').hidden = !$('showDeveloperLog').hidden;
+    $('chromeVoxDeveloperOptionsMore').hidden =
+        !($('chromeVoxDeveloperOptionsMore').hidden);
+    $('chromeVoxDeveloperOptionsLess').hidden =
+        !($('chromeVoxDeveloperOptionsLess').hidden);
+  };
 
+  $('chromeVoxDeveloperOptionsMore').addEventListener('click', function(evt) {
+    toggleShowDeveloperOptions();
+  });
+
+  $('chromeVoxDeveloperOptionsLess').addEventListener('click', function(evt) {
+    toggleShowDeveloperOptions();
+  });
+
+  $('openDeveloperLog').addEventListener('click', function(evt) {
+    let logPage = {url: 'cvox2/background/log.html'};
+    chrome.tabs.create(logPage);
+  });
+
+  // Hide developer options by default.
+  $('developerSpeechLogging').hidden = true;
+  $('developerEarconLogging').hidden = true;
+  $('developerBrailleLogging').hidden = true;
+  $('developerEventStream').hidden = true;
+  $('showDeveloperLog').hidden = true;
+
+  registerEventStreamFiltersListener();
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
 

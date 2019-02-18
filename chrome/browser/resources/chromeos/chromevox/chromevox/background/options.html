@@ -12,6 +12,9 @@
 <script type="text/javascript" src="options_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxChromeOptionsScript.js">
 </script>
+  <link rel="import" href="chrome://resources/cr_elements/icons.html">
+  <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 </head>
 
 <body>
@@ -141,7 +144,6 @@
     <input type="number" min="1" id="virtual_braille_display_columns_input">
   </label>
   </div>
-
   <div class="option">
     <span id="currentDisplayStyle"></span>
     <button id="changeDisplayStyle"></button>
@@ -150,6 +152,19 @@
   <h2 class="i18n" msgid="options_developer_options" id="developerDescription">
     Developer Options
   </h2>
+  <div class="chromeos option" id="developerLog">
+    <label>
+      <paper-icon-button icon="cr:expand-more"
+        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsMore"
+        name="chromeVoxDeveloperOptions"></paper-icon-button>
+      <paper-icon-button icon="cr:expand-less"
+        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsLess"
+        name="chromeVoxDeveloperOptions" hidden></paper-icon-button>
+      <span class="i18n" msgid="options_developer_options">
+        Enable developer options
+      </span>
+    </label>
+  </div>
   <div class="option" id="developerSpeechLogging">
     <label>
       <input id="enableSpeechLogging" type="checkbox"
@@ -179,14 +194,22 @@
   </div>
   <div class="option" id="developerEventStream">
     <label>
-      <input id="enableEventStreamLogging" type="checkbox"
-             class="checkbox pref logging" name="enableEventStreamLogging">
       <span class="i18n" msgid="options_event_stream_logging">
         Enable event stream logging
       </span>
     </label>
     <button id="toggleEventStreamFilters"></button>
   </div>
+   <div class="option" id="showDeveloperLog">
+    <label>
+      <paper-icon-button icon="cr:open-in-new"
+        class="developer-option-icon-button" id="openDeveloperLog">
+      </paper-icon-button>
+      <span class="i18n" msgid="options_show_log"></span>
+      <span class="i18n sub-description" msgid="options_show_log_key"></span>
+    </label>
+  </div>
+
   <div id="eventStreamFilters" hidden>
     <label><div class="option-eventstream">
       <input name="activedescendantchanged" type="checkbox"

@@ -333,9 +333,6 @@ extern const char kEnableBrotliDescription[];
 extern const char kEnableCaptivePortalRandomUrl[];
 extern const char kEnableCaptivePortalRandomUrlDescription[];
 
-extern const char kEnableChromevoxDeveloperOptionName[];
-extern const char kEnableChromevoxDeveloperOptionDescription[];
-
 extern const char kEnableDataSaverLiteModeRebrandName[];
 extern const char kEnableDataSaverLiteModeRebrandDescription[];
 
