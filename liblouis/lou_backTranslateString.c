@@ -149,7 +149,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
 		int *inputPos, int *cursorPos, int mode, const TranslationTableRule **rules,
 		int *rulesLen) {
-	const InString *input;
+	InString input;
 	OutString output;
 	unsigned char *typebuf = NULL;
 	char *spacebuf;
@@ -196,7 +196,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 			else
 				passbuf1[k] = _lou_getDotsForChar(inbuf[k]);
 		passbuf1[srcmax] = _lou_getDotsForChar(' ');
-		input = &(InString){.chars = passbuf1, .length = srcmax, .bufferIndex = idx };
+		input = (InString){.chars = passbuf1, .length = srcmax, .bufferIndex = idx };
 	}
 	idx = getStringBuffer(*outlen);
 	output = (OutString){.chars = stringBufferPool->buffers[idx],
@@ -206,7 +206,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 	typebuf = (unsigned char *)typeform;
 	spacebuf = spacing;
 	if (outputPos != NULL)
-		for (k = 0; k < input->length; k++) outputPos[k] = -1;
+		for (k = 0; k < input.length; k++) outputPos[k] = -1;
 	if (cursorPos != NULL)
 		cursorPosition = *cursorPos;
 	else
@@ -214,12 +214,12 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 	cursorStatus = 0;
 	if (typebuf != NULL) memset(typebuf, '0', *outlen);
 	if (spacebuf != NULL) memset(spacebuf, '*', *outlen);
-	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, 0, input->length, *outlen)))
+	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, 0, input.length, *outlen)))
 		return 0;
 	if (table->numPasses > 1 || table->corrections) {
-		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, 0, input->length, *outlen)))
+		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, 0, input.length, *outlen)))
 			return 0;
-		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, 0, input->length, *outlen)))
+		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, 0, input.length, *outlen)))
 			return 0;
 	}
 	appliedRulesCount = 0;
@@ -239,17 +239,17 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		int realInlen;
 		switch (currentPass) {
 		case 1:
-			goodTrans = backTranslateString(table, mode, currentPass, input, &output,
+			goodTrans = backTranslateString(table, mode, currentPass, &input, &output,
 					spacebuf, passPosMapping, &realInlen, &cursorPosition, &cursorStatus,
 					appliedRules, &appliedRulesCount, maxAppliedRules);
 			break;
 		case 0:
-			goodTrans = makeCorrections(table, mode, currentPass, input, &output,
+			goodTrans = makeCorrections(table, mode, currentPass, &input, &output,
 					passPosMapping, &realInlen, &cursorPosition, &cursorStatus,
 					appliedRules, &appliedRulesCount, maxAppliedRules);
 			break;
 		default:
-			goodTrans = translatePass(table, mode, currentPass, input, &output,
+			goodTrans = translatePass(table, mode, currentPass, &input, &output,
 					passPosMapping, &realInlen, &cursorPosition, &cursorStatus,
 					appliedRules, &appliedRulesCount, maxAppliedRules);
 			break;
@@ -273,8 +273,8 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		}
 		currentPass--;
 		if (currentPass >= lastPass && goodTrans) {
-			releaseStringBuffer(input->bufferIndex);
-			input = &(InString){.chars = output.chars,
+			releaseStringBuffer(input.bufferIndex);
+			input = (InString){.chars = output.chars,
 				.length = output.length,
 				.bufferIndex = output.bufferIndex };
 			idx = getStringBuffer(*outlen);
