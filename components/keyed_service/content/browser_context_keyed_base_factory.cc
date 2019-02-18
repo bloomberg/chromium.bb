@@ -28,11 +28,6 @@ content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
   return context;
 }
 
-void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContextForTest(
-    content::BrowserContext* context) {
-  KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(context);
-}
-
 bool BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext()
     const {
   return KeyedServiceBaseFactory::ServiceIsCreatedWithContext();
