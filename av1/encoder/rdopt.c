@@ -2974,7 +2974,7 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   aom_clear_system_state();
   const double sse_norm = (double)sse / num_samples;
   const double qstepsqr = (double)qstep * qstep;
-  const double xqr = log(sse_norm / qstepsqr) / log(2.0);
+  const double xqr = log2(sse_norm / qstepsqr);
 
   double rate_f, dist_by_sse_norm_f;
   av1_model_rd_curvfit(plane_bsize, sse_norm, xqr, &rate_f,
