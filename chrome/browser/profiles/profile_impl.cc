@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -133,6 +134,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/buildflags/buildflags.h"
+#include "google_apis/google_api_keys.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -249,6 +251,13 @@ const char kReadmeText[] =
 // Value written to prefs for EXIT_CRASHED and EXIT_SESSION_ENDED.
 const char kPrefExitTypeCrashed[] = "Crashed";
 const char kPrefExitTypeSessionEnded[] = "SessionEnded";
+
+// Returns the Chrome Google API key for the channel of this build.
+std::string APIKeyForChannel() {
+  if (chrome::GetChannel() == version_info::Channel::STABLE)
+    return google_apis::GetAPIKey();
+  return google_apis::GetNonStableAPIKey();
+}
 
 void CreateProfileReadme(const base::FilePath& profile_path) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
@@ -1223,7 +1232,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
 
   if (service_name == image_annotation::mojom::kServiceName) {
     return std::make_unique<image_annotation::ImageAnnotationService>(
-        std::move(request), GetURLLoaderFactory());
+        std::move(request), APIKeyForChannel(), GetURLLoaderFactory());
   }
 
 #if !defined(OS_ANDROID)

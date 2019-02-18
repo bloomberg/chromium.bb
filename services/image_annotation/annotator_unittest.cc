@@ -5,6 +5,7 @@
 #include "services/image_annotation/annotator.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/optional.h"
@@ -29,7 +30,7 @@ using testing::Eq;
 using testing::IsEmpty;
 using testing::SizeIs;
 
-constexpr char kTestServerUrl[] = "https://test_ia_server.com/v1:ocr";
+constexpr char kTestServerUrl[] = "https://ia-pa.googleapis.com/v1/ocr";
 
 // Example image URLs.
 
@@ -224,13 +225,20 @@ class TestServerURLLoaderFactory {
     return *loader_factory_.pending_requests();
   }
 
-  // Expects that the earliest received request has the given URL and body, and
-  // replies with the given response.
+  // Expects that the earliest received request has the given URL, headers and
+  // body, and replies with the given response.
+  //
+  // |expected_headers| is a map from header key string to either:
+  //   a) a null optional, if the given header should not be present, or
+  //   b) a non-null optional, if the given header should be present and match
+  //      the optional value.
   //
   // Consumes the earliest received request (i.e. a subsequent call will apply
   // to the second-earliest received request and so on).
   void ExpectRequestAndSimulateResponse(
       const std::string& expected_url_suffix,
+      const std::map<std::string, base::Optional<std::string>>&
+          expected_headers,
       const std::string& expected_body,
       const std::string& response,
       const net::HttpStatusCode response_code) {
@@ -244,6 +252,18 @@ class TestServerURLLoaderFactory {
 
     // Assert that the earliest request is for the given URL.
     CHECK_EQ(request.url, GURL(expected_url));
+
+    // Expect that specified headers are accurate.
+    for (const auto& kv : expected_headers) {
+      if (kv.second.has_value()) {
+        std::string actual_value;
+        EXPECT_THAT(request.headers.GetHeader(kv.first, &actual_value),
+                    Eq(true));
+        EXPECT_THAT(actual_value, Eq(*kv.second));
+      } else {
+        EXPECT_THAT(request.headers.HasHeader(kv.first), Eq(false));
+      }
+    }
 
     // Extract request body.
     std::string actual_body;
@@ -307,9 +327,11 @@ void ReportResult(base::Optional<mojom::AnnotateImageError>* const error,
 TEST(AnnotatorTest, SuccessAndCache) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
   TestImageProcessor processor;
@@ -339,7 +361,7 @@ TEST(AnnotatorTest, SuccessAndCache) {
 
     // HTTP request should have been made.
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "ocr",
+        "ocr", {} /* expected_headers */,
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kSuccessResponse, net::HTTP_OK);
     test_task_env.RunUntilIdle();
@@ -371,9 +393,11 @@ TEST(AnnotatorTest, SuccessAndCache) {
 TEST(AnnotatorTest, HttpError) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -400,7 +424,7 @@ TEST(AnnotatorTest, HttpError) {
 
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "", net::HTTP_INTERNAL_SERVER_ERROR);
   test_task_env.RunUntilIdle();
@@ -414,9 +438,11 @@ TEST(AnnotatorTest, HttpError) {
 TEST(AnnotatorTest, BackendError) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -443,7 +469,7 @@ TEST(AnnotatorTest, BackendError) {
 
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kErrorResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -458,9 +484,11 @@ TEST(AnnotatorTest, BackendError) {
 TEST(AnnotatorTest, ServerError) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -487,7 +515,7 @@ TEST(AnnotatorTest, ServerError) {
 
   // HTTP request should have been made; respond with nonsense string.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "Hello, world!", net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -502,9 +530,11 @@ TEST(AnnotatorTest, ServerError) {
 TEST(AnnotatorTest, ProcessorFails) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -546,7 +576,7 @@ TEST(AnnotatorTest, ProcessorFails) {
 
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -563,9 +593,11 @@ TEST(AnnotatorTest, ProcessorFails) {
 TEST(AnnotatorTest, ProcessorDies) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -606,7 +638,7 @@ TEST(AnnotatorTest, ProcessorDies) {
 
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -623,9 +655,11 @@ TEST(AnnotatorTest, ProcessorDies) {
 TEST(AnnotatorTest, ConcurrentSameBatch) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 3 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 3 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -667,7 +701,8 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 
   // A single HTTP request for all images should have been sent.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", ReformatJson(kBatchRequest), kBatchResponse, net::HTTP_OK);
+      "ocr", {} /* expected_headers */, ReformatJson(kBatchRequest),
+      kBatchResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
   // Annotator should have called each callback with its corresponding text or
@@ -681,9 +716,11 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 3 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 3 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -730,7 +767,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   // still waiting to make the batch that will include the request for image
   // 2).
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       R"({
            "results": [{
@@ -754,7 +791,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Now the HTTP request for image 2 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage2Url, "BAUG")),
       R"({
            "results": [{
@@ -784,9 +821,11 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 TEST(AnnotatorTest, DuplicateWork) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
 
-  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+  Annotator annotator(GURL(kTestServerUrl), std::string() /* api_key */,
+                      kThrottle, 1 /* batch_size */,
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
@@ -857,7 +896,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   // HTTP request for the image should have been made (with bytes obtained from
   // processor 1).
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
+      "ocr", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -868,6 +907,104 @@ TEST(AnnotatorTest, DuplicateWork) {
   EXPECT_THAT(ocr_text,
               ElementsAre("Region 1\nRegion 2", "Region 1\nRegion 2",
                           "Region 1\nRegion 2", "Region 1\nRegion 2"));
+}
+
+// Test that the specified API key is sent, but only to Google-associated server
+// domains.
+TEST(AnnotatorTest, ApiKey) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  // A call to a secure Google-owner server URL should include the specified API
+  // key.
+  {
+    TestServerURLLoaderFactory test_url_factory(
+        "https://ia-pa.googleapis.com/v1/");
+
+    Annotator annotator(GURL(kTestServerUrl), "my_api_key", kThrottle,
+                        1 /* batch_size */, 1.0 /* min_ocr_confidence */,
+                        test_url_factory.AsSharedURLLoaderFactory());
+    TestImageProcessor processor;
+
+    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    test_task_env.RunUntilIdle();
+
+    // Annotator should have asked processor for pixels.
+    ASSERT_THAT(processor.callbacks(), SizeIs(1));
+
+    // Send back image data.
+    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    processor.callbacks().pop_back();
+    test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    test_task_env.RunUntilIdle();
+
+    // HTTP request should have been made with the API key included.
+    test_url_factory.ExpectRequestAndSimulateResponse(
+        "ocr", {{Annotator::kGoogApiKeyHeader, "my_api_key"}},
+        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+        kSuccessResponse, net::HTTP_OK);
+  }
+
+  // A call to a Google-owned server URL should not include the API key if the
+  // requests are made insecurely.
+  {
+    // Note: not HTTPS.
+    TestServerURLLoaderFactory test_url_factory(
+        "http://ia-pa.googleapis.com/v1/");
+
+    Annotator annotator(GURL("http://ia-pa.googleapis.com/v1/ocr"),
+                        "my_api_key", kThrottle, 1 /* batch_size */,
+                        1.0 /* min_ocr_confidence */,
+                        test_url_factory.AsSharedURLLoaderFactory());
+    TestImageProcessor processor;
+
+    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    test_task_env.RunUntilIdle();
+
+    // Annotator should have asked processor for pixels.
+    ASSERT_THAT(processor.callbacks(), SizeIs(1));
+
+    // Send back image data.
+    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    processor.callbacks().pop_back();
+    test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    test_task_env.RunUntilIdle();
+
+    // HTTP request should have been made without the API key included.
+    test_url_factory.ExpectRequestAndSimulateResponse(
+        "ocr", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
+        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+        kSuccessResponse, net::HTTP_OK);
+  }
+
+  // A call to a non-Google-owned URL should not include the API key.
+  {
+    TestServerURLLoaderFactory test_url_factory("https://datascraper.com/");
+
+    Annotator annotator(GURL("https://datascraper.com/ocr"), "my_api_key",
+                        kThrottle, 1 /* batch_size */,
+                        1.0 /* min_ocr_confidence */,
+                        test_url_factory.AsSharedURLLoaderFactory());
+    TestImageProcessor processor;
+
+    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    test_task_env.RunUntilIdle();
+
+    // Annotator should have asked processor for pixels.
+    ASSERT_THAT(processor.callbacks(), SizeIs(1));
+
+    // Send back image data.
+    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    processor.callbacks().pop_back();
+    test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    test_task_env.RunUntilIdle();
+
+    // HTTP request should have been made without the API key included.
+    test_url_factory.ExpectRequestAndSimulateResponse(
+        "ocr", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
+        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+        kSuccessResponse, net::HTTP_OK);
+  }
 }
 
 }  // namespace image_annotation
