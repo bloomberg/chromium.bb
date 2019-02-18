@@ -151,6 +151,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
+    case ax::mojom::IntAttribute::kImageAnnotationStatus:
       return false;
   }
 
@@ -752,6 +753,21 @@ void AXNodeData::SetTextPosition(ax::mojom::TextPosition text_position) {
   }
 }
 
+ax::mojom::ImageAnnotationStatus AXNodeData::GetImageAnnotationStatus() const {
+  return static_cast<ax::mojom::ImageAnnotationStatus>(
+      GetIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus));
+}
+
+void AXNodeData::SetImageAnnotationStatus(
+    ax::mojom::ImageAnnotationStatus status) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus);
+  if (status != ax::mojom::ImageAnnotationStatus::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus,
+                    static_cast<int32_t>(status));
+  }
+}
+
 ax::mojom::Restriction AXNodeData::GetRestriction() const {
   return static_cast<ax::mojom::Restriction>(
       GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
@@ -1099,6 +1115,11 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kPreviousFocusId:
         result += " previous_focus_id=" + value;
+        break;
+      case ax::mojom::IntAttribute::kImageAnnotationStatus:
+        result += std::string(" image_annotation_status=") +
+                  ui::ToString(static_cast<ax::mojom::ImageAnnotationStatus>(
+                      int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kNone:
         break;

@@ -170,6 +170,18 @@ bool AXPlatformNodeDelegateBase::AccessibilityPerformAction(
   return false;
 }
 
+base::string16
+AXPlatformNodeDelegateBase::GetLocalizedStringForImageAnnotationStatus(
+    ax::mojom::ImageAnnotationStatus status) const {
+  return base::string16();
+}
+
+base::string16
+AXPlatformNodeDelegateBase::GetLocalizedRoleDescriptionForUnlabeledImage()
+    const {
+  return base::string16();
+}
+
 bool AXPlatformNodeDelegateBase::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }

@@ -245,6 +245,7 @@ below:
         <ph name="WEEK">$1<ex>Week 38, 2014</ex></ph>, starting on <ph name="WEEK_START_DATE">$2<ex>September 15, 2014</ex></ph>
       </message>
 
+      <!-- Localized names for accessibility roles -->
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
@@ -603,6 +604,35 @@ below:
           tree item
         </message>
       </if>
+
+      <!-- Automatic image annotations for accessibility -->
+      <if expr="is_win">
+        <then>
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for a graphic (image) on a web page that does not have a description for blind users.">
+            Unlabeled graphic
+          </message>
+        </then>
+        <else>
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for an image on a web page that does not have a description for blind users.">
+            Unlabeled image
+          </message>
+        </else>
+      </if>
+      <message name="IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION" desc="Accessibility message spoken out loud to screen reader users to inform them that they can get a description of an image by opening the context menu.">
+        To get missing image descriptions, open the context menu.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_PENDING" desc="Accessibility message spoken out loud to screen reader users saying that the browser is in the middle of trying to get a description for an image.">
+        Getting description...
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_EMPTY" desc="Accessibility message spoken out loud to screen reader users indicating that there is no description for this image.">
+        No description is available.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_ADULT" desc="Accessibility message spoken out loud to screen reader users indicating that an image appears to be something like nudity or pornography or other policy violation that is not appropriate for children.">
+        Appears to be adult content.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_PROCESS_FAILED" desc="Accessibility message spoken out loud to screen reader users that the browser was not able to get a description for an image.">
+        Unable to get a description.
+      </message>
 
       <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
         AM/PM

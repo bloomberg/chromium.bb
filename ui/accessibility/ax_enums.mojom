@@ -452,7 +452,7 @@ enum StringAttribute {
   kFontFamily,
   kHtmlTag,
   // Stores an automatic image annotation if one is available. Only valid on
-  // ax::mojom::Role::kImage.
+  // ax::mojom::Role::kImage. See kImageAnnotationStatus, too.
   kImageAnnotation,
   kImageDataUrl,
   kInnerHtml,
@@ -573,6 +573,9 @@ enum IntAttribute {
    // Focus traversal in views and Android.
   kPreviousFocusId,
   kNextFocusId,
+
+   // Image annotation status, of type ImageAnnotationStatus.
+  kImageAnnotationStatus,
 };
 
 enum FloatAttribute {
@@ -893,4 +896,35 @@ enum TreeOrder {
 enum AXTreeIDType {
   kUnknown,  // The Tree ID is unknown.
   kToken,    // Every other tree ID must have a valid unguessable token.
+};
+
+enum ImageAnnotationStatus {
+   // Not an image, or image annotation feature not enabled.
+  kNone,
+
+   // Not loaded yet, already labeled by the author, or not eligible
+   // due to size, type, etc.
+  kIneligibleForAnnotation,
+
+   // Eligible to be automatically annotated if the user requests it.
+  kEligibleForAnnotation,
+
+   // An annotation has been requested but has not been received yet.
+  kAnnotationPending,
+
+   // An annotation has been provided and kImageAnnotation contains the
+   // annotation text.
+  kAnnotationSucceeded,
+
+   // The annotation request was processed successfully, but it was not
+   // possible to come up with an annotation for this image.
+  kAnnotationEmpty,
+
+   // The image is classified as adult content and no annotation will
+   // be generated.
+  kAnnotationAdult,
+
+   // The annotation process failed, e.g. unable to contact the server,
+   // request timed out, etc.
+  kAnnotationProcessFailed,
 };

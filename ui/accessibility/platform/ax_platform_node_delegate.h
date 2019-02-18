@@ -179,6 +179,15 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool AccessibilityPerformAction(const AXActionData& data) = 0;
 
   //
+  // Localized strings.
+  //
+
+  virtual base::string16 GetLocalizedRoleDescriptionForUnlabeledImage()
+      const = 0;
+  virtual base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const = 0;
+
+  //
   // Testing.
   //
 

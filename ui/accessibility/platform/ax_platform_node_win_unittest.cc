@@ -2387,6 +2387,173 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
   EXPECT_STREQ(L"extended role", role);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageRoleDescription) {
+  AXNodeData root;
+  root.id = 1;
+  root.SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  Init(root);
+
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ComPtr<IAccessible2> iaccessible2 = ToIAccessible2(root_obj);
+  ScopedBstr role_description;
+  EXPECT_EQ(S_OK, iaccessible2->get_localizedExtendedRole(
+                      role_description.Receive()));
+  EXPECT_STREQ(L"Unlabeled image", role_description);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageAttributes) {
+  AXNodeData root;
+  root.id = 1;
+  root.SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  Init(root);
+
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ComPtr<IAccessible2> iaccessible2 = ToIAccessible2(root_obj);
+
+  ScopedBstr attributes_bstr;
+  EXPECT_EQ(S_OK, iaccessible2->get_attributes(attributes_bstr.Receive()));
+  base::string16 attributes(attributes_bstr);
+
+  std::vector<base::string16> attribute_vector = base::SplitString(
+      attributes, L";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  bool found = false;
+  for (base::string16 attribute : attribute_vector) {
+    if (attribute == L"roledescription:Unlabeled image")
+      found = true;
+  }
+  EXPECT_TRUE(found);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
+  std::vector<const wchar_t*> expected_names;
+
+  AXTreeUpdate tree;
+  tree.root_id = 1;
+  tree.nodes.resize(10);
+  tree.nodes[0].id = 1;
+  tree.nodes[0].child_ids = {2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+  // If the status is EligibleForAnnotation and there's no existing label,
+  // the name should be the discoverability string.
+  tree.nodes[1].id = 2;
+  tree.nodes[1].role = ax::mojom::Role::kImage;
+  tree.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[1].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  expected_names.push_back(
+      L"To get missing image descriptions, open the context menu.");
+
+  // If the status is EligibleForAnnotation, the discoverability string
+  // should be appended to the existing name.
+  tree.nodes[2].id = 3;
+  tree.nodes[2].role = ax::mojom::Role::kImage;
+  tree.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[2].SetName("ExistingLabel");
+  tree.nodes[2].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  expected_names.push_back(
+      L"ExistingLabel. To get missing image descriptions, open the context "
+      L"menu.");
+
+  // If the status is IneligibleForAnnotation, nothing should be appended.
+  tree.nodes[3].id = 4;
+  tree.nodes[3].role = ax::mojom::Role::kImage;
+  tree.nodes[3].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[3].SetName("ExistingLabel");
+  tree.nodes[3].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
+  expected_names.push_back(L"ExistingLabel");
+
+  // If the status is AnnotationPending, pending text should be appended
+  // to the name.
+  tree.nodes[4].id = 5;
+  tree.nodes[4].role = ax::mojom::Role::kImage;
+  tree.nodes[4].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[4].SetName("ExistingLabel");
+  tree.nodes[4].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationPending);
+  expected_names.push_back(L"ExistingLabel. Getting description...");
+
+  // If the status is AnnotationSucceeded, and there's no annotation,
+  // nothing should be appended. (Ideally this shouldn't happen.)
+  tree.nodes[5].id = 6;
+  tree.nodes[5].role = ax::mojom::Role::kImage;
+  tree.nodes[5].SetName("ExistingLabel");
+  tree.nodes[5].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
+  expected_names.push_back(L"ExistingLabel");
+
+  // If the status is AnnotationSucceeded, the annotation should be appended
+  // to the existing label.
+  tree.nodes[6].id = 7;
+  tree.nodes[6].role = ax::mojom::Role::kImage;
+  tree.nodes[6].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[6].SetName("ExistingLabel");
+  tree.nodes[6].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
+  expected_names.push_back(L"ExistingLabel. Annotation");
+
+  // If the status is AnnotationEmpty, failure text should be appended
+  // to the name.
+  tree.nodes[7].id = 8;
+  tree.nodes[7].role = ax::mojom::Role::kImage;
+  tree.nodes[7].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[7].SetName("ExistingLabel");
+  tree.nodes[7].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
+  expected_names.push_back(L"ExistingLabel. No description is available.");
+
+  // If the status is AnnotationAdult, appropriate text should be appended
+  // to the name.
+  tree.nodes[8].id = 9;
+  tree.nodes[8].role = ax::mojom::Role::kImage;
+  tree.nodes[8].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[8].SetName("ExistingLabel");
+  tree.nodes[8].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationAdult);
+  expected_names.push_back(L"ExistingLabel. Appears to be adult content.");
+
+  // If the status is AnnotationProcessFailed, appropriate text should be
+  // appended to the name.
+  tree.nodes[9].id = 10;
+  tree.nodes[9].role = ax::mojom::Role::kImage;
+  tree.nodes[9].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                                   "Annotation");
+  tree.nodes[9].SetName("ExistingLabel");
+  tree.nodes[9].SetImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed);
+  expected_names.push_back(L"ExistingLabel. Unable to get a description.");
+
+  // We should have one expected name per child of the root.
+  ASSERT_EQ(expected_names.size(), tree.nodes[0].child_ids.size());
+  int child_count = static_cast<int>(expected_names.size());
+
+  Init(tree);
+
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  for (int child_index = 0; child_index < child_count; child_index++) {
+    ComPtr<IDispatch> child_dispatch;
+    ASSERT_HRESULT_SUCCEEDED(root_obj->get_accChild(
+        ScopedVariant(child_index + 1), &child_dispatch));
+    ComPtr<IAccessible> child;
+    ASSERT_HRESULT_SUCCEEDED(child_dispatch.As(&child));
+
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, child->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(expected_names[child_index], name);
+  }
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
   AXNodeData root;
   root.id = 0;

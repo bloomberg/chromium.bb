@@ -1483,6 +1483,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "previousFocusId";
     case ax::mojom::IntAttribute::kNextFocusId:
       return "nextFocusId";
+    case ax::mojom::IntAttribute::kImageAnnotationStatus:
+      return "imageAnnotationStatus";
   }
 
   return "";
@@ -1591,6 +1593,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kPreviousFocusId;
   if (0 == strcmp(int_attribute, "nextFocusId"))
     return ax::mojom::IntAttribute::kNextFocusId;
+  if (0 == strcmp(int_attribute, "imageAnnotationStatus"))
+    return ax::mojom::IntAttribute::kImageAnnotationStatus;
   return ax::mojom::IntAttribute::kNone;
 }
 
@@ -2475,6 +2479,51 @@ ax::mojom::TreeOrder ParseTreeOrder(const char* tree_order) {
   if (0 == strcmp(tree_order, "after"))
     return ax::mojom::TreeOrder::kAfter;
   return ax::mojom::TreeOrder::kNone;
+}
+
+const char* ToString(ax::mojom::ImageAnnotationStatus status) {
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kNone:
+      return "none";
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+      return "ineligibleForAnnotation";
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+      return "eligibleForAnnotation";
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+      return "annotationPending";
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      return "annotationSucceeded";
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+      return "annotationEmpty";
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+      return "annotationAdult";
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      return "annotationProcessFailed";
+  }
+
+  return "";
+}
+
+ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
+    const char* status) {
+  if (0 == strcmp(status, "none"))
+    return ax::mojom::ImageAnnotationStatus::kNone;
+  if (0 == strcmp(status, "ineligibleForAnnotation"))
+    return ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation;
+  if (0 == strcmp(status, "eligibleForAnnotation"))
+    return ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation;
+  if (0 == strcmp(status, "annotationPending"))
+    return ax::mojom::ImageAnnotationStatus::kAnnotationPending;
+  if (0 == strcmp(status, "annotationSucceeded"))
+    return ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded;
+  if (0 == strcmp(status, "annotationEmpty"))
+    return ax::mojom::ImageAnnotationStatus::kAnnotationEmpty;
+  if (0 == strcmp(status, "annotationAdult"))
+    return ax::mojom::ImageAnnotationStatus::kAnnotationAdult;
+  if (0 == strcmp(status, "annotationProcessFailed"))
+    return ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed;
+
+  return ax::mojom::ImageAnnotationStatus::kNone;
 }
 
 }  // namespace ui

@@ -173,6 +173,8 @@ struct AX_EXPORT AXNodeData {
   void SetRestriction(ax::mojom::Restriction restriction);
   ax::mojom::TextDirection GetTextDirection() const;
   void SetTextDirection(ax::mojom::TextDirection text_direction);
+  ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
+  void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;

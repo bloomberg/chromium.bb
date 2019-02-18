@@ -138,6 +138,11 @@ AX_EXPORT ax::mojom::TextAffinity ParseTextAffinity(const char* text_affinity);
 AX_EXPORT const char* ToString(ax::mojom::TreeOrder tree_order);
 AX_EXPORT ax::mojom::TreeOrder ParseTreeOrder(const char* tree_order);
 
+// ax::mojom::ImageAnnotationStatus
+AX_EXPORT const char* ToString(ax::mojom::ImageAnnotationStatus status);
+AX_EXPORT ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
+    const char* status);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ENUM_UTIL_H_

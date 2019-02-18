@@ -386,6 +386,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   int32_t CellIndexToId(int32_t cell_index) const override;
 
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const override;
+  base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
