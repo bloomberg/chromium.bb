@@ -345,12 +345,6 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     std::move(callback).Run();
 }
 
-void EmbeddedWorkerTestHelper::OnActivateEvent(
-    blink::mojom::ServiceWorker::DispatchActivateEventCallback callback) {
-  dispatched_events()->push_back(Event::Activate);
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
@@ -391,13 +385,6 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
     blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
         callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnInstallEvent(
-    blink::mojom::ServiceWorker::DispatchInstallEventCallback callback) {
-  dispatched_events()->push_back(Event::Install);
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          true /* has_fetch_handler */);
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -480,13 +467,6 @@ EmbeddedWorkerTestHelper::CreateServiceWorker() {
   return std::make_unique<FakeServiceWorker>(this);
 }
 
-void EmbeddedWorkerTestHelper::OnActivateEventStub(
-    blink::mojom::ServiceWorker::DispatchActivateEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnActivateEvent,
-                                AsWeakPtr(), std::move(callback)));
-}
-
 void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEventStub(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
@@ -549,13 +529,6 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
                      AsWeakPtr(), std::move(event), std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnInstallEventStub(
-    blink::mojom::ServiceWorker::DispatchInstallEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnInstallEvent,
-                                AsWeakPtr(), std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
