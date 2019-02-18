@@ -25,5 +25,10 @@ const base::Feature kFCMInvalidations = {"FCMInvalidations",
 const base::Feature kFCMInvalidationsConservativeEnabling = {
     "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// This feature affects only Android.
+const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable = {
+    "FCMInvalidationsStartOnceActiveAccountAvailable",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches
 }  // namespace invalidation
