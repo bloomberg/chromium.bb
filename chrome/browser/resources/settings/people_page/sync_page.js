@@ -147,6 +147,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    disableEncryptionOptions_: {
+      type: Boolean,
+      computed: 'computeDisableEncryptionOptions_(' +
+          'syncPrefs, syncStatus)',
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -388,8 +394,12 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    // Hide the new passphrase box if the sync data has been encrypted.
-    if (this.syncPrefs.encryptAllData) {
+    // Hide the new passphrase box if (a) full data encryption is enabled,
+    // (b) encrypting all data is not allowed (so far, only applies to
+    // supervised accounts), or (c) the user is a supervised account.
+    if (this.syncPrefs.encryptAllData ||
+        !this.syncPrefs.encryptAllDataAllowed ||
+        (this.syncStatus && this.syncStatus.supervisedUser)) {
       this.creatingNewPassphrase_ = false;
     }
 
@@ -621,6 +631,25 @@ Polymer({
   shouldShowExistingPassphraseInSyncSection_: function() {
     return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
         !!this.syncPrefs.passphraseRequired;
+  },
+
+  /**
+   * Whether we should disable the radio buttons that allow choosing the
+   * encryption options for Sync.
+   * We disable the buttons if:
+   * (a) full data encryption is enabled, or,
+   * (b) full data encryption is not allowed (so far, only applies to
+   * supervised accounts), or,
+   * (c) the user is a supervised account.
+   * @return {boolean}
+   * @private
+   */
+  computeDisableEncryptionOptions_: function() {
+    return !!(
+        (this.syncPrefs &&
+         (this.syncPrefs.encryptAllData ||
+          !this.syncPrefs.encryptAllDataAllowed)) ||
+        (this.syncStatus && this.syncStatus.supervisedUser));
   },
 
   /** @private */
