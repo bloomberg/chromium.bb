@@ -204,6 +204,9 @@
       <message desc="The description of the showOptionsPage key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_OPTIONS_PAGE">
         Open options page
       </message>
+      <message desc="The description of the showLogPage key. Displayed in the ChromeVox panel." name="IDS_CHROMEVOX_SHOW_LOG_PAGE">
+        Open developer log page
+      </message>
       <message desc="The description of the showKbExplorerPage key; this allows users to learn about their keyboard. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_KB_EXPLORER_PAGE">
         Open learn mode
       </message>
