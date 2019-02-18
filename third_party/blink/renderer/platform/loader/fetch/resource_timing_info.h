@@ -32,11 +32,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_TIMING_INFO_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -45,7 +46,6 @@ namespace blink {
 class PLATFORM_EXPORT ResourceTimingInfo
     : public RefCounted<ResourceTimingInfo> {
   USING_FAST_MALLOC(ResourceTimingInfo);
-  WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
@@ -102,6 +102,8 @@ class PLATFORM_EXPORT ResourceTimingInfo
   long long transfer_size_ = 0;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceTimingInfo);
 };
 
 }  // namespace blink

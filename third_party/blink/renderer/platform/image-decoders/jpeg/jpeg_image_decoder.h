@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_JPEG_JPEG_IMAGE_DECODER_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 namespace blink {
@@ -34,8 +35,6 @@ namespace blink {
 class JPEGImageReader;
 
 class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
-
  public:
   JPEGImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~JPEGImageDecoder() override;
@@ -79,6 +78,8 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
   std::vector<SkISize> supported_decode_sizes_;
+
+  DISALLOW_COPY_AND_ASSIGN(JPEGImageDecoder);
 };
 
 }  // namespace blink

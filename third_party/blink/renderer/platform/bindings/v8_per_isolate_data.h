@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -61,7 +61,6 @@ struct WrapperTypeInfo;
 // has a 1:1 relationship with v8::Isolate.
 class PLATFORM_EXPORT V8PerIsolateData {
   USING_FAST_MALLOC(V8PerIsolateData);
-  WTF_MAKE_NONCOPYABLE(V8PerIsolateData);
 
  public:
   enum class V8ContextSnapshotMode {
@@ -298,6 +297,8 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8PerIsolateData);
 };
 
 }  // namespace blink

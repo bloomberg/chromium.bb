@@ -32,11 +32,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_BMP_BMP_IMAGE_READER_H_
 
 #include <stdint.h>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cpu.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -44,7 +45,6 @@ namespace blink {
 // which wrap it in the appropriate code to read file headers, etc.
 class PLATFORM_EXPORT BMPImageReader final {
   USING_FAST_MALLOC(BMPImageReader);
-  WTF_MAKE_NONCOPYABLE(BMPImageReader);
 
  public:
   // Read a value from |buffer|, converting to an int assuming little
@@ -360,6 +360,8 @@ class PLATFORM_EXPORT BMPImageReader final {
   // header, thus doubling it). If |is_in_ico_| is true, this variable tracks
   // whether we've begun decoding this mask yet.
   bool decoding_and_mask_;
+
+  DISALLOW_COPY_AND_ASSIGN(BMPImageReader);
 };
 
 }  // namespace blink

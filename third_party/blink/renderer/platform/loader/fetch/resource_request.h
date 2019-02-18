@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_REQUEST_H_
 
 #include <memory>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -73,7 +74,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   explicit ResourceRequest(const KURL&);
 
   // TODO(toyoshim): Use std::unique_ptr as much as possible, and hopefully
-  // make ResourceRequest WTF_MAKE_NONCOPYABLE. See crbug.com/787704.
+  // make ResourceRequest DISALLOW_COPY_AND_ASSIGN. See crbug.com/787704.
   ResourceRequest(const ResourceRequest&);
   ResourceRequest& operator=(const ResourceRequest&);
 

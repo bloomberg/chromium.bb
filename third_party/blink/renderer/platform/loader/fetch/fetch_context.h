@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -77,8 +77,6 @@ class WebScopedVirtualTimePauser;
 // the ResourceFetcher via this interface.
 class PLATFORM_EXPORT FetchContext
     : public GarbageCollectedFinalized<FetchContext> {
-  WTF_MAKE_NONCOPYABLE(FetchContext);
-
  public:
   FetchContext();
 
@@ -242,6 +240,8 @@ class PLATFORM_EXPORT FetchContext
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
   Member<const ResourceFetcherProperties> resource_fetcher_properties_;
+
+  DISALLOW_COPY_AND_ASSIGN(FetchContext);
 };
 
 }  // namespace blink

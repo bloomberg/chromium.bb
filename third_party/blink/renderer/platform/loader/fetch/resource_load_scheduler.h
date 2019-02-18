@@ -83,8 +83,6 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollectedFinalized<ResourceLoadScheduler>,
       public FrameScheduler::Observer {
-  WTF_MAKE_NONCOPYABLE(ResourceLoadScheduler);
-
  public:
   // An option to use in calling Request(). If kCanNotBeStoppedOrThrottled is
   // specified, the request should be granted and Run() should be called
@@ -335,6 +333,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Handle to throttling observer.
   std::unique_ptr<FrameScheduler::LifecycleObserverHandle>
       scheduler_observer_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceLoadScheduler);
 };
 
 }  // namespace blink

@@ -5,16 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_NAME_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_NAME_CLIENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 // Provides classes with a human-readable name that can be used for inspecting
 // the object graph.
 class PLATFORM_EXPORT NameClient {
-  WTF_MAKE_NONCOPYABLE(NameClient);
-
  public:
   NameClient() = default;
   ~NameClient() = default;
@@ -22,6 +20,9 @@ class PLATFORM_EXPORT NameClient {
   // Human-readable name of this object. The DevTools heap snapshot uses
   // this method to show the object.
   virtual const char* NameInHeapSnapshot() const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NameClient);
 };
 
 }  // namespace blink

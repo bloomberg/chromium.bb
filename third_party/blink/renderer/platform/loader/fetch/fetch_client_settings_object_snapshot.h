@@ -23,7 +23,6 @@ namespace blink {
 //   - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
 //     KURL::Copy) rather than the copy constructor or the assignment operator.
 struct CrossThreadFetchClientSettingsObjectData {
-  WTF_MAKE_NONCOPYABLE(CrossThreadFetchClientSettingsObjectData);
   USING_FAST_MALLOC(CrossThreadFetchClientSettingsObjectData);
 
  public:
@@ -55,6 +54,9 @@ struct CrossThreadFetchClientSettingsObjectData {
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
   const base::Optional<mojom::IPAddressSpace> address_space;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrossThreadFetchClientSettingsObjectData);
 };
 
 // This takes a partial snapshot of the execution context's states so that an

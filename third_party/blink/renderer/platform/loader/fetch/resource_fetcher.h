@@ -79,7 +79,6 @@ struct ResourceLoaderOptions;
 // Document.
 class PLATFORM_EXPORT ResourceFetcher
     : public GarbageCollectedFinalized<ResourceFetcher> {
-  WTF_MAKE_NONCOPYABLE(ResourceFetcher);
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
@@ -387,10 +386,11 @@ class PLATFORM_EXPORT ResourceFetcher
   bool stale_while_revalidate_enabled_ : 1;
 
   static constexpr uint32_t kKeepaliveInflightBytesQuota = 64 * 1024;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceFetcher);
 };
 
 class ResourceCacheValidationSuppressor {
-  WTF_MAKE_NONCOPYABLE(ResourceCacheValidationSuppressor);
   STACK_ALLOCATED();
 
  public:
@@ -409,6 +409,8 @@ class ResourceCacheValidationSuppressor {
  private:
   Member<ResourceFetcher> loader_;
   bool previous_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceCacheValidationSuppressor);
 };
 
 // Used for ResourceFetcher construction.

@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_STATE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -46,7 +46,6 @@ namespace blink {
 // with an option to cancel it.  An exception message may be auto-generated.
 class PLATFORM_EXPORT ExceptionState {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ExceptionState);
 
  public:
   enum ContextType {
@@ -182,6 +181,8 @@ class PLATFORM_EXPORT ExceptionState {
   // DummyExceptionStateForTesting.
   ScopedPersistent<v8::Value> exception_;
   v8::Isolate* isolate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExceptionState);
 };
 
 // NonThrowableExceptionState never allow call sites to throw an exception.

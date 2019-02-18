@@ -40,7 +40,7 @@ class SkData;
 namespace blink {
 
 class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(WEBPImageDecoder);
+  DISALLOW_COPY_AND_ASSIGN(WEBPImageDecoder);
 
  public:
   WEBPImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);

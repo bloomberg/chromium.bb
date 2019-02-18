@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCOPED_PERSISTENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCOPED_PERSISTENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -44,7 +44,6 @@ namespace blink {
 template <typename T>
 class ScopedPersistent {
   USING_FAST_MALLOC(ScopedPersistent);
-  WTF_MAKE_NONCOPYABLE(ScopedPersistent);
 
  public:
   ScopedPersistent() = default;
@@ -102,6 +101,8 @@ class ScopedPersistent {
 
  private:
   v8::Persistent<T> handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPersistent);
 };
 
 }  // namespace blink
