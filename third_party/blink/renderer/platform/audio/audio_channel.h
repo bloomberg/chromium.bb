@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_CHANNEL_H_
 
 #include <memory>
+
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -42,7 +43,6 @@ namespace blink {
 // The PCM samples are normally assumed to be in a nominal range -1.0 -> +1.0
 class PLATFORM_EXPORT AudioChannel {
   USING_FAST_MALLOC(AudioChannel);
-  WTF_MAKE_NONCOPYABLE(AudioChannel);
 
  public:
   // Memory can be externally referenced, or can be internally allocated with an
@@ -130,6 +130,8 @@ class PLATFORM_EXPORT AudioChannel {
   float* raw_pointer_;
   std::unique_ptr<AudioFloatArray> mem_buffer_;
   bool silent_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioChannel);
 };
 
 }  // namespace blink

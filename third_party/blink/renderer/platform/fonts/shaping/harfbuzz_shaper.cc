@@ -126,7 +126,6 @@ struct ReshapeQueueItem {
 template <typename T>
 class HarfBuzzScopedPtr {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(HarfBuzzScopedPtr);
 
  public:
   typedef void (*DestroyFunction)(T*);
@@ -146,6 +145,8 @@ class HarfBuzzScopedPtr {
  private:
   T* ptr_;
   DestroyFunction destroy_;
+
+  DISALLOW_COPY_AND_ASSIGN(HarfBuzzScopedPtr);
 };
 
 using FeaturesVector = Vector<hb_feature_t, 6>;

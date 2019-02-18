@@ -29,10 +29,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_ACCUMULATION_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_ACCUMULATION_BUFFER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -43,7 +43,6 @@ namespace blink {
 // time around.
 class PLATFORM_EXPORT ReverbAccumulationBuffer {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(ReverbAccumulationBuffer);
 
  public:
   ReverbAccumulationBuffer(size_t length);
@@ -73,6 +72,8 @@ class PLATFORM_EXPORT ReverbAccumulationBuffer {
   AudioFloatArray buffer_;
   size_t read_index_;
   size_t read_time_frame_;  // for debugging (frame on continuous timeline)
+
+  DISALLOW_COPY_AND_ASSIGN(ReverbAccumulationBuffer);
 };
 
 }  // namespace blink

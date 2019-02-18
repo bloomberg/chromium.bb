@@ -20,8 +20,6 @@ class FontFallbackList;
 class SimpleFontData;
 
 class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
-  WTF_MAKE_NONCOPYABLE(FontFallbackIterator);
-
  public:
   static scoped_refptr<FontFallbackIterator> Create(const FontDescription&,
                                              scoped_refptr<FontFallbackList>,
@@ -82,6 +80,8 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
   HashSet<uint32_t> unique_font_data_for_range_sets_returned_;
   Vector<scoped_refptr<FontDataForRangeSet>> tracked_loading_range_sets_;
   FontFallbackPriority font_fallback_priority_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontFallbackIterator);
 };
 
 }  // namespace blink

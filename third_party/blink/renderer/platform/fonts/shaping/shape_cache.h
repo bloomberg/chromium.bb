@@ -45,7 +45,6 @@ struct ShapeCacheEntry {
 
 class ShapeCache {
   USING_FAST_MALLOC(ShapeCache);
-  WTF_MAKE_NONCOPYABLE(ShapeCache);
   // Used to optimize small strings as hash table keys. Avoids malloc'ing an
   // out-of-line StringImpl.
   class SmallStringKey {
@@ -238,6 +237,8 @@ class ShapeCache {
   SmallStringMap short_string_map_;
   unsigned version_ = 0;
   base::WeakPtrFactory<ShapeCache> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShapeCache);
 };
 
 inline bool operator==(const ShapeCache::SmallStringKey& a,

@@ -39,8 +39,6 @@ class FontDescription;
 const int kCAllFamiliesScanned = -1;
 
 class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
-  WTF_MAKE_NONCOPYABLE(FontFallbackList);
-
  public:
   static scoped_refptr<FontFallbackList> Create() {
     return base::AdoptRef(new FontFallbackList());
@@ -101,6 +99,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   unsigned short generation_;
   mutable bool has_loading_fallback_ : 1;
   mutable base::WeakPtr<ShapeCache> shape_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontFallbackList);
 };
 
 }  // namespace blink

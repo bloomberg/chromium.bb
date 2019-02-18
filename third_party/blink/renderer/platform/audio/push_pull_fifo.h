@@ -39,7 +39,6 @@ struct PushPullFIFOStateForTest {
 // TODO(hongchan): add a unit test for multi-thread access.
 class BLINK_PLATFORM_EXPORT PushPullFIFO {
   USING_FAST_MALLOC(PushPullFIFO);
-  WTF_MAKE_NONCOPYABLE(PushPullFIFO);
 
  public:
   // Maximum FIFO length. (512 render quanta)
@@ -94,6 +93,8 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   size_t index_read_ = 0;
   size_t index_write_ = 0;
   scoped_refptr<AudioBus> fifo_bus_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushPullFIFO);
 };
 
 }  // namespace blink

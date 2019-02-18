@@ -6,17 +6,17 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SMALL_CAPS_ITERATOR_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT SmallCapsIterator {
   USING_FAST_MALLOC(SmallCapsIterator);
-  WTF_MAKE_NONCOPYABLE(SmallCapsIterator);
 
  public:
   enum SmallCapsBehavior {
@@ -37,6 +37,8 @@ class PLATFORM_EXPORT SmallCapsIterator {
 
   SmallCapsBehavior current_small_caps_behavior_;
   SmallCapsBehavior previous_small_caps_behavior_;
+
+  DISALLOW_COPY_AND_ASSIGN(SmallCapsIterator);
 };
 
 }  // namespace blink

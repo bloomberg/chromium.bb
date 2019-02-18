@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARFBUZZ_FACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARFBUZZ_FACE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
 #include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
@@ -48,8 +48,6 @@ class FontPlatformData;
 struct HarfBuzzFontData;
 
 class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
-  WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
-
  public:
   static scoped_refptr<HarfBuzzFace> Create(FontPlatformData* platform_data,
                                             uint64_t unique_id) {
@@ -80,6 +78,8 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   uint64_t unique_id_;
   hb_font_t* unscaled_font_;
   HarfBuzzFontData* harfbuzz_font_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(HarfBuzzFace);
 };
 
 }  // namespace blink

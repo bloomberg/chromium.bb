@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_STEREO_PANNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_STEREO_PANNER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -18,7 +18,6 @@ class AudioBus;
 
 class PLATFORM_EXPORT StereoPanner {
   USING_FAST_MALLOC(StereoPanner);
-  WTF_MAKE_NONCOPYABLE(StereoPanner);
 
  public:
   static std::unique_ptr<StereoPanner> Create(float sample_rate);
@@ -35,6 +34,8 @@ class PLATFORM_EXPORT StereoPanner {
 
  private:
   explicit StereoPanner(float sample_rate);
+
+  DISALLOW_COPY_AND_ASSIGN(StereoPanner);
 };
 
 }  // namespace blink

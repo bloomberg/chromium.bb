@@ -7,6 +7,7 @@
 
 #include <unicode/uscript.h>
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/orientation_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/fonts/symbols_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -23,7 +23,6 @@ namespace blink {
 // font-variant of the text run.
 class PLATFORM_EXPORT RunSegmenter {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(RunSegmenter);
 
  public:
   // Indices into the UTF-16 buffer that is passed in
@@ -63,6 +62,8 @@ class PLATFORM_EXPORT RunSegmenter {
   unsigned orientation_iterator_position_;
   unsigned symbols_iterator_position_;
   bool at_end_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunSegmenter);
 };
 
 }  // namespace blink

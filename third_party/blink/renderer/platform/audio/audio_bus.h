@@ -30,8 +30,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_BUS_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_channel.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -41,8 +42,6 @@ namespace blink {
 // The data layout is "planar" as opposed to "interleaved".  An AudioBus with
 // one channel is mono, an AudioBus with two channels is stereo, etc.
 class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
-  WTF_MAKE_NONCOPYABLE(AudioBus);
-
  public:
   enum {
     kChannelLeft = 0,
@@ -182,6 +181,9 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   Vector<std::unique_ptr<AudioChannel>> channels_;
   int layout_;
   float sample_rate_;  // 0.0 if unknown or N/A
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioBus);
 };
 
 }  // namespace blink

@@ -30,10 +30,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DYNAMICS_COMPRESSOR_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/audio/dynamics_compressor_kernel.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -46,7 +47,6 @@ class AudioBus;
 
 class PLATFORM_EXPORT DynamicsCompressor {
   USING_FAST_MALLOC(DynamicsCompressor);
-  WTF_MAKE_NONCOPYABLE(DynamicsCompressor);
 
  public:
   enum {
@@ -111,6 +111,9 @@ class PLATFORM_EXPORT DynamicsCompressor {
 
   // The core compressor.
   DynamicsCompressorKernel compressor_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DynamicsCompressor);
 };
 
 }  // namespace blink
