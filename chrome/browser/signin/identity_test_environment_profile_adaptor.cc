@@ -141,6 +141,7 @@ TestingProfile::TestingFactories IdentityTestEnvironmentProfileAdaptor::
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     Profile* profile)
     : identity_test_env_(
+          profile->GetPrefs(),
           AccountTrackerServiceFactory::GetForProfile(profile),
           static_cast<FakeAccountFetcherService*>(
               AccountFetcherServiceFactory::GetForProfile(profile)),

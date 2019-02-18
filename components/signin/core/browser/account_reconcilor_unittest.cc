@@ -373,7 +373,8 @@ AccountReconcilorTest::AccountReconcilorTest()
                       &cookie_manager_service_),
 
 #endif
-      identity_test_env_(&account_tracker_,
+      identity_test_env_(&pref_service_,
+                         &account_tracker_,
                          &account_fetcher_,
                          &token_service_,
                          &signin_manager_,

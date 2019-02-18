@@ -155,6 +155,7 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
     IdentityTestEnvironmentChromeBrowserStateAdaptor(
         ios::ChromeBrowserState* browser_state)
     : identity_test_env_(
+          browser_state->GetPrefs(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           static_cast<FakeAccountFetcherService*>(
               ios::AccountFetcherServiceFactory::GetForBrowserState(
