@@ -5,6 +5,8 @@
 #ifndef BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
 #define BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -64,6 +66,14 @@ namespace test {
 // Design and future improvements documented in
 // https://docs.google.com/document/d/1QabRo8c7D9LsYY3cEcaPQbOCLo8Tu-6VLykYXyl3Pkk/edit
 class ScopedTaskEnvironment {
+ protected:
+  // This enables a two-phase initialization for sub classes such as
+  // content::TestBrowserThreadBundle which need to provide the default task
+  // queue because they instantiate a scheduler on the same thread. Subclasses
+  // using this trait must invoke DeferredInitFromSubclass() before running the
+  // task environment.
+  struct SubclassCreatesDefaultTaskRunner {};
+
  public:
   enum class MainThreadType {
     // The main thread doesn't pump system messages.
@@ -121,6 +131,7 @@ class ScopedTaskEnvironment {
     ValidTrait(MainThreadType);
     ValidTrait(ExecutionMode);
     ValidTrait(NowSource);
+    ValidTrait(SubclassCreatesDefaultTaskRunner);
   };
 
   // Constructor accepts zero or more traits which customize the testing
@@ -135,6 +146,7 @@ class ScopedTaskEnvironment {
             trait_helpers::GetEnum<ExecutionMode, ExecutionMode::ASYNC>(
                 args...),
             trait_helpers::GetEnum<NowSource, NowSource::REAL_TIME>(args...),
+            trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner>(args...),
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed TaskScheduler tasks remain. Then, unregisters the
@@ -200,6 +212,14 @@ class ScopedTaskEnvironment {
     return execution_control_mode_;
   }
 
+  // Returns the TimeDomain driving this ScopedTaskEnvironment.
+  sequence_manager::TimeDomain* GetTimeDomain() const;
+
+  sequence_manager::SequenceManager* sequence_manager() const;
+
+  void DeferredInitFromSubclass(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // Derived classes may need to control when the sequence manager goes away.
   void NotifyDestructionObserversAndReleaseSequenceManager();
 
@@ -207,22 +227,25 @@ class ScopedTaskEnvironment {
   class MockTimeDomain;
   class TestTaskTracker;
 
+  void CompleteInitialization();
+
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   ScopedTaskEnvironment(MainThreadType main_thread_type,
                         ExecutionMode execution_control_mode,
                         NowSource now_source,
+                        bool subclass_creates_default_taskrunner,
                         trait_helpers::NotATraitTag tag);
-
-  scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
   const MainThreadType main_thread_type_;
   const ExecutionMode execution_control_mode_;
+  const bool subclass_creates_default_taskrunner_;
 
-  std::unique_ptr<MockTimeDomain> mock_time_domain_;
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
+  std::unique_ptr<MockTimeDomain> mock_time_domain_;
 
   scoped_refptr<sequence_manager::TaskQueue> task_queue_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Only set for instances with a MOCK_TIME MainThreadType.
   std::unique_ptr<Clock> mock_clock_;

@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_browser_thread_bundle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -12,10 +14,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/task_scheduler/post_task_android.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -84,7 +91,15 @@ void TestBrowserThreadBundle::Init() {
   CHECK(com_initializer_->Succeeded());
 #endif
 
-  BrowserTaskExecutor::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
+      BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
+                                                 GetTimeDomain());
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner =
+      browser_ui_thread_scheduler->GetTaskRunnerForTesting(
+          BrowserUIThreadScheduler::QueueType::kDefault);
+  BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
+      std::move(browser_ui_thread_scheduler));
+  DeferredInitFromSubclass(std::move(default_task_runner));
 
   if (HasIOMainLoop()) {
     CHECK(base::MessageLoopCurrentForIO::IsSet());

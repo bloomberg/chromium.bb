@@ -11,6 +11,8 @@
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
+#include "content/public/browser/browser_task_traits.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
@@ -18,6 +20,8 @@
 
 namespace content {
 namespace {
+
+using QueueType = content::BrowserUIThreadTaskQueue::QueueType;
 
 // |g_browser_task_executor| is intentionally leaked on shutdown.
 BrowserTaskExecutor* g_browser_task_executor = nullptr;
@@ -150,10 +154,8 @@ scoped_refptr<AfterStartupTaskRunner> GetAfterStartupTaskRunnerForThreadImpl(
 }  // namespace
 
 BrowserTaskExecutor::BrowserTaskExecutor(
-    std::unique_ptr<base::MessageLoopForUI> message_loop,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : message_loop_(std::move(message_loop)),
-      ui_thread_task_runner_(std::move(ui_thread_task_runner)) {}
+    std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler)
+    : browser_ui_thread_scheduler_(std::move(browser_ui_thread_scheduler)) {}
 
 BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
@@ -161,12 +163,8 @@ BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 void BrowserTaskExecutor::Create() {
   DCHECK(!g_browser_task_executor);
   DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
-  std::unique_ptr<base::MessageLoopForUI> message_loop =
-      std::make_unique<base::MessageLoopForUI>();
-  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner =
-      message_loop->task_runner();
-  g_browser_task_executor = new BrowserTaskExecutor(
-      std::move(message_loop), std::move(ui_thread_task_runner));
+  g_browser_task_executor =
+      new BrowserTaskExecutor(std::make_unique<BrowserUIThreadScheduler>());
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
 #if defined(OS_ANDROID)
@@ -175,13 +173,11 @@ void BrowserTaskExecutor::Create() {
 }
 
 // static
-void BrowserTaskExecutor::CreateForTesting(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+void BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
+    std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler) {
   DCHECK(!g_browser_task_executor);
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
-  DCHECK(ui_thread_task_runner);
   g_browser_task_executor =
-      new BrowserTaskExecutor(nullptr, std::move(ui_thread_task_runner));
+      new BrowserTaskExecutor(std::move(browser_ui_thread_scheduler));
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
 #if defined(OS_ANDROID)
@@ -192,7 +188,7 @@ void BrowserTaskExecutor::CreateForTesting(
 // static
 void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(g_browser_task_executor);
-  // TODO(alexclarke): Forward to the BrowserUIThreadScheduler.
+  g_browser_task_executor->browser_ui_thread_scheduler_->PostFeatureListSetup();
 }
 
 // static
@@ -200,15 +196,16 @@ void BrowserTaskExecutor::Shutdown() {
   if (!g_browser_task_executor)
     return;
 
-  DCHECK(g_browser_task_executor->message_loop_);
-  // We don't delete either |g_browser_task_executor| or because other threads
-  // may PostTask or call BrowserTaskExecutor::GetTaskRunner while  we're
-  // tearing things down. We don't want to add locks so we just leak instead of
-  // dealing with that.For similar reasons we don't need to call
+  DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
+  // We don't delete either |g_browser_task_executor| or the
+  // BrowserUIThreadScheduler it owns because other threads may PostTask or call
+  // BrowserTaskExecutor::GetTaskRunner while we're tearing things down. We
+  // don't want to add locks so we just leak instead of dealing with that.
+  // For similar reasons we don't need to call
   // PostTaskAndroid::SignalNativeSchedulerShutdown on Android. In tests however
   // we need to clean up, so BrowserTaskExecutor::ResetForTesting should be
   // called.
-  g_browser_task_executor->message_loop_.reset();
+  g_browser_task_executor->browser_ui_thread_scheduler_->Shutdown();
 }
 
 // static
@@ -286,15 +283,47 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
     const BrowserTaskTraitsExtension& extension) {
   BrowserThread::ID thread_id = extension.browser_thread();
   DCHECK_GE(thread_id, 0);
-  DCHECK_LT(thread_id, BrowserThread::ID::ID_COUNT);
-  // TODO(eseckler): For now, make BEST_EFFORT tasks run after startup. Once the
-  // BrowserUIThreadScheduler is in place, this should be handled by its
-  // policies instead.
-  if (traits.priority() == base::TaskPriority::BEST_EFFORT)
-    return GetAfterStartupTaskRunnerForThread(thread_id);
-  if (thread_id == BrowserThread::UI)
-    return ui_thread_task_runner_;
-  return GetProxyTaskRunnerForThread(thread_id);
+  DCHECK_LT(thread_id, BrowserThread::ID_COUNT);
+  if (thread_id != BrowserThread::UI) {
+    // TODO(scheduler-dev): Consider adding a simple (static priority based)
+    // scheduler to the IO thread and getting rid of AfterStartupTaskRunner.
+    if (traits.priority() == base::TaskPriority::BEST_EFFORT)
+      return GetAfterStartupTaskRunnerForThread(thread_id);
+    return GetProxyTaskRunnerForThread(thread_id);
+  }
+
+  BrowserTaskType task_type = extension.task_type();
+  DCHECK_LT(task_type, BrowserTaskType::kBrowserTaskType_Last);
+  switch (task_type) {
+    case BrowserTaskType::kBootstrap:
+      // TODO(alexclarke): Lets do this at compile time instead.
+      DCHECK(!traits.priority_set_explicitly())
+          << "Combining BrowserTaskType and TaskPriority is not currently"
+             " supported.";
+      return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
+
+    case BrowserTaskType::kDefault:
+      // Defer to traits.priority() below.
+      break;
+
+    case BrowserTaskType::kBrowserTaskType_Last:
+      NOTREACHED();
+  }
+
+  switch (traits.priority()) {
+    case base::TaskPriority::BEST_EFFORT:
+      // TODO(eseckler): For now, make BEST_EFFORT tasks run after startup. Once
+      // the BrowserUIThreadScheduler is in place, this should be handled by its
+      // policies instead.
+      return GetAfterStartupTaskRunnerForThread(thread_id);
+
+    case base::TaskPriority::USER_VISIBLE:
+      return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kDefault);
+
+    case base::TaskPriority::USER_BLOCKING:
+      return browser_ui_thread_scheduler_->GetTaskRunner(
+          QueueType::kUserBlocking);
+  }
 }
 
 // static
