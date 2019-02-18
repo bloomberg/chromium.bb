@@ -1317,11 +1317,11 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_COPIED" desc="The message displayed when the search is copied via long press (contextual search) [Length: 10em] [iOS only]">
         Copied
       </message>
-      <message name="IDS_IOS_SEARCH_COPIED_IMAGE" desc="Text in the search accelerator menu shown when long-pressing the omnibox with copied image. Enables pasting the current contents of the clipboard and searching the image. [iOS only]">
-          Search Copied Image
+      <message name="IDS_IOS_SEARCH_COPIED_IMAGE" desc="If a user has an image on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to search the default search engine for the image. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Image That You Copied.' [iOS only]" meaning="Maximum characters: 32">
+          Search for Copied Image
       </message>
-      <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="Text in the search accelerator menu shown when long-pressing the omnibox with copied text. Enables pasting the current contents of the clipboard and searching the text. [iOS only]">
-          Search Copied Text
+      <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="If a user has some text on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to search the default search engine for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.' [iOS only]" meaning="Maximum characters: 32">
+          Search for Copied Text
       </message>
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
         Search Engine
@@ -1806,11 +1806,11 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE" desc="The iOS menu item for requesting the mobile site [iOS only]" meaning="Request the mobile version of the current web site. [Length: Unlimited]">
         Request Mobile Site
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE" desc="The iOS menu item for searching for the image copied to the system clipboard">
-        Search Copied Image
+      <message name="IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE" desc="If a user has an image on their clipboard, this string will appear as an option when the user long-presses on Chrome's search icon. The user can select this option to search the default search engine for the image. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Image That You Copied.'" meaning="[Length:Unlimited]">
+        Search for Image You Copied
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT" desc="The iOS menu item for pasting text in the omnibox and searching for the text.">
-          Search Copied Text
+      <message name="IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT" desc="If a user has some text on their clipboard, this string will appear as an option when the user long-presses on Chrome's search icon. The user can select this option to search the default search engine for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.'" meaning="[Length:Unlimited]">
+          Search for Text You Copied
       </message>
       <message name="IDS_IOS_TOOLS_MENU_SETTINGS" desc="The iOS menu item for opening the settings [iOS only]" meaning="Open the settings menu. [Length:Unlimited]">
         Settings
@@ -1824,8 +1824,8 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_STOP" desc="The iOS menu item for stoping the loading of the page.">
         Stop
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK" desc="The iOS menu item for pasting a URL in the omnibox and navigating to the page.">
-          Visit Copied Link
+      <message name="IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK" desc="If a user has a URL on their clipboard, this string will appear as an option when the user long-presses on Chrome's search icon. The user can select this option to visit the URL. This string is a complete sentence. If necessary for your language, you can translate as 'Visit Link That You Copied.'" meaning="[Lenth: unlimited]">
+          Visit Link You Copied
       </message>
       <message name="IDS_IOS_TOOLS_MENU_VOICE_SEARCH" desc="The iOS menu item for opening Voice Search.">
         Voice Search
@@ -1842,7 +1842,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_UPGRADE_AVAILABLE_BUTTON" desc="Displayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
         Update
       </message>
-      <message name="IDS_IOS_VISIT_COPIED_LINK" desc="Text in the search accelerator menu shown when long-pressing the omnibox with a copied url. Enables pasting the current contents of the clipboard and navigating to the url. [iOS only]">
+      <message name="IDS_IOS_VISIT_COPIED_LINK" desc="If a user has a URL on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to visit the URL. This string is a complete sentence. If necessary for your language, you can translate as 'Visit Link That You Copied.' [iOS only]" meaning="Maximum characters: 32">
           Visit Copied Link
       </message>
       <message name="IDS_IOS_VERSION" desc="The label for the Chrome version on which the application is based, displayed in the About Chrome settings page [Length: 30em] [iOS only]">
