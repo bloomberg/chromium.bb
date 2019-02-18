@@ -274,7 +274,10 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
   self.pageInfoCoordinator.dispatcher = self.dispatcher;
-  self.pageInfoCoordinator.loader = self.viewController;
+  self.pageInfoCoordinator.loader =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+          ->GetUrlLoader();
+  ;
   self.pageInfoCoordinator.presentationProvider = self.viewController;
   self.pageInfoCoordinator.tabModel = self.tabModel;
 
@@ -360,7 +363,9 @@
   self.readingListCoordinator = [[ReadingListCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
-                          loader:self.viewController];
+                          loader:UrlLoadingServiceFactory::GetForBrowserState(
+                                     self.browserState)
+                                     ->GetUrlLoader()];
   [self.readingListCoordinator start];
 }
 
@@ -382,7 +387,9 @@
   self.recentTabsCoordinator = [[RecentTabsCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
-  self.recentTabsCoordinator.loader = self.viewController;
+  self.recentTabsCoordinator.loader =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+          ->GetUrlLoader();
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   self.recentTabsCoordinator.webStateList = self.tabModel.webStateList;
   [self.recentTabsCoordinator start];
