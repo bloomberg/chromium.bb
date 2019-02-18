@@ -5,13 +5,11 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -19,7 +17,6 @@
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace sync_ui_util {
@@ -139,7 +136,6 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
 // status_label and link_label must either be both null or both non-null.
 MessageType GetStatusLabelsImpl(
     const syncer::SyncService* service,
-    const identity::IdentityManager* identity_manager,
     bool is_user_signout_allowed,
     const GoogleServiceAuthError& auth_error,
     base::string16* status_label,
@@ -148,7 +144,7 @@ MessageType GetStatusLabelsImpl(
   DCHECK(service);
   DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
-  if (!identity_manager->HasPrimaryAccount()) {
+  if (!service->IsAuthenticatedAccountPrimary()) {
     return PRE_SYNCED;
   }
 
@@ -274,14 +270,12 @@ MessageType GetStatusLabels(Profile* profile,
   DCHECK(profile);
   syncer::SyncService* service =
       ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
   const bool is_user_signout_allowed =
       signin_util::IsUserSignoutAllowedForProfile(profile);
   GoogleServiceAuthError auth_error =
       SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
-  return GetStatusLabelsImpl(service, identity_manager, is_user_signout_allowed,
-                             auth_error, status_label, link_label, action_type);
+  return GetStatusLabelsImpl(service, is_user_signout_allowed, auth_error,
+                             status_label, link_label, action_type);
 }
 
 MessageType GetStatus(Profile* profile) {
