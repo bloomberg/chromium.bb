@@ -67,6 +67,8 @@ class GLES2Interface;
 
 namespace blink {
 class CanvasColorParams;
+class CanvasResource;
+class CanvasResourceProvider;
 class Extensions3DUtil;
 class StaticBitmapImage;
 class WebGraphicsContext3DProvider;
@@ -261,6 +263,9 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     scoped_refptr<DrawingBuffer> drawing_buffer_;
     bool doing_work_ = false;
   };
+
+  scoped_refptr<CanvasResource> AsCanvasResource(
+      base::WeakPtr<CanvasResourceProvider> resource_provider);
 
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,

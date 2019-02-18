@@ -429,14 +429,23 @@ void HTMLCanvasElement::FinalizeFrame() {
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      ResourceProvider()->TryEnableSingleBuffering();
-      if (canvas2d_bridge_)
+      // TryEnableSingleBuffering() the first time we FinalizeFrame().
+      if (!ResourceProvider()->IsSingleBuffered()) {
+        ResourceProvider()->TryEnableSingleBuffering();
+        if (Is3d() && RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+          context_->ProvideBackBufferToResourceProvider();
+      }
+
+      if (canvas2d_bridge_) {
         canvas2d_bridge_->FlushRecording();
-      // Push a frame
-      base::TimeTicks start_time = WTF::CurrentTimeTicks();
-      if (Is3d())
-        context_->PaintRenderingResultsToCanvas(kBackBuffer);
-      scoped_refptr<CanvasResource> canvas_resource =
+      } else {
+        DCHECK(Is3d());
+        if (!RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+          context_->PaintRenderingResultsToCanvas(kBackBuffer);
+      }
+
+      const base::TimeTicks start_time = WTF::CurrentTimeTicks();
+      const scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceFrame();
       const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
       dirty_rect_.Intersect(src_rect);
@@ -451,13 +460,12 @@ void HTMLCanvasElement::FinalizeFrame() {
     }
   }
 
-  // If the canvas is visible, notifying listeners is taken
-  // care of in the in doDeferredPaintInvalidation, which allows
-  // the frame to be grabbed prior to compositing, which is
-  // critically important because compositing may clear the canvas's
-  // image. (e.g. WebGL context with preserveDrawingBuffer=false).
-  // If the canvas is not visible, doDeferredPaintInvalidation
-  // will not get called, so we need to take care of business here.
+  // If the canvas is visible, notifying listeners is taken care of in
+  // DoDeferredPaintInvalidation(), which allows the frame to be grabbed prior
+  // to compositing, which is critically important because compositing may clear
+  // the canvas's image. (e.g. WebGL context with preserveDrawingBuffer=false).
+  // If the canvas is not visible, DoDeferredPaintInvalidation will not get
+  // called, so we need to take care of business here.
   if (!did_notify_listeners_for_current_frame_)
     NotifyListenersCanvasChanged();
   did_notify_listeners_for_current_frame_ = false;
