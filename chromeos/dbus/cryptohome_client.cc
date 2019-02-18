@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chromeos/dbus/blocking_method_caller.h"
@@ -44,6 +45,8 @@ const int kTpmDBusTimeoutMs = 2 * 60 * 1000;
 const char kAttestationServerDefault[] = "default";
 const char kAttestationServerTest[] = "test";
 
+constexpr char kCryptohomeClientUmaPrefix[] = "CryptohomeClient.";
+
 static attestation::VerifiedAccessType GetVerifiedAccessType() {
   std::string value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -58,6 +61,49 @@ static attestation::VerifiedAccessType GetVerifiedAccessType() {
                << ". Using default.";
   return attestation::DEFAULT_VA;
 }
+
+void UmaCallbackWraper(const std::string& metric_name,
+                       const base::Time& start_time,
+                       dbus::ObjectProxy::ResponseCallback callback,
+                       dbus::Response* response) {
+  UmaHistogramMediumTimes(metric_name, base::Time::Now() - start_time);
+  std::move(callback).Run(response);
+}
+
+class DbusObjectProxyWithUma {
+ public:
+  DbusObjectProxyWithUma(dbus::ObjectProxy* proxy) : proxy_(proxy) {}
+
+  void CallMethod(dbus::MethodCall* method_call,
+                  int timeout_ms,
+                  dbus::ObjectProxy::ResponseCallback callback) {
+    std::string metric_name =
+        kCryptohomeClientUmaPrefix + method_call->GetMember();
+    base::Time start_time = base::Time::Now();
+
+    proxy_->CallMethod(method_call, timeout_ms,
+                       base::BindOnce(&UmaCallbackWraper, metric_name,
+                                      start_time, std::move(callback)));
+  }
+
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+    proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
+  void ConnectToSignal(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      dbus::ObjectProxy::SignalCallback signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+    proxy_->ConnectToSignal(interface_name, signal_name,
+                            std::move(signal_callback),
+                            std::move(on_connected_callback));
+  }
+
+ private:
+  dbus::ObjectProxy* proxy_;
+};
 
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
@@ -190,8 +236,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(id.account_id());
 
-    std::unique_ptr<dbus::Response> response =
-        blocking_method_caller_->CallMethodAndBlock(&method_call);
+    base::Time start_time = base::Time::Now();
+
+    std::unique_ptr<dbus::Response> response(
+        blocking_method_caller_->CallMethodAndBlock(&method_call));
+
+    UmaHistogramMediumTimes(
+        kCryptohomeClientUmaPrefix + method_call.GetMember(),
+        base::Time::Now() - start_time);
 
     std::string sanitized_username;
     if (response) {
@@ -298,8 +350,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   bool CallTpmClearStoredPasswordAndBlock() override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmClearStoredPassword);
+
+    base::Time start_time = base::Time::Now();
+
     std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(&method_call));
+
+    UmaHistogramMediumTimes(
+        kCryptohomeClientUmaPrefix + method_call.GetMember(),
+        base::Time::Now() - start_time);
+
     return response.get() != NULL;
   }
 
@@ -344,8 +404,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeInstallAttributesGet);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
+
+    base::Time start_time = base::Time::Now();
+
     std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(&method_call));
+
+    UmaHistogramMediumTimes(
+        kCryptohomeClientUmaPrefix + method_call.GetMember(),
+        base::Time::Now() - start_time);
+
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
@@ -940,11 +1008,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
  protected:
   void Init(dbus::Bus* bus) override {
-    proxy_ = bus->GetObjectProxy(
+    dbus::ObjectProxy* proxy = bus->GetObjectProxy(
         cryptohome::kCryptohomeServiceName,
         dbus::ObjectPath(cryptohome::kCryptohomeServicePath));
+    proxy_ = std::make_unique<DbusObjectProxyWithUma>(proxy);
 
-    blocking_method_caller_.reset(new BlockingMethodCaller(bus, proxy_));
+    blocking_method_caller_.reset(new BlockingMethodCaller(bus, proxy));
 
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface, cryptohome::kSignalAsyncCallStatus,
@@ -1025,8 +1094,15 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method with a bool value reult and block.
   bool CallBoolMethodAndBlock(dbus::MethodCall* method_call,
                               bool* result) {
+    base::Time start_time = base::Time::Now();
+
     std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(method_call));
+
+    UmaHistogramMediumTimes(
+        kCryptohomeClientUmaPrefix + method_call->GetMember(),
+        base::Time::Now() - start_time);
+
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
@@ -1260,7 +1336,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  dbus::ObjectProxy* proxy_ = nullptr;
+  std::unique_ptr<DbusObjectProxyWithUma> proxy_ = nullptr;
   base::ObserverList<Observer>::Unchecked observer_list_;
   std::unique_ptr<BlockingMethodCaller> blocking_method_caller_;
 
