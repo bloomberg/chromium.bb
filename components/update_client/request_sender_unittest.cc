@@ -15,8 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/update_client/net/url_loader_post_interceptor.h"
 #include "components/update_client/test_configurator.h"
-#include "components/update_client/url_loader_post_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {

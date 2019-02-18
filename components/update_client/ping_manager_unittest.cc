@@ -20,12 +20,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/update_client/component.h"
+#include "components/update_client/net/url_loader_post_interceptor.h"
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/update_engine.h"
-#include "components/update_client/url_loader_post_interceptor.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/re2/src/re2/re2.h"
 

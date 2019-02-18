@@ -65,15 +65,9 @@ class RequestSender {
   // Decodes and returns the public key used by CUP.
   static std::string GetKey(const char* key_bytes_base64);
 
-  // Returns the string value of a header of the server response or an empty
-  // string if the header is not available.
-  static std::string GetStringHeaderValue(const NetworkFetcher* url_loader,
-                                          const char* header_name);
-
-  // Returns the integral value of a header of the server response or -1 if
-  // if the header is not available or a conversion error has occured.
-  static int64_t GetInt64HeaderValue(const NetworkFetcher* loader,
-                                     const char* header_name);
+  void OnResponseStarted(const GURL& final_url,
+                         int response_code,
+                         int64_t content_length);
 
   void OnNetworkFetcherComplete(const GURL& original_url,
                                 std::unique_ptr<std::string> response_body);
@@ -98,13 +92,15 @@ class RequestSender {
   std::vector<GURL> urls_;
   base::flat_map<std::string, std::string> request_extra_headers_;
   std::string request_body_;
-  bool use_signing_;  // True if CUP signing is used.
+  bool use_signing_ = false;  // True if CUP signing is used.
   RequestSenderCallback request_sender_callback_;
 
   std::string public_key_;
   std::vector<GURL>::const_iterator cur_url_;
   std::unique_ptr<NetworkFetcher> network_fetcher_;
   std::unique_ptr<client_update_protocol::Ecdsa> signer_;
+
+  int response_code_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };

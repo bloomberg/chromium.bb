@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/update_client.h"
 
@@ -25,28 +24,12 @@ class FilePath;
 namespace update_client {
 
 class Component;
-class NetworkFetcher;
-class NetworkFetcherFactory;
 struct CrxComponent;
 
 // Defines a name-value pair that represents an installer attribute.
 // Installer attributes are component-specific metadata, which may be serialized
 // in an update check request.
 using InstallerAttribute = std::pair<std::string, std::string>;
-
-using LoadCompleteCallback =
-    base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
-
-// Sends a protocol request to the the service endpoint specified by |url|.
-// The body of the request is provided by |protocol_request| and it is
-// expected to contain XML data. The caller owns the returned object.
-std::unique_ptr<NetworkFetcher> SendProtocolRequest(
-    const GURL& url,
-    const base::flat_map<std::string, std::string>&
-        protocol_request_extra_headers,
-    const std::string& protocol_request,
-    LoadCompleteCallback callback,
-    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
 
 // Returns true if the |component| contains a valid differential update url.
 bool HasDiffUpdate(const Component& component);

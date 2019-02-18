@@ -17,10 +17,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/network.h"
 #include "components/update_client/utils.h"
-#include "net/base/load_flags.h"
-#include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -81,34 +77,15 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
     return;
   }
 
-  const base::FilePath response =
-      download_dir_.AppendASCII(url.ExtractFileName());
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
-  network_fetcher_ =
-      network_fetcher_factory_->Create(std::move(resource_request));
-
-  const int kMaxRetries = 3;
-  network_fetcher_->SetRetryOptions(
-      kMaxRetries,
-      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
-
-  network_fetcher_->SetOnResponseStartedCallback(base::BindOnce(
-      &UrlFetcherDownloader::OnResponseStarted, base::Unretained(this)));
-
-  // For the end-to-end system it is important that the client reports the
-  // number of bytes it loaded from the server even in the case that the
-  // overall network transaction failed.
-  network_fetcher_->SetAllowPartialResults(true);
-
   VLOG(1) << "Starting background download: " << url.spec();
+  const auto file_path = download_dir_.AppendASCII(url.ExtractFileName());
+  network_fetcher_ = network_fetcher_factory_->Create();
   network_fetcher_->DownloadToFile(
-      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
+      url, file_path,
+      base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
                      base::Unretained(this)),
-      response);
+      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
+                     base::Unretained(this)));
 
   download_start_time_ = base::TimeTicks::Now();
 }
@@ -125,17 +102,11 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path) {
   // Consider a 5xx response from the server as an indication to terminate
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
-  int response_code = -1;
-  if (network_fetcher_->ResponseInfo() &&
-      network_fetcher_->ResponseInfo()->headers) {
-    response_code = network_fetcher_->ResponseInfo()->headers->response_code();
-  }
-
   int fetch_error = -1;
-  if (!file_path.empty() && response_code == 200) {
+  if (!file_path.empty() && response_code_ == 200) {
     fetch_error = 0;
-  } else if (response_code != -1) {
-    fetch_error = response_code;
+  } else if (response_code_ != -1) {
+    fetch_error = response_code_;
   } else {
     fetch_error = network_fetcher_->NetError();
   }
@@ -161,9 +132,8 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path) {
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   VLOG(1) << "Downloaded " << network_fetcher_->GetContentSize() << " bytes in "
-          << download_time.InMilliseconds() << "ms from "
-          << network_fetcher_->GetFinalURL().spec() << " to "
-          << result.response.value();
+          << download_time.InMilliseconds() << "ms from " << final_url_.spec()
+          << " to " << result.response.value();
 
   // Delete the download directory in the error cases.
   if (fetch_error && !download_dir_.empty())
@@ -178,13 +148,14 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path) {
 }
 
 // This callback is used to indicate that a download has been started.
-void UrlFetcherDownloader::OnResponseStarted(
-    const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+void UrlFetcherDownloader::OnResponseStarted(const GURL& final_url,
+                                             int response_code,
+                                             int64_t content_length) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (response_head.content_length != -1)
-    total_bytes_ = response_head.content_length;
+  final_url_ = final_url;
+  response_code_ = response_code;
+  total_bytes_ = content_length;
 
   OnDownloadProgress();
 }
