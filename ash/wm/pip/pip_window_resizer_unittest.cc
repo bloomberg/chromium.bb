@@ -94,6 +94,7 @@ class PipWindowResizerTest : public AshTestBase {
   }
 
  protected:
+  views::Widget* widget() { return widget_.get(); }
   aura::Window* window() { return window_; }
   FakeWindowState* test_state() { return test_state_; }
 
@@ -220,15 +221,8 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
 
 TEST_F(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the left.
@@ -236,20 +230,13 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
 
   // Should be dismissed when the drag completes.
   resizer->CompleteDrag();
-  EXPECT_TRUE(widget->IsClosed());
+  EXPECT_TRUE(widget()->IsClosed());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowPartiallySwipedDoesNotDismiss) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the left, but only a little bit.
@@ -257,113 +244,78 @@ TEST_F(PipWindowResizerTest, PipWindowPartiallySwipedDoesNotDismiss) {
 
   // Should not be dismissed when the drag completes.
   resizer->CompleteDrag();
-  EXPECT_FALSE(widget->IsClosed());
-  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state->last_bounds());
+  EXPECT_FALSE(widget()->IsClosed());
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowInSwipeToDismissGestureLocksToAxis) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the left, but only a little bit, to start a swipe-to-dismiss.
   resizer->Drag(CalculateDragPoint(*resizer, -30, 0), 0);
-  EXPECT_EQ(gfx::Rect(-22, 8, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(-22, 8, 100, 100), test_state()->last_bounds());
 
   // Now try to drag down, it should be locked to the horizontal axis.
   resizer->Drag(CalculateDragPoint(*resizer, -30, 30), 0);
-  EXPECT_EQ(gfx::Rect(-22, 8, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(-22, 8, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest,
        PipWindowMovedAwayFromScreenEdgeNoLongerCanSwipeToDismiss) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 16, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 16, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the right and up a bit.
   resizer->Drag(CalculateDragPoint(*resizer, 30, -8), 0);
-  EXPECT_EQ(gfx::Rect(38, 8, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(38, 8, 100, 100), test_state()->last_bounds());
 
   // Now try to drag to the left start a swipe-to-dismiss. It should stop
   // at the edge of the work area.
   resizer->Drag(CalculateDragPoint(*resizer, -30, -8), 0);
-  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowAtCornerLocksToOneAxisOnSwipeToDismiss) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Try dragging up and to the left. It should lock onto the axis with the
   // largest displacement.
   resizer->Drag(CalculateDragPoint(*resizer, -30, -40), 0);
-  EXPECT_EQ(gfx::Rect(8, -32, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(8, -32, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(
     PipWindowResizerTest,
     PipWindowMustBeDraggedMostlyInDirectionOfDismissToInitiateSwipeToDismiss) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Try a lot downward and a bit to the left. Swiping should not be initiated.
   resizer->Drag(CalculateDragPoint(*resizer, -30, 50), 0);
-  EXPECT_EQ(gfx::Rect(8, 58, 100, 100), test_state->last_bounds());
+  EXPECT_EQ(gfx::Rect(8, 58, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest,
        PipWindowDoesNotMoveUntilStatusOfSwipeToDismissGestureIsKnown) {
   UpdateWorkArea("400x400");
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  auto widget = CreateWidgetForTest(gfx::Rect(8, 8, 100, 100));
-  auto* window = widget->GetNativeWindow();
-  FakeWindowState* test_state =
-      new FakeWindowState(mojom::WindowStateType::PIP);
-  wm::GetWindowState(window)->SetStateObject(
-      std::unique_ptr<wm::WindowState::State>(test_state));
-  std::unique_ptr<PipWindowResizer> resizer(
-      CreateResizerForTest(HTCAPTION, window));
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
   // Move a small amount - this should not trigger any bounds change, since
   // we don't know whether a swipe will start or not.
   resizer->Drag(CalculateDragPoint(*resizer, -4, 0), 0);
-  EXPECT_TRUE(test_state->last_bounds().IsEmpty());
+  EXPECT_TRUE(test_state()->last_bounds().IsEmpty());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowIsFlungToEdge) {
