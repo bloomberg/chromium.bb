@@ -1,108 +1,66 @@
-<body>
-<p>Test WorkerContext.close functionality. Should print a series of PASS messages, followed with DONE.</p>
-<div id=result></div>
+<!DOCTYPE html>
+<title>Test WorkerGlobalScope.close functionality.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-function log(message)
-{
-    document.getElementById("result").innerHTML += message + "<br>";
-}
+setup({ allow_uncaught_exception: true });
 
-if (window.testRunner)
-{
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
+async_test(function(t) {
+  var worker = new Worker('resources/worker-close.js');
+  worker.postMessage("typeofClose");
+    worker.onmessage = t.step_func_done(function(evt) {
+    assert_equals(evt.data, "typeof close: function");
+    });
+}, 'Test type of close function.');
 
-var worker = new Worker('resources/worker-close.js');
-var timeout = 0;
-
-worker.postMessage("typeofClose");
-worker.onmessage = testTypeofClose;
-
-function testTypeofClose(evt)
-{
-    if (evt.data == "typeof close: function")
-        log("PASS: " + evt.data);
-    else
-        log("FAIL: " + evt.data);
-    worker.onmessage = testMessageAfterClose;
-    worker.postMessage("ping");
-}
-
-function testMessageAfterClose(evt) {
-    if (evt.data == "pong")
-        log("PASS: received message before close");
-    else
-        log("FAIL: received unknown response: " + evt.data);
-
-    // Tell the worker to close, then send a followup message. This message should not be delivered,
-    // since that would require JS to invoke the onmessage handler, which does not happen after the JS
-    // fragment with 'close()' in it exits. So, the 'ping' should not come back as 'pong'.
+async_test(function(t) {
+  var worker = new Worker('resources/worker-close.js');  
+  worker.postMessage("ping");
+    worker.onmessage = t.step_func(function(evt) {
+    assert_equals(evt.data, "pong");
+    // Tell the worker to close, then send a followup message. This message
+    // should not be delivered, since that would require JS to invoke the
+    //  onmessage handler, which does not happen after the JS fragment with
+    // 'close()' in it exits. So, the 'ping' should not come back as 'pong'.
     worker.postMessage("close");
     worker.postMessage("ping");
-    worker.onmessage = function(evt) {
-        if (evt.data != "pong") {
-            log("PASS: Received message posted right after close() was invoked: " + evt.data);
-            timeout = setTimeout(testErrorAfterClose, 1000);
-        } else {
-            log("FAIL: Received a message originated from a handler in the worker after the JS fragment with close() exited" + evt.data);
-            done();
-        }
-    };
-}
+      worker.onmessage = t.step_func(function(evt) {
+      assert_not_equals(evt.data, "pong");
+      t.step_timeout(function() { t.done(); }, 500);
+    });
+  });
+}, 'Test sending a message after closing.');
 
-function testErrorAfterClose()
-{
-    log("PASS: no messages arrive to worker after JS fragment with close() exits");
-    // Test that errors are delivered after close.
-    worker = new Worker('resources/worker-close.js');
-    worker.postMessage("closeWithError");
-    worker.onerror = function(event) {
-        log("PASS: Error arrived after close: " + event.message);
-        testPendingEvents();
-        return false;
-    }
-}
+async_test(function(t) {
+  var worker = new Worker('resources/worker-close.js');
+  worker.postMessage("closeWithError");
+  worker.onerror = function(event) {
+    t.done()
+  };
+}, 'Test errors are delivered after close.');
 
-function testPendingEvents()
-{
-    // Now test that workers do not deliver pending events
-    worker = new Worker('resources/worker-close.js');
-    worker.postMessage("closeWithPendingEvents");
-    worker.onmessage = function(evt) {
-        log("FAIL: pending events should not fire:" + evt.data);
-        done();
-    }
-    worker.onerror = function(evt) {
-        log("FAIL: pending events should not fire:" + evt.message);
-        done();
-    }
-    timeout = setTimeout(testTerminateAfterClose, 500);
-}
+async_test(function(t) {
+  var worker = new Worker('resources/worker-close.js');
+  worker.postMessage("closeWithPendingEvents");
+  worker.onmessage = t.step_func(function(evt) {
+    assert_unreached("Pending events should not fire: " + evt.data);
+  });
+  worker.onerror = t.step_func(function(evt) {
+    assert_unreached("Pending events should not fire:" + evt.message);
+  });
+  t.step_timeout(function() { t.done(); }, 500);
+}, 'Test workers do not deliver pending events.');
 
-function testTerminateAfterClose()
-{
-    log("PASS: close() did not dispatch pending events");
-    worker = new Worker('resources/worker-close.js');
-    worker.postMessage("close");
-    worker.onmessage = function(evt) {
-        log("PASS: Received message after worker closed: " + evt.data);
-        // Give worker a chance to close first, then terminate it.
-        timeout = setTimeout(function() {
-            worker.terminate();
-            done();
-        }, 500);
-    };
-}
-
-function done() {
-    if (timeout)
-        clearTimeout(timeout);
-    log("DONE");
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
+async_test(function(t) {
+  var worker = new Worker('resources/worker-close.js');
+  worker.postMessage("close");
+  worker.onmessage = function(evt) {
+    assert_equals(evt.data, "Should be delivered");
+    // Give worker a chance to close first, then terminate it.
+    t.step_timeout(function() {
+      worker.terminate();
+      t.done();
+    }, 500);
+  };
+}, 'Test terminating a worker after close.');
 </script>
-</body>
-</html>
-
