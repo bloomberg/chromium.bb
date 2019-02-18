@@ -5753,14 +5753,6 @@ crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]
 crbug.com/911634 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure ]
 crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Pass Failure ]
 
-# ssauleau 2018-12-06
-crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/webapi/idlharness.any.worker.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/webapi/idlharness.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.worker.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.worker.html [ Pass Failure ]
-
 # Sheriff 2018-12-06
 crbug.com/912793 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
 crbug.com/912793 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Pass Failure ]
@@ -5775,8 +5767,6 @@ crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pas
 # ssauleau 2018-12-08
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.worker.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Pass Failure ]
 
 # Sheriff 2018-12-13
 crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
@@ -5793,19 +5783,7 @@ crbug.com/913931 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size-ab
 # Sheriff 2018-12-19
 crbug.com/915862 [ Android ] webmidi/permission.html [ Pass Failure ]
 
-# ssauleau 2018-12-20
-crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.worker.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/global/value-get-set.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/global/value-get-set.any.worker.html [ Pass Failure ]
-
 crbug.com/919272 external/wpt/resource-timing/resource-timing.html [ Skip ]
-
-# ssauleau 2018-12-20
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/get-set.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/get-set.any.worker.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/grow.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/table/grow.any.worker.html [ Pass Failure ]
 
 # Failing when NetworkService is not enabled.
 crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
@@ -6012,15 +5990,6 @@ crbug.com/926249 virtual/feature-policy-for-sandbox/http/tests/security/sandbox-
 
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
-
-crbug.com/926311 external/wpt/wasm/jsapi/constructor/instantiate.any.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/jsapi/constructor/instantiate.any.worker.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.serviceworker.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.sharedworker.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.worker.html [ Failure ]
-crbug.com/926311 external/wpt/wasm/jsapi/constructor/compile.any.html [ Pass Failure ]
-crbug.com/926311 external/wpt/wasm/jsapi/constructor/compile.any.worker.html [ Pass Failure ]
 
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Pass Failure ]
