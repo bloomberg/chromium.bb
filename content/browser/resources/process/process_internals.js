@@ -7,7 +7,7 @@
 
 /**
  * Reference to the backend providing all the data.
- * @type {mojom.ProcessInternalsHandlerPtr}
+ * @type {mojom.ProcessInternalsHandlerProxy}
  */
 let uiHandler = null;
 
@@ -175,9 +175,7 @@ function loadWebContentsInfo() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup Mojo interface to the backend.
-  uiHandler = new mojom.ProcessInternalsHandlerPtr;
-  Mojo.bindInterface(
-      mojom.ProcessInternalsHandler.name, mojo.makeRequest(uiHandler).handle);
+  uiHandler = mojom.ProcessInternalsHandler.getProxy();
 
   // Get the Site Isolation mode and populate it.
   uiHandler.getIsolationMode().then((response) => {
