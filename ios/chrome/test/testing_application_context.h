@@ -15,7 +15,6 @@
 namespace network {
 class TestNetworkConnectionTracker;
 class TestURLLoaderFactory;
-class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
 
 class TestingApplicationContext : public ApplicationContext {
@@ -73,9 +72,6 @@ class TestingApplicationContext : public ApplicationContext {
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
   std::unique_ptr<network::TestNetworkConnectionTracker>
       test_network_connection_tracker_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      system_shared_url_loader_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);
 };
 
