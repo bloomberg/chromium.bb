@@ -223,11 +223,20 @@ public class WebsitePermissionsFetcher {
         queue.next();
     }
 
-    private Website findOrCreateSite(WebsiteAddress origin, WebsiteAddress embedder) {
-        OriginAndEmbedder key = OriginAndEmbedder.create(origin, embedder);
+    private Website findOrCreateSite(String origin, String embedder) {
+        // Avoid showing multiple entries in "All sites" for the same origin.
+        if (embedder != null && (embedder.equals(origin) || "*".equals(embedder))) {
+            embedder = null;
+        }
+
+        WebsiteAddress permissionOrigin = WebsiteAddress.create(origin);
+        WebsiteAddress permissionEmbedder = WebsiteAddress.create(embedder);
+
+        OriginAndEmbedder key = OriginAndEmbedder.create(permissionOrigin, permissionEmbedder);
+
         Website site = mSites.get(key);
         if (site == null) {
-            site = new Website(origin, embedder);
+            site = new Website(permissionOrigin, permissionEmbedder);
             mSites.put(key, site);
         }
         return site;
@@ -251,7 +260,7 @@ public class WebsitePermissionsFetcher {
                 WebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
             // The pattern "*" represents the default setting, not a specific website.
             if (exception.getPattern().equals("*")) continue;
-            WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+            String address = exception.getPattern();
             if (address == null) continue;
             Website site = findOrCreateSite(address, null);
             site.setContentSettingException(exceptionType, exception);
@@ -296,11 +305,9 @@ public class WebsitePermissionsFetcher {
         @Override
         public void run() {
             for (PermissionInfo info : WebsitePreferenceBridge.getPermissionInfo(mType)) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
+                String origin = info.getOrigin();
                 if (origin == null) continue;
-                WebsiteAddress embedder = mType == PermissionInfo.Type.SENSORS
-                        ? null
-                        : WebsiteAddress.create(info.getEmbedder());
+                String embedder = mType == PermissionInfo.Type.SENSORS ? null : info.getEmbedder();
                 findOrCreateSite(origin, embedder).setPermissionInfo(info);
             }
         }
@@ -311,10 +318,9 @@ public class WebsitePermissionsFetcher {
         public void run() {
             for (ChosenObjectInfo info : WebsitePreferenceBridge.getChosenObjectInfo(
                          ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA)) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
+                String origin = info.getOrigin();
                 if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).addChosenObjectInfo(info);
+                findOrCreateSite(origin, info.getEmbedder()).addChosenObjectInfo(info);
             }
         }
     }
@@ -342,7 +348,7 @@ public class WebsitePermissionsFetcher {
                         @SuppressWarnings("unchecked")
                         Map.Entry<String, LocalStorageInfo> entry =
                                 (Map.Entry<String, LocalStorageInfo>) o;
-                        WebsiteAddress address = WebsiteAddress.create(entry.getKey());
+                        String address = entry.getKey();
                         if (address == null) continue;
                         findOrCreateSite(address, null).setLocalStorageInfo(entry.getValue());
                     }
@@ -362,7 +368,7 @@ public class WebsitePermissionsFetcher {
                     ArrayList<StorageInfo> infoArray = result;
 
                     for (StorageInfo info : infoArray) {
-                        WebsiteAddress address = WebsiteAddress.create(info.getHost());
+                        String address = info.getHost();
                         if (address == null) continue;
                         findOrCreateSite(address, null).addStorageInfo(info);
                     }
