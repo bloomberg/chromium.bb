@@ -380,13 +380,6 @@ void EmbeddedWorkerTestHelper::OnCookieChangeEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
-    blink::mojom::ExtendableMessageEventPtr event,
-    blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
     blink::mojom::FetchAPIRequestPtr /* request */,
@@ -519,16 +512,6 @@ void EmbeddedWorkerTestHelper::OnCookieChangeEventStub(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnCookieChangeEvent,
                      AsWeakPtr(), cookie, cause, std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
-    blink::mojom::ExtendableMessageEventPtr event,
-    blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
-                     AsWeakPtr(), std::move(event), std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
