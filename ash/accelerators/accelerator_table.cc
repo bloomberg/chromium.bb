@@ -372,4 +372,28 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
 const size_t kActionsKeepingMenuOpenLength =
     base::size(kActionsKeepingMenuOpen);
 
+const AcceleratorAction kActionsAllowedForContainedShell[] = {
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
+    MEDIA_NEXT_TRACK,
+    MEDIA_PLAY_PAUSE,
+    MEDIA_PREV_TRACK,
+    POWER_PRESSED,
+    POWER_RELEASED,
+    TOGGLE_CAPS_LOCK,
+    TOGGLE_DICTATION,
+    TOGGLE_DOCKED_MAGNIFIER,
+    TOGGLE_FULLSCREEN_MAGNIFIER,
+    TOGGLE_HIGH_CONTRAST,
+    TOGGLE_SPOKEN_FEEDBACK,
+    VOLUME_DOWN,
+    VOLUME_MUTE,
+    VOLUME_UP,
+};
+
+const size_t kActionsAllowedForContainedShellLength =
+    base::size(kActionsAllowedForContainedShell);
+
 }  // namespace ash
