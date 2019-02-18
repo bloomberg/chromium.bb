@@ -33,7 +33,7 @@ ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                              int output_buffer_index,
                              std::vector<base::ScopedFD> output_dmabuf_fds,
-                             FrameReadyCB cb) {
+                             LegacyFrameReadyCB cb) {
   return ProcessInternal(std::move(frame), output_buffer_index,
                          std::move(output_dmabuf_fds),
                          BindToCurrentLoop(std::move(cb)));

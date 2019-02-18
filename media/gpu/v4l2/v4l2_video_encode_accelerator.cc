@@ -400,8 +400,8 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
         if (!image_processor_->Process(
                 frame, output_buffer_index, std::vector<base::ScopedFD>(),
                 base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                               weak_this_, force_keyframe, frame->timestamp(),
-                               output_buffer_index))) {
+                               weak_this_, force_keyframe,
+                               frame->timestamp()))) {
           NOTIFY_ERROR(kPlatformFailureError);
         }
       }
@@ -529,12 +529,12 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
 void V4L2VideoEncodeAccelerator::FrameProcessed(
     bool force_keyframe,
     base::TimeDelta timestamp,
-    int output_buffer_index,
+    size_t output_buffer_index,
     scoped_refptr<VideoFrame> frame) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "force_keyframe=" << force_keyframe
             << ", output_buffer_index=" << output_buffer_index;
-  DCHECK_GE(output_buffer_index, 0);
+  DCHECK_GE(output_buffer_index, 0u);
   DCHECK(encoder_thread_.IsRunning());
   DCHECK(!weak_this_.WasInvalidated());
 
@@ -548,7 +548,7 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(
 }
 
 void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
-    int output_buffer_index) {
+    size_t output_buffer_index) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "output_buffer_index=" << output_buffer_index;
   free_image_processor_output_buffer_indices_.push_back(output_buffer_index);
