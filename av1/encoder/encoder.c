@@ -5153,6 +5153,8 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cm->show_frame = frame_params->show_frame;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
+  cm->show_existing_frame = frame_params->show_existing_frame;
+  cpi->existing_fb_idx_to_show = frame_params->existing_fb_idx_to_show;
 
   memcpy(cm->remapped_ref_idx, frame_params->remapped_ref_idx,
          REF_FRAMES * sizeof(*cm->remapped_ref_idx));

@@ -1005,6 +1005,9 @@ struct EncodeFrameParams {
   int show_frame;
   int refresh_frame_flags;
 
+  int show_existing_frame;
+  int existing_fb_idx_to_show;
+
   // Bitmask of which reference buffers may be referenced by this frame
   int ref_frame_flags;
 

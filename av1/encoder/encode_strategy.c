@@ -223,7 +223,8 @@ static void update_rc_counts(AV1_COMP *cpi) {
   if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
 }
 
-static void check_show_existing_frame(AV1_COMP *cpi) {
+static void check_show_existing_frame(AV1_COMP *const cpi,
+                                      EncodeFrameParams *const frame_params) {
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   AV1_COMMON *const cm = &cpi->common;
   const FRAME_UPDATE_TYPE frame_update_type =
@@ -233,7 +234,7 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
                             : gf_group->arf_update_idx[gf_group->index];
 
   if (cm->show_existing_frame == 1) {
-    cm->show_existing_frame = 0;
+    frame_params->show_existing_frame = 0;
   } else if (cpi->rc.is_last_bipred_frame) {
     // NOTE: When new structure is used, every bwdref will have one overlay
     //       frame. Therefore, there is no need to find out which frame to
@@ -242,8 +243,8 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
       // NOTE: If the last frame is a last bi-predictive frame, it is
       //       needed next to show the BWDREF_FRAME, which is pointed by
       //       the last_fb_idxes[0] after reference frame buffer update
-      cm->show_existing_frame = 1;
-      cpi->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
+      frame_params->show_existing_frame = 1;
+      frame_params->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
     }
   } else if (cpi->is_arf_filter_off[which_arf] &&
              (frame_update_type == OVERLAY_UPDATE ||
@@ -252,8 +253,8 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
         cpi->new_bwdref_update_rule ? BWDREF_FRAME : ALTREF2_FRAME;
     // Other parameters related to OVERLAY_UPDATE will be taken care of
     // in av1_get_second_pass_params(cpi)
-    cm->show_existing_frame = 1;
-    cpi->existing_fb_idx_to_show =
+    frame_params->show_existing_frame = 1;
+    frame_params->existing_fb_idx_to_show =
         (frame_update_type == OVERLAY_UPDATE)
             ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
             : get_ref_frame_map_idx(cm, bwdref_to_show);
@@ -454,14 +455,13 @@ static void update_fb_of_context_type(
   }
 }
 
-static int get_order_offset(const AV1_COMP *const cpi,
+static int get_order_offset(const GF_GROUP *const gf_group,
                             const EncodeFrameParams *const frame_params) {
   // shown frame by definition has order offset 0
   // show_existing_frame ignores order_offset and simply takes the order_hint
   // from the reference frame being shown.
-  if (frame_params->show_frame || cpi->common.show_existing_frame) return 0;
+  if (frame_params->show_frame || frame_params->show_existing_frame) return 0;
 
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   const int arf_offset =
       AOMMIN((MAX_GF_INTERVAL - 1), gf_group->arf_src_offset[gf_group->index]);
   const int brf_offset = gf_group->brf_src_offset[gf_group->index];
@@ -976,8 +976,9 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
 
   // show_existing_frames don't actually send refresh_frame_flags so set the
   // flags to 0 to keep things consistent.
-  if (cm->show_existing_frame && (!frame_params->error_resilient_mode ||
-                                  frame_params->frame_type == KEY_FRAME)) {
+  if (frame_params->show_existing_frame &&
+      (!frame_params->error_resilient_mode ||
+       frame_params->frame_type == KEY_FRAME)) {
     return 0;
   }
 
@@ -1098,17 +1099,17 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   memset(&frame_results, 0, sizeof(frame_results));
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
-    check_show_existing_frame(cpi);
-    cm->show_existing_frame &= allow_show_existing(cpi, *frame_flags);
+    check_show_existing_frame(cpi, &frame_params);
+    frame_params.show_existing_frame &= allow_show_existing(cpi, *frame_flags);
   } else {
-    cm->show_existing_frame = 0;
+    frame_params.show_existing_frame = 0;
   }
 
   int temporal_filtered = 0;
   struct lookahead_entry *source = NULL;
   struct lookahead_entry *last_source = NULL;
   FRAME_UPDATE_TYPE frame_update_type;
-  if (cm->show_existing_frame) {
+  if (frame_params.show_existing_frame) {
     source = av1_lookahead_pop(cpi->lookahead, flush);
     frame_update_type = LF_UPDATE;
   } else {
@@ -1142,18 +1143,18 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   }
 
   av1_apply_encoding_flags(cpi, source->flags);
-  if (!cm->show_existing_frame)
+  if (!frame_params.show_existing_frame)
     *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
 
-  const int is_overlay =
-      cm->show_existing_frame && (frame_update_type == OVERLAY_UPDATE ||
-                                  frame_update_type == INTNL_OVERLAY_UPDATE);
+  const int is_overlay = frame_params.show_existing_frame &&
+                         (frame_update_type == OVERLAY_UPDATE ||
+                          frame_update_type == INTNL_OVERLAY_UPDATE);
   if (frame_params.show_frame || is_overlay) {
     // Shown frames and arf-overlay frames need frame-rate considering
     adjust_frame_rate(cpi, source);
   }
 
-  if (cm->show_existing_frame) {
+  if (frame_params.show_existing_frame) {
     // show_existing_frame implies this frame is shown!
     frame_params.show_frame = 1;
   } else {
@@ -1175,14 +1176,15 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cpi->common.frame_presentation_time = (uint32_t)pts64;
   }
 
-  if (oxcf->pass == 2 && (!cm->show_existing_frame || is_overlay)) {
+  if (oxcf->pass == 2 && (!frame_params.show_existing_frame || is_overlay)) {
     // GF_GROUP needs updating for arf overlays as well as non-show-existing
     av1_get_second_pass_params(cpi, &frame_params, *frame_flags);
     frame_update_type =
         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index];
   }
 
-  if (cm->show_existing_frame && frame_params.frame_type != KEY_FRAME) {
+  if (frame_params.show_existing_frame &&
+      frame_params.frame_type != KEY_FRAME) {
     // Force show-existing frames to be INTER, except forward keyframes
     frame_params.frame_type = INTER_FRAME;
   }
@@ -1198,7 +1200,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // parameter should be used with caution.
   frame_params.speed = oxcf->speed;
 
-  if (!cm->show_existing_frame) {
+  if (!frame_params.show_existing_frame) {
     cm->using_qmatrix = cpi->oxcf.using_qm;
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
@@ -1244,7 +1246,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   const int force_refresh_all =
       ((frame_params.frame_type == KEY_FRAME && frame_params.show_frame) ||
        frame_params.frame_type == S_FRAME) &&
-      !cm->show_existing_frame;
+      !frame_params.show_existing_frame;
 
   av1_configure_buffer_updates(cpi, &frame_params, frame_update_type,
                                force_refresh_all);
@@ -1255,7 +1257,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);
-    frame_params.order_offset = get_order_offset(cpi, &frame_params);
+    frame_params.order_offset =
+        get_order_offset(&cpi->twopass.gf_group, &frame_params);
 
     frame_params.refresh_frame_flags =
         get_refresh_frame_flags(cpi, &frame_params, frame_update_type);
