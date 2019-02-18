@@ -18,7 +18,6 @@
 
 namespace views {
 class BackToTabImageButton;
-class ControlImageButton;
 class CloseImageButton;
 class PlaybackImageButton;
 class ResizeHandleButton;
@@ -53,8 +52,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSkipAdButtonVisibility(bool is_visible) override;
   void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPreviousTrackButtonVisibility(bool is_visible) override;
-  void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   ui::Layer* GetWindowBackgroundLayer() override;
   ui::Layer* GetVideoLayer() override;
   gfx::Rect GetVideoBounds() override;
@@ -82,8 +79,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetPlayPauseControlsBounds();
   gfx::Rect GetNextTrackControlsBounds();
   gfx::Rect GetPreviousTrackControlsBounds();
-  gfx::Rect GetFirstCustomControlsBounds();
-  gfx::Rect GetSecondCustomControlsBounds();
 
   // Gets the proper hit test component when the hit point is on the resize
   // handle in order to force a drag-to-resize.
@@ -104,9 +99,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
 
  private:
-  // Possible positions for the custom controls added to the window.
-  enum class ControlPosition { kLeft, kRight };
-
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
   // playing a new video (i.e. different aspect ratio). This also updates
@@ -126,28 +118,12 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Updates the bounds of the controls.
   void UpdateControlsBounds();
 
-  // Update the size the controls views use as the size of the window changes.
-  void UpdateButtonSize();
-
   // Update the size of each controls view as the size of the window changes.
-  void UpdateCustomControlsSize(views::ControlImageButton* control_button);
   void UpdateButtonControlsSize();
-
-  void CreateCustomControl(
-      std::unique_ptr<views::ControlImageButton>& control_button,
-      const blink::PictureInPictureControlInfo& info,
-      ControlPosition position);
-
-  // Returns whether there is exactly one custom control on the window.
-  bool HasOnlyOneCustomControl();
 
   // Calculate and set the bounds of the controls.
   gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
   void UpdateControlsPositions();
-
-  // Sets the bounds of the custom controls.
-  void SetFirstCustomControlsBounds();
-  void SetSecondCustomControlsBounds();
 
   ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetBackToTabControlsLayer();
@@ -184,9 +160,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  // Current sizes of the control views on the Picture-in-Picture window.
-  gfx::Size button_size_;
-
   // Current bounds of the Picture-in-Picture window.
   gfx::Rect window_bounds_;
 
@@ -201,8 +174,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::View> window_background_view_;
   std::unique_ptr<views::View> video_view_;
   std::unique_ptr<views::View> controls_scrim_view_;
-  // |controls_parent_view_| is the parent view of all control views except
-  // the back-to-tab, close and skip-ad views.
+  // |controls_parent_view_| is the parent view of play/pause, previous
+  // track and next track control views.
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
   std::unique_ptr<views::SkipAdLabelButton> skip_ad_controls_view_;
@@ -211,8 +184,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
   std::unique_ptr<views::TrackImageButton> next_track_controls_view_;
   std::unique_ptr<views::TrackImageButton> previous_track_controls_view_;
-  std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
-  std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
 #endif

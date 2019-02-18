@@ -52,8 +52,6 @@ blink_core_sources("events") {
     "overscroll_event.h",
     "page_transition_event.cc",
     "page_transition_event.h",
-    "picture_in_picture_control_event.cc",
-    "picture_in_picture_control_event.h",
     "pointer_event.cc",
     "pointer_event.h",
     "pointer_event_factory.cc",

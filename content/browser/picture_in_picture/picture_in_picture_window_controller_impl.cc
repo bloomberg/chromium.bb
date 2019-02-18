@@ -18,7 +18,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
-#include "media/base/media_switches.h"
 #include "ui/compositor/layer.h"
 
 namespace content {
@@ -96,12 +95,6 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   initiator_->SetHasPictureInPictureVideo(true);
 
   return window_->GetBounds().size();
-}
-
-void PictureInPictureWindowControllerImpl::SetPictureInPictureCustomControls(
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  DCHECK(window_);
-  window_->SetPictureInPictureCustomControls(controls);
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video,
@@ -230,16 +223,6 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
       media_player_id_->render_frame_host->GetRoutingID(),
       media_player_id_->delegate_id));
   return true /* playing */;
-}
-
-void PictureInPictureWindowControllerImpl::CustomControlPressed(
-    const std::string& control_id) {
-  DCHECK(window_);
-
-  media_player_id_->render_frame_host->Send(
-      new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
-          media_player_id_->render_frame_host->GetRoutingID(),
-          media_player_id_->delegate_id, control_id));
 }
 
 void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {

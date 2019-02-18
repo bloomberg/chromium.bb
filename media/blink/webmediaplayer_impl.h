@@ -121,8 +121,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
   void OnRequestPictureInPicture() override;
-  void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>&) override;
   void SetSinkId(
       const blink::WebString& sink_id,
       std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
@@ -229,7 +227,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
   void OnPictureInPictureModeEnded() override;
-  void OnPictureInPictureControlClicked(const std::string& control_id) override;
 
   // Callback for when bytes are received by |chunk_demuxer_| or the UrlData
   // being loaded.

@@ -72,12 +72,6 @@ class WebMediaPlayerDelegate {
     // Called when Picture-in-Picture mode is terminated from the
     // Picture-in-Picture window.
     virtual void OnPictureInPictureModeEnded() = 0;
-
-    // Called when a custom control is clicked on the Picture-in-Picture window.
-    // |control_id| is the identifier for its custom control. This is defined by
-    // the site that calls the web API.
-    virtual void OnPictureInPictureControlClicked(
-        const std::string& control_id) = 0;
   };
 
   // Returns true if the host frame is hidden or closed.
@@ -113,12 +107,6 @@ class WebMediaPlayerDelegate {
 
   // Notify that the muted status of the media player has changed.
   virtual void DidPlayerMutedStatusChange(int delegate_id, bool muted) = 0;
-
-  // Notify that custom controls have been sent to be assigned to the
-  // Picture-in-Picture window.
-  virtual void DidSetPictureInPictureCustomControls(
-      int delegate_id,
-      const std::vector<blink::PictureInPictureControlInfo>&) = 0;
 
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.

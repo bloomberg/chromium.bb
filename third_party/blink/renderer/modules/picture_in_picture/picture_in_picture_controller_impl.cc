@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/picture_in_picture_control_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -125,10 +124,6 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(element),
                 WrapPersistent(resolver)));
-
-  // If the media element has already been given custom controls, this will
-  // ensure that they get set. Otherwise, this will do nothing.
-  element->SendCustomControlsToPipWindow();
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -186,14 +181,6 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
   delegate_binding_.Close();
 }
 
-void PictureInPictureControllerImpl::SetPictureInPictureCustomControls(
-    HTMLVideoElement* element,
-    const std::vector<PictureInPictureControlInfo>& controls) {
-  element->SetPictureInPictureCustomControls(controls);
-  if (IsPictureInPictureElement(element))
-    element->SendCustomControlsToPipWindow();
-}
-
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(
     ScriptPromiseResolver* resolver) {
   DCHECK(GetSupplementable());
@@ -216,22 +203,6 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
 
   if (resolver)
     resolver->Resolve();
-}
-
-void PictureInPictureControllerImpl::OnPictureInPictureControlClicked(
-    const WebString& control_id) {
-  DCHECK(GetSupplementable());
-
-  // Bail out if document is not active.
-  if (!GetSupplementable()->IsActive())
-    return;
-
-  if (RuntimeEnabledFeatures::PictureInPictureControlEnabled() &&
-      picture_in_picture_element_) {
-    picture_in_picture_element_->DispatchEvent(
-        *PictureInPictureControlEvent::Create(
-            event_type_names::kPictureinpicturecontrolclick, control_id));
-  }
 }
 
 Element* PictureInPictureControllerImpl::PictureInPictureElement() const {

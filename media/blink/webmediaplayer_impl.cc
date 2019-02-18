@@ -57,7 +57,6 @@
 #include "media/filters/memory_data_source.h"
 #include "media/media_buildflags.h"
 #include "net/base/data_url.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -908,11 +907,6 @@ void WebMediaPlayerImpl::OnRequestPictureInPicture() {
 
   DCHECK(bridge_);
   DCHECK(bridge_->GetSurfaceId().is_valid());
-}
-
-void WebMediaPlayerImpl::SetPictureInPictureCustomControls(
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
 }
 
 void WebMediaPlayerImpl::SetSinkId(
@@ -2299,14 +2293,6 @@ void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
     return;
 
   client_->PictureInPictureStopped();
-}
-
-void WebMediaPlayerImpl::OnPictureInPictureControlClicked(
-    const std::string& control_id) {
-  if (client_ && IsInPictureInPicture()) {
-    client_->PictureInPictureControlClicked(
-        blink::WebString::FromUTF8(control_id));
-  }
 }
 
 void WebMediaPlayerImpl::SendBytesReceivedUpdate() {

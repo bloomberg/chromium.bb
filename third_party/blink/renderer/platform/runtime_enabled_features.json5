@@ -1074,10 +1074,6 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      name: "PictureInPictureControl",
-      status: "experimental",
-    },
-    {
       name: "PointerRawMove",
       status: "experimental",
     },

@@ -65,9 +65,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
-  void DidSetPictureInPictureCustomControls(
-      int delegate_id,
-      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -98,8 +95,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateVolumeMultiplierUpdate(int player_id, double multiplier);
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnPictureInPictureModeEnded(int player_id);
-  void OnPictureInPictureControlClicked(int player_id,
-                                        const std::string& control_id);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();

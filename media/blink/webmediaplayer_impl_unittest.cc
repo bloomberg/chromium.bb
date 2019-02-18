@@ -46,7 +46,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -143,7 +142,6 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD1(MediaRemotingStarted, void(const blink::WebString&));
   MOCK_METHOD1(MediaRemotingStopped, void(blink::WebLocalizedString::Name));
   MOCK_METHOD0(PictureInPictureStopped, void());
-  MOCK_METHOD1(PictureInPictureControlClicked, void(const blink::WebString&));
   MOCK_METHOD0(OnPictureInPictureStateChange, void());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
   MOCK_METHOD0(RequestPlay, void());
@@ -208,10 +206,6 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override {
     DCHECK_EQ(player_id_, delegate_id);
   }
-
-  MOCK_METHOD2(DidSetPictureInPictureCustomControls,
-               void(int,
-                    const std::vector<blink::PictureInPictureControlInfo>&));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);

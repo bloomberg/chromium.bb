@@ -45,8 +45,6 @@ class PictureInPictureWindowControllerImpl
                             bool should_reset_pip_player) override;
   CONTENT_EXPORT void CloseAndFocusInitiator() override;
   CONTENT_EXPORT void OnWindowDestroyed() override;
-  CONTENT_EXPORT void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
@@ -54,8 +52,6 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT bool IsPlayerActive() override;
   CONTENT_EXPORT WebContents* GetInitiatorWebContents() override;
   CONTENT_EXPORT bool TogglePlayPause() override;
-  CONTENT_EXPORT void CustomControlPressed(
-      const std::string& control_id) override;
   CONTENT_EXPORT void UpdatePlaybackState(bool is_playing,
                                           bool reached_end_of_stream) override;
   CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;

@@ -62,7 +62,6 @@ class WebURL;
 enum class WebFullscreenVideoStatus;
 struct WebRect;
 struct WebSize;
-struct PictureInPictureControlInfo;
 
 class WebMediaPlayer {
  public:
@@ -154,9 +153,6 @@ class WebMediaPlayer {
   // method should make sure the player is set up for this and has a SurfaceId
   // as it will be needed.
   virtual void OnRequestPictureInPicture() = 0;
-  // Assign custom controls to the Picture-in-Picture window.
-  virtual void SetPictureInPictureCustomControls(
-      const std::vector<PictureInPictureControlInfo>&) = 0;
 
   virtual void RequestRemotePlayback() {}
   virtual void RequestRemotePlaybackControl() {}

@@ -38,7 +38,6 @@
 #include "services/media_session/public/cpp/features.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -77,8 +76,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD2(Close, void(bool, bool));
   MOCK_METHOD0(CloseAndFocusInitiator, void());
   MOCK_METHOD0(OnWindowDestroyed, void());
-  MOCK_METHOD1(SetPictureInPictureCustomControls,
-               void(const std::vector<blink::PictureInPictureControlInfo>&));
   MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());
@@ -86,7 +83,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
   MOCK_METHOD0(TogglePlayPause, bool());
-  MOCK_METHOD1(CustomControlPressed, void(const std::string&));
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
   MOCK_METHOD0(SkipAd, void());
   MOCK_METHOD0(NextTrack, void());
@@ -181,16 +177,6 @@ class PictureInPictureWindowControllerBrowserTest
   MockPictureInPictureWindowController mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
-};
-
-class ControlPictureInPictureWindowControllerBrowserTest
-    : public PictureInPictureWindowControllerBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
 };
 
 // Checks the creation of the window controller, as well as basic window
@@ -453,160 +439,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   base::string16 expected_title = base::ASCIIToUTF16("resized");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-}
-
-// Tests that when a custom control is clicked on a Picture-in-Picture window
-// an event is sent to the caller.
-IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
-                       PictureInPictureControlEventFired) {
-  GURL test_page_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
-
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(active_web_contents);
-
-  SetUpWindowController(active_web_contents);
-  ASSERT_TRUE(window_controller());
-
-  content::OverlayWindow* overlay_window =
-      window_controller()->GetWindowForTesting();
-  ASSERT_TRUE(overlay_window);
-  ASSERT_FALSE(overlay_window->IsVisible());
-
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "enterPictureInPicture();", &result));
-  EXPECT_TRUE(result);
-
-  std::string control_id = "Test custom control ID";
-  base::string16 expected_title = base::ASCIIToUTF16(control_id);
-
-  window_controller()->CustomControlPressed(control_id);
-
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-}
-
-// Tests that when a custom control is clicked on a Picture-in-Picture window
-// with one custom control on it, the correct event is sent to the caller.
-IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
-                       PictureInPictureAddControlAndFireEvent) {
-  GURL test_page_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
-
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(active_web_contents);
-
-  SetUpWindowController(active_web_contents);
-  ASSERT_TRUE(window_controller());
-
-  content::OverlayWindow* overlay_window =
-      window_controller()->GetWindowForTesting();
-  ASSERT_TRUE(overlay_window);
-  ASSERT_FALSE(overlay_window->IsVisible());
-
-  LoadTabAndEnterPictureInPicture(browser());
-
-  const std::string kControlId = "control_id";
-  EXPECT_EQ(true, content::EvalJs(
-                      active_web_contents,
-                      content::JsReplace("setControls([$1]);", kControlId)));
-
-  base::string16 expected_title = base::ASCIIToUTF16(kControlId);
-
-  window_controller()->CustomControlPressed(kControlId);
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-}
-
-// Tests that when the first custom control added to a Picture-in-Picture window
-// with two custom controls on it is clicked the corresponding event is sent to
-// the caller.
-IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
-                       PictureInPictureAddTwoControlsAndFireLeftEvent) {
-  GURL test_page_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
-
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(active_web_contents);
-
-  SetUpWindowController(active_web_contents);
-  ASSERT_TRUE(window_controller());
-
-  content::OverlayWindow* overlay_window =
-      window_controller()->GetWindowForTesting();
-  ASSERT_TRUE(overlay_window);
-  ASSERT_FALSE(overlay_window->IsVisible());
-
-  LoadTabAndEnterPictureInPicture(browser());
-
-  const std::string kLeftControlId = "left-control";
-  const std::string kRightControlId = "right-control";
-  EXPECT_EQ(true, content::EvalJs(
-                      active_web_contents,
-                      content::JsReplace("setControls([$1, $2]);",
-                                         kLeftControlId, kRightControlId)));
-
-  base::string16 left_expected_title = base::ASCIIToUTF16(kLeftControlId);
-
-  window_controller()->CustomControlPressed(kLeftControlId);
-  EXPECT_EQ(left_expected_title,
-            content::TitleWatcher(active_web_contents, left_expected_title)
-                .WaitAndGetTitle());
-}
-
-// Tests that when the second custom control added to a Picture-in-Picture
-// window with two custom controls on it is clicked the corresponding event is
-// sent to the caller.
-IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
-                       PictureInPictureAddTwoControlsAndFireRightEvent) {
-  GURL test_page_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
-
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(active_web_contents);
-
-  SetUpWindowController(active_web_contents);
-  ASSERT_TRUE(window_controller());
-
-  content::OverlayWindow* overlay_window =
-      window_controller()->GetWindowForTesting();
-  ASSERT_TRUE(overlay_window);
-  ASSERT_FALSE(overlay_window->IsVisible());
-
-  LoadTabAndEnterPictureInPicture(browser());
-
-  const std::string kLeftControlId = "left-control";
-  const std::string kRightControlId = "right-control";
-  EXPECT_EQ(true, content::EvalJs(
-                      active_web_contents,
-                      content::JsReplace("setControls([$1, $2]);",
-                                         kLeftControlId, kRightControlId)));
-
-  base::string16 right_expected_title = base::ASCIIToUTF16(kRightControlId);
-
-  window_controller()->CustomControlPressed(kRightControlId);
-  EXPECT_EQ(right_expected_title,
-            content::TitleWatcher(active_web_contents, right_expected_title)
                 .WaitAndGetTitle());
 }
 

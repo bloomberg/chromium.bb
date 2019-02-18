@@ -5,13 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 
-#include <string>
-#include <vector>
 #include "content/common/content_export.h"
-
-namespace blink {
-struct PictureInPictureControlInfo;
-}  // namespace blink
 
 namespace gfx {
 class Size;
@@ -55,8 +49,6 @@ class PictureInPictureWindowController {
   // window was requested to be closed and destroyed by the system.
   virtual void OnWindowDestroyed() = 0;
 
-  virtual void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>&) = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
@@ -80,9 +72,6 @@ class PictureInPictureWindowController {
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
   virtual bool TogglePlayPause() = 0;
-
-  // Called when the user interacts with a custom control.
-  virtual void CustomControlPressed(const std::string& control_id) = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

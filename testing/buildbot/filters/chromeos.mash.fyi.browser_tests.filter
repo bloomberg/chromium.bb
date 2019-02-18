@@ -309,7 +309,6 @@
 # disabled.
 # https://crbug.com/827327
 -PictureInPictureWindowControllerBrowserTest.*
--ControlPictureInPictureWindowControllerBrowserTest.*
 -BrowserActionApiTest.TestPictureInPictureOnBrowserActionIconClick
 -PlatformAppBrowserTest.PictureInPicture
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage

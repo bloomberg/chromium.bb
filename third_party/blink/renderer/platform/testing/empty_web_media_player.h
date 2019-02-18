@@ -29,8 +29,6 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void SetRate(double) override {}
   void SetVolume(double) override {}
   void OnRequestPictureInPicture() override {}
-  void SetPictureInPictureCustomControls(
-      const std::vector<PictureInPictureControlInfo>&) override {}
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
     return SurfaceLayerMode::kNever;
   }
