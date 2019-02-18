@@ -671,6 +671,11 @@
   },
   {
     "prefix": "omt-worker-fetch",
+    "base": "external/wpt/resource-timing",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
     "base": "external/wpt/upgrade-insecure-requests",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
   },
