@@ -18,6 +18,7 @@
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
 #include "media/gpu/test/video_frame_helpers.h"
+#include "media/gpu/test/video_frame_validator.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,7 +43,6 @@ class ImageProcessorSimpleParamTest
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
       const test::Image& input_image,
       const test::Image& output_image) {
-    // TODO(crbug.com/917951): Pass VideoFrameProcessor.
     auto input_config_layout = test::CreateVideoFrameLayout(
         input_image.PixelFormat(), input_image.Size());
     auto output_config_layout = test::CreateVideoFrameLayout(
@@ -57,8 +57,13 @@ class ImageProcessorSimpleParamTest
         {VideoFrame::STORAGE_OWNED_MEMORY});
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
+    LOG_ASSERT(output_image.IsMetadataLoaded());
+    auto vf_validator = test::VideoFrameValidator::Create(
+        {output_image.Checksum()}, output_image.PixelFormat());
+    std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
+    frame_processors.push_back(std::move(vf_validator));
     auto ip_client = test::ImageProcessorClient::Create(
-        input_config, output_config, kNumBuffers, true);
+        input_config, output_config, kNumBuffers, std::move(frame_processors));
     LOG_ASSERT(ip_client) << "Failed to create ImageProcessorClient";
     return ip_client;
   }
@@ -77,22 +82,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));
   EXPECT_EQ(ip_client->GetErrorCount(), 0u);
   EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
-
-  // TODO(crbug.com/917951): Replace this checker with VideoFrameProcessor
-  // interface and get results by ImageProcessorClient function like
-  // ImageProcessorClient::GetProcessResults().
-  const auto output_frames = ip_client->GetProcessedImages();
-  ASSERT_EQ(output_frames.size(), 1u);
-  auto processed_frame = output_frames[0];
-  ASSERT_TRUE(processed_frame->IsMappable());
-  base::MD5Context context;
-  base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, *processed_frame.get());
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-  std::string expected_md5 = output_image.Checksum();
-  std::string computed_md5 = MD5DigestToBase16(digest);
-  EXPECT_EQ(expected_md5, computed_md5);
+  EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
 
 // I420->NV12
