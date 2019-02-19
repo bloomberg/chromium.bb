@@ -4,8 +4,8 @@
 
 #include "mojo/core/channel.h"
 
+#include <lib/fdio/fd.h>
 #include <lib/fdio/limits.h>
-#include <lib/fdio/util.h>
 #include <lib/zx/channel.h>
 #include <lib/zx/handle.h>
 #include <zircon/processargs.h>
@@ -34,94 +34,57 @@ namespace {
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
-bool UnwrapPlatformHandle(PlatformHandleInTransit handle,
-                          Channel::Message::HandleInfoEntry* info_out,
-                          std::vector<PlatformHandleInTransit>* handles_out) {
+bool UnwrapFdioHandle(PlatformHandleInTransit handle,
+                      PlatformHandleInTransit* out_handle,
+                      Channel::Message::HandleInfoEntry* info) {
   DCHECK(handle.handle().is_valid());
 
   if (!handle.handle().is_valid_fd()) {
-    *info_out = {0u, 0u};
-    handles_out->emplace_back(std::move(handle));
+    info->is_file_descriptor = false;
+    *out_handle = std::move(handle);
     return true;
   }
 
-  // Each FDIO file descriptor is implemented using one or more native resources
-  // and can be un-wrapped into a set of |handle| and |info| pairs, with |info|
-  // consisting of an FDIO-defined type & arguments (see zircon/processargs.h).
-  //
-  // We try to transfer the FD, but if that fails (for example if the file has
-  // already been dup()d into another FD) we may need to clone.
-  zx_handle_t handles[FDIO_MAX_HANDLES] = {};
-  uint32_t info[FDIO_MAX_HANDLES] = {};
-  zx_status_t result =
-      fdio_transfer_fd(handle.handle().GetFD().get(), 0, handles, info);
-  if (result > 0) {
+  // Try to transfer the FD, and if that fails (for example if the file has
+  // already been dup()d into another FD) then fall back to cloning it.
+  zx::handle result;
+  zx_status_t status = fdio_fd_transfer(handle.handle().GetFD().get(),
+                                        result.reset_and_get_address());
+  if (status == ZX_OK) {
     // On success, the fd in |handle| has been transferred and is no longer
     // valid. Release from the PlatformHandle to avoid close()ing an invalid
     // an invalid handle.
     handle.CompleteTransit();
-  } else if (result == ZX_ERR_UNAVAILABLE) {
+  } else if (status == ZX_ERR_UNAVAILABLE) {
     // No luck, try cloning instead.
-    result = fdio_clone_fd(handle.handle().GetFD().get(), 0, handles, info);
+    status = fdio_fd_clone(handle.handle().GetFD().get(),
+                           result.reset_and_get_address());
   }
 
-  if (result <= 0) {
-    ZX_DLOG(ERROR, result) << "fdio_transfer_fd("
+  if (status != ZX_OK) {
+    ZX_DLOG(ERROR, status) << "fdio_fd_clone/transfer("
                            << handle.handle().GetFD().get() << ")";
     return false;
   }
-  DCHECK_LE(result, FDIO_MAX_HANDLES);
 
-  // We assume here that only the |PA_HND_TYPE| of the |info| really matters,
-  // and that that is the same for all the underlying handles.
-  *info_out = {PA_HND_TYPE(info[0]), result};
-  for (int i = 0; i < result; ++i) {
-    DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
-    DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
-    handles_out->emplace_back(
-        PlatformHandleInTransit(PlatformHandle(zx::handle(handles[i]))));
-  }
-
+  info->is_file_descriptor = true;
+  *out_handle = PlatformHandleInTransit(PlatformHandle(std::move(result)));
   return true;
 }
 
-PlatformHandle WrapPlatformHandles(Channel::Message::HandleInfoEntry info,
-                                   base::circular_deque<zx::handle>* handles) {
-  PlatformHandle out_handle;
-  if (!info.type) {
-    out_handle = PlatformHandle(std::move(handles->front()));
-    handles->pop_front();
-  } else {
-    if (info.count > FDIO_MAX_HANDLES)
-      return PlatformHandle();
+PlatformHandle WrapFdioHandle(zx::handle handle,
+                              Channel::Message::HandleInfoEntry info) {
+  if (!info.is_file_descriptor)
+    return PlatformHandle(std::move(handle));
 
-    // Fetch the required number of handles from |handles| and set up type info.
-    zx_handle_t fd_handles[FDIO_MAX_HANDLES] = {};
-    uint32_t fd_infos[FDIO_MAX_HANDLES] = {};
-    for (int i = 0; i < info.count; ++i) {
-      fd_handles[i] = (*handles)[i].get();
-      fd_infos[i] = PA_HND(info.type, 0);
-    }
-
-    // Try to wrap the handles into an FDIO file descriptor.
-    base::ScopedFD out_fd;
-    zx_status_t result = fdio_create_fd(fd_handles, fd_infos, info.count,
-                                        base::ScopedFD::Receiver(out_fd).get());
-    if (result != ZX_OK) {
-      ZX_DLOG(ERROR, result) << "fdio_create_fd";
-      return PlatformHandle();
-    }
-
-    // The handles are owned by FDIO now, so |release()| them before removing
-    // the entries from |handles|.
-    for (int i = 0; i < info.count; ++i) {
-      ignore_result(handles->front().release());
-      handles->pop_front();
-    }
-
-    out_handle = PlatformHandle(std::move(out_fd));
+  base::ScopedFD out_fd;
+  zx_status_t status =
+      fdio_fd_create(handle.release(), base::ScopedFD::Receiver(out_fd).get());
+  if (status != ZX_OK) {
+    ZX_DLOG(ERROR, status) << "fdio_fd_create";
+    return PlatformHandle();
   }
-  return out_handle;
+  return PlatformHandle(std::move(out_fd));
 }
 
 // A view over a Channel::Message object. The write queue uses these since
@@ -164,18 +127,19 @@ class MessageView {
       return std::vector<PlatformHandleInTransit>();
 
     // We can only pass Fuchsia handles via IPC, so unwrap any FDIO file-
-    // descriptors in |handles_| into the underlying handles, and serialize the
-    // metadata, if any, into the extra header.
+    // descriptors in |handles_| into the underlying handles, with metadata in
+    // the extra header to note which belong to FDIO.
     auto* handles_info = reinterpret_cast<Channel::Message::HandleInfoEntry*>(
         message_->mutable_extra_header());
     memset(handles_info, 0, message_->extra_header_size());
 
-    std::vector<PlatformHandleInTransit> in_handles = std::move(handles_);
-    handles_.reserve(in_handles.size());
-    for (size_t i = 0; i < in_handles.size(); i++) {
-      if (!UnwrapPlatformHandle(std::move(in_handles[i]), &handles_info[i],
-                                &handles_))
+    // Since file descriptors unwrap to a single handle, we can unwrap in-place
+    // in the |handles_| vector.
+    for (size_t i = 0; i < handles_.size(); i++) {
+      if (!UnwrapFdioHandle(std::move(handles_[i]), &handles_[i],
+                            &handles_info[i])) {
         return std::vector<PlatformHandleInTransit>();
+      }
     }
     return std::move(handles_);
   }
@@ -263,23 +227,17 @@ class ChannelFuchsia : public Channel,
     if (handles_info_size > extra_header_size)
       return false;
 
-    // Some caller-supplied handles may be FDIO file-descriptors, which were
-    // un-wrapped to more than one native platform resource handle for transfer.
-    // We may therefore need to expect more than |num_handles| handles to have
-    // been accumulated in |incoming_handles_|, based on the handle info.
-    size_t num_raw_handles = 0u;
-    for (size_t i = 0; i < num_handles; ++i)
-      num_raw_handles += handles_info[i].type ? handles_info[i].count : 1;
-
     // If there are too few handles then we're not ready yet, so return true
     // indicating things are OK, but leave |handles| empty.
-    if (incoming_handles_.size() < num_raw_handles)
+    if (incoming_handles_.size() < num_handles)
       return true;
 
     handles->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
-      handles->emplace_back(
-          WrapPlatformHandles(handles_info[i], &incoming_handles_));
+      handles->emplace_back(WrapFdioHandle(std::move(incoming_handles_.front()),
+                                           handles_info[i]));
+      DCHECK(handles->back().is_valid());
+      incoming_handles_.pop_front();
     }
     return true;
   }
