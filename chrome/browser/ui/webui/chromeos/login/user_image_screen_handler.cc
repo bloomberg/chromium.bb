@@ -39,8 +39,9 @@ const char kJsScreenPath[] = "login.UserImageScreen";
 
 namespace chromeos {
 
-UserImageScreenHandler::UserImageScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+UserImageScreenHandler::UserImageScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();

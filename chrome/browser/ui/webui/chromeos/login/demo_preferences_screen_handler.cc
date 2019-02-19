@@ -17,8 +17,9 @@ constexpr char kJsScreenPath[] = "login.DemoPreferencesScreen";
 
 namespace chromeos {
 
-DemoPreferencesScreenHandler::DemoPreferencesScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+DemoPreferencesScreenHandler::DemoPreferencesScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

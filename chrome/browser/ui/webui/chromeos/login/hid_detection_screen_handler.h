@@ -24,7 +24,8 @@ class HIDDetectionScreenHandler
     : public HIDDetectionView,
       public BaseScreenHandler {
  public:
-  explicit HIDDetectionScreenHandler(CoreOobeView* core_oobe_view);
+  HIDDetectionScreenHandler(JSCallsContainer* js_calls_container,
+                            CoreOobeView* core_oobe_view);
   ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionView implementation:

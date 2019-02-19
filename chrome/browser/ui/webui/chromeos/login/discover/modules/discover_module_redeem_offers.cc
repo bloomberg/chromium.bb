@@ -15,7 +15,8 @@ namespace {
 
 class DiscoverModuleRedeemOffersHandler : public DiscoverHandler {
  public:
-  DiscoverModuleRedeemOffersHandler();
+  explicit DiscoverModuleRedeemOffersHandler(
+      JSCallsContainer* js_calls_container);
   ~DiscoverModuleRedeemOffersHandler() override = default;
 
  private:
@@ -28,8 +29,10 @@ class DiscoverModuleRedeemOffersHandler : public DiscoverHandler {
   DISALLOW_COPY_AND_ASSIGN(DiscoverModuleRedeemOffersHandler);
 };
 
-DiscoverModuleRedeemOffersHandler::DiscoverModuleRedeemOffersHandler()
-    : DiscoverHandler(DiscoverModuleRedeemOffers::kModuleName) {}
+DiscoverModuleRedeemOffersHandler::DiscoverModuleRedeemOffersHandler(
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(DiscoverModuleRedeemOffers::kModuleName,
+                      js_calls_container) {}
 
 void DiscoverModuleRedeemOffersHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -55,9 +58,10 @@ bool DiscoverModuleRedeemOffers::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler>
-DiscoverModuleRedeemOffers::CreateWebUIHandler() {
-  return std::make_unique<DiscoverModuleRedeemOffersHandler>();
+std::unique_ptr<DiscoverHandler> DiscoverModuleRedeemOffers::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
+  return std::make_unique<DiscoverModuleRedeemOffersHandler>(
+      js_calls_container);
 }
 
 }  // namespace chromeos

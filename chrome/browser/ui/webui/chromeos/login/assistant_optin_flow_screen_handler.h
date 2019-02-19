@@ -25,8 +25,16 @@ class AssistantOptInFlowScreenHandler
       public arc::VoiceInteractionControllerClient::Observer,
       assistant::mojom::SpeakerIdEnrollmentClient {
  public:
-  AssistantOptInFlowScreenHandler();
+  explicit AssistantOptInFlowScreenHandler(
+      JSCallsContainer* js_calls_container);
   ~AssistantOptInFlowScreenHandler() override;
+
+  // Set an optional callback that will run when the screen has been
+  // initialized.
+  void set_on_initialized(base::OnceClosure on_initialized) {
+    DCHECK(on_initialized_.is_null());
+    on_initialized_ = std::move(on_initialized);
+  }
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
@@ -92,6 +100,8 @@ class AssistantOptInFlowScreenHandler
   void HandleFlowInitialized(const int flow_type);
 
   AssistantOptInFlowScreen* screen_ = nullptr;
+
+  base::OnceClosure on_initialized_;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;

@@ -26,7 +26,8 @@ class HelpAppLauncher;
 // with the eula part of the JS page.
 class EulaScreenHandler : public EulaView, public BaseScreenHandler {
  public:
-  explicit EulaScreenHandler(CoreOobeView* core_oobe_view);
+  EulaScreenHandler(JSCallsContainer* js_calls_container,
+                    CoreOobeView* core_oobe_view);
   ~EulaScreenHandler() override;
 
   // EulaView implementation:

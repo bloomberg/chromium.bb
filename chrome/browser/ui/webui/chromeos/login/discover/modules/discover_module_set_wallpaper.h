@@ -22,7 +22,8 @@ class DiscoverModuleSetWallpaper : public DiscoverModule {
 
   // DiscoverModule:
   bool IsCompleted() const override;
-  std::unique_ptr<DiscoverHandler> CreateWebUIHandler() override;
+  std::unique_ptr<DiscoverHandler> CreateWebUIHandler(
+      JSCallsContainer* js_calls_container) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DiscoverModuleSetWallpaper);

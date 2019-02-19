@@ -21,7 +21,7 @@ namespace chromeos {
 class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
                                      public BaseScreenHandler {
  public:
-  EnableDebuggingScreenHandler();
+  explicit EnableDebuggingScreenHandler(JSCallsContainer* js_calls_container);
   ~EnableDebuggingScreenHandler() override;
 
   // EnableDebuggingScreenView implementation:

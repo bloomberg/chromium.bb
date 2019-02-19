@@ -285,11 +285,12 @@ struct GaiaScreenHandler::GaiaContext {
 GaiaScreenHandler::GaiaContext::GaiaContext() {}
 
 GaiaScreenHandler::GaiaScreenHandler(
+    JSCallsContainer* js_calls_container,
     CoreOobeView* core_oobe_view,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ActiveDirectoryPasswordChangeScreenHandler*
         active_directory_password_change_screen_handler)
-    : BaseScreenHandler(kScreenId),
+    : BaseScreenHandler(kScreenId, js_calls_container),
       network_state_informer_(network_state_informer),
       core_oobe_view_(core_oobe_view),
       active_directory_password_change_screen_handler_(

@@ -21,7 +21,8 @@ class CoreOobeView;
 class TermsOfServiceScreenHandler : public BaseScreenHandler,
                                     public TermsOfServiceScreenView {
  public:
-  explicit TermsOfServiceScreenHandler(CoreOobeView* core_oobe_view);
+  TermsOfServiceScreenHandler(JSCallsContainer* js_calls_container,
+                              CoreOobeView* core_oobe_view);
   ~TermsOfServiceScreenHandler() override;
 
   // content::WebUIMessageHandler:

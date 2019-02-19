@@ -30,8 +30,9 @@ constexpr char kJsScreenPath[] = "login.EulaScreen";
 
 namespace chromeos {
 
-EulaScreenHandler::EulaScreenHandler(CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId),
+EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
+                                     CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
   set_call_js_prefix(kJsScreenPath);

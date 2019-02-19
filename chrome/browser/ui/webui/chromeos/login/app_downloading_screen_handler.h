@@ -17,7 +17,7 @@ class AppDownloadingScreen;
 class AppDownloadingScreenHandler : public BaseScreenHandler,
                                     public AppDownloadingScreenView {
  public:
-  AppDownloadingScreenHandler();
+  explicit AppDownloadingScreenHandler(JSCallsContainer* js_calls_container);
   ~AppDownloadingScreenHandler() override;
 
   // BaseScreenHandler:

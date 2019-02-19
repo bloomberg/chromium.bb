@@ -21,7 +21,8 @@ const char kJsScreenPath[] = "login.UpdateScreen";
 
 namespace chromeos {
 
-UpdateScreenHandler::UpdateScreenHandler() : BaseScreenHandler(kScreenId) {
+UpdateScreenHandler::UpdateScreenHandler(JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

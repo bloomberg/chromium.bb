@@ -34,6 +34,7 @@ class OobeUI;
 
 // A helper class to store deferred Javascript calls, shared by subclasses of
 // BaseWebUIHandler.
+// TODO(jdufault): Move into a separate file
 class JSCallsContainer {
  public:
   JSCallsContainer();
@@ -42,11 +43,12 @@ class JSCallsContainer {
   // Used to decide whether the JS call should be deferred.
   bool is_initialized() const { return is_initialized_; }
 
-  // Used to mark the instance as intialized.
-  void mark_initialized() { is_initialized_ = true; }
-
   // Used to add deferred calls to.
   std::vector<base::Closure>& deferred_js_calls() { return deferred_js_calls_; }
+
+  // Executes Javascript calls that were deferred while the instance was not
+  // initialized yet.
+  void ExecuteDeferredJSCalls();
 
  private:
   // Whether the instance is initialized.
@@ -71,7 +73,6 @@ class JSCallsContainer {
 class BaseWebUIHandler : public content::WebUIMessageHandler,
                          public ModelViewChannel {
  public:
-  BaseWebUIHandler();
   explicit BaseWebUIHandler(JSCallsContainer* js_calls_container);
   ~BaseWebUIHandler() override;
 
@@ -172,10 +173,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
           base::Passed(::login::MakeValue(args).CreateDeepCopy())...));
     }
   }
-
-  // Executes Javascript calls that were deferred while the instance was not
-  // initialized yet.
-  void ExecuteDeferredJSCalls();
 
   // Shortcut methods for adding WebUI callbacks.
   template <typename T>

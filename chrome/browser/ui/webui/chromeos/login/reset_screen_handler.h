@@ -17,7 +17,7 @@ namespace chromeos {
 class ResetScreenHandler : public ResetView,
                            public BaseScreenHandler {
  public:
-  ResetScreenHandler();
+  explicit ResetScreenHandler(JSCallsContainer* js_calls_container);
   ~ResetScreenHandler() override;
 
   // ResetView implementation:

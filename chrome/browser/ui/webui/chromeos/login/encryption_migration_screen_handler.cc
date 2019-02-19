@@ -254,8 +254,9 @@ FirstScreen GetFirstScreenForMode(chromeos::EncryptionMigrationMode mode) {
 
 namespace chromeos {
 
-EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler()
-    : BaseScreenHandler(kScreenId),
+EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);

@@ -16,7 +16,7 @@ class DemoPreferencesScreen;
 class DemoPreferencesScreenHandler : public BaseScreenHandler,
                                      public DemoPreferencesScreenView {
  public:
-  DemoPreferencesScreenHandler();
+  explicit DemoPreferencesScreenHandler(JSCallsContainer* js_calls_container);
   ~DemoPreferencesScreenHandler() override;
 
   // DemoPreferencesScreenView:

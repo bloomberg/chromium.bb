@@ -89,10 +89,8 @@ void LaunchResetScreen() {
 
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
-CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
-                                 JSCallsContainer* js_calls_container)
+CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
     : BaseWebUIHandler(js_calls_container),
-      oobe_ui_(oobe_ui),
       version_info_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(js_calls_container);
@@ -319,8 +317,7 @@ void CoreOobeHandler::SetClientAreaSize(int width, int height) {
 }
 
 void CoreOobeHandler::HandleInitialized() {
-  ExecuteDeferredJSCalls();
-  oobe_ui_->InitializeHandlers();
+  GetOobeUI()->InitializeHandlers();
   AllowJavascript();
 }
 
@@ -334,7 +331,7 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
 void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
   const OobeScreen screen = GetOobeScreenFromName(screen_name);
-  oobe_ui_->CurrentScreenChanged(screen);
+  GetOobeUI()->CurrentScreenChanged(screen);
 
   content::ServiceManagerConnection* connection =
       content::ServiceManagerConnection::GetForProcess();
@@ -408,7 +405,7 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
 
 void CoreOobeHandler::HandleScreenAssetsLoaded(
     const std::string& screen_async_load_id) {
-  oobe_ui_->OnScreenAssetsLoaded(screen_async_load_id);
+  GetOobeUI()->OnScreenAssetsLoaded(screen_async_load_id);
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
@@ -528,7 +525,7 @@ void CoreOobeHandler::UpdateA11yState() {
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
-  const std::string& display = oobe_ui_->display_type();
+  const std::string& display = GetOobeUI()->display_type();
   bool has_api_keys_configured = google_apis::HasAPIKeyConfigured() &&
                                  google_apis::HasOAuthClientConfigured();
   CallJSOrDefer("cr.ui.Oobe.showAPIKeysNotice",

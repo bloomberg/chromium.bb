@@ -47,6 +47,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   };
 
   GaiaScreenHandler(
+      JSCallsContainer* js_calls_container,
       CoreOobeView* core_oobe_view,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ActiveDirectoryPasswordChangeScreenHandler*

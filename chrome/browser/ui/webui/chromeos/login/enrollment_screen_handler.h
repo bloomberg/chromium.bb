@@ -58,6 +58,7 @@ class EnrollmentScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   EnrollmentScreenHandler(
+      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen);
   ~EnrollmentScreenHandler() override;

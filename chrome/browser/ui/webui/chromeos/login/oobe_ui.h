@@ -280,7 +280,7 @@ class OobeUI : public ui::MojoWebUIController,
 
   // Store the deferred JS calls before the screen handler instance is
   // initialized.
-  std::unique_ptr<JSCallsContainer> js_calls_container;
+  std::unique_ptr<JSCallsContainer> js_calls_container_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

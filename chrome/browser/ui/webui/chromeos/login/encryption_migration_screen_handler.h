@@ -37,7 +37,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
                                          public CryptohomeClient::Observer,
                                          public PowerManagerClient::Observer {
  public:
-  EncryptionMigrationScreenHandler();
+  explicit EncryptionMigrationScreenHandler(
+      JSCallsContainer* js_calls_container);
   ~EncryptionMigrationScreenHandler() override;
 
   // EncryptionMigrationScreenView implementation:

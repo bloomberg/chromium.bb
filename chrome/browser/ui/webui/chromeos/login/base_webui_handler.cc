@@ -20,7 +20,18 @@ JSCallsContainer::JSCallsContainer() = default;
 
 JSCallsContainer::~JSCallsContainer() = default;
 
-BaseWebUIHandler::BaseWebUIHandler() = default;
+void JSCallsContainer::ExecuteDeferredJSCalls() {
+  DCHECK(!is_initialized());
+  is_initialized_ = true;
+  // Copy deferred_js_calls_ into a separate variable to avoid any potential
+  // concurrent modifications.
+  auto calls = std::move(deferred_js_calls_);
+  for (const auto& call : calls)
+    call.Run();
+  // We're initialized so no more calls should have been queued.
+  // TODO(jdufault): Rework this class API so that this is not possible.
+  DCHECK(deferred_js_calls_.empty());
+}
 
 BaseWebUIHandler::BaseWebUIHandler(JSCallsContainer* js_calls_container)
     : js_calls_container_(js_calls_container) {}
@@ -121,14 +132,6 @@ void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {
 void BaseWebUIHandler::HandleContextChanged(const base::DictionaryValue* diff) {
   if (diff && base_screen_)
     base_screen_->OnContextChanged(*diff);
-}
-
-void BaseWebUIHandler::ExecuteDeferredJSCalls() {
-  DCHECK(!js_calls_container_->is_initialized());
-  js_calls_container_->mark_initialized();
-  for (const auto& deferred_js_call : js_calls_container_->deferred_js_calls())
-    deferred_js_call.Run();
-  js_calls_container_->deferred_js_calls().clear();
 }
 
 }  // namespace chromeos

@@ -64,10 +64,12 @@ void DiscoverManager::CreateModules() {
 }
 
 std::vector<std::unique_ptr<DiscoverHandler>>
-DiscoverManager::CreateWebUIHandlers() const {
+DiscoverManager::CreateWebUIHandlers(
+    JSCallsContainer* js_calls_container) const {
   std::vector<std::unique_ptr<DiscoverHandler>> handlers;
   for (const auto& module_pair : modules_) {
-    handlers.emplace_back(module_pair.second->CreateWebUIHandler());
+    handlers.emplace_back(
+        module_pair.second->CreateWebUIHandler(js_calls_container));
   }
   return handlers;
 }

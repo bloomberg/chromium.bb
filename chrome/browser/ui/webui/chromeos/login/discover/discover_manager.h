@@ -16,6 +16,7 @@ namespace chromeos {
 
 class DiscoverHandler;
 class DiscoverModule;
+class JSCallsContainer;
 
 class DiscoverManager {
  public:
@@ -32,7 +33,8 @@ class DiscoverManager {
   bool IsCompleted() const;
 
   // Returns vector of WebUI message handlers for visible modules.
-  std::vector<std::unique_ptr<DiscoverHandler>> CreateWebUIHandlers() const;
+  std::vector<std::unique_ptr<DiscoverHandler>> CreateWebUIHandlers(
+      JSCallsContainer* js_calls_container) const;
 
   template <typename T>
   T* GetModule() {

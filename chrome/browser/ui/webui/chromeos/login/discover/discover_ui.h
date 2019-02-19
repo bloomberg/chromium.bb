@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 
 namespace base {
 class DictionaryValue;
@@ -69,6 +70,8 @@ class DiscoverUI {
   std::vector<DiscoverHandler*> handlers_;
 
   base::ObserverList<Observer> observers_;
+
+  JSCallsContainer js_calls_container_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscoverUI);
 };

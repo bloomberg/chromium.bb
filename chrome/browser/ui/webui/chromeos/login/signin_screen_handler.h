@@ -191,11 +191,11 @@ class SigninScreenHandler
       public ash::mojom::WallpaperObserver {
  public:
   SigninScreenHandler(
+      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen,
       CoreOobeView* core_oobe_view,
-      GaiaScreenHandler* gaia_screen_handler,
-      JSCallsContainer* js_calls_container);
+      GaiaScreenHandler* gaia_screen_handler);
   ~SigninScreenHandler() override;
 
   static std::string GetUserLastInputMethod(const std::string& username);

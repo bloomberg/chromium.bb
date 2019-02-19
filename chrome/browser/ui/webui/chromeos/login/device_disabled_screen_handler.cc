@@ -17,8 +17,9 @@ const char kJsScreenPath[] = "login.DeviceDisabledScreen";
 
 namespace chromeos {
 
-DeviceDisabledScreenHandler::DeviceDisabledScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+DeviceDisabledScreenHandler::DeviceDisabledScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

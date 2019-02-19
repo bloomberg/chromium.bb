@@ -82,7 +82,7 @@ void DiscoverUI::RegisterMessages(content::WebUI* web_ui) {
   DiscoverUIUserDataPointer::Attach(this, web_ui->GetWebContents());
 
   std::vector<std::unique_ptr<DiscoverHandler>> handlers =
-      DiscoverManager::Get()->CreateWebUIHandlers();
+      DiscoverManager::Get()->CreateWebUIHandlers(&js_calls_container_);
   for (auto& handler : handlers) {
     handlers_.push_back(handler.get());
     web_ui->AddMessageHandler(std::move(handler));
@@ -100,6 +100,7 @@ void DiscoverUI::GetAdditionalParameters(base::DictionaryValue* dict) {
 void DiscoverUI::Initialize() {
   for (Observer& observer : observers_)
     observer.OnInitialized();
+  js_calls_container_.ExecuteDeferredJSCalls();
 }
 
 void DiscoverUI::Show() {}

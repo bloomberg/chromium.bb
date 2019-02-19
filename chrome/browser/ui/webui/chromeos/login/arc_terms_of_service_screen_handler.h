@@ -34,7 +34,7 @@ class ArcTermsOfServiceScreenHandler
       public system::TimezoneSettings::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
-  ArcTermsOfServiceScreenHandler();
+  explicit ArcTermsOfServiceScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcTermsOfServiceScreenHandler() override;
 
   // content::WebUIMessageHandler:
