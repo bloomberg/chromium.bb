@@ -24,6 +24,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/test_data_directory.h"
 #include "url/gurl.h"
@@ -354,24 +355,28 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
 
   std::unique_ptr<HostResolver> resolver(
       HostResolver::CreateDefaultResolver(NULL));
-  HostResolver::RequestInfo info(host_port_pair_);
-  // Limit the lookup to IPv4. When started with the default
+
+  // Limit the lookup to IPv4 (DnsQueryType::A). When started with the default
   // address of kLocalhost, testserver.py only supports IPv4.
   // If a custom hostname is used, it's possible that the test
   // server will listen on both IPv4 and IPv6, so this will
   // still work. The testserver does not support explicit
   // IPv6 literal hostnames.
-  info.set_address_family(ADDRESS_FAMILY_IPV4);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::A;
+
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      resolver->CreateRequest(host_port_pair_, NetLogWithSource(), parameters);
+
   TestCompletionCallback callback;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = resolver->Resolve(info, DEFAULT_PRIORITY, address_list,
-                             callback.callback(), &request, NetLogWithSource());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+  int rv = request->Start(callback.callback());
+  rv = callback.GetResult(rv);
   if (rv != OK) {
     LOG(ERROR) << "Failed to resolve hostname: " << host_port_pair_.host();
     return false;
   }
+
+  *address_list = request->GetAddressResults().value();
   return true;
 }
 
