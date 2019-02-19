@@ -1942,9 +1942,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
 
-        // We only handle VR UI mode changes. Any other changes should follow the default behavior
-        // of recreating the activity.
-        if (didChangeNonVrUiMode(mUiMode, newConfig.uiMode)) {
+        // We only handle VR UI mode and UI mode night changes. Any other changes should follow the
+        // default behavior of recreating the activity. Note that if UI mode night changes, with or
+        // without other changes, we will still recreate() until we get a callback from the
+        // ChromeBaseAppCompatActivity#onNightModeStateChanged or the overridden method in
+        // sub-classes.
+        if (didChangeNonVrUiMode(mUiMode, newConfig.uiMode)
+                && !didChangeUiModeNight(mUiMode, newConfig.uiMode)) {
             recreate();
             return;
         }
@@ -1994,6 +1998,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private static boolean isInVrUiMode(int uiMode) {
         return (uiMode & Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_VR_HEADSET;
+    }
+
+    private static boolean didChangeUiModeNight(int oldMode, int newMode) {
+        return (oldMode & Configuration.UI_MODE_NIGHT_MASK)
+                != (newMode & Configuration.UI_MODE_NIGHT_MASK);
     }
 
     /**

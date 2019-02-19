@@ -12,8 +12,10 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -190,6 +192,12 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
 
     /**
+     * Whether or not night mode is enabled from user settings.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_SETTINGS_ENABLED_KEY = "night_mode_settings_enabled";
+
+    /**
      * Whether or not the download auto-resumption is enabled in native.
      * Default value is true.
      */
@@ -283,7 +291,20 @@ public class ChromePreferenceManager {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
 
+    /**
+     * Observes preference changes.
+     */
+    public interface Observer {
+        /**
+         * Notifies when a preference maintained by {@link ChromePreferenceManager} is changed.
+         * @param key The key of the preference changed.
+         */
+        void onPreferenceChanged(String key);
+    }
+
     private final SharedPreferences mSharedPreferences;
+    private final Map<Observer, SharedPreferences.OnSharedPreferenceChangeListener> mObservers =
+            new HashMap<>();
 
     private ChromePreferenceManager() {
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
@@ -295,6 +316,25 @@ public class ChromePreferenceManager {
      */
     public static ChromePreferenceManager getInstance() {
         return LazyHolder.INSTANCE;
+    }
+
+    /**
+     * @param observer The {@link Observer} to be added for observing preference changes.
+     */
+    public void addObserver(Observer observer) {
+        SharedPreferences.OnSharedPreferenceChangeListener listener =
+                (SharedPreferences sharedPreferences, String s) -> observer.onPreferenceChanged(s);
+        mObservers.put(observer, listener);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+    }
+
+    /**
+     * @param observer The {@link Observer} to be removed from observing preference changes.
+     */
+    public void removeObserver(Observer observer) {
+        SharedPreferences.OnSharedPreferenceChangeListener listener = mObservers.get(observer);
+        if (listener == null) return;
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
     }
 
     /**

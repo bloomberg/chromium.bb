@@ -21,7 +21,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
 import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,6 +33,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -52,7 +52,8 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
  */
-public class Preferences extends AppCompatActivity implements OnPreferenceStartFragmentCallback {
+public class Preferences
+        extends ChromeBaseAppCompatActivity implements OnPreferenceStartFragmentCallback {
     /**
      * Preference fragments may implement this interface to intercept "Back" button taps in this
      * activity.
