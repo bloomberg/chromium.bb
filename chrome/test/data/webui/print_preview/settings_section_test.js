@@ -764,6 +764,25 @@ cr.define('settings_sections_tests', function() {
           .then(function() {
             assertEquals(
                 squareOption, JSON.stringify(page.settings.mediaSize.value));
+
+            // Set the setting to an option that is not supported by the
+            // printer. This can occur if sticky settings are for a different
+            // printer at startup.
+            const unavailableOption = {
+              name: 'ISO_A4',
+              width_microns: 210000,
+              height_microns: 297000,
+              custom_display_name: 'A4',
+            };
+            page.setSetting('mediaSize', unavailableOption);
+            return test_util.eventToPromise(
+                'process-select-change', mediaSizeElement);
+          })
+          .then(function() {
+            // The section should reset the setting to the printer's default
+            // value, since the printer does not support A4.
+            assertEquals(
+                letterOption, JSON.stringify(page.settings.mediaSize.value));
           });
     });
 
@@ -797,6 +816,22 @@ cr.define('settings_sections_tests', function() {
             expectTrue(isDpiEqual(
                 lowQualityOption, JSON.parse(dpiInput.value)));
             expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
+
+            // Set to the setting to an option that is not supported by the
+            // printer. This can occur if sticky settings are for a different
+            // printer at startup.
+            const unavailableOption = {
+              horizontal_dpi: 400,
+              vertical_dpi: 400,
+            };
+            page.setSetting('dpi', unavailableOption);
+            return test_util.eventToPromise(
+                'process-select-change', dpiElement);
+          })
+          .then(function() {
+            // The section should reset the setting to the printer's default
+            // value, since the printer does not support 400 DPI.
+            expectTrue(isDpiEqual(highQualityOption, page.settings.dpi.value));
           });
     });
 

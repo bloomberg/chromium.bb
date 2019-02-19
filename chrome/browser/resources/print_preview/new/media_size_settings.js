@@ -30,10 +30,14 @@ Polymer({
     for (const option of
          /** @type {!Array<!print_preview_new.SelectOption>} */ (
              this.capability.option)) {
-      if (JSON.stringify(option) == valueToSet) {
+      if (JSON.stringify(option) === valueToSet) {
         this.$$('print-preview-settings-select').selectValue(valueToSet);
         return;
       }
     }
+
+    const defaultOption = this.capability.option.find(o => !!o.is_default) ||
+        this.capability.option[0];
+    this.setSetting('mediaSize', defaultOption);
   },
 });

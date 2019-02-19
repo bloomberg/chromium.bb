@@ -95,5 +95,10 @@ Polymer({
         return;
       }
     }
+
+    const defaultOption =
+        this.capabilityWithLabels_.option.find(o => !!o.is_default) ||
+        this.capabilityWithLabels_.option[0];
+    this.setSetting('dpi', defaultOption);
   },
 });
