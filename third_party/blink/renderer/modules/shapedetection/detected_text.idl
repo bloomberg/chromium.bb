@@ -7,7 +7,7 @@
 [
     Constructor,
     Serializable,
-    OriginTrialEnabled=ShapeDetection
+    RuntimeEnabled=ShapeDetection
 ] interface DetectedText {
     [SameObject] readonly attribute DOMString rawValue;
     [SameObject] readonly attribute DOMRectReadOnly boundingBox;
