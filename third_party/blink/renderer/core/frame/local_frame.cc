@@ -1288,23 +1288,10 @@ service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
   return *Client()->GetInterfaceProvider();
 }
 
-void LocalFrame::BindDocumentInterfaceBroker(
-    mojo::ScopedMessagePipeHandle js_handle) {
-  DCHECK(Client());
-  Client()->BindDocumentInterfaceBroker(std::move(js_handle));
-}
-
 mojom::blink::DocumentInterfaceBroker&
 LocalFrame::GetDocumentInterfaceBroker() {
   DCHECK(Client());
   return *Client()->GetDocumentInterfaceBroker();
-}
-
-mojo::ScopedMessagePipeHandle LocalFrame::SetDocumentInterfaceBrokerForTesting(
-    mojo::ScopedMessagePipeHandle blink_handle) {
-  DCHECK(Client());
-  return Client()->SetDocumentInterfaceBrokerForTesting(
-      std::move(blink_handle));
 }
 
 AssociatedInterfaceProvider*

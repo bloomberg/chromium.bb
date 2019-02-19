@@ -1087,30 +1087,6 @@ LocalFrameClientImpl::GetDocumentInterfaceBroker() {
   return document_interface_broker_.get();
 }
 
-void LocalFrameClientImpl::BindDocumentInterfaceBroker(
-    mojo::ScopedMessagePipeHandle js_handle) {
-  document_interface_broker_bindings_.AddBinding(
-      this, mojom::blink::DocumentInterfaceBrokerRequest(std::move(js_handle)));
-}
-
-mojo::ScopedMessagePipeHandle
-LocalFrameClientImpl::SetDocumentInterfaceBrokerForTesting(
-    mojo::ScopedMessagePipeHandle blink_handle) {
-  // Ensure all pending calls get dispatched before the implementation swap
-  document_interface_broker_bindings_.FlushForTesting();
-
-  mojom::blink::DocumentInterfaceBrokerPtr test_broker(
-      mojom::blink::DocumentInterfaceBrokerPtrInfo(
-          std::move(blink_handle),
-          mojom::blink::DocumentInterfaceBroker::Version_));
-
-  mojo::ScopedMessagePipeHandle real_handle =
-      document_interface_broker_.PassInterface().PassHandle();
-  document_interface_broker_ = std::move(test_broker);
-
-  return real_handle;
-}
-
 AssociatedInterfaceProvider*
 LocalFrameClientImpl::GetRemoteNavigationAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteNavigationAssociatedInterfaces();

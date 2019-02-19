@@ -776,7 +776,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
   }
 
  private:
-  // blink::mojom::DocumentInterfaceBroker
+  // mojom::DocumentInterfaceBroker
   void GetFrameHostTestInterface(
       blink::mojom::FrameHostTestInterfaceRequest request) override {
     binder_callback_.Run(std::move(request));
@@ -853,11 +853,9 @@ class BlinkFrameHostTestInterfaceImpl
   }
 
  protected:
-  // blink::mojom::FrameHostTestInterface
   void Ping(const GURL& url, const std::string& event) override {
     ping_source_ = SourceAnnotation{url, event};
   }
-  void GetName(GetNameCallback callback) override {}
 
  private:
   mojo::Binding<blink::mojom::FrameHostTestInterface> binding_;
