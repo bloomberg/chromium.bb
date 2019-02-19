@@ -99,8 +99,10 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
       svg->SetupInitialView(fragment, target);
   }
 
-  if (target)
+  if (target) {
+    target->ActivateDisplayLockIfNeeded();
     target->DispatchActivateInvisibleEventIfNeeded();
+  }
 
   if (doc.IsSVGDocument() && !frame.IsMainFrame())
     return nullptr;

@@ -358,6 +358,17 @@ bool DisplayLockContext::IsActivatable() const {
   return activatable_ || !IsLocked();
 }
 
+void DisplayLockContext::CommitForActivation() {
+  DCHECK(element_);
+  DCHECK(element_->isConnected());
+  DCHECK(ShouldCommitForActivation());
+  StartCommit();
+}
+
+bool DisplayLockContext::ShouldCommitForActivation() const {
+  return IsActivatable() && state_ != kUnlocked && state_ != kCommitting;
+}
+
 void DisplayLockContext::DidAttachLayoutTree() {
   if (state_ >= kUnlocked)
     return;

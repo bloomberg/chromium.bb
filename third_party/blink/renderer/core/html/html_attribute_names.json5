@@ -151,6 +151,7 @@
     "onanimationiteration",
     "onanimationend",
     "onauxclick",
+    "onbeforeactivate",
     "onbeforecopy",
     "onbeforecut",
     "onbeforepaste",
