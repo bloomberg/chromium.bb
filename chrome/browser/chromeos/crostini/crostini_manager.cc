@@ -2579,6 +2579,11 @@ void CrostiniManager::OnExportLxdContainerProgress(
   ExportContainerProgressStatus status;
   CrostiniResult result;
   switch (signal.status()) {
+    // TODO(joelhockey): EXPORTING_TAR and EXPORTING_COMPRESS are deprecated.
+    // Remove them once termina is updated.
+    case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_TAR:
+    case vm_tools::cicerone::ExportLxdContainerProgressSignal::
+        EXPORTING_COMPRESS:
     case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_PACK:
       exporting = true;
       status = ExportContainerProgressStatus::PACK;
