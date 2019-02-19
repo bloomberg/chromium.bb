@@ -3587,10 +3587,6 @@ const char kDcheckIsFatalDescription[] =
 
 #if BUILDFLAG(ENABLE_VR)
 
-const char kWebVrVsyncAlignName[] = "WebVR VSync-aligned timing";
-const char kWebVrVsyncAlignDescription[] =
-    "Align WebVR application rendering with VSync for smoother animations.";
-
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 const char kOculusVRName[] = "Oculus hardware support";
 const char kOculusVRDescription[] =
