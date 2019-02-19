@@ -5216,51 +5216,6 @@
             ]
         }
     ],
-    "V8WasmTrapHandler": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "WasmTrapHandlerActive",
-                    "enable_features": [
-                        "WebAssemblyTrapHandler"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8WasmTrapHandlerMacOS": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "WasmTrapHandlerMacOSActive",
-                    "enable_features": [
-                        "WebAssemblyTrapHandler"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8WasmTrapHandlerWindows": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WasmTrapHandlerWindowsActive",
-                    "enable_features": [
-                        "WebAssemblyTrapHandler"
-                    ]
-                }
-            ]
-        }
-    ],
     "VariationsHttpDisabled": [
         {
             "platforms": [
