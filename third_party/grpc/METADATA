@@ -1,0 +1,19 @@
+name: "gRPC"
+description:
+    "gRPC is a library to make remote procedure calls (RPC) between server and "
+    "client applications. This is currently used by Chrome Remote Desktop "
+    "during the signaling process."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://grpc.io/"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/grpc/grpc"
+  }
+  version: "872ca1f8a51ff41e2f3972d0d64b0e34461d639e"
+  last_upgrade_date { year: 2019 month: 2 day: 3 }
+  license_type: NOTICE
+}
