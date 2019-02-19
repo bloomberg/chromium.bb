@@ -1987,6 +1987,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_yuna',
       'bob',
       'caroline',
+      'caroline-arcnext',
       'cave',
       'coral',
       'nyan_blaze',
