@@ -97,21 +97,22 @@ struct av1_extracfg {
   int enable_tx64;               // enable 64-pt transform usage for sequence
   int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
   int max_reference_frames;      // maximum number of references per frame
-  int enable_ref_frame_mvs;      // sequence level
-  int allow_ref_frame_mvs;       // frame level
-  int enable_masked_comp;        // enable masked compound for sequence
-  int enable_interintra_comp;    // enable interintra compound for sequence
-  int enable_smooth_interintra;  // enable smooth interintra mode usage
-  int enable_diff_wtd_comp;      // enable diff-wtd compound usage
-  int enable_interinter_wedge;   // enable interinter-wedge compound usage
-  int enable_interintra_wedge;   // enable interintra-wedge compound usage
-  int enable_global_motion;      // enable global motion usage for sequence
-  int enable_warped_motion;      // sequence level
-  int allow_warped_motion;       // frame level
-  int enable_filter_intra;       // enable filter intra for sequence
-  int enable_smooth_intra;       // enable smooth intra modes for sequence
-  int enable_paeth_intra;        // enable Paeth intra mode for sequence
-  int enable_cfl_intra;          // enable CFL uv intra mode for sequence
+  int enable_reduced_reference_set;  // enable reduced set of references
+  int enable_ref_frame_mvs;          // sequence level
+  int allow_ref_frame_mvs;           // frame level
+  int enable_masked_comp;            // enable masked compound for sequence
+  int enable_interintra_comp;        // enable interintra compound for sequence
+  int enable_smooth_interintra;      // enable smooth interintra mode usage
+  int enable_diff_wtd_comp;          // enable diff-wtd compound usage
+  int enable_interinter_wedge;       // enable interinter-wedge compound usage
+  int enable_interintra_wedge;       // enable interintra-wedge compound usage
+  int enable_global_motion;          // enable global motion usage for sequence
+  int enable_warped_motion;          // sequence level
+  int allow_warped_motion;           // frame level
+  int enable_filter_intra;           // enable filter intra for sequence
+  int enable_smooth_intra;           // enable smooth intra modes for sequence
+  int enable_paeth_intra;            // enable Paeth intra mode for sequence
+  int enable_cfl_intra;              // enable CFL uv intra mode for sequence
   int enable_superres;
   int enable_palette;
   int enable_intrabc;
@@ -198,6 +199,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable 64-pt transform usage
   1,                            // dist-wtd compound
   7,                            // max_reference_frames
+  0,                            // enable_reduced_reference_set
   1,                            // enable_ref_frame_mvs sequence level
   1,                            // allow ref_frame_mvs frame level
   1,                            // enable masked compound at sequence level
@@ -435,6 +437,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 
   RANGE_CHECK(extra_cfg, max_reference_frames, 3, 7);
+  RANGE_CHECK(extra_cfg, enable_reduced_reference_set, 0, 1);
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_x, 1);
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_y, 1);
 
@@ -738,6 +741,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_dist_wtd_comp =
       extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
   oxcf->max_reference_frames = extra_cfg->max_reference_frames;
+  oxcf->enable_reduced_reference_set = extra_cfg->enable_reduced_reference_set;
   oxcf->enable_masked_comp = extra_cfg->enable_masked_comp;
   oxcf->enable_diff_wtd_comp =
       extra_cfg->enable_masked_comp & extra_cfg->enable_diff_wtd_comp;
@@ -1140,6 +1144,14 @@ static aom_codec_err_t ctrl_set_max_reference_frames(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.max_reference_frames = CAST(AV1E_SET_MAX_REFERENCE_FRAMES, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_reduced_reference_set(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_reduced_reference_set =
+      CAST(AV1E_SET_REDUCED_REFERENCE_SET, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2066,6 +2078,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_TX64, ctrl_set_enable_tx64 },
   { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
   { AV1E_SET_MAX_REFERENCE_FRAMES, ctrl_set_max_reference_frames },
+  { AV1E_SET_REDUCED_REFERENCE_SET, ctrl_set_enable_reduced_reference_set },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },
   { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
   { AV1E_SET_ENABLE_MASKED_COMP, ctrl_set_enable_masked_comp },

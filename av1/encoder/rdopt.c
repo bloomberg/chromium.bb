@@ -11088,6 +11088,42 @@ static void disable_inter_references_except_altref(
   disable_reference(ALTREF2_FRAME, ref_combo);
 }
 
+static const MV_REFERENCE_FRAME reduced_ref_combos[][2] = {
+  { LAST_FRAME, NONE_FRAME },     { ALTREF_FRAME, NONE_FRAME },
+  { LAST_FRAME, ALTREF_FRAME },   { GOLDEN_FRAME, NONE_FRAME },
+  { INTRA_FRAME, NONE_FRAME },    { GOLDEN_FRAME, ALTREF_FRAME },
+  { LAST_FRAME, GOLDEN_FRAME },   { LAST_FRAME, INTRA_FRAME },
+  { LAST_FRAME, BWDREF_FRAME },   { LAST_FRAME, LAST3_FRAME },
+  { GOLDEN_FRAME, BWDREF_FRAME }, { GOLDEN_FRAME, INTRA_FRAME },
+  { BWDREF_FRAME, NONE_FRAME },   { BWDREF_FRAME, ALTREF_FRAME },
+  { ALTREF_FRAME, INTRA_FRAME },  { BWDREF_FRAME, INTRA_FRAME },
+};
+
+static void default_skip_mask(mode_skip_mask_t *mask,
+                              int enable_reduced_reference_set) {
+  if (enable_reduced_reference_set) {
+    // All modes available by default.
+    memset(mask->pred_modes, 0, sizeof(mask->pred_modes));
+
+    // All references disabled first.
+    for (MV_REFERENCE_FRAME ref1 = INTRA_FRAME; ref1 < REF_FRAMES; ++ref1) {
+      for (MV_REFERENCE_FRAME ref2 = NONE_FRAME; ref2 < REF_FRAMES; ++ref2) {
+        mask->ref_combo[ref1][ref2 + 1] = true;
+      }
+    }
+    // Then enable reduced set of references explicitly.
+    const int num_reduced_ref_combos =
+        (int)sizeof(reduced_ref_combos) / sizeof(reduced_ref_combos[0]);
+    for (int i = 0; i < num_reduced_ref_combos; ++i) {
+      const MV_REFERENCE_FRAME *const this_combo = reduced_ref_combos[i];
+      mask->ref_combo[this_combo[0]][this_combo[1] + 1] = false;
+    }
+  } else {
+    // Everything available by default.
+    memset(mask, 0, sizeof(*mask));
+  }
+}
+
 static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
                                 MACROBLOCK *x, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -11097,7 +11133,7 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
   unsigned char segment_id = mbmi->segment_id;
   const SPEED_FEATURES *const sf = &cpi->sf;
 
-  memset(mask, 0, sizeof(*mask));
+  default_skip_mask(mask, cpi->oxcf.enable_reduced_reference_set);
 
   int min_pred_mv_sad = INT_MAX;
   MV_REFERENCE_FRAME ref_frame;

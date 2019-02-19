@@ -994,6 +994,9 @@ enum aome_enc_control_id {
    * (valid values: 3 - 7) */
   AV1E_SET_MAX_REFERENCE_FRAMES,
 
+  /*!\brief Control to use reduced set of single and compound references. */
+  AV1E_SET_REDUCED_REFERENCE_SET,
+
   /*!\brief Control to set frequency of the cost updates for coefficients
    * Possible values are:
    * 0: Update at SB level (default)
@@ -1400,6 +1403,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_GF_MAX_PYRAMID_HEIGHT, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_MAX_REFERENCE_FRAMES, unsigned int)
 #define AOM_CTRL_AV1E_SET_MAX_REFERENCE_FRAMES
+
+AOM_CTRL_USE_TYPE(AV1E_SET_REDUCED_REFERENCE_SET, unsigned int)
+#define AOM_CTRL_AV1E_SET_REDUCED_REFERENCE_SET
 
 AOM_CTRL_USE_TYPE(AV1E_SET_COEFF_COST_UPD_FREQ, unsigned int)
 #define AOM_CTRL_AV1E_SET_COEFF_COST_UPD_FREQ

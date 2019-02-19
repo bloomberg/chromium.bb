@@ -626,6 +626,11 @@ static const arg_def_t max_reference_frames = ARG_DEF(
     NULL, "max-reference-frames", 1,
     "maximum number of reference frames allowed per frame (3 to 7 (default))");
 
+static const arg_def_t reduced_reference_set =
+    ARG_DEF(NULL, "reduced-reference-set", 1,
+            "Use reduced set of single and compound references (0: off "
+            "(default), 1: on)");
+
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
   { "unspecified", AOM_CICP_CP_UNSPECIFIED },
@@ -810,6 +815,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &denoise_block_size,
 #endif  // CONFIG_DENOISE
                                        &max_reference_frames,
+                                       &reduced_reference_set,
                                        &enable_ref_frame_mvs,
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -899,6 +905,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_DENOISE_BLOCK_SIZE,
 #endif  // CONFIG_DENOISE
                                         AV1E_SET_MAX_REFERENCE_FRAMES,
+                                        AV1E_SET_REDUCED_REFERENCE_SET,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
