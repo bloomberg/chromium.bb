@@ -359,6 +359,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
       {kOnanimationstartAttr, kNoWebFeature, event_type_names::kAnimationstart,
        nullptr},
       {kOnauxclickAttr, kNoWebFeature, event_type_names::kAuxclick, nullptr},
+      {kOnbeforeactivateAttr, kNoWebFeature, event_type_names::kBeforeactivate,
+       nullptr},
       {kOnbeforecopyAttr, kNoWebFeature, event_type_names::kBeforecopy,
        nullptr},
       {kOnbeforecutAttr, kNoWebFeature, event_type_names::kBeforecut, nullptr},

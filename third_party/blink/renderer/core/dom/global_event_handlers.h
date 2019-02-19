@@ -43,6 +43,7 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(activateinvisible, kActivateinvisible)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(auxclick, kAuxclick)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(beforeactivate, kBeforeactivate)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cancel, kCancel)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canplay, kCanplay)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canplaythrough, kCanplaythrough)

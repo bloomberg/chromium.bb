@@ -35,6 +35,7 @@
 ] interface GlobalEventHandlers {
     attribute EventHandler onabort;
     [RuntimeEnabled=InvisibleDOM] attribute EventHandler onactivateinvisible;
+    [RuntimeEnabled=DisplayLocking] attribute EventHandler onbeforeactivate;
     attribute EventHandler onblur;
     attribute EventHandler oncancel;
     attribute EventHandler oncanplay;

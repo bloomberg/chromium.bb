@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
@@ -3350,6 +3351,36 @@ bool Element::IsMouseFocusable() const {
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
          !DisplayLockPreventsActivation();
+}
+
+void Element::ActivateDisplayLockIfNeeded() {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    return;
+
+  HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
+    if (!ancestor.IsElementNode())
+      continue;
+    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+      // If any of the ancestors is not activatable, we can't activate.
+      if (!context->IsActivatable())
+        return;
+      activatable_targets.push_back(std::make_pair(
+          &ToElement(ancestor), ancestor.GetTreeScope().Retarget(*this)));
+    }
+  }
+
+  for (const auto& target : activatable_targets) {
+    // Dispatch event on activatable ancestor (target.first), with
+    // the retargeted element (target.second) as the |activatedElement|.
+    if (auto* context = target.first->GetDisplayLockContext()) {
+      if (context->ShouldCommitForActivation()) {
+        target.first->DispatchEvent(
+            *MakeGarbageCollected<BeforeActivateEvent>(*target.second));
+        context->CommitForActivation();
+      }
+    }
+  }
 }
 
 bool Element::DisplayLockPreventsActivation() const {

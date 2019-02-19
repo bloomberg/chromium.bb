@@ -116,6 +116,12 @@ class CORE_EXPORT DisplayLockContext final
   // from and activatable by find-in-page, tab order, anchor links, etc.
   bool IsActivatable() const;
 
+  // Trigger commit because of activation from tab order, url fragment,
+  // find-in-page, etc.
+  void CommitForActivation();
+
+  bool ShouldCommitForActivation() const;
+
   // Returns true if this lock is locked. Note from the outside perspective, the
   // lock is locked any time the state is not kUnlocked or kPendingAcquire.
   bool IsLocked() const {
