@@ -204,7 +204,7 @@ class PLATFORM_EXPORT ParkableString final {
   // Returns an unparked version of the string.
   // The string is guaranteed to be valid for
   // max(lifetime of a copy of the returned reference, current thread task).
-  String ToString() const;
+  const String& ToString() const;
   wtf_size_t CharactersSizeInBytes() const;
 
   // Causes the string to be unparked. Note that the pointer must not be

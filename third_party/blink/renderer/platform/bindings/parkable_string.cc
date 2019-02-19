@@ -199,6 +199,9 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
 
 ParkableStringImpl::~ParkableStringImpl() {
   AssertOnValidThread();
+  if (!may_be_parked())
+    return;
+
 #if DCHECK_IS_ON()
   {
     MutexLocker locker(mutex_);
@@ -207,12 +210,13 @@ ParkableStringImpl::~ParkableStringImpl() {
 #endif
   AsanUnpoisonString(string_);
   DCHECK(state_ == State::kParked || state_ == State::kUnparked);
-
-  if (may_be_parked_)
-    ParkableStringManager::Instance().Remove(this, string_.Impl());
+  ParkableStringManager::Instance().Remove(this, string_.Impl());
 }
 
 void ParkableStringImpl::Lock() {
+  if (!may_be_parked_)
+    return;
+
   MutexLocker locker(mutex_);
   lock_depth_ += 1;
   // Make young as this is a strong (but not certain) indication that the string
@@ -223,6 +227,7 @@ void ParkableStringImpl::Lock() {
 #if defined(ADDRESS_SANITIZER)
 
 void ParkableStringImpl::LockWithoutMakingYoung() {
+  DCHECK(may_be_parked());
   MutexLocker locker(mutex_);
   lock_depth_ += 1;
 }
@@ -230,6 +235,9 @@ void ParkableStringImpl::LockWithoutMakingYoung() {
 #endif  // defined(ADDRESS_SANITIZER)
 
 void ParkableStringImpl::Unlock() {
+  if (!may_be_parked())
+    return;
+
   MutexLocker locker(mutex_);
   DCHECK_GT(lock_depth_, 0);
   lock_depth_ -= 1;
@@ -245,7 +253,7 @@ void ParkableStringImpl::Unlock() {
   //
   // Checking the owning thread first as |CurrentStatus()| can only be called
   // from the owning thread.
-  if (owning_thread_ == CurrentThread() && may_be_parked() &&
+  if (owning_thread_ == CurrentThread() &&
       CurrentStatus() == Status::kUnreferencedExternally) {
     AsanPoisonString(string_);
   }
@@ -265,10 +273,12 @@ void ParkableStringImpl::MakeYoung() {
 
 const String& ParkableStringImpl::ToString() {
   AssertOnValidThread();
+  if (!may_be_parked())
+    return string_;
+
   MutexLocker locker(mutex_);
   MakeYoung();
   AsanUnpoisonString(string_);
-
   Unpark();
   return string_;
 }
@@ -377,6 +387,7 @@ bool ParkableStringImpl::CanParkNow() const {
 
 void ParkableStringImpl::Unpark() {
   AssertOnValidThread();
+  DCHECK(may_be_parked());
   mutex_.AssertAcquired();
   if (state_ != State::kParked)
     return;
@@ -579,8 +590,8 @@ bool ParkableString::Is8Bit() const {
   return impl_->is_8bit();
 }
 
-String ParkableString::ToString() const {
-  return impl_ ? impl_->ToString() : String();
+const String& ParkableString::ToString() const {
+  return impl_ ? impl_->ToString() : g_empty_string;
 }
 
 wtf_size_t ParkableString::CharactersSizeInBytes() const {
