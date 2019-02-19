@@ -30,11 +30,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
-#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
@@ -98,21 +96,6 @@ void OnContainerApplicationLaunched(const std::string& app_id,
                                     crostini::CrostiniResult result) {
   if (result != crostini::CrostiniResult::SUCCESS)
     OnLaunchFailed(app_id);
-}
-
-Browser* CreateTerminal(const AppLaunchParams& launch_params,
-                        const GURL& vsh_in_crosh_url) {
-  return crostini::CrostiniManager::CreateContainerTerminal(launch_params,
-                                                            vsh_in_crosh_url);
-}
-
-void ShowTerminal(const AppLaunchParams& launch_params,
-                  const GURL& vsh_in_crosh_url,
-                  Browser* browser) {
-  crostini::CrostiniManager::ShowContainerTerminal(launch_params,
-                                                   vsh_in_crosh_url, browser);
-  browser->window()->GetNativeWindow()->SetProperty(
-      kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }
 
 void LaunchContainerApplication(
@@ -345,9 +328,11 @@ void LaunchCrostiniApp(Profile* profile,
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
     // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser = CreateTerminal(launch_params, vsh_in_crosh_url);
+    Browser* browser = crostini::CrostiniManager::CreateContainerTerminal(
+        launch_params, vsh_in_crosh_url);
     launch_closure =
-        base::BindOnce(&ShowTerminal, launch_params, vsh_in_crosh_url, browser);
+        base::BindOnce(&crostini::CrostiniManager::ShowContainerTerminal,
+                       launch_params, vsh_in_crosh_url, browser);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure = base::BindOnce(
