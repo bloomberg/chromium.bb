@@ -237,7 +237,13 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
                                                         &vsync_interval_)) {
       vsync_timebase_ = base::TimeTicks();
       vsync_interval_ = base::TimeDelta();
-      LOG(ERROR) << "GetVSyncParametersIfAvailable() failed!";
+      static unsigned int count = 0;
+      ++count;
+      // GetVSyncParametersIfAvailable() could be called and failed frequently,
+      // so we have to limit the LOG to avoid flooding the log.
+      LOG_IF(ERROR, count < 20 || !(count & 0xff))
+          << "GetVSyncParametersIfAvailable() failed for " << count
+          << " times!";
     }
   }
 
