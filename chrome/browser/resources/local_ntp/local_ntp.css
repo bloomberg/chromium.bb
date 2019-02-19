@@ -51,7 +51,6 @@ html[darkmode=true] {
   --text-color-link: rgb(var(--GB400-dark-rgb));
 }
 
-
 /* width >= (3 cols * (16px + 154px) - 16px + 200px) */
 @media (min-width: 694px) {
   html {
@@ -128,6 +127,10 @@ body.hide-fakebox #fakebox {
 #fakebox-container {
   margin: 0 auto 0 auto;
   width: var(--content-width);
+}
+
+body.remove-fakebox #fakebox-container {
+  display: none;
 }
 
 #fakebox {
@@ -263,6 +266,12 @@ body.fakebox-drag-focused #fakebox-cursor {
 body.fakebox-focused #fakebox-cursor {
   animation: blink 1.3s step-end infinite;
   visibility: inherit;
+}
+
+body.remove-fakebox #user-content {
+  /* Total of 48px margin between the logo and MV tiles/suggestions: 29px logo
+   * margin-bottom + 32px margin (from #most-visited or #suggestions) - 13px */
+  margin-top: -13px;
 }
 
 #most-visited {
