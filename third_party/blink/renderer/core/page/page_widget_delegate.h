@@ -85,6 +85,9 @@ class CORE_EXPORT PageWidgetDelegate {
                               WebWidget::LifecycleUpdate requested_update,
                               WebWidget::LifecycleUpdateReason reason);
 
+  // See comment of WebWidget::DidBeginFrame
+  static void DidBeginFrame(LocalFrame& root);
+
   // See documents of methods with the same names in FrameView class.
   static void PaintContent(cc::PaintCanvas*, const WebRect&, LocalFrame& root);
   // See FIXME in the function body about nullptr |root|.

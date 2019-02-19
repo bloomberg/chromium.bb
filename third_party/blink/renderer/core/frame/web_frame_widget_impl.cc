@@ -300,6 +300,11 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time,
     GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
 
+void WebFrameWidgetImpl::DidBeginFrame() {
+  DCHECK(LocalRootImpl()->GetFrame());
+  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
+}
+
 void WebFrameWidgetImpl::BeginRafAlignedInput() {
   raf_aligned_input_start_time_ = CurrentTimeTicks();
 }

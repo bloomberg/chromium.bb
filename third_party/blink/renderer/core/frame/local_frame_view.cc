@@ -1037,6 +1037,29 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
   return frame_->GetDocument()->Lifecycle();
 }
 
+void LocalFrameView::RunPostLifecycleSteps() {
+  RunIntersectionObserverSteps();
+  UpdateThrottlingStatusForSubtree();
+}
+
+void LocalFrameView::RunIntersectionObserverSteps() {
+#if DCHECK_IS_ON()
+  bool was_dirty = NeedsLayout();
+#endif
+  if (ShouldThrottleRendering() || Lifecycle().LifecyclePostponed() ||
+      !frame_->GetDocument()->IsActive()) {
+    return;
+  }
+  TRACE_EVENT0("blink,benchmark",
+               "LocalFrameView::UpdateViewportIntersectionsForSubtree");
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kIntersectionObservation);
+  UpdateViewportIntersectionsForSubtree();
+#if DCHECK_IS_ON()
+  DCHECK(was_dirty || !NeedsLayout());
+#endif
+}
+
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
   auto* layout_view = this->GetLayoutView();
   if (!layout_view)
@@ -2186,17 +2209,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
-
-  // Update intersection observations if needed.
-  if (target_state == DocumentLifecycle::kPaintClean) {
-    TRACE_EVENT0("blink,benchmark",
-                 "LocalFrameView::UpdateViewportIntersectionsForSubtree");
-    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
-                             LocalFrameUkmAggregator::kIntersectionObservation);
-    UpdateViewportIntersectionsForSubtree();
-  }
-
-  UpdateThrottlingStatusForSubtree();
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     for (auto& observer : frame_view.lifecycle_observers_)
