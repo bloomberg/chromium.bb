@@ -1094,9 +1094,9 @@ ui::EventTargeter* View::GetEventTargeter() {
   return targeter_.get();
 }
 
-void View::ConvertEventToTarget(ui::EventTarget* target,
-                                ui::LocatedEvent* event) {
-  event->ConvertLocationToTarget(this, static_cast<View*>(target));
+void View::ConvertEventToTarget(const ui::EventTarget* target,
+                                ui::LocatedEvent* event) const {
+  event->ConvertLocationToTarget(this, static_cast<const View*>(target));
 }
 
 gfx::PointF View::GetScreenLocationF(const ui::LocatedEvent& event) const {

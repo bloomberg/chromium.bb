@@ -381,7 +381,8 @@ class EVENTS_EXPORT LocatedEvent : public Event {
       const gfx::Transform& inverted_root_transform,
       const gfx::Transform& inverted_local_transform);
 
-  template <class T> void ConvertLocationToTarget(T* source, T* target) {
+  template <class T>
+  void ConvertLocationToTarget(const T* source, const T* target) {
     if (!target || target == source)
       return;
     gfx::Point offset = gfx::ToFlooredPoint(location_);
