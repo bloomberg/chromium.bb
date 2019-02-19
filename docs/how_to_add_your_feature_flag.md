@@ -32,12 +32,13 @@ Also, this patch added a virtual test for running web tests with the flag.
 When you add a flag, you can consider to use that.
 
 ## Step 2: Adding the feature flag to the chrome://flags UI.
-You have to modify these four files in total.
+You have to modify these five files in total.
 
 * [chrome/browser/about_flags.cc](https://cs.chromium.org/chromium/src/chrome/browser/about_flags.cc)
 * [chrome/browser/flag_descriptions.cc](https://cs.chromium.org/chromium/src/chrome/browser/flag_descriptions.cc)
 * [chrome/browser/flag_descriptions.h](https://cs.chromium.org/chromium/src/chrome/browser/flag_descriptions.h)
 * [tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml)
+* [chrome/browser/flag-metadata.json](https://cs.chromium.org/chromium/src/chrome/browser/flag-metadata.json)
 
 At first you need to add an entry to __about_flags.cc__,
 __flag_descriptions.cc__ and __flag_descriptions.h__. After that, try running the following test.
@@ -53,3 +54,12 @@ autoninja -C out/Default unit_tests
 
 That test will ask you to add several entries to enums.xml.
 You can refer to [this CL](https://chromium-review.googlesource.com/c/593707) as an example.
+
+Finally, run the following test.
+
+```bash
+./out/Default/unit_tests --gtest_filter=AboutFlagsTest.EveryFlagHasMetadata
+```
+
+That test will ask you to update the flag expiry metadata in
+[flag-metadata.json](https://cs.chromium.org/chromium/src/chrome/browser/flag-metadata.json).
