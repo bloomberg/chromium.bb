@@ -16,8 +16,6 @@ import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayMo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.snackbar.Snackbar;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -35,7 +33,6 @@ class AssistantCoordinator {
 
     private static final String FEEDBACK_CATEGORY_TAG =
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
-    private static final int SNACKBAR_DELAY_MS = 5_000;
 
     private final ChromeActivity mActivity;
     private final Delegate mDelegate;
@@ -75,10 +72,11 @@ class AssistantCoordinator {
             } else if (AssistantModel.ALLOW_SWIPING_SHEET == propertyKey) {
                 mBottomBarCoordinator.allowSwipingBottomSheet(
                         mModel.get(AssistantModel.ALLOW_SWIPING_SHEET));
+            } else if (AssistantModel.VISIBLE == propertyKey) {
+                setVisible(mModel.get(AssistantModel.VISIBLE));
             }
         });
-
-        showAssistantView();
+        mModel.setVisible(true);
     }
 
     /** Detaches and destroys the view. */
@@ -137,41 +135,6 @@ class AssistantCoordinator {
     }
 
     /**
-     * Dismiss the assistant view and show a cancellable snackbar alerting the user that the
-     * Autofill assistant is shutting down.
-     */
-    public void dismissAndShowSnackbar(String message, @DropOutReason int reason) {
-        if (mShowingSnackbar) {
-            mDelegate.stop(reason);
-            return;
-        }
-
-        hideAssistantView();
-
-        Snackbar snackBar =
-                Snackbar.make(message,
-                                new SnackbarManager.SnackbarController() {
-                                    @Override
-                                    public void onAction(Object actionData) {
-                                        // Shutdown was cancelled.
-                                        mShowingSnackbar = false;
-                                        showAssistantView();
-                                    }
-
-                                    @Override
-                                    public void onDismissNoAction(Object actionData) {
-                                        mDelegate.stop(reason);
-                                    }
-                                },
-                                Snackbar.TYPE_ACTION, Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
-                        .setAction(mActivity.getString(R.string.undo), /* actionData= */ null);
-        snackBar.setSingleLine(false);
-        snackBar.setDuration(SNACKBAR_DELAY_MS);
-        mShowingSnackbar = true;
-        mActivity.getSnackbarManager().showSnackbar(snackBar);
-    }
-
-    /**
      * Show the Chrome feedback form.
      */
     public void showFeedback(String debugContext) {
@@ -182,18 +145,19 @@ class AssistantCoordinator {
 
     // Private methods.
 
-    private void showAssistantView() {
-        mAssistantView.setVisibility(View.VISIBLE);
-        mKeyboardCoordinator.enableListenForKeyboardVisibility(true);
+    private void setVisible(boolean visible) {
+        if (visible) {
+            mAssistantView.setVisibility(View.VISIBLE);
+            mKeyboardCoordinator.enableListenForKeyboardVisibility(true);
 
-        mBottomBarCoordinator.expand();
-        mBottomBarCoordinator.getView().announceForAccessibility(
-                mActivity.getString(R.string.autofill_assistant_available_accessibility));
-    }
-
-    private void hideAssistantView() {
-        mAssistantView.setVisibility(View.GONE);
-        mKeyboardCoordinator.enableListenForKeyboardVisibility(false);
+            mBottomBarCoordinator.expand();
+            mBottomBarCoordinator.getView().announceForAccessibility(
+                    mActivity.getString(R.string.autofill_assistant_available_accessibility));
+        } else {
+            mAssistantView.setVisibility(View.GONE);
+            mKeyboardCoordinator.enableListenForKeyboardVisibility(false);
+        }
+        // TODO(crbug.com/806868): Control visibility of bottom bar and overlay separately.
     }
 
     private void detachAssistantView() {
