@@ -16,22 +16,32 @@ class PLATFORM_EXPORT MemoryPurgeManager {
   MemoryPurgeManager();
   ~MemoryPurgeManager();
 
+  // Called when a page is created or destroyed, to maintain the total count of
+  // pages owned by a renderer.
+  void OnPageCreated(bool is_frozen);
+  void OnPageDestroyed(bool was_frozen);
+
   // Called when a page is frozen. Simulates a critical memory pressure signal
   // to purge memory. If the kPurgeMemoryOnlyForBackgroundedProcesses feature
   // is enabled and the renderer is foregrounded, no signal will be sent.
-  void PageFrozen();
+  void OnPageFrozen();
 
   // Called when a page is unfrozen. Has the effect of unsuppressing memory
   // pressure notifications.
-  void PageUnfrozen();
+  void OnPageUnfrozen();
 
   // Called when the renderer's process priority changes.
   void SetRendererBackgrounded(bool backgrounded);
 
  private:
-  bool CanPurge();
+  bool CanPurge() const;
+
+  bool AreAllPagesFrozen() const;
 
   bool renderer_backgrounded_;
+
+  int total_page_count_;
+  int frozen_page_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPurgeManager);
 };

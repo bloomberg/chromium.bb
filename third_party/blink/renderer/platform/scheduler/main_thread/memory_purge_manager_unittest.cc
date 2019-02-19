@@ -50,7 +50,7 @@ class MemoryPurgeManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MemoryPurgeManagerTest);
 };
 
-// Verify that PageFrozen() triggers a memory pressure notification
+// Verify that OnPageFrozen() triggers a memory pressure notification
 // in a backgrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
 // feature is disabled.
 TEST_F(MemoryPurgeManagerTest, PageFrozenBackgrounded) {
@@ -59,14 +59,14 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenBackgrounded) {
       {} /* enabled */,
       {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* disabled */);
 
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(true);
-  memory_purge_manager_.PageFrozen();
+  memory_purge_manager_.OnPageFrozen();
   ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
                            MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
 }
 
-// Verify that PageFrozen() triggers a memory pressure notification
+// Verify that OnPageFrozen() triggers a memory pressure notification
 // in a foregrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
 // feature is disabled.
 TEST_F(MemoryPurgeManagerTest, PageFrozenForegrounded) {
@@ -75,14 +75,14 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenForegrounded) {
       {} /* enabled */,
       {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* disabled */);
 
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(false);
-  memory_purge_manager_.PageFrozen();
+  memory_purge_manager_.OnPageFrozen();
   ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
                            MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
 }
 
-// Verify that PageFrozen() triggers a memory pressure notification
+// Verify that OnPageFrozen() triggers a memory pressure notification
 // in a backgrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
 // feature is enabled.
 TEST_F(MemoryPurgeManagerTest,
@@ -92,14 +92,14 @@ TEST_F(MemoryPurgeManagerTest,
       {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* enabled */,
       {} /* disabled */);
 
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(true);
-  memory_purge_manager_.PageFrozen();
+  memory_purge_manager_.OnPageFrozen();
   ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
                            MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
 }
 
-// Verify that PageFrozen() does not trigger a memory pressure
+// Verify that OnPageFrozen() does not trigger a memory pressure
 // notification in a foregrounded renderer when the
 // kPurgeMemoryOnlyForBackgroundedProcesses feature is enabled.
 TEST_F(MemoryPurgeManagerTest,
@@ -109,18 +109,51 @@ TEST_F(MemoryPurgeManagerTest,
       {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* enabled */,
       {} /* disabled */);
 
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(false);
-  memory_purge_manager_.PageFrozen();
+  memory_purge_manager_.OnPageFrozen();
   ExpectNoMemoryPressure();
-  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
 }
 
 TEST_F(MemoryPurgeManagerTest, PageUnfrozenUndoMemoryPressureSuppression) {
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
+
   memory_purge_manager_.SetRendererBackgrounded(true);
-  memory_purge_manager_.PageFrozen();
+  memory_purge_manager_.OnPageFrozen();
   EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
-  memory_purge_manager_.PageUnfrozen();
+  memory_purge_manager_.OnPageUnfrozen();
   EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageDestroyed(false /* was_frozen */);
+}
+
+TEST_F(MemoryPurgeManagerTest,
+       PageFrozenMemorySuppressionOnlyWhenAllPagesFrozen) {
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
+
+  memory_purge_manager_.OnPageFrozen();
+  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageFrozen();
+  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageFrozen();
+  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageUnfrozen();
+  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageDestroyed(false /* was_frozen */);
+  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
+  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+
+  memory_purge_manager_.OnPageDestroyed(false /* was_frozen */);
+  memory_purge_manager_.OnPageDestroyed(true /* was_frozen */);
+  memory_purge_manager_.OnPageDestroyed(true /* was_frozen */);
 }
 
 }  // namespace blink
