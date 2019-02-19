@@ -173,7 +173,6 @@ bool SigninViewControllerDelegateViews::HandleKeyboardEvent(
 }
 
 bool SigninViewControllerDelegateViews::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Discard the context menu
   return true;

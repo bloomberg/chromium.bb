@@ -190,8 +190,7 @@ bool HatsDialog::ShouldShowDialogTitle() const {
   return false;
 }
 
-bool HatsDialog::HandleContextMenu(content::RenderFrameHost* render_frame_host,
-                                   const content::ContextMenuParams& params) {
+bool HatsDialog::HandleContextMenu(const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }
