@@ -1481,8 +1481,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to setup.
         mPageViewTimer = createPageViewTimer();
 
-        if (supportsContextualSuggestionsBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
+        if (shouldInitializeBottomSheet()) {
             ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
@@ -1497,6 +1496,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             mComponent.resolveContextualSuggestionsCoordinator();
         }
+    }
+
+    /**
+     * @return Whether this Activity should initialize the BottomSheet and BottomSheetController.
+     */
+    protected boolean shouldInitializeBottomSheet() {
+        return false;
     }
 
     /**
@@ -2526,13 +2532,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * in this call, including showing 2D UI that was hidden.
      */
     public void onExitVr() {}
-
-    /**
-     * @return Whether this Activity supports showing contextual suggestions in a bottom sheet.
-     */
-    public boolean supportsContextualSuggestionsBottomSheet() {
-        return false;
-    }
 
     /**
      * @return the reference pool for this activity.

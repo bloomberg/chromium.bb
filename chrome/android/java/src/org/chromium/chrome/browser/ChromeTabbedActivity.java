@@ -2487,8 +2487,8 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    public boolean supportsContextualSuggestionsBottomSheet() {
-        return true;
+    protected boolean shouldInitializeBottomSheet() {
+        return FeatureUtilities.areContextualSuggestionsEnabled(this);
     }
 
     @Override
