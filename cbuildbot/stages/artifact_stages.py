@@ -628,10 +628,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
     # Distributed builders that use manifest-versions to sync with one another
     # share prebuilt logic by passing around versions.
-    if config_lib.IsPFQType(prebuilt_type):
-      # Public pfqs should upload host preflight prebuilts.
-      if prebuilt_type != constants.CHROME_PFQ_TYPE:
-        public_args.append('--sync-host')
+    if config_lib.IsBinhostType(prebuilt_type):
 
       # Deduplicate against previous binhosts.
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())

@@ -142,6 +142,11 @@ def IsPFQType(b_type):
                     constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
 
+def IsBinhostType(b_type):
+  """Returns True if this build type is a BINHOST.conf provider"""
+  return b_type in (constants.CHROME_PFQ_TYPE, constants.POSTSUBMIT_TYPE)
+
+
 def IsCQType(b_type):
   """Returns True if this build type is a Commit Queue."""
   return b_type == constants.PALADIN_TYPE
