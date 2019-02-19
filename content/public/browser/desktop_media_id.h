@@ -10,12 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
-
-#if defined(USE_AURA)
-namespace aura {
-class Window;
-}  // namespace aura
-#endif  // defined(USE_AURA)
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
@@ -27,19 +22,20 @@ struct CONTENT_EXPORT DesktopMediaID {
 
   typedef intptr_t Id;
 
-  // Represents an "unset" value for either |id| or |aura_id|.
+  // Represents an "unset" value for either |id| or |window_id|.
   static const Id kNullId;
   // Represents a fake id to create a dummy capturer for autotests.
   static const Id kFakeId;
 
 #if defined(USE_AURA)
   // Assigns integer identifier to the |window| and returns its DesktopMediaID.
-  static DesktopMediaID RegisterAuraWindow(Type type, aura::Window* window);
+  static DesktopMediaID RegisterNativeWindow(Type type,
+                                             gfx::NativeWindow window);
 
   // Returns the Window that was previously registered using
-  // RegisterAuraWindow(), else nullptr.
-  static aura::Window* GetAuraWindowById(const DesktopMediaID& id);
-#endif  // defined(USE_AURA)
+  // RegisterNativeWindow(), else nullptr.
+  static gfx::NativeWindow GetNativeWindowById(const DesktopMediaID& id);
+#endif  // USE_AURA
 
   constexpr DesktopMediaID() = default;
 
@@ -64,15 +60,13 @@ struct CONTENT_EXPORT DesktopMediaID {
   Type type = TYPE_NONE;
 
   // The IDs referring to the target native screen or window.  |id| will be
-  // non-null if and only if it refers to a native screen/window.  |aura_id|
+  // non-null if and only if it refers to a native screen/window.  |window_id|
   // will be non-null if and only if it refers to an Aura window.  Note that is
   // it possible for both of these to be non-null, which means both IDs are
   // referring to the same logical window.
   Id id = kNullId;
-#if defined(USE_AURA)
   // TODO(miu): Make this an int, after clean-up for http://crbug.com/513490.
-  Id aura_id = kNullId;
-#endif
+  Id window_id = kNullId;
 
   // This records whether the desktop share has sound or not.
   bool audio_share = false;

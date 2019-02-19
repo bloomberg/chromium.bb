@@ -1165,6 +1165,9 @@ jumbo_source_set("browser") {
     "media/capture/web_contents_tracker.h",
     "media/cdm_registry_impl.cc",
     "media/cdm_registry_impl.h",
+    "media/desktop_media_window_registry.cc",
+    "media/desktop_media_window_registry.h",
+    "media/desktop_media_window_registry_aura.cc",
     "media/flinging_renderer.cc",
     "media/flinging_renderer.h",
     "media/forwarding_audio_stream_factory.cc",
@@ -2493,6 +2496,7 @@ jumbo_source_set("browser") {
     ]
   } else {  # Not aura.
     sources -= [
+      "media/desktop_media_window_registry_aura.cc",
       "renderer_host/input/synthetic_gesture_target_aura.cc",
       "renderer_host/input/synthetic_gesture_target_aura.h",
       "renderer_host/input/touch_selection_controller_client_aura.cc",

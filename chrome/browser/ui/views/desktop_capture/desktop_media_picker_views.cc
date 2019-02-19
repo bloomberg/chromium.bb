@@ -226,7 +226,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // the Id is passed to DesktopMediaList.
   DesktopMediaID dialog_window_id;
   if (!modal_dialog) {
-    dialog_window_id = DesktopMediaID::RegisterAuraWindow(
+    dialog_window_id = DesktopMediaID::RegisterNativeWindow(
         DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
 
     // Set native window ID if the windows is outside Ash.
@@ -343,7 +343,7 @@ bool DesktopMediaPickerDialogView::Accept() {
     }
   } else if (source.type == DesktopMediaID::TYPE_WINDOW) {
 #if defined(USE_AURA)
-    aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
+    aura::Window* window = DesktopMediaID::GetNativeWindowById(source);
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (browser && browser->window())
       browser->window()->Activate();

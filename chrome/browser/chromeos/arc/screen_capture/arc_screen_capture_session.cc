@@ -106,7 +106,7 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     const std::string& display_name,
     bool enable_notification) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  desktop_window_ = content::DesktopMediaID::GetAuraWindowById(desktop_id);
+  desktop_window_ = content::DesktopMediaID::GetNativeWindowById(desktop_id);
   if (!desktop_window_) {
     LOG(ERROR) << "Unable to find Aura desktop window";
     return nullptr;

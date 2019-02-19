@@ -29,7 +29,7 @@ DesktopMediaIDToDisplayMediaInformation(
       media::mojom::CursorCaptureType::NEVER;
 #if defined(USE_AURA)
   const bool uses_aura =
-      media_id.aura_id != content::DesktopMediaID::kNullId ? true : false;
+      media_id.window_id != content::DesktopMediaID::kNullId ? true : false;
 #else
   const bool uses_aura = false;
 #endif  // defined(USE_AURA)

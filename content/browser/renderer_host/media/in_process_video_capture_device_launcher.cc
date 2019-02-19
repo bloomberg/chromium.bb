@@ -195,7 +195,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 #endif  // !defined(OS_ANDROID)
 
 #if defined(USE_AURA)
-      if (desktop_id.aura_id != DesktopMediaID::kNullId) {
+      if (desktop_id.window_id != DesktopMediaID::kNullId) {
         start_capture_closure = base::BindOnce(
             &InProcessVideoCaptureDeviceLauncher::
                 DoStartAuraWindowCaptureOnDeviceThread,
