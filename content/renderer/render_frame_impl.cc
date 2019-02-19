@@ -3734,7 +3734,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
-      GetLoaderFactoryBundle()->CloneWithoutDefaultFactory(),
+      GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()
@@ -6538,7 +6538,13 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
       GetTaskRunner(blink::TaskType::kInternalLoading));
 
   // In some tests |render_thread| could be null.
-  if (render_thread) {
+  if (render_thread && !info) {
+    // This should only happen for:
+    // 1) non-NetworkService cases, or
+    // 2) With NetworkService, but only for a placeholder document or an
+    // initial empty document cases.
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+           !frame_->GetDocumentLoader());
     loader_factories_->Update(render_thread->blink_platform_impl()
                                   ->CreateDefaultURLLoaderFactoryBundle()
                                   ->PassInterface());
@@ -7305,7 +7311,7 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info) {
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
-          GetLoaderFactoryBundle()->CloneWithoutDefaultFactory());
+          GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
   return ServiceWorkerNetworkProvider::CreateForNavigation(
       routing_id_, request_params, frame_,
       std::move(controller_service_worker_info), std::move(fallback_factory));

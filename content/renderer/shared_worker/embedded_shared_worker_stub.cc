@@ -259,29 +259,31 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   main_script_loader_factory_ = std::move(main_script_loader_factory);
   controller_info_ = std::move(controller_info);
 
+  // |factory_bundle| is provided in the
+  // ServiceWorkerServicification or NetworkService case.
+  DCHECK(factory_bundle ||
+         !blink::ServiceWorkerUtils::IsServicificationEnabled());
+
   // Make the factory bundle.
   subresource_loader_factories_ =
       base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
           impl_->GetTaskRunner(blink::TaskType::kInternalLoading));
+
+  // If NetworkService or S13nSW is enabled, the default factory must be
+  // given as a |factory_bundle|.
   // In some tests |render_thread| could be null.
-  if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread && !blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     subresource_loader_factories_->Update(
         render_thread->blink_platform_impl()
             ->CreateDefaultURLLoaderFactoryBundle()
             ->PassInterface());
   }
 
-  // |factory_bundle| is provided in the
-  // ServiceWorkerServicification or NetworkService case.
-  DCHECK(factory_bundle ||
-         !blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (factory_bundle) {
     // If the network service crashes, then self-destruct so clients don't get
     // stuck with a worker with a broken loader. Self-destruction is effectively
     // the same as the worker's process crashing.
-    // The default factory might not be to the network service if a feature like
-    // AppCache set itself to the default, but treat a connection error as fatal
-    // anyway so clients don't get stuck.
     if (IsOutOfProcessNetworkService()) {
       default_factory_connection_error_handler_holder_.Bind(
           std::move(factory_bundle->default_factory_info()));
@@ -422,10 +424,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
-  // Make the factory used for service worker network fallback. Omit the default
-  // factory in case it is for a non-network factory like AppCache.
+  // Make the factory used for service worker network fallback (that should
+  // skip AppCache if it is provided).
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
-      subresource_loader_factories_->CloneWithoutDefaultFactory();
+      subresource_loader_factories_->CloneWithoutAppCacheFactory();
 
   auto worker_fetch_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
       std::move(renderer_preferences_), std::move(preference_watcher_request_),

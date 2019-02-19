@@ -4436,33 +4436,35 @@ void RenderFrameHostImpl::CommitNavigation(
     // given everything it will need to load any accessible subresources. We
     // however only do this for cross-document navigations, because the
     // alternative would be redundant effort.
-    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     if (subresource_loader_params &&
-        subresource_loader_params->loader_factory_info.is_valid()) {
-      // If the caller has supplied a default URLLoaderFactory override (for
-      // e.g. appcache, Service Worker, etc.), use that.
-      default_factory_info =
-          std::move(subresource_loader_params->loader_factory_info);
-    } else {
-      std::string scheme = common_params.url.scheme();
-      const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
-      if (base::ContainsValue(schemes, scheme)) {
-        network::mojom::URLLoaderFactoryPtr factory_for_webui =
-            CreateWebUIURLLoaderBinding(this, scheme);
-        // If the renderer has webui bindings, then don't give it access to
-        // network loader for security reasons.
-        // http://crbug.com/829412: make an exception for a small whitelist
-        // of WebUIs that need to be fixed to not make network requests in JS.
-        if ((enabled_bindings_ & kWebUIBindingsPolicyMask) &&
-            !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
-                url::Origin::Create(common_params.url.GetOrigin()))) {
-          default_factory_info = factory_for_webui.PassInterface();
-        } else {
-          // This is a webui scheme that doesn't have webui bindings. Give it
-          // access to the network loader as it might require it.
-          subresource_loader_factories->scheme_specific_factory_infos().emplace(
-              scheme, factory_for_webui.PassInterface());
-        }
+        subresource_loader_params->appcache_loader_factory_info.is_valid()) {
+      // If the caller has supplied a factory for AppCache, use it.
+      subresource_loader_factories->appcache_factory_info() =
+          std::move(subresource_loader_params->appcache_loader_factory_info);
+    }
+
+    // Set up the default factory.
+    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+
+    // See if this is for WebUI.
+    std::string scheme = common_params.url.scheme();
+    const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
+    if (base::ContainsValue(schemes, scheme)) {
+      network::mojom::URLLoaderFactoryPtr factory_for_webui =
+          CreateWebUIURLLoaderBinding(this, scheme);
+      // If the renderer has webui bindings, then don't give it access to
+      // network loader for security reasons.
+      // http://crbug.com/829412: make an exception for a small whitelist
+      // of WebUIs that need to be fixed to not make network requests in JS.
+      if ((enabled_bindings_ & kWebUIBindingsPolicyMask) &&
+          !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
+              url::Origin::Create(common_params.url.GetOrigin()))) {
+        default_factory_info = factory_for_webui.PassInterface();
+      } else {
+        // This is a webui scheme that doesn't have webui bindings. Give it
+        // access to the network loader as it might require it.
+        subresource_loader_factories->scheme_specific_factory_infos().emplace(
+            scheme, factory_for_webui.PassInterface());
       }
     }
 
@@ -4700,7 +4702,6 @@ void RenderFrameHostImpl::FailedNavigation(
         origin, mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
-        nullptr /* default_network_factory_info */,
         URLLoaderFactoryBundleInfo::SchemeMap(),
         URLLoaderFactoryBundleInfo::OriginMap(), bypass_redirect_checks);
   }
@@ -5214,7 +5215,6 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
-          nullptr /* default_network_factory_info */,
           URLLoaderFactoryBundleInfo::SchemeMap(),
           CreateInitiatorSpecificURLLoaderFactories(
               initiators_requiring_separate_url_loader_factory_),
