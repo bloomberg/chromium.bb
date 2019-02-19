@@ -86,6 +86,11 @@ crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClick
 
 # Sheriff 2019-01-07
 crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Leak ]
+
+#Sheriff 2019-02-19
+crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_pointerleave_descendant_over.html [ Pass Leak ]
+crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_lostpointercapture_is_first.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
