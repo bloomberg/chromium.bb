@@ -71,6 +71,9 @@ class UiControllerAndroid : public UiController {
   void OnChipSelected(int index);
 
   // Called by Java.
+  void SnackbarResult(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jboolean undo);
   void Stop(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& obj,
             int reason);
@@ -94,6 +97,9 @@ class UiControllerAndroid : public UiController {
   AssistantPaymentRequestDelegate payment_request_delegate_;
   AssistantCarouselDelegate carousel_delegate_;
 
+  // What to do if undo is not pressed on the current snackbar.
+  base::OnceCallback<void()> snackbar_action_;
+
   base::android::ScopedJavaLocalRef<jobject> GetModel();
   base::android::ScopedJavaLocalRef<jobject> GetOverlayModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
@@ -107,6 +113,12 @@ class UiControllerAndroid : public UiController {
   void SetProgressPulsingEnabled(bool enabled);
   void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
+
+  // Hide the UI, show a snackbar with an undo button, and execute the given
+  // action after a short delay unless the user taps the undo button.
+  void ShowSnackbar(const std::string& message,
+                    base::OnceCallback<void()> action);
+  void Shutdown(Metrics::DropOutReason reason);
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.

@@ -219,14 +219,46 @@ void UiControllerAndroid::OnFeedbackButtonClicked() {
 }
 
 void UiControllerAndroid::OnCloseButtonClicked() {
+  ShowSnackbar(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+      base::BindOnce(&UiControllerAndroid::Shutdown,
+                     weak_ptr_factory_.GetWeakPtr(), Metrics::SHEET_CLOSED));
+}
+
+void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
+  client_->Shutdown(reason);
+}
+
+void UiControllerAndroid::ShowSnackbar(const std::string& message,
+                                       base::OnceCallback<void()> action) {
   JNIEnv* env = AttachCurrentThread();
-  // TODO(crbug.com/806868): Move here the logic that shutdowns immediately if
-  // close button is clicked during graceful shutdown.
-  Java_AutofillAssistantUiController_dismissAndShowSnackbar(
+  auto jmodel = GetModel();
+  if (!Java_AssistantModel_getVisible(env, jmodel)) {
+    // If the UI is not visible, execute the action immediately.
+    std::move(action).Run();
+    return;
+  }
+  Java_AssistantModel_setVisible(env, jmodel, false);
+  snackbar_action_ = std::move(action);
+  Java_AutofillAssistantUiController_showSnackbar(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(
-          env, l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED)),
-      Metrics::SHEET_CLOSED);
+      base::android::ConvertUTF8ToJavaString(env, message));
+}
+
+void UiControllerAndroid::SnackbarResult(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean undo) {
+  base::OnceCallback<void()> action = std::move(snackbar_action_);
+  if (!action) {
+    NOTREACHED();
+    return;
+  }
+  if (undo) {
+    Java_AssistantModel_setVisible(env, GetModel(), true);
+    return;
+  }
+  std::move(action).Run();
 }
 
 std::string UiControllerAndroid::GetDebugContext() {
@@ -296,12 +328,10 @@ void UiControllerAndroid::OnTouchableAreaChanged(
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_dismissAndShowSnackbar(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(
-          env, l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP)),
-      Metrics::OVERLAY_STOP);
+  ShowSnackbar(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
+      base::BindOnce(&UiControllerAndroid::Shutdown,
+                     weak_ptr_factory_.GetWeakPtr(), Metrics::SHEET_CLOSED));
 }
 
 void UiControllerAndroid::UpdateTouchableArea() {

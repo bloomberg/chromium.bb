@@ -159,11 +159,16 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void dismissAndShowSnackbar(String message, @DropOutReason int reason) {
-        mCoordinator.dismissAndShowSnackbar(message, reason);
+    private void showSnackbar(String message) {
+        AssistantSnackbar.show(mActivity, message, this::safeSnackbarResult);
     }
 
     // Native methods.
+    private void safeSnackbarResult(boolean undo) {
+        if (mNativeUiController != 0) nativeSnackbarResult(mNativeUiController, undo);
+    }
+    private native void nativeSnackbarResult(long nativeUiControllerAndroid, boolean undo);
+
     private void safeNativeStop(@DropOutReason int reason) {
         if (mNativeUiController != 0) nativeStop(mNativeUiController, reason);
     }

@@ -20,6 +20,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 class AssistantModel extends PropertyModel {
     static final WritableBooleanPropertyKey ALLOW_SOFT_KEYBOARD = new WritableBooleanPropertyKey();
     static final WritableBooleanPropertyKey ALLOW_SWIPING_SHEET = new WritableBooleanPropertyKey();
+    static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     private final AssistantOverlayModel mOverlayModel = new AssistantOverlayModel();
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
@@ -29,7 +30,7 @@ class AssistantModel extends PropertyModel {
     private final AssistantCarouselModel mCarouselModel = new AssistantCarouselModel();
 
     AssistantModel() {
-        super(ALLOW_SOFT_KEYBOARD, ALLOW_SWIPING_SHEET);
+        super(ALLOW_SOFT_KEYBOARD, ALLOW_SWIPING_SHEET, VISIBLE);
     }
 
     @CalledByNative
@@ -65,5 +66,15 @@ class AssistantModel extends PropertyModel {
     @CalledByNative
     private void setAllowSwipingSheet(boolean allowed) {
         set(ALLOW_SWIPING_SHEET, allowed);
+    }
+
+    @CalledByNative
+    void setVisible(boolean visible) {
+        set(VISIBLE, visible);
+    }
+
+    @CalledByNative
+    private boolean getVisible() {
+        return get(VISIBLE);
     }
 }
