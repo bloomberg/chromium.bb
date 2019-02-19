@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -50,8 +51,6 @@ class WorkerOrWorkletGlobalScope;
 
 class CORE_EXPORT WorkerOrWorkletScriptController final
     : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
-  WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
-
  public:
   static WorkerOrWorkletScriptController* Create(WorkerOrWorkletGlobalScope*,
                                                  v8::Isolate*);
@@ -134,6 +133,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   // trace its on-heap fields.
   GC_PLUGIN_IGNORE("394615")
   ExecutionState* execution_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerOrWorkletScriptController);
 };
 
 }  // namespace blink

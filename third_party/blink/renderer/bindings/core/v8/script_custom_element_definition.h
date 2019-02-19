@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CUSTOM_ELEMENT_DEFINITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CUSTOM_ELEMENT_DEFINITION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -28,8 +28,6 @@ class V8VoidFunction;
 
 class CORE_EXPORT ScriptCustomElementDefinition final
     : public CustomElementDefinition {
-  WTF_MAKE_NONCOPYABLE(ScriptCustomElementDefinition);
-
  public:
   static ScriptCustomElementDefinition* ForConstructor(
       ScriptState*,
@@ -105,6 +103,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       disabled_state_changed_callback_;
   TraceWrapperMember<V8CustomElementRestoreValueCallback>
       restore_value_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptCustomElementDefinition);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ACTIVE_SCRIPT_WRAPPABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ACTIVE_SCRIPT_WRAPPABLE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 
@@ -38,8 +39,6 @@ class ScriptWrappable;
 // derive from ContextLifecycleObserver to abort the activity at that time.
 template <typename T>
 class ActiveScriptWrappable : public ActiveScriptWrappableBase {
-  WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
-
  public:
   ~ActiveScriptWrappable() override = default;
 
@@ -57,6 +56,9 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   }
 
   ScriptWrappable* ToScriptWrappable() final { return static_cast<T*>(this); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveScriptWrappable);
 };
 
 }  // namespace blink

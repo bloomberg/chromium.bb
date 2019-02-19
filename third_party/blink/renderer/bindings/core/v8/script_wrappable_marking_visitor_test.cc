@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -22,7 +23,6 @@ namespace {
 // given v8::Isolate. Gracefully finalized potentially running garbage
 // collections.
 class TemporaryScriptWrappableVisitorScope {
-  WTF_MAKE_NONCOPYABLE(TemporaryScriptWrappableVisitorScope);
   STACK_ALLOCATED();
 
  public:
@@ -54,6 +54,8 @@ class TemporaryScriptWrappableVisitorScope {
 
   v8::Isolate* const isolate_;
   std::unique_ptr<ScriptWrappableMarkingVisitor> saved_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TemporaryScriptWrappableVisitorScope);
 };
 
 class InterceptingScriptWrappableMarkingVisitor
@@ -88,7 +90,6 @@ class InterceptingScriptWrappableMarkingVisitor
 
 class InterceptingScriptWrappableMarkingVisitorScope
     : public TemporaryScriptWrappableVisitorScope {
-  WTF_MAKE_NONCOPYABLE(InterceptingScriptWrappableMarkingVisitorScope);
   STACK_ALLOCATED();
 
  public:
@@ -108,6 +109,9 @@ class InterceptingScriptWrappableMarkingVisitorScope
     return reinterpret_cast<InterceptingScriptWrappableMarkingVisitor*>(
         CurrentVisitor());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InterceptingScriptWrappableMarkingVisitorScope);
 };
 
 void PreciselyCollectGarbage() {

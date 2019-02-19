@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -139,7 +140,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 class WasmDataLoaderClient final
     : public GarbageCollectedFinalized<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
-  WTF_MAKE_NONCOPYABLE(WasmDataLoaderClient);
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
@@ -152,6 +152,9 @@ class WasmDataLoaderClient final
     // DOMException. As it is, the cancellation will cause it to reject with a
     // TypeError later.
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WasmDataLoaderClient);
 };
 
 // ExceptionToAbortStreamingScope converts a possible exception to an abort
@@ -162,7 +165,6 @@ class WasmDataLoaderClient final
 // associated to the streaming compilation.
 class ExceptionToAbortStreamingScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ExceptionToAbortStreamingScope);
 
  public:
   ExceptionToAbortStreamingScope(std::shared_ptr<v8::WasmStreaming> streaming,
@@ -180,6 +182,8 @@ class ExceptionToAbortStreamingScope {
  private:
   std::shared_ptr<v8::WasmStreaming> streaming_;
   ExceptionState& exception_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExceptionToAbortStreamingScope);
 };
 
 SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
