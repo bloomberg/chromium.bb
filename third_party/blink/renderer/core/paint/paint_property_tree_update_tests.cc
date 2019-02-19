@@ -1401,7 +1401,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
   EXPECT_EQ(TransformationMatrix().Translate(1, 0),
             GeometryMapper::SourceToDestinationProjection(
                 *rect_properties->Transform(),
-                *svg2_properties->PaintOffsetTranslation()));
+                *svg2_properties->PaintOffsetTranslation())
+                .Matrix());
 
   // Change filter which forward references rect, and insert a transform
   // node above rect's transform.
@@ -1422,7 +1423,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
   EXPECT_EQ(TransformationMatrix().Translate(3, 0),
             GeometryMapper::SourceToDestinationProjection(
                 *rect_properties->Transform(),
-                *svg2_properties->PaintOffsetTranslation()));
+                *svg2_properties->PaintOffsetTranslation())
+                .Matrix());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, OverflowClipUpdateForImage) {

@@ -259,14 +259,14 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
            cc::PaintOpType::DrawRecord,                        // <p1/>
            cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <e2_offset>
            cc::PaintOpType::SaveLayer,                         // <e2>
-           cc::PaintOpType::Translate,                      // <e2_offset^-1/>
-           cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t2^-1>
-           cc::PaintOpType::DrawRecord,                     // <p2/>
-           cc::PaintOpType::Restore,                        // </t2^-1>
-           cc::PaintOpType::Restore,                        // </e2>
-           cc::PaintOpType::Restore,                        // </e2_offset>
-           cc::PaintOpType::Restore,                        // </e1>
-           cc::PaintOpType::Restore}));                     // </t1*t2>
+           cc::PaintOpType::Translate,  // <e2_offset^-1/>
+           cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <t2^-1>
+           cc::PaintOpType::DrawRecord,                        // <p2/>
+           cc::PaintOpType::Restore,                           // </t2^-1>
+           cc::PaintOpType::Restore,                           // </e2>
+           cc::PaintOpType::Restore,                           // </e2_offset>
+           cc::PaintOpType::Restore,                           // </e1>
+           cc::PaintOpType::Restore}));                        // </t1*t2>
   EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->Matrix(), *output, 1);
   // chunk1.bounds + e2(t2^-1(chunk2.bounds))
   EXPECT_EFFECT_BOUNDS(0, 0, 155, 155, *output, 2);
@@ -275,9 +275,11 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   // t2^-1(chunk2.bounds) - e2_offset
   EXPECT_EFFECT_BOUNDS(10, 10, 70, 70, *output, 6);
   // -e2_offset
-  EXPECT_TRANSLATE(-60, -60, *output, 7);
+  EXPECT_TRANSLATE(-e2->FiltersOrigin().X(), -e2->FiltersOrigin().Y(), *output,
+                   7);
   // t2^1
-  EXPECT_TRANSFORM_MATRIX(t2->Matrix().Inverse(), *output, 9);
+  auto translation = t2->Matrix().To2DTranslation();
+  EXPECT_TRANSLATE(-translation.Width(), -translation.Height(), *output, 9);
 }
 
 TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
@@ -587,15 +589,15 @@ TEST_F(PaintChunksToCcLayerTest, VisualRect) {
       gfx::Vector2dF(100, 200), FloatSize(), chunks.items, *cc_list);
   EXPECT_EQ(gfx::Rect(-50, -100, 100, 100), cc_list->VisualRectForTesting(4));
 
-  EXPECT_THAT(
-      *cc_list->ReleaseAsRecord(),
-      PaintRecordMatcher::Make({cc::PaintOpType::Save,       //
-                                cc::PaintOpType::Translate,  // <layer_offset>
-                                cc::PaintOpType::Save,       //
-                                cc::PaintOpType::Concat,  // <layer_transform>
-                                cc::PaintOpType::DrawRecord,  // <p0/>
-                                cc::PaintOpType::Restore,  // </layer_transform>
-                                cc::PaintOpType::Restore}));  // </layer_offset>
+  EXPECT_THAT(*cc_list->ReleaseAsRecord(),
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save,        //
+                   cc::PaintOpType::Translate,   // <layer_offset>
+                   cc::PaintOpType::Save,        //
+                   cc::PaintOpType::Translate,   // <layer_transform>
+                   cc::PaintOpType::DrawRecord,  // <p0/>
+                   cc::PaintOpType::Restore,     // </layer_transform>
+                   cc::PaintOpType::Restore}));  // </layer_offset>
 }
 
 TEST_F(PaintChunksToCcLayerTest, NoncompositedClipPath) {

@@ -46,7 +46,8 @@ class GeometryMapperTest : public testing::Test,
   PropertyTreeState ancestor_state = PropertyTreeState::Root();
   FloatRect input_rect;
   FloatClipRect expected_visual_rect;
-  TransformationMatrix expected_transform;
+  FloatSize expected_translation_2d;
+  base::Optional<TransformationMatrix> expected_transform;
   FloatClipRect expected_clip;
   FloatRect expected_transformed_rect;
 };
@@ -104,13 +105,18 @@ INSTANTIATE_PAINT_TEST_SUITE_P(GeometryMapperTest);
                            actual_transformed_rect);                    \
   } while (false)
 
-#define CHECK_SOURCE_TO_DESTINATION_PROJECTION()                  \
-  do {                                                            \
-    SCOPED_TRACE("Check SourceToDestinationProjection");          \
-    const auto& actual_transform_to_ancestor =                    \
-        GeometryMapper::SourceToDestinationProjection(            \
-            local_state.Transform(), ancestor_state.Transform()); \
-    EXPECT_EQ(expected_transform, actual_transform_to_ancestor);  \
+#define CHECK_SOURCE_TO_DESTINATION_PROJECTION()                             \
+  do {                                                                       \
+    SCOPED_TRACE("Check SourceToDestinationProjection");                     \
+    const auto& actual_transform_to_ancestor =                               \
+        GeometryMapper::SourceToDestinationProjection(                       \
+            local_state.Transform(), ancestor_state.Transform());            \
+    if (expected_transform) {                                                \
+      EXPECT_EQ(*expected_transform, actual_transform_to_ancestor.Matrix()); \
+    } else {                                                                 \
+      EXPECT_EQ(expected_translation_2d,                                     \
+                actual_transform_to_ancestor.Translation2D());               \
+    }                                                                        \
   } while (false)
 
 #define CHECK_CACHED_CLIP()                                                   \
@@ -156,7 +162,7 @@ TEST_P(GeometryMapperTest, Root) {
 }
 
 TEST_P(GeometryMapperTest, IdentityTransform) {
-  auto transform = CreateTransform(t0(), TransformationMatrix());
+  auto transform = Create2DTranslation(t0(), 0, 0);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -166,12 +172,13 @@ TEST_P(GeometryMapperTest, IdentityTransform) {
 }
 
 TEST_P(GeometryMapperTest, TranslationTransform) {
-  expected_transform = TransformationMatrix().Translate(20, 10);
-  auto transform = CreateTransform(t0(), expected_transform);
+  expected_translation_2d = FloatSize(20, 10);
+  auto transform = Create2DTranslation(t0(), 20, 10);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = input_rect;
+  expected_transformed_rect.Move(expected_translation_2d);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   CHECK_MAPPINGS();
 
@@ -181,13 +188,14 @@ TEST_P(GeometryMapperTest, TranslationTransform) {
 }
 
 TEST_P(GeometryMapperTest, TranslationTransformWithAlias) {
-  expected_transform = TransformationMatrix().Translate(20, 10);
-  auto real_transform = CreateTransform(t0(), expected_transform);
+  expected_translation_2d = FloatSize(20, 10);
+  auto real_transform = Create2DTranslation(t0(), 20, 10);
   auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = input_rect;
+  expected_transformed_rect.Move(expected_translation_2d);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   CHECK_MAPPINGS();
 
@@ -198,11 +206,11 @@ TEST_P(GeometryMapperTest, TranslationTransformWithAlias) {
 
 TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
   expected_transform = TransformationMatrix().Rotate(45).Scale(2);
-  auto transform = CreateTransform(t0(), expected_transform);
+  auto transform = CreateTransform(t0(), *expected_transform);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -210,12 +218,12 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
 
 TEST_P(GeometryMapperTest, RotationAndScaleTransformWithAlias) {
   expected_transform = TransformationMatrix().Rotate(45).Scale(2);
-  auto real_transform = CreateTransform(t0(), expected_transform);
+  auto real_transform = CreateTransform(t0(), *expected_transform);
   auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -224,12 +232,12 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransformWithAlias) {
 TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
   expected_transform = TransformationMatrix().Rotate(45).Scale(2);
   auto transform =
-      CreateTransform(t0(), expected_transform, FloatPoint3D(50, 50, 0));
+      CreateTransform(t0(), *expected_transform, FloatPoint3D(50, 50, 0));
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transform.ApplyTransformOrigin(50, 50, 0);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transform->ApplyTransformOrigin(50, 50, 0);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -245,31 +253,28 @@ TEST_P(GeometryMapperTest, NestedTransforms) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transform = rotate_transform * scale_transform;
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
-  TransformPaintPropertyNode::State rotate_transform;
-  rotate_transform.matrix.Rotate3d(45, 0, 0);
-  auto transform1 =
-      TransformPaintPropertyNode::Create(t0(), std::move(rotate_transform));
+  auto rotate_transform = TransformationMatrix().Rotate3d(45, 0, 0);
+  auto transform1 = CreateTransform(t0(), rotate_transform);
 
-  TransformPaintPropertyNode::State inverse_rotate_transform;
-  inverse_rotate_transform.matrix.Rotate3d(-45, 0, 0);
-  inverse_rotate_transform.flattens_inherited_transform = true;
-  auto transform2 = TransformPaintPropertyNode::Create(
-      *transform1, std::move(inverse_rotate_transform));
+  auto inverse_rotate_transform = TransformationMatrix().Rotate3d(-45, 0, 0);
+  TransformPaintPropertyNode::State inverse_state{inverse_rotate_transform};
+  inverse_state.flattens_inherited_transform = true;
+  auto transform2 =
+      TransformPaintPropertyNode::Create(*transform1, std::move(inverse_state));
   local_state.SetTransform(*transform2);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  rotate_transform.matrix.FlattenTo2d();
-  expected_transform =
-      rotate_transform.matrix * inverse_rotate_transform.matrix;
-  expected_transform.FlattenTo2d();
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  rotate_transform.FlattenTo2d();
+  expected_transform = rotate_transform * inverse_rotate_transform;
+  expected_transform->FlattenTo2d();
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -287,7 +292,7 @@ TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   // Note: unlike NestedTransforms, the order of these transforms matters. This
   // tests correct order of matrix multiplication.
   expected_transform = scale_transform * translate_transform;
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -305,7 +310,7 @@ TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
 
   expected_transform = scale_transform;
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
@@ -506,7 +511,7 @@ TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
 
 TEST_P(GeometryMapperTest, ClipBeforeTransform) {
   expected_transform = TransformationMatrix().Rotate(45);
-  auto transform = CreateTransform(t0(), expected_transform);
+  auto transform = CreateTransform(t0(), *expected_transform);
   auto clip = CreateClip(c0(), *transform, FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(*clip);
   local_state.SetTransform(*transform);
@@ -514,26 +519,26 @@ TEST_P(GeometryMapperTest, ClipBeforeTransform) {
   input_rect = FloatRect(0, 0, 100, 100);
   expected_visual_rect = FloatClipRect(input_rect);
   expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
-  expected_visual_rect.Map(expected_transform);
+  expected_visual_rect.Map(*expected_transform);
   EXPECT_FALSE(expected_visual_rect.IsTight());
   expected_clip = FloatClipRect(clip->ClipRect());
-  expected_clip.Map(expected_transform);
+  expected_clip.Map(*expected_transform);
   EXPECT_FALSE(expected_clip.IsTight());
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, ClipAfterTransform) {
   expected_transform = TransformationMatrix().Rotate(45);
-  auto transform = CreateTransform(t0(), expected_transform);
+  auto transform = CreateTransform(t0(), *expected_transform);
   auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 10, 200, 200));
   local_state.SetClip(*clip);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(input_rect);
-  expected_visual_rect.Map(expected_transform);
+  expected_visual_rect.Map(*expected_transform);
   expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
   EXPECT_FALSE(expected_visual_rect.IsTight());
   expected_clip = FloatClipRect(clip->ClipRect());
@@ -544,19 +549,19 @@ TEST_P(GeometryMapperTest, ClipAfterTransform) {
 TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
   auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(10, 10, 200, 200));
   expected_transform = TransformationMatrix().Rotate(45);
-  auto transform = CreateTransform(t0(), expected_transform);
+  auto transform = CreateTransform(t0(), *expected_transform);
   auto clip2 =
       CreateClip(*clip1, *transform, FloatRoundedRect(10, 10, 200, 200));
 
   input_rect = FloatRect(0, 0, 100, 100);
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_transformed_rect = expected_transform->MapRect(input_rect);
 
   {
     local_state.SetClip(*clip1);
     local_state.SetTransform(*transform);
 
     expected_visual_rect = FloatClipRect(input_rect);
-    expected_visual_rect.Map(expected_transform);
+    expected_visual_rect.Map(*expected_transform);
     expected_visual_rect.Intersect(FloatClipRect(clip1->ClipRect()));
     EXPECT_FALSE(expected_visual_rect.IsTight());
     expected_clip = FloatClipRect(clip1->ClipRect());
@@ -569,14 +574,14 @@ TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
     local_state.SetTransform(*transform);
 
     expected_clip = FloatClipRect(clip2->ClipRect());
-    expected_clip.Map(expected_transform);
+    expected_clip.Map(*expected_transform);
     expected_clip.Intersect(FloatClipRect(clip1->ClipRect()));
     EXPECT_FALSE(expected_clip.IsTight());
 
     // All clips are performed in the space of the ancestor. In cases such as
     // this, this means the clip is not tight.
     expected_visual_rect = FloatClipRect(input_rect);
-    expected_visual_rect.Map(expected_transform);
+    expected_visual_rect.Map(*expected_transform);
     // Intersect with all clips between local and ancestor, independently mapped
     // to ancestor space.
     expected_visual_rect.Intersect(expected_clip);
@@ -671,10 +676,9 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
-  auto transform_above_effect =
-      CreateTransform(t0(), TransformationMatrix().Translate(40, 50));
-  auto transform_below_effect = CreateTransform(
-      *transform_above_effect, TransformationMatrix().Translate(20, 30));
+  auto transform_above_effect = Create2DTranslation(t0(), 40, 50);
+  auto transform_below_effect =
+      Create2DTranslation(*transform_above_effect, 20, 30);
 
   // This clip is between transformAboveEffect and the effect.
   auto clip_above_effect = CreateClip(c0(), *transform_above_effect,
@@ -708,9 +712,10 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   output = transform_above_effect->Matrix().MapRect(output);
   EXPECT_EQ(FloatRect(0, 20, 140, 130), output);
 
-  expected_transform =
-      transform_above_effect->Matrix() * transform_below_effect->Matrix();
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_translation_2d = transform_above_effect->Matrix().To2DTranslation() +
+                            transform_below_effect->Matrix().To2DTranslation();
+  expected_transformed_rect = input_rect;
+  expected_transformed_rect.Move(expected_translation_2d);
   expected_visual_rect = FloatClipRect(output);
   expected_visual_rect.ClearIsTight();
   expected_clip = FloatClipRect(FloatRect(50, 60, 90, 90));
@@ -719,10 +724,9 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
-  auto transform_above_effect =
-      CreateTransform(t0(), TransformationMatrix().Translate(40, 50));
-  auto transform_below_effect = CreateTransform(
-      *transform_above_effect, TransformationMatrix().Translate(20, 30));
+  auto transform_above_effect = Create2DTranslation(t0(), 40, 50);
+  auto transform_below_effect =
+      Create2DTranslation(*transform_above_effect, 20, 30);
 
   // This clip is between transformAboveEffect and the effect.
   auto clip_above_effect = CreateClip(c0(), *transform_above_effect,
@@ -757,9 +761,10 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
   output = transform_above_effect->Matrix().MapRect(output);
   EXPECT_EQ(FloatRect(0, 20, 140, 130), output);
 
-  expected_transform =
-      transform_above_effect->Matrix() * transform_below_effect->Matrix();
-  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_translation_2d = transform_above_effect->Matrix().To2DTranslation() +
+                            transform_below_effect->Matrix().To2DTranslation();
+  expected_transformed_rect = input_rect;
+  expected_transformed_rect.Move(expected_translation_2d);
   expected_visual_rect = FloatClipRect(output);
   expected_visual_rect.ClearIsTight();
   expected_clip = FloatClipRect(FloatRect(50, 60, 90, 90));
@@ -867,8 +872,7 @@ TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceClipPath) {
 }
 
 TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceSimpleClipWithTransform) {
-  auto transform =
-      CreateTransform(t0(), TransformationMatrix().Translate(10, 10));
+  auto transform = Create2DTranslation(t0(), 10, 10);
   auto clip =
       CreateClip(c0(), t0(), FloatRoundedRect(FloatRect(20, 20, 50, 50)));
 
@@ -886,8 +890,7 @@ TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceSimpleClipWithTransform) {
 }
 
 TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceClipPathWithTransform) {
-  auto transform =
-      CreateTransform(t0(), TransformationMatrix().Translate(10, 10));
+  auto transform = Create2DTranslation(t0(), 10, 10);
 
   RefCountedPath* path = new RefCountedPath;
   path->MoveTo(FloatPoint(20, 20));
@@ -920,20 +923,20 @@ TEST_P(GeometryMapperTest, Precision) {
   auto t2 = CreateTransform(*t1, TransformationMatrix().Rotate(1));
   auto t3 = CreateTransform(*t2, TransformationMatrix());
   auto t4 = CreateTransform(*t3, TransformationMatrix());
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t4, *t4));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t3, *t4));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t2, *t4));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t3, *t2));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t4, *t2));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t4, *t3));
-  EXPECT_EQ(TransformationMatrix(),
-            GeometryMapper::SourceToDestinationProjection(*t2, *t3));
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t4, *t4).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t3, *t4).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t2, *t4).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t3, *t2).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t4, *t2).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t4, *t3).IsIdentity());
+  EXPECT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(*t2, *t3).IsIdentity());
 }
 
 }  // namespace blink

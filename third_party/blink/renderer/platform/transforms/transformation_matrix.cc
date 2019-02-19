@@ -2053,11 +2053,6 @@ bool TransformationMatrix::Preserves2dAxisAlignment() const {
          num_non_zero_in_col_1 <= 1 && num_non_zero_in_col_2 <= 1;
 }
 
-FloatSize TransformationMatrix::To2DTranslation() const {
-  DCHECK(IsIdentityOr2DTranslation());
-  return FloatSize(matrix_[3][0], matrix_[3][1]);
-}
-
 void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
   result[0] = M11();
   result[1] = M12();

@@ -3435,6 +3435,7 @@ TEST_P(PaintArtifactCompositorTest,
   // due to floating-point errors, we should choose other transformation values
   // to make it succeed.
   ASSERT_TRUE(GeometryMapper::SourceToDestinationProjection(t0(), *rotate2)
+                  .Matrix()
                   .Preserves2dAxisAlignment());
 
   TestPaintArtifact artifact;

@@ -17,8 +17,8 @@ ChunkToLayerMapper::ChunkToLayerMapper(
       layer_offset_(layer_offset),
       visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
       chunk_state_(layer_state_),
-      transform_(TransformationMatrix().Translate(-layer_offset.x(),
-                                                  -layer_offset.y())) {}
+      translation_2d_or_matrix_(
+          FloatSize(-layer_offset.x(), -layer_offset.y())) {}
 
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   outset_for_raster_effects_ = chunk.outset_for_raster_effects;
@@ -30,17 +30,18 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
 
   if (new_chunk_state == layer_state_) {
     has_filter_that_moves_pixels_ = false;
-    transform_ = TransformationMatrix().Translate(-layer_offset_.x(),
-                                                  -layer_offset_.y());
+    translation_2d_or_matrix_ = GeometryMapper::Translation2DOrMatrix(
+        FloatSize(-layer_offset_.x(), -layer_offset_.y()));
     clip_rect_ = FloatClipRect();
     chunk_state_ = new_chunk_state;
     return;
   }
 
   if (&new_chunk_state.Transform() != &chunk_state_.Transform()) {
-    transform_ = GeometryMapper::SourceToDestinationProjection(
+    translation_2d_or_matrix_ = GeometryMapper::SourceToDestinationProjection(
         new_chunk_state.Transform(), layer_state_.Transform());
-    transform_.PostTranslate(-layer_offset_.x(), -layer_offset_.y());
+    translation_2d_or_matrix_.PostTranslate(-layer_offset_.x(),
+                                            -layer_offset_.y());
   }
 
   bool new_has_filter_that_moves_pixels = has_filter_that_moves_pixels_;
@@ -77,7 +78,8 @@ IntRect ChunkToLayerMapper::MapVisualRect(const FloatRect& rect) const {
   if (UNLIKELY(has_filter_that_moves_pixels_))
     return MapUsingGeometryMapper(rect);
 
-  FloatRect mapped_rect = transform_.MapRect(rect);
+  auto mapped_rect = rect;
+  translation_2d_or_matrix_.MapRect(mapped_rect);
   if (!mapped_rect.IsEmpty() && !clip_rect_.IsInfinite())
     mapped_rect.Intersect(clip_rect_.Rect());
 

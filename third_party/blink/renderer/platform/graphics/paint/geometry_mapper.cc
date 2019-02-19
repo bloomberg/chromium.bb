@@ -9,13 +9,12 @@
 
 namespace blink {
 
-const TransformationMatrix& GeometryMapper::SourceToDestinationProjection(
+GeometryMapper::Translation2DOrMatrix
+GeometryMapper::SourceToDestinationProjection(
     const TransformPaintPropertyNode& source,
     const TransformPaintPropertyNode& destination) {
-  bool success = false;
-  const auto& result =
-      SourceToDestinationProjectionInternal(source, destination, success);
-  return result;
+  bool success;
+  return SourceToDestinationProjectionInternal(source, destination, success);
 }
 
 // Returns flatten(destination_to_screen)^-1 * flatten(source_to_screen)
@@ -57,29 +56,37 @@ const TransformationMatrix& GeometryMapper::SourceToDestinationProjection(
 //     = flatten(destination_to_plane_root)^-1 * flatten(source_to_plane_root)
 //     = destination_to_plane_root^-1 * source_to_plane_root
 // [3] Flatten lemma: https://goo.gl/DNKyOc
-const TransformationMatrix&
+GeometryMapper::Translation2DOrMatrix
 GeometryMapper::SourceToDestinationProjectionInternal(
     const TransformPaintPropertyNode& source_arg,
     const TransformPaintPropertyNode& destination_arg,
     bool& success) {
-  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, ());
-  DEFINE_STATIC_LOCAL(TransformationMatrix, temp, ());
-
   const auto& source = source_arg.Unalias();
   const auto& destination = destination_arg.Unalias();
 
   if (&source == &destination) {
     success = true;
-    return identity;
+    return Translation2DOrMatrix();
   }
 
-  if (source.Parent() && &destination == &source.Parent()->Unalias() &&
-      // The result will be translate(origin)*matrix*translate(-origin) which
-      // equals to matrix if the origin is zero or if the matrix is just
-      // identity or 2d translation.
-      (source.Origin().IsZero() || source.IsIdentityOr2DTranslation())) {
+  if (source.Parent() && &destination == &source.Parent()->Unalias()) {
+    if (source.IsIdentityOr2DTranslation()) {
+      success = true;
+      return Translation2DOrMatrix(source.Matrix().To2DTranslation());
+    }
+    // The result will be translate(origin)*matrix*translate(-origin) which
+    // equals to matrix if the origin is zero or if the matrix is just
+    // identity or 2d translation.
+    if (source.Origin().IsZero()) {
+      success = true;
+      return Translation2DOrMatrix(source.Matrix());
+    }
+  }
+
+  if (destination.IsIdentityOr2DTranslation() && destination.Parent() &&
+      &source == &destination.Parent()->Unalias()) {
     success = true;
-    return source.Matrix();
+    return Translation2DOrMatrix(-destination.Matrix().To2DTranslation());
   }
 
   const auto& source_cache = source.GetTransformCache();
@@ -90,14 +97,8 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   if (source_cache.root_of_2d_translation() ==
       destination_cache.root_of_2d_translation()) {
     success = true;
-    if (&source == destination_cache.root_of_2d_translation())
-      return destination_cache.from_2d_translation_root();
-    if (&destination == source_cache.root_of_2d_translation())
-      return source_cache.to_2d_translation_root();
-    temp = destination_cache.from_2d_translation_root();
-    temp.Translate(source_cache.to_2d_translation_root().E(),
-                   source_cache.to_2d_translation_root().F());
-    return temp;
+    return Translation2DOrMatrix(source_cache.to_2d_translation_root() -
+                                 destination_cache.to_2d_translation_root());
   }
 
   // Case 1b: Check if source and destination are known to be coplanar.
@@ -105,13 +106,16 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   // this formula is likely to be numerically more stable.
   if (source_cache.plane_root() == destination_cache.plane_root()) {
     success = true;
-    if (&source == destination_cache.plane_root())
-      return destination_cache.from_plane_root();
-    if (&destination == source_cache.plane_root())
-      return source_cache.to_plane_root();
-    temp = destination_cache.from_plane_root();
-    temp.Multiply(source_cache.to_plane_root());
-    return temp;
+    if (&source == destination_cache.plane_root()) {
+      return Translation2DOrMatrix(destination_cache.from_plane_root());
+    }
+    if (&destination == source_cache.plane_root()) {
+      return Translation2DOrMatrix(source_cache.to_plane_root());
+    }
+    TransformationMatrix matrix;
+    destination_cache.ApplyFromPlaneRoot(matrix);
+    source_cache.ApplyToPlaneRoot(matrix);
+    return Translation2DOrMatrix(matrix);
   }
 
   // Case 2: Check if we can fallback to the canonical definition of
@@ -122,23 +126,20 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   destination.UpdateScreenTransform();
   if (!destination_cache.projection_from_screen_is_valid()) {
     success = false;
-    return identity;
+    return Translation2DOrMatrix();
   }
 
   // Case 3: Compute:
   // flatten(destination_to_screen)^-1 * flatten(source_to_screen)
-  const auto* root = &TransformPaintPropertyNode::Root();
+  const auto& root = TransformPaintPropertyNode::Root();
   success = true;
-  if (&source == root)
-    return destination_cache.projection_from_screen();
-  if (&destination == root) {
-    temp = source_cache.to_screen();
-  } else {
-    temp = destination_cache.projection_from_screen();
-    temp.Multiply(source_cache.to_screen());
-  }
-  temp.FlattenTo2d();
-  return temp;
+  if (&source == &root)
+    return Translation2DOrMatrix(destination_cache.projection_from_screen());
+  TransformationMatrix matrix;
+  destination_cache.ApplyProjectionFromScreen(matrix);
+  source_cache.ApplyToScreen(matrix);
+  matrix.FlattenTo2d();
+  return Translation2DOrMatrix(matrix);
 }
 
 bool GeometryMapper::LocalToAncestorVisualRect(
@@ -196,7 +197,7 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
         inclusive_behavior, success);
   }
 
-  const auto& transform_matrix = SourceToDestinationProjectionInternal(
+  const auto& translation_2d_or_matrix = SourceToDestinationProjectionInternal(
       local_state.Transform(), ancestor_state.Transform(), success);
   if (!success) {
     // A failure implies either source-to-plane or destination-to-plane being
@@ -214,7 +215,7 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     rect_to_map = FloatClipRect(FloatRect());
     return false;
   }
-  rect_to_map.Map(transform_matrix);
+  translation_2d_or_matrix.MapFloatClipRect(rect_to_map);
 
   FloatClipRect clip_rect = LocalToAncestorClipRectInternal(
       local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
@@ -385,7 +386,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
   // computing and memoizing clip rects as we go.
   for (auto it = intermediate_nodes.rbegin(); it != intermediate_nodes.rend();
        ++it) {
-    const TransformationMatrix& transform_matrix =
+    const auto& translation_2d_or_matrix =
         SourceToDestinationProjectionInternal((*it)->LocalTransformSpace(),
                                               ancestor_transform, success);
     if (!success) {
@@ -396,7 +397,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     // This is where we generate the roundedness and tightness of clip rect
     // from clip and transform properties, and propagate them to |clip|.
     FloatClipRect mapped_rect(GetClipRect(**it, clip_behavior));
-    mapped_rect.Map(transform_matrix);
+    translation_2d_or_matrix.MapFloatClipRect(mapped_rect);
     if (inclusive_behavior == kInclusiveIntersect) {
       clip.InclusiveIntersect(mapped_rect);
     } else {

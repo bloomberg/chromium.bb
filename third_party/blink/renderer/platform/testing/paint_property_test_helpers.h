@@ -122,6 +122,15 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
+inline scoped_refptr<TransformPaintPropertyNode> Create2DTranslation(
+    const TransformPaintPropertyNode& parent,
+    float x,
+    float y) {
+  return TransformPaintPropertyNode::Create(
+      parent, TransformPaintPropertyNode::State{
+                  TransformationMatrix().Translate(x, y)});
+}
+
 inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
     const TransformPaintPropertyNode& parent,
     const TransformationMatrix& matrix,

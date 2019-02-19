@@ -381,7 +381,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
-                  TransformPaintPropertyNode::Root()));
+                  TransformPaintPropertyNode::Root())
+                  .Matrix());
   }
 
   // Perform the resizing
@@ -405,7 +406,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
-                  TransformPaintPropertyNode::Root()));
+                  TransformPaintPropertyNode::Root())
+                  .Matrix());
   }
 }
 
@@ -469,7 +471,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
-                  TransformPaintPropertyNode::Root()));
+                  TransformPaintPropertyNode::Root())
+                  .Matrix());
   }
 
   WebView()->MainFrameWidget()->Resize(IntSize(200, 100));
@@ -492,7 +495,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
-                  TransformPaintPropertyNode::Root()));
+                  TransformPaintPropertyNode::Root())
+                  .Matrix());
   }
 }
 

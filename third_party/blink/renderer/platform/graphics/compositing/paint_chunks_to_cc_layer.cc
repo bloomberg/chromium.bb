@@ -135,16 +135,23 @@ class ConversionContext {
   void ApplyTransform(const TransformPaintPropertyNode& target_transform) {
     if (&target_transform == current_transform_)
       return;
-    auto sk_matrix = GetSkMatrix(target_transform);
-    if (!sk_matrix.isIdentity())
-      cc_list_.push<cc::ConcatOp>(sk_matrix);
+    const auto& translation_2d_or_matrix =
+        GetTranslation2DOrMatrix(target_transform);
+    if (translation_2d_or_matrix.IsIdentityOr2DTranslation()) {
+      const auto& translation = translation_2d_or_matrix.Translation2D();
+      if (!translation.IsZero()) {
+        cc_list_.push<cc::TranslateOp>(translation.Width(),
+                                       translation.Height());
+      }
+    } else {
+      cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkMatrix());
+    }
   }
 
-  SkMatrix GetSkMatrix(
+  GeometryMapper::Translation2DOrMatrix GetTranslation2DOrMatrix(
       const TransformPaintPropertyNode& target_transform) const {
-    return SkMatrix(TransformationMatrix::ToSkMatrix44(
-        GeometryMapper::SourceToDestinationProjection(target_transform,
-                                                      *current_transform_)));
+    return GeometryMapper::SourceToDestinationProjection(target_transform,
+                                                         *current_transform_);
   }
 
   void AppendRestore(size_t n) {
@@ -633,13 +640,19 @@ void ConversionContext::SwitchToTransform(
   if (&target_transform == current_transform_)
     return;
 
-  auto sk_matrix = GetSkMatrix(target_transform);
-  if (sk_matrix.isIdentity())
+  const auto& translation_2d_or_matrix =
+      GetTranslation2DOrMatrix(target_transform);
+  if (translation_2d_or_matrix.IsIdentity())
     return;
 
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
-  cc_list_.push<cc::ConcatOp>(sk_matrix);
+  if (translation_2d_or_matrix.IsIdentityOr2DTranslation()) {
+    const auto& translation = translation_2d_or_matrix.Translation2D();
+    cc_list_.push<cc::TranslateOp>(translation.Width(), translation.Height());
+  } else {
+    cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkMatrix());
+  }
   cc_list_.EndPaintOfPairedBegin();
   previous_transform_ = current_transform_;
   current_transform_ = &target_transform;

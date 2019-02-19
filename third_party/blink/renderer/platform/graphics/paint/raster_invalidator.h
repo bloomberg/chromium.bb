@@ -72,8 +72,7 @@ class PLATFORM_EXPORT RasterInvalidator {
           bounds_in_layer(invalidator.ClipByLayerBounds(
               mapper.MapVisualRect(chunk_it->bounds))),
           chunk_to_layer_clip(mapper.ClipRect()),
-          chunk_to_layer_transform(
-              TransformationMatrix::ToSkMatrix44(mapper.Transform())) {
+          chunk_to_layer_transform(mapper.Transform()) {
     }
 
     // The index of the chunk in the PaintArtifact. It may be different from
