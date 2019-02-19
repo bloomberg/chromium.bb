@@ -723,17 +723,13 @@ Task* TaskManagerImpl::GetTaskByTaskId(TaskId task_id) const {
 }
 
 void TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone() {
-  // TODO(afakhry): There should be a better way for doing this!
-  bool are_all_processes_data_ready = true;
   for (const auto& groups_itr : task_groups_by_proc_id_) {
-    are_all_processes_data_ready &=
-        groups_itr.second->AreBackgroundCalculationsDone();
+    if (!groups_itr.second->AreBackgroundCalculationsDone())
+      return;
   }
-  if (are_all_processes_data_ready) {
-    NotifyObserversOnRefreshWithBackgroundCalculations(GetTaskIdsList());
-    for (const auto& groups_itr : task_groups_by_proc_id_)
-      groups_itr.second->ClearCurrentBackgroundCalculationsFlags();
-  }
+  NotifyObserversOnRefreshWithBackgroundCalculations(GetTaskIdsList());
+  for (const auto& groups_itr : task_groups_by_proc_id_)
+    groups_itr.second->ClearCurrentBackgroundCalculationsFlags();
 }
 
 }  // namespace task_manager
