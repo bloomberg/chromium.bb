@@ -214,7 +214,6 @@ config("compiler") {
   ldflags = []
   defines = []
   configs = []
-  inputs = []
 
   # System-specific flags. If your compiler flags apply to one of the
   # categories here, add it to the associated file to keep this shared config
