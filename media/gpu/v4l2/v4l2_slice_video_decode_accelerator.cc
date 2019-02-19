@@ -1996,8 +1996,8 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   scoped_refptr<V4L2DecodeSurface> dec_surface =
       new V4L2ConfigStoreDecodeSurface(
           input, output,
-          base::Bind(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
-                     base::Unretained(this)));
+          base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                         base::Unretained(this)));
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
   return dec_surface;
@@ -2039,8 +2039,8 @@ void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
           FROM_HERE, base::BindOnce(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
           // alive. Destroy() will wait the decode thread to finish.
-          base::Bind(&V4L2SliceVideoDecodeAccelerator::PictureCleared,
-                     base::Unretained(this)));
+          base::BindOnce(&V4L2SliceVideoDecodeAccelerator::PictureCleared,
+                         base::Unretained(this)));
       picture_clearing_count_++;
       pending_picture_ready_.pop();
     } else {
