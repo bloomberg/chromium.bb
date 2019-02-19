@@ -134,6 +134,7 @@ Bug(none) http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failur
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
+Bug(none) printing/offscreencanvas-2d-printing.html [ Failure ]
 Bug(none) printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 Bug(none) printing/webgl-repeated-printing.html [ Failure ]
 Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
