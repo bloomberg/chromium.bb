@@ -563,15 +563,20 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 }
 
 void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
+#if defined(ADDRESS_SANITIZER)
+  // In case of running with ASAN we eagerly poison all unmarked objects on
+  // Oilpan garbage collections. Those objects may contain v8 handles which may
+  // be suspect to being removed. Removing requires clearing out the Oilpan
+  // memory. For this reason we need to finish sweeping (which would remove the
+  // handles) before V8 is allowed to continue with its garbage collection.
+  CompleteSweep();
+  return;
+#endif  // ADDRESS_SANITIZER
+
   // Finish Oilpan's complete sweeping before running a V8 major GC.
   // This will let the GC collect more V8 objects.
-  //
-  // TODO(haraken): It's a bit too late for a major GC to schedule
-  // completeSweep() here, because gcPrologue for a major GC is called
-  // not at the point where the major GC started but at the point where
-  // the major GC requests object grouping.
-  DCHECK_EQ(BlinkGC::kV8MajorGC, gc_type);
-  CompleteSweep();
+  if (gc_type == BlinkGC::kV8MajorGC)
+    CompleteSweep();
 }
 
 void ThreadState::SchedulePageNavigationGCIfNeeded(
