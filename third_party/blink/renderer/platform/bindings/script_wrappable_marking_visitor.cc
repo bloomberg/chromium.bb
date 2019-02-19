@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/custom_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -45,6 +44,7 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
 void ScriptWrappableMarkingVisitor::EnterFinalPause(EmbedderStackState) {
   CHECK(ThreadState::Current());
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  ThreadState::Current()->DisableWrapperTracingBarrier();
   ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate(), this);
 }
 
@@ -62,7 +62,6 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
 
   should_cleanup_ = true;
   tracing_in_progress_ = false;
-  ThreadState::Current()->DisableWrapperTracingBarrier();
   ScheduleIdleLazyCleanup();
 }
 
@@ -223,20 +222,6 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
 
 void ScriptWrappableMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
-    DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    ScriptWrappable* key) {
-  if (!ThreadState::IsAnyWrapperTracing())
-    return;
-  ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
-  if (!visitor->WrapperTracingInProgress())
-    return;
-
-  // Conservatively assume that the source object key is marked.
-  visitor->Trace(wrapper_map, key);
-}
-
-void ScriptWrappableMarkingVisitor::WriteBarrier(
-    v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,
     void* object) {
   if (!ThreadState::IsAnyWrapperTracing())
@@ -282,12 +267,6 @@ void ScriptWrappableMarkingVisitor::VisitBackingStoreStrongly(
   if (!object)
     return;
   desc.callback(this, desc.base_object_payload);
-}
-
-void ScriptWrappableMarkingVisitor::Visit(
-    DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    const ScriptWrappable* key) {
-  wrapper_map->MarkWrapper(const_cast<ScriptWrappable*>(key));
 }
 
 void ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque() {
