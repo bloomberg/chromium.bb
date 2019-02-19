@@ -110,9 +110,9 @@ void TextPaintTimingDetector::Analyze() {
   }
 }
 
-void TextPaintTimingDetector::OnPrePaintFinished() {
+void TextPaintTimingDetector::OnPaintFinished() {
   if (texts_to_record_swap_time_.size() > 0) {
-    // Start repeating timer only once after the first text prepaint.
+    // Start repeating timer only once after the first text paint.
     if (!timer_.IsActive()) {
       timer_.StartRepeating(kTimerDelay, FROM_HERE);
     }
@@ -172,7 +172,7 @@ void TextPaintTimingDetector::ReportSwapTime(
     base::TimeTicks timestamp) {
   // If texts_to_record_swap_time_.size == 0, it means the array has been
   // consumed in a callback earlier than this one. That violates the assumption
-  // that only one or zero callback will be called after one OnPrePaintFinished.
+  // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_to_record_swap_time_.size(), 0UL);
   for (TextRecord& record : texts_to_record_swap_time_) {
     if (record.node_id == kInvalidDOMNodeId)
@@ -253,26 +253,22 @@ void TextPaintTimingDetector::StopRecordEntries() {
 }
 
 TextRecord* TextPaintTimingDetector::FindLargestPaintCandidate() {
-  while (!largest_text_heap_.empty() &&
-         !recorded_text_node_ids_.Contains(largest_text_heap_.top()->node_id)) {
-    // If recorded_text_node_ids_ doesn't have record.node_id, the node has
-    // been deleted. We discard the records of deleted node.
-    largest_text_heap_.pop();
-  }
-  if (!largest_text_heap_.empty())
-    return largest_text_heap_.top().get();
-  return nullptr;
+  return FindCandidate(largest_text_heap_);
 }
 
 TextRecord* TextPaintTimingDetector::FindLastPaintCandidate() {
-  while (!latest_text_heap_.empty() &&
-         !recorded_text_node_ids_.Contains(latest_text_heap_.top()->node_id)) {
+  return FindCandidate(latest_text_heap_);
+}
+
+TextRecord* TextPaintTimingDetector::FindCandidate(TextRecordHeap& heap) {
+  while (!heap.empty() &&
+         !recorded_text_node_ids_.Contains(heap.top()->node_id)) {
     // If recorded_text_node_ids_ doesn't have record.node_id, the node has
     // been deleted. We discard the records of deleted node.
-    latest_text_heap_.pop();
+    heap.pop();
   }
-  if (!latest_text_heap_.empty())
-    return latest_text_heap_.top().get();
+  if (!heap.empty())
+    return heap.top().get();
   return nullptr;
 }
 

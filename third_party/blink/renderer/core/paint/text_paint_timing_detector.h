@@ -53,6 +53,12 @@ class CORE_EXPORT TextPaintTimingDetector final
   using ReportTimeCallback =
       WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult,
                                     base::TimeTicks)>;
+  using TextRecordHeapComparator = bool (*)(const std::unique_ptr<TextRecord>&,
+                                            const std::unique_ptr<TextRecord>&);
+  using TextRecordHeap =
+      std::priority_queue<std::unique_ptr<TextRecord>,
+                          std::vector<std::unique_ptr<TextRecord>>,
+                          TextRecordHeapComparator>;
   friend class TextPaintTimingDetectorTest;
 
  public:
@@ -60,7 +66,7 @@ class CORE_EXPORT TextPaintTimingDetector final
   void RecordText(const LayoutObject& object, const PropertyTreeState&);
   TextRecord* FindLargestPaintCandidate();
   TextRecord* FindLastPaintCandidate();
-  void OnPrePaintFinished();
+  void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
@@ -81,21 +87,14 @@ class CORE_EXPORT TextPaintTimingDetector final
   void ReportSwapTime(WebLayerTreeView::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
+  TextRecord* FindCandidate(TextRecordHeap& heap);
   void OnLargestTextDetected(const TextRecord&);
   void OnLastTextDetected(const TextRecord&);
 
   HashSet<DOMNodeId> recorded_text_node_ids_;
   HashSet<DOMNodeId> size_zero_node_ids_;
-  std::priority_queue<std::unique_ptr<TextRecord>,
-                      std::vector<std::unique_ptr<TextRecord>>,
-                      bool (*)(const std::unique_ptr<TextRecord>&,
-                               const std::unique_ptr<TextRecord>&)>
-      largest_text_heap_;
-  std::priority_queue<std::unique_ptr<TextRecord>,
-                      std::vector<std::unique_ptr<TextRecord>>,
-                      bool (*)(const std::unique_ptr<TextRecord>&,
-                               const std::unique_ptr<TextRecord>&)>
-      latest_text_heap_;
+  TextRecordHeap largest_text_heap_;
+  TextRecordHeap latest_text_heap_;
   std::vector<TextRecord> texts_to_record_swap_time_;
 
   // Make sure that at most one swap promise is ongoing.

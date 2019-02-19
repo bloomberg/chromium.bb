@@ -62,6 +62,10 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
 class CORE_EXPORT ImagePaintTimingDetector final
     : public GarbageCollectedFinalized<ImagePaintTimingDetector> {
   friend class ImagePaintTimingDetectorTest;
+  using NodesQueueComparator = bool (*)(const base::WeakPtr<ImageRecord>&,
+                                        const base::WeakPtr<ImageRecord>&);
+  using ImageRecordSet =
+      std::set<base::WeakPtr<ImageRecord>, NodesQueueComparator>;
 
  public:
   ImagePaintTimingDetector(LocalFrameView*);
@@ -97,10 +101,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
  private:
   ImageRecord* FindLargestPaintCandidate();
   ImageRecord* FindLastPaintCandidate();
-  ImageRecord* FindCandidate(
-      std::set<base::WeakPtr<ImageRecord>,
-               bool (*)(const base::WeakPtr<ImageRecord>&,
-                        const base::WeakPtr<ImageRecord>&)>& heap);
+  ImageRecord* FindCandidate(ImageRecordSet&);
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
@@ -122,14 +123,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // We will never destroy the pointers within |id_record_map_|. Once created
   // they will exist for the whole life cycle of |id_record_map_|.
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> id_record_map_;
-  std::set<base::WeakPtr<ImageRecord>,
-           bool (*)(const base::WeakPtr<ImageRecord>&,
-                    const base::WeakPtr<ImageRecord>&)>
-      size_ordered_set_;
-  std::set<base::WeakPtr<ImageRecord>,
-           bool (*)(const base::WeakPtr<ImageRecord>&,
-                    const base::WeakPtr<ImageRecord>&)>
-      time_ordered_set_;
+  ImageRecordSet size_ordered_set_;
+  ImageRecordSet time_ordered_set_;
   HashSet<DOMNodeId> detached_ids_;
 
   // Node-ids of records pending swap time are stored in this queue until they

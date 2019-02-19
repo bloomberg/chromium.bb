@@ -398,9 +398,7 @@ ImageRecord* ImagePaintTimingDetector::FindLastPaintCandidate() {
 }
 
 ImageRecord* ImagePaintTimingDetector::FindCandidate(
-    std::set<base::WeakPtr<ImageRecord>,
-             bool (*)(const base::WeakPtr<ImageRecord>&,
-                      const base::WeakPtr<ImageRecord>&)>& ordered_set) {
+    ImageRecordSet& ordered_set) {
   for (auto it = ordered_set.begin(); it != ordered_set.end(); ++it) {
     if (detached_ids_.Contains((*it)->node_id))
       continue;
