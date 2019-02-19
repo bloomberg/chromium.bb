@@ -245,7 +245,8 @@ void LoginHandler::Start(
   auto continuation =
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                      weak_factory_.GetWeakPtr(), request_url, is_main_frame);
-  if (api->MaybeProxyAuthRequest(auth_info_.get(), std::move(response_headers),
+  if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
+                                 auth_info_.get(), std::move(response_headers),
                                  request_id, is_main_frame,
                                  std::move(continuation))) {
     return;

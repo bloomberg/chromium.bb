@@ -207,6 +207,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // If this returns |true|, |callback| will eventually be invoked on the UI
   // thread.
   bool MaybeProxyAuthRequest(
+      content::BrowserContext* browser_context,
       net::AuthChallengeInfo* auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const content::GlobalRequestID& request_id,
