@@ -35,7 +35,7 @@ const base::Feature kDiscoverApp{"DiscoverApp",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, DriveFS will be used for Drive sync.
-const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
