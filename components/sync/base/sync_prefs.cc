@@ -20,6 +20,13 @@
 namespace syncer {
 
 namespace {
+
+// Obsolete prefs related to the removed ClearServerData flow.
+const char kSyncPassphraseEncryptionTransitionInProgress[] =
+    "sync.passphrase_encryption_transition_in_progress";
+const char kSyncNigoriStateForPassphraseTransition[] =
+    "sync.nigori_state_for_passphrase_transition";
+
 // Groups of prefs that always have the same value as a "master" pref.
 // For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
@@ -171,9 +178,9 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
   registry->RegisterDictionaryPref(prefs::kSyncInvalidationVersions);
   registry->RegisterStringPref(prefs::kSyncLastRunVersion, std::string());
-  registry->RegisterBooleanPref(
-      prefs::kSyncPassphraseEncryptionTransitionInProgress, false);
-  registry->RegisterStringPref(prefs::kSyncNigoriStateForPassphraseTransition,
+  registry->RegisterBooleanPref(kSyncPassphraseEncryptionTransitionInProgress,
+                                false);
+  registry->RegisterStringPref(kSyncNigoriStateForPassphraseTransition,
                                std::string());
   registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
   registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
@@ -206,9 +213,6 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncShutdownCleanly);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
-  pref_service_->ClearPref(
-      prefs::kSyncPassphraseEncryptionTransitionInProgress);
-  pref_service_->ClearPref(prefs::kSyncNigoriStateForPassphraseTransition);
 
   // Note: We do *not* clear prefs which are directly user-controlled such as
   // the set of preferred data types here.
@@ -613,34 +617,6 @@ void SyncPrefs::SetLastRunVersion(const std::string& current_version) {
   pref_service_->SetString(prefs::kSyncLastRunVersion, current_version);
 }
 
-void SyncPrefs::SetPassphraseEncryptionTransitionInProgress(bool value) {
-  pref_service_->SetBoolean(
-      prefs::kSyncPassphraseEncryptionTransitionInProgress, value);
-}
-
-bool SyncPrefs::GetPassphraseEncryptionTransitionInProgress() const {
-  return pref_service_->GetBoolean(
-      prefs::kSyncPassphraseEncryptionTransitionInProgress);
-}
-
-void SyncPrefs::SetNigoriSpecificsForPassphraseTransition(
-    const sync_pb::NigoriSpecifics& nigori_specifics) {
-  std::string encoded;
-  base::Base64Encode(nigori_specifics.SerializeAsString(), &encoded);
-  pref_service_->SetString(prefs::kSyncNigoriStateForPassphraseTransition,
-                           encoded);
-}
-
-void SyncPrefs::GetNigoriSpecificsForPassphraseTransition(
-    sync_pb::NigoriSpecifics* nigori_specifics) const {
-  const std::string encoded =
-      pref_service_->GetString(prefs::kSyncNigoriStateForPassphraseTransition);
-  std::string decoded;
-  if (base::Base64Decode(encoded, &decoded)) {
-    nigori_specifics->ParseFromString(decoded);
-  }
-}
-
 bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
 }
@@ -660,6 +636,11 @@ void ClearObsoleteUserTypePrefs(PrefService* pref_service) {
   for (const std::string& obsolete_pref : GetObsoleteUserTypePrefs()) {
     pref_service->ClearPref(obsolete_pref);
   }
+}
+
+void ClearObsoleteClearServerDataPrefs(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncPassphraseEncryptionTransitionInProgress);
+  pref_service->ClearPref(kSyncNigoriStateForPassphraseTransition);
 }
 
 }  // namespace syncer
