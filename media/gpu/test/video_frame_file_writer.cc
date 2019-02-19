@@ -200,7 +200,8 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
     const uint8_t* data = I420_out_frame->data(i);
     if (yuv_file.WriteAtCurrentPos(reinterpret_cast<const char*>(data),
                                    data_size) != data_size) {
-      LOG(ERROR) << "Failed to write plane #" << i << " to file.";
+      LOG(ERROR) << "Failed to write plane #" << i << " to file: "
+                 << base::File::ErrorToString(base::File::GetLastFileError());
     }
   }
 }
