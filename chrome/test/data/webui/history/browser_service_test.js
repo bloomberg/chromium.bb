@@ -17,7 +17,7 @@ suite('BrowserService', function() {
       createHistoryEntry(5678, 'https://en.wikipedia.org')
     ];
 
-    md_history.BrowserService.getInstance().deleteItems(toDelete);
+    history.BrowserService.getInstance().deleteItems(toDelete);
   });
 
   teardown(function() {

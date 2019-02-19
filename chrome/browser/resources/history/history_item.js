@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('md_history', function() {
+cr.define('history', function() {
   const HistoryItem = Polymer({
     is: 'history-item',
 
@@ -192,7 +192,7 @@ cr.define('md_history', function() {
         this.$['menu-button'].focus();
       }
 
-      const browserService = md_history.BrowserService.getInstance();
+      const browserService = history.BrowserService.getInstance();
       browserService.removeBookmark(this.item.url);
       browserService.recordAction('BookmarkStarClicked');
 
@@ -219,7 +219,7 @@ cr.define('md_history', function() {
      * @private
      */
     onLinkClick_: function() {
-      const browserService = md_history.BrowserService.getInstance();
+      const browserService = history.BrowserService.getInstance();
       browserService.recordAction('EntryLinkClick');
 
       if (this.searchTerm) {
@@ -242,8 +242,7 @@ cr.define('md_history', function() {
     },
 
     onLinkRightClick_: function() {
-      md_history.BrowserService.getInstance().recordAction(
-          'EntryLinkRightClick');
+      history.BrowserService.getInstance().recordAction('EntryLinkRightClick');
     },
 
     /**

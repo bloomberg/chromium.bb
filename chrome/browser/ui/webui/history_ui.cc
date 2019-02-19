@@ -49,11 +49,10 @@ bool IsUserSignedIn(Profile* profile) {
 }
 
 bool MenuPromoShown(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kMdHistoryMenuPromoShown);
+  return profile->GetPrefs()->GetBoolean(prefs::kHistoryMenuPromoShown);
 }
 
-content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
-                                                      bool use_test_title) {
+content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
@@ -64,11 +63,11 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("clearBrowsingData",
                              IDS_CLEAR_BROWSING_DATA_TITLE);
-  source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
-  source->AddLocalizedString("closeMenuPromo", IDS_MD_HISTORY_CLOSE_MENU_PROMO);
+  source->AddLocalizedString("clearSearch", IDS_HISTORY_CLEAR_SEARCH);
+  source->AddLocalizedString("closeMenuPromo", IDS_HISTORY_CLOSE_MENU_PROMO);
   source->AddLocalizedString("collapseSessionButton",
                              IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION);
-  source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
+  source->AddLocalizedString("delete", IDS_HISTORY_DELETE);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
   source->AddLocalizedString("deleteSession",
@@ -81,35 +80,29 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("historyMenuButton",
-                             IDS_MD_HISTORY_HISTORY_MENU_DESCRIPTION);
-  source->AddLocalizedString("historyMenuItem",
-                             IDS_MD_HISTORY_HISTORY_MENU_ITEM);
-  source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
+                             IDS_HISTORY_HISTORY_MENU_DESCRIPTION);
+  source->AddLocalizedString("historyMenuItem", IDS_HISTORY_HISTORY_MENU_ITEM);
+  source->AddLocalizedString("itemsSelected", IDS_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
-  source->AddLocalizedString("menuPromo", IDS_MD_HISTORY_MENU_PROMO);
+  source->AddLocalizedString("menuPromo", IDS_HISTORY_MENU_PROMO);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
   source->AddLocalizedString("openTabsMenuItem",
-                             IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM);
+                             IDS_HISTORY_OPEN_TABS_MENU_ITEM);
   source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
   source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
-  source->AddLocalizedString("noSyncedResults",
-                             IDS_MD_HISTORY_NO_SYNCED_RESULTS);
+  source->AddLocalizedString("noSyncedResults", IDS_HISTORY_NO_SYNCED_RESULTS);
   source->AddLocalizedString("removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("removeSelected",
                              IDS_HISTORY_REMOVE_SELECTED_ITEMS);
-  source->AddLocalizedString("searchPrompt", IDS_MD_HISTORY_SEARCH_PROMPT);
+  source->AddLocalizedString("searchPrompt", IDS_HISTORY_SEARCH_PROMPT);
   source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
   source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
-  source->AddLocalizedString("signInButton", IDS_MD_HISTORY_SIGN_IN_BUTTON);
-  source->AddLocalizedString("signInPromo", IDS_MD_HISTORY_SIGN_IN_PROMO);
-  source->AddLocalizedString("signInPromoDesc",
-                             IDS_MD_HISTORY_SIGN_IN_PROMO_DESC);
-  if (use_test_title)
-    source->AddString("title", "MD History");
-  else
-    source->AddLocalizedString("title", IDS_HISTORY_TITLE);
+  source->AddLocalizedString("signInButton", IDS_HISTORY_SIGN_IN_BUTTON);
+  source->AddLocalizedString("signInPromo", IDS_HISTORY_SIGN_IN_PROMO);
+  source->AddLocalizedString("signInPromoDesc", IDS_HISTORY_SIGN_IN_PROMO_DESC);
+  source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
   source->AddString(
       "sidebarFooter",
@@ -133,40 +126,38 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
     int idr;
   };
   const UncompressedResource uncompressed_resources[] = {
-    {"constants.html", IDR_MD_HISTORY_CONSTANTS_HTML},
-    {"constants.js", IDR_MD_HISTORY_CONSTANTS_JS},
-    {"history.js", IDR_MD_HISTORY_HISTORY_JS},
-    {"images/100/sign_in_promo.jpg",
-     IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG},
-    {"images/200/sign_in_promo.jpg",
-     IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG},
-    {"strings.html", IDR_MD_HISTORY_STRINGS_HTML},
+    {"constants.html", IDR_HISTORY_CONSTANTS_HTML},
+    {"constants.js", IDR_HISTORY_CONSTANTS_JS},
+    {"history.js", IDR_HISTORY_HISTORY_JS},
+    {"images/100/sign_in_promo.jpg", IDR_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG},
+    {"images/200/sign_in_promo.jpg", IDR_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG},
+    {"strings.html", IDR_HISTORY_STRINGS_HTML},
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
-    {"app.html", IDR_MD_HISTORY_APP_HTML},
-    {"app.js", IDR_MD_HISTORY_APP_JS},
-    {"browser_service.html", IDR_MD_HISTORY_BROWSER_SERVICE_HTML},
-    {"browser_service.js", IDR_MD_HISTORY_BROWSER_SERVICE_JS},
-    {"history_item.html", IDR_MD_HISTORY_HISTORY_ITEM_HTML},
-    {"history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS},
-    {"history_list.html", IDR_MD_HISTORY_HISTORY_LIST_HTML},
-    {"history_list.js", IDR_MD_HISTORY_HISTORY_LIST_JS},
-    {"history_toolbar.html", IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML},
-    {"history_toolbar.js", IDR_MD_HISTORY_HISTORY_TOOLBAR_JS},
-    {"lazy_load.html", IDR_MD_HISTORY_LAZY_LOAD_HTML},
-    {"query_manager.html", IDR_MD_HISTORY_QUERY_MANAGER_HTML},
-    {"query_manager.js", IDR_MD_HISTORY_QUERY_MANAGER_JS},
-    {"router.html", IDR_MD_HISTORY_ROUTER_HTML},
-    {"router.js", IDR_MD_HISTORY_ROUTER_JS},
-    {"searched_label.html", IDR_MD_HISTORY_SEARCHED_LABEL_HTML},
-    {"searched_label.js", IDR_MD_HISTORY_SEARCHED_LABEL_JS},
-    {"shared_style.html", IDR_MD_HISTORY_SHARED_STYLE_HTML},
-    {"shared_vars.html", IDR_MD_HISTORY_SHARED_VARS_HTML},
-    {"side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML},
-    {"side_bar.js", IDR_MD_HISTORY_SIDE_BAR_JS},
-    {"synced_device_card.html", IDR_MD_HISTORY_SYNCED_DEVICE_CARD_HTML},
-    {"synced_device_card.js", IDR_MD_HISTORY_SYNCED_DEVICE_CARD_JS},
-    {"synced_device_manager.html", IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_HTML},
-    {"synced_device_manager.js", IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_JS},
+    {"app.html", IDR_HISTORY_APP_HTML},
+    {"app.js", IDR_HISTORY_APP_JS},
+    {"browser_service.html", IDR_HISTORY_BROWSER_SERVICE_HTML},
+    {"browser_service.js", IDR_HISTORY_BROWSER_SERVICE_JS},
+    {"history_item.html", IDR_HISTORY_HISTORY_ITEM_HTML},
+    {"history_item.js", IDR_HISTORY_HISTORY_ITEM_JS},
+    {"history_list.html", IDR_HISTORY_HISTORY_LIST_HTML},
+    {"history_list.js", IDR_HISTORY_HISTORY_LIST_JS},
+    {"history_toolbar.html", IDR_HISTORY_HISTORY_TOOLBAR_HTML},
+    {"history_toolbar.js", IDR_HISTORY_HISTORY_TOOLBAR_JS},
+    {"lazy_load.html", IDR_HISTORY_LAZY_LOAD_HTML},
+    {"query_manager.html", IDR_HISTORY_QUERY_MANAGER_HTML},
+    {"query_manager.js", IDR_HISTORY_QUERY_MANAGER_JS},
+    {"router.html", IDR_HISTORY_ROUTER_HTML},
+    {"router.js", IDR_HISTORY_ROUTER_JS},
+    {"searched_label.html", IDR_HISTORY_SEARCHED_LABEL_HTML},
+    {"searched_label.js", IDR_HISTORY_SEARCHED_LABEL_JS},
+    {"shared_style.html", IDR_HISTORY_SHARED_STYLE_HTML},
+    {"shared_vars.html", IDR_HISTORY_SHARED_VARS_HTML},
+    {"side_bar.html", IDR_HISTORY_SIDE_BAR_HTML},
+    {"side_bar.js", IDR_HISTORY_SIDE_BAR_JS},
+    {"synced_device_card.html", IDR_HISTORY_SYNCED_DEVICE_CARD_HTML},
+    {"synced_device_card.js", IDR_HISTORY_SYNCED_DEVICE_CARD_JS},
+    {"synced_device_manager.html", IDR_HISTORY_SYNCED_DEVICE_MANAGER_HTML},
+    {"synced_device_manager.js", IDR_HISTORY_SYNCED_DEVICE_MANAGER_JS},
 #endif
   };
 
@@ -185,19 +176,18 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   const bool use_polymer_2 =
       base::FeatureList::IsEnabled(features::kWebUIPolymer2);
-  source->AddResourcePath("app.html",
-                          use_polymer_2 ? IDR_MD_HISTORY_APP_VULCANIZED_P2_HTML
-                                        : IDR_MD_HISTORY_APP_VULCANIZED_HTML);
-  source->AddResourcePath("app.crisper.js", IDR_MD_HISTORY_APP_CRISPER_JS);
-  source->AddResourcePath("lazy_load.html",
-                          use_polymer_2
-                              ? IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML
-                              : IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
+  source->AddResourcePath("app.html", use_polymer_2
+                                          ? IDR_HISTORY_APP_VULCANIZED_P2_HTML
+                                          : IDR_HISTORY_APP_VULCANIZED_HTML);
+  source->AddResourcePath("app.crisper.js", IDR_HISTORY_APP_CRISPER_JS);
+  source->AddResourcePath(
+      "lazy_load.html", use_polymer_2 ? IDR_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML
+                                      : IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
-                          IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS);
+                          IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
 #endif
 
-  source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
+  source->SetDefaultResource(IDR_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");
 
   return source;
@@ -205,12 +195,9 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 
 }  // namespace
 
-bool MdHistoryUI::use_test_title_ = false;
-
-MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* data_source =
-      CreateMdHistoryUIHTMLSource(profile, use_test_title_);
+  content::WebUIDataSource* data_source = CreateHistoryUIHTMLSource(profile);
   DarkModeHandler::Initialize(web_ui, data_source);
   ManagedUIHandler::Initialize(web_ui, data_source);
   content::WebUIDataSource::Add(profile, data_source);
@@ -221,23 +208,23 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<browser_sync::ForeignSessionHandler>());
   web_ui->AddMessageHandler(std::make_unique<HistoryLoginHandler>(
-      base::Bind(&MdHistoryUI::UpdateDataSource, base::Unretained(this))));
+      base::Bind(&HistoryUI::UpdateDataSource, base::Unretained(this))));
 
   web_ui->RegisterMessageCallback(
-      "menuPromoShown", base::BindRepeating(&MdHistoryUI::HandleMenuPromoShown,
+      "menuPromoShown", base::BindRepeating(&HistoryUI::HandleMenuPromoShown,
                                             base::Unretained(this)));
 }
 
-MdHistoryUI::~MdHistoryUI() {}
+HistoryUI::~HistoryUI() {}
 
-void MdHistoryUI::RegisterProfilePrefs(
+void HistoryUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
-      prefs::kMdHistoryMenuPromoShown, false,
+      prefs::kHistoryMenuPromoShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-void MdHistoryUI::UpdateDataSource() {
+void HistoryUI::UpdateDataSource() {
   CHECK(web_ui());
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -250,8 +237,8 @@ void MdHistoryUI::UpdateDataSource() {
                                    std::move(update));
 }
 
-void MdHistoryUI::HandleMenuPromoShown(const base::ListValue* args) {
+void HistoryUI::HandleMenuPromoShown(const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kMdHistoryMenuPromoShown, true);
+      prefs::kHistoryMenuPromoShown, true);
   UpdateDataSource();
 }

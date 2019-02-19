@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Defines a singleton object, md_history.BrowserService, which
+ * @fileoverview Defines a singleton object, history.BrowserService, which
  * provides access to chrome.send APIs.
  */
 
-cr.define('md_history', function() {
+cr.define('history', function() {
   class BrowserService {
     constructor() {
       /** @private {Array<!HistoryEntry>} */
@@ -135,12 +135,12 @@ cr.define('md_history', function() {
  * Called by the history backend when deletion was succesful.
  */
 function deleteComplete() {
-  md_history.BrowserService.getInstance().resolveDelete_(true);
+  history.BrowserService.getInstance().resolveDelete_(true);
 }
 
 /**
  * Called by the history backend when the deletion failed.
  */
 function deleteFailed() {
-  md_history.BrowserService.getInstance().resolveDelete_(false);
+  history.BrowserService.getInstance().resolveDelete_(false);
 }

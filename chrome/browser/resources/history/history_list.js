@@ -91,8 +91,7 @@ Polymer({
     if (info.term && !this.queryState.incremental) {
       Polymer.IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
-        text:
-            md_history.HistoryItem.searchResultsTitle(results.length, info.term)
+        text: history.HistoryItem.searchResultsTitle(results.length, info.term)
       });
     }
 
@@ -192,7 +191,7 @@ Polymer({
       return;
     }
 
-    const browserService = md_history.BrowserService.getInstance();
+    const browserService = history.BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
     if (this.queryState.searchTerm != '') {
       browserService.recordAction('SearchResultRemove');
@@ -232,7 +231,7 @@ Polymer({
     const toBeRemoved = Array.from(this.selectedItems.values())
                             .map((index) => this.get(`historyData_.${index}`));
 
-    md_history.BrowserService.getInstance()
+    history.BrowserService.getInstance()
         .deleteItems(toBeRemoved)
         .then((items) => {
           this.removeItemsByIndex_(Array.from(this.selectedItems));
@@ -287,8 +286,7 @@ Polymer({
 
   /** @private */
   onDialogConfirmTap_: function() {
-    md_history.BrowserService.getInstance().recordAction(
-        'ConfirmRemoveSelected');
+    history.BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
 
     this.deleteSelected_();
     const dialog = assert(this.$.dialog.getIfExists());
@@ -297,8 +295,7 @@ Polymer({
 
   /** @private */
   onDialogCancelTap_: function() {
-    md_history.BrowserService.getInstance().recordAction(
-        'CancelRemoveSelected');
+    history.BrowserService.getInstance().recordAction('CancelRemoveSelected');
 
     const dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
@@ -360,7 +357,7 @@ Polymer({
 
   /** @private */
   onMoreFromSiteTap_: function() {
-    md_history.BrowserService.getInstance().recordAction(
+    history.BrowserService.getInstance().recordAction(
         'EntryMenuShowMoreFromSite');
 
     const menu = assert(this.$.sharedMenu.getIfExists());
@@ -371,7 +368,7 @@ Polymer({
 
   /** @private */
   onRemoveFromHistoryTap_: function() {
-    const browserService = md_history.BrowserService.getInstance();
+    const browserService = history.BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
     const menu = assert(this.$.sharedMenu.getIfExists());
     const itemData = this.actionMenuModel_;
@@ -389,7 +386,7 @@ Polymer({
         return;
       }
 
-      const browserService = md_history.BrowserService.getInstance();
+      const browserService = history.BrowserService.getInstance();
       browserService.recordHistogram(
           'HistoryPage.RemoveEntryPosition',
           Math.min(index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);

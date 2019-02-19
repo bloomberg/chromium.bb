@@ -794,7 +794,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
-  MdHistoryUI::RegisterProfilePrefs(registry);
+  HistoryUI::RegisterProfilePrefs(registry);
   settings::MdSettingsUI::RegisterProfilePrefs(registry);
 #endif
 

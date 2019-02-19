@@ -13,9 +13,9 @@ GEN_INCLUDE(
 GEN('#include "base/command_line.h"');
 GEN('#include "chrome/test/data/webui/history_ui_browsertest.h"');
 
-function MaterialHistoryBrowserTest() {}
+function HistoryBrowserTest() {}
 
-MaterialHistoryBrowserTest.prototype = {
+HistoryBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   browsePreload: 'chrome://history',
@@ -35,7 +35,7 @@ MaterialHistoryBrowserTest.prototype = {
       // Wait for the top-level app element to be upgraded.
       return waitForAppUpgrade()
           .then(function() {
-            return md_history.ensureLazyLoaded();
+            return history.ensureLazyLoaded();
           })
           .then(function() {
             $('history-app').queryState_.queryingDisabled = true;
@@ -44,54 +44,54 @@ MaterialHistoryBrowserTest.prototype = {
   },
 };
 
-function MaterialHistoryBrowserServiceTest() {}
+function HistoryBrowserServiceTest() {}
 
-MaterialHistoryBrowserServiceTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryBrowserServiceTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'browser_service_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryBrowserServiceTest', 'All', function() {
+TEST_F('HistoryBrowserServiceTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryDrawerTest() {}
+function HistoryDrawerTest() {}
 
-MaterialHistoryDrawerTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryDrawerTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_drawer_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryDrawerTest', 'All', function() {
+TEST_F('HistoryDrawerTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryItemTest() {}
+function HistoryItemTest() {}
 
-MaterialHistoryItemTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryItemTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_item_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryItemTest', 'All', function() {
+TEST_F('HistoryItemTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryListTest() {}
+function HistoryListTest() {}
 
-MaterialHistoryListTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryListTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_list_test.js',
   ]),
 };
@@ -104,57 +104,57 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 
-TEST_F('MaterialHistoryListTest', 'MAYBE_All', function() {
+TEST_F('HistoryListTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
-function MaterialHistoryMetricsTest() {}
+function HistoryMetricsTest() {}
 
-MaterialHistoryMetricsTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryMetricsTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_metrics_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryMetricsTest', 'All', function() {
+TEST_F('HistoryMetricsTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryOverflowMenuTest() {}
+function HistoryOverflowMenuTest() {}
 
-MaterialHistoryOverflowMenuTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryOverflowMenuTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_overflow_menu_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryOverflowMenuTest', 'All', function() {
+TEST_F('HistoryOverflowMenuTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryRoutingTest() {}
+function HistoryRoutingTest() {}
 
-MaterialHistoryRoutingTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryRoutingTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_routing_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryRoutingTest', 'All', function() {
-  md_history.history_routing_test.registerTests();
+TEST_F('HistoryRoutingTest', 'All', function() {
+  history.history_routing_test.registerTests();
   mocha.run();
 });
 
-function MaterialHistoryRoutingWithQueryParamTest() {}
+function HistoryRoutingWithQueryParamTest() {}
 
-MaterialHistoryRoutingWithQueryParamTest.prototype = {
-  __proto__: MaterialHistoryRoutingTest.prototype,
+HistoryRoutingWithQueryParamTest.prototype = {
+  __proto__: HistoryRoutingTest.prototype,
 
   browsePreload: 'chrome://history/?q=query',
 
@@ -173,36 +173,36 @@ MaterialHistoryRoutingWithQueryParamTest.prototype = {
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.
       return waitForAppUpgrade().then(function() {
-        md_history.ensureLazyLoaded();
+        history.ensureLazyLoaded();
       });
     });
   },
 };
 
-TEST_F('MaterialHistoryRoutingWithQueryParamTest', 'All', function() {
-  md_history.history_routing_test_with_query_param.registerTests();
+TEST_F('HistoryRoutingWithQueryParamTest', 'All', function() {
+  history.history_routing_test_with_query_param.registerTests();
   mocha.run();
 });
 
-function MaterialHistorySyncedTabsTest() {}
+function HistorySyncedTabsTest() {}
 
-MaterialHistorySyncedTabsTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistorySyncedTabsTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     '../settings/test_util.js',
     'history_synced_tabs_test.js',
   ]),
 };
 
-TEST_F('MaterialHistorySyncedTabsTest', 'All', function() {
+TEST_F('HistorySyncedTabsTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistorySupervisedUserTest() {}
+function HistorySupervisedUserTest() {}
 
-MaterialHistorySupervisedUserTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistorySupervisedUserTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
   typedefCppFixture: 'HistoryUIBrowserTest',
 
@@ -210,39 +210,39 @@ MaterialHistorySupervisedUserTest.prototype = {
     GEN('  SetDeleteAllowed(false);');
   },
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_supervised_user_test.js',
   ]),
 };
 
-TEST_F('MaterialHistorySupervisedUserTest', 'All', function() {
+TEST_F('HistorySupervisedUserTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryToolbarTest() {}
+function HistoryToolbarTest() {}
 
-MaterialHistoryToolbarTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistoryToolbarTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'history_toolbar_test.js',
   ]),
 };
 
-TEST_F('MaterialHistoryToolbarTest', 'All', function() {
+TEST_F('HistoryToolbarTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistorySearchedLabelTest() {}
+function HistorySearchedLabelTest() {}
 
-MaterialHistorySearchedLabelTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+HistorySearchedLabelTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
 
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
     'searched_label_test.js',
   ]),
 };
 
-TEST_F('MaterialHistorySearchedLabelTest', 'All', function() {
+TEST_F('HistorySearchedLabelTest', 'All', function() {
   mocha.run();
 });

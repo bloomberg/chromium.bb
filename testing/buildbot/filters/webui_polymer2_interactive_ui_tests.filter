@@ -47,7 +47,7 @@ CrExtensionsOptionsPageTest.All
 CrSettingsAnimatedPagesTest.All
 CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
-MaterialHistoryFocusTest.All
+HistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.*
 PrintPreviewNumberSettingsSectionInteractiveTest.BlurResetsEmptyInput
 PrintPreviewPagesSettingsTest.*

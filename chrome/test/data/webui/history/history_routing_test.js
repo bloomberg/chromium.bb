@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('md_history.history_routing_test', function() {
+cr.define('history.history_routing_test', function() {
   function registerTests() {
     suite('routing-test', function() {
       let app;
@@ -85,7 +85,7 @@ cr.define('md_history.history_routing_test', function() {
   return {registerTests: registerTests};
 });
 
-cr.define('md_history.history_routing_test_with_query_param', function() {
+cr.define('history.history_routing_test_with_query_param', function() {
   function registerTests() {
     suite('routing-with-query-param', function() {
       let app;

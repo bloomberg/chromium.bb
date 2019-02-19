@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
 }
 
 // TODO(crbug.com/22111): Disabled because of flakiness and because for a while
-// MD history didn't support #q=searchTerm. Now that it does support these type
+// history didn't support #q=searchTerm. Now that it does support these type
 // of URLs (crbug.com/619799), this test could be re-enabled if somebody goes
 // through the effort to wait for the various stages of the page loading.
 // The loading strategy of the new, Polymer version of chrome://history is

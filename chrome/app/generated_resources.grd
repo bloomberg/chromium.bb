@@ -288,44 +288,44 @@ are declared in tools/grit/grit_rule.gni.
         Loading...
       </message>
 
-      <!-- Material Design History Strings -->
-      <message name="IDS_MD_HISTORY_SEARCH_PROMPT" desc="Placeholder text/label for the search input field in the history page">
+      <!-- History Strings -->
+      <message name="IDS_HISTORY_SEARCH_PROMPT" desc="Placeholder text/label for the search input field in the history page">
         Search history
       </message>
-      <message name="IDS_MD_HISTORY_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term on the history page">
+      <message name="IDS_HISTORY_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term on the history page">
         Clear search
       </message>
-      <message name="IDS_MD_HISTORY_DELETE" desc="Text for delete button contained in the history page toolbar">
+      <message name="IDS_HISTORY_DELETE" desc="Text for delete button contained in the history page toolbar">
         Delete
       </message>
-      <message name="IDS_MD_HISTORY_ITEMS_SELECTED" desc="Label displayed in history toolbar telling the user how many items they have selected.">
+      <message name="IDS_HISTORY_ITEMS_SELECTED" desc="Label displayed in history toolbar telling the user how many items they have selected.">
         <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
       </message>
-      <message name="IDS_MD_HISTORY_HISTORY_MENU_DESCRIPTION" desc="Tooltip for the history sidebar menu button.">
+      <message name="IDS_HISTORY_HISTORY_MENU_DESCRIPTION" desc="Tooltip for the history sidebar menu button.">
         Main menu
       </message>
-      <message name="IDS_MD_HISTORY_HISTORY_MENU_ITEM" desc="Label displayed in history sidebar button to display history.">
+      <message name="IDS_HISTORY_HISTORY_MENU_ITEM" desc="Label displayed in history sidebar button to display history.">
         Chrome history
       </message>
-      <message name="IDS_MD_HISTORY_NO_SYNCED_RESULTS" desc="Text indicating that there are no synced tabs from other devices.">
+      <message name="IDS_HISTORY_NO_SYNCED_RESULTS" desc="Text indicating that there are no synced tabs from other devices.">
         No tabs from other devices
       </message>
-      <message name="IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display synced tabs from other devices.">
+      <message name="IDS_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display synced tabs from other devices.">
         Tabs from other devices
       </message>
-      <message name="IDS_MD_HISTORY_SIGN_IN_BUTTON" desc="Label displayed on a button to let user sign in to Chrome to get synced tab history.">
+      <message name="IDS_HISTORY_SIGN_IN_BUTTON" desc="Label displayed on a button to let user sign in to Chrome to get synced tab history.">
         Sign in to Chrome
       </message>
-      <message name="IDS_MD_HISTORY_SIGN_IN_PROMO" desc="Text of the sign-in promo. This will show up if a user is not logged in and has no synced tabs.">
+      <message name="IDS_HISTORY_SIGN_IN_PROMO" desc="Text of the sign-in promo. This will show up if a user is not logged in and has no synced tabs.">
         Continue from another device
       </message>
-      <message name="IDS_MD_HISTORY_SIGN_IN_PROMO_DESC" desc="Description of the sign-in promo. Further tells users to sign in to Chrome to see synced tabs from other devices.">
+      <message name="IDS_HISTORY_SIGN_IN_PROMO_DESC" desc="Description of the sign-in promo. Further tells users to sign in to Chrome to see synced tabs from other devices.">
         To get your tabs from your other devices, sign in to Chrome.
       </message>
-      <message name="IDS_MD_HISTORY_MENU_PROMO" desc="Text body of a promotional tooltip that shows up the first time a user runs the Material Design History UI in narrow mode to help find 'Clear Browsing Data' and the side navigation.">
+      <message name="IDS_HISTORY_MENU_PROMO" desc="Text body of a promotional tooltip that shows up the first time a user runs the Material Design History UI in narrow mode to help find 'Clear Browsing Data' and the side navigation.">
         You can clear your browsing data from this menu
       </message>
-      <message name="IDS_MD_HISTORY_CLOSE_MENU_PROMO" desc="Title text of the close button of a promotional tooltip that shows up the first time a user runs the Material Design History UI in narrow mode to help find 'Clear Browsing Data' and the side navigation.">
+      <message name="IDS_HISTORY_CLOSE_MENU_PROMO" desc="Title text of the close button of a promotional tooltip that shows up the first time a user runs the Material Design History UI in narrow mode to help find 'Clear Browsing Data' and the side navigation.">
         Close
       </message>
 

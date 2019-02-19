@@ -112,7 +112,7 @@ Polymer({
   searchTermChanged_: function() {
     // TODO(tsergeant): Ignore incremental searches in this metric.
     if (this.queryState.searchTerm) {
-      md_history.BrowserService.getInstance().recordAction('Search');
+      history.BrowserService.getInstance().recordAction('Search');
     }
   },
 });

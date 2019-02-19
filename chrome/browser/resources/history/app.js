@@ -10,7 +10,7 @@
  */
 let FooterInfo;
 
-cr.define('md_history', function() {
+cr.define('history', function() {
   let lazyLoadPromise = null;
   function ensureLazyLoaded() {
     if (!lazyLoadPromise) {
@@ -143,7 +143,7 @@ Polymer({
     }
 
     // Lazily load the remainder of the UI.
-    md_history.ensureLazyLoaded().then(function() {
+    history.ensureLazyLoaded().then(function() {
       window.requestIdleCallback(function() {
         document.fonts.load('bold 12px Roboto');
       });
@@ -164,7 +164,7 @@ Polymer({
 
   /** @private */
   onCrToolbarMenuPromoShown_: function() {
-    md_history.BrowserService.getInstance().menuPromoShown();
+    history.BrowserService.getInstance().menuPromoShown();
   },
 
   /** @private */
@@ -354,7 +354,7 @@ Polymer({
         break;
     }
 
-    md_history.BrowserService.getInstance().recordHistogram(
+    history.BrowserService.getInstance().recordHistogram(
         'History.HistoryPageView', histogramValue,
         HistoryPageViewHistogram.END);
   },
