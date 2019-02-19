@@ -21,6 +21,10 @@ namespace rappor {
 class RapporServiceImpl;
 }
 
+namespace url {
+class Origin;
+}
+
 class Profile;
 
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
@@ -40,7 +44,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // content::BackgroundSyncController overrides.
   void GetParameterOverrides(
       content::BackgroundSyncParameters* parameters) const override;
-  void NotifyBackgroundSyncRegistered(const GURL& origin) override;
+  void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
   void RunInBackground(bool enabled, int64_t min_ms) override;
 
  protected:

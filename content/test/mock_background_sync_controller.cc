@@ -7,7 +7,7 @@
 namespace content {
 
 void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
-    const GURL& origin) {
+    const url::Origin& origin) {
   registration_count_ += 1;
   registration_origin_ = origin;
 }

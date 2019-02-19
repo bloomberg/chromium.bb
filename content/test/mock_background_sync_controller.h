@@ -12,6 +12,7 @@
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -22,13 +23,15 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   ~MockBackgroundSyncController() override = default;
 
   // BackgroundSyncController:
-  void NotifyBackgroundSyncRegistered(const GURL& origin) override;
+  void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
   void RunInBackground(bool enabled, int64_t min_ms) override;
   void GetParameterOverrides(
       BackgroundSyncParameters* parameters) const override;
 
   int registration_count() const { return registration_count_; }
-  GURL registration_origin() const { return registration_origin_; }
+  const url::Origin& registration_origin() const {
+    return registration_origin_;
+  }
   int run_in_background_count() const { return run_in_background_count_; }
   bool run_in_background_enabled() const { return run_in_background_enabled_; }
   int64_t run_in_background_min_ms() const { return run_in_background_min_ms_; }
@@ -38,7 +41,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
 
  private:
   int registration_count_ = 0;
-  GURL registration_origin_;
+  url::Origin registration_origin_;
 
   int run_in_background_count_ = 0;
   bool run_in_background_enabled_ = true;
