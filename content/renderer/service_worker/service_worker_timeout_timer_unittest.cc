@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -65,7 +66,7 @@ base::OnceClosure CreateDispatchingEventTask(
 
         out_tags->emplace_back(std::move(tag));
 
-        timer->EndEvent(event_id);
+        timer->EndEvent(event_id, FROM_HERE);
         EXPECT_FALSE(event.has_aborted());
       },
       timer, std::move(tag), out_tags);
@@ -130,12 +131,12 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   // Nothing happens since there are two inflight events.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event_id_2);
+  timer.EndEvent(event_id_2, FROM_HERE);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event_id_1);
+  timer.EndEvent(event_id_1, FROM_HERE);
   task_runner()->FastForwardBy(kIdleInterval);
   // |idle_callback| should be fired.
   EXPECT_TRUE(is_idle);
@@ -147,7 +148,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   EXPECT_FALSE(is_idle);
 
   std::unique_ptr<StayAwakeToken> token = timer.CreateStayAwakeToken();
-  timer.EndEvent(event_id_3);
+  timer.EndEvent(event_id_3, FROM_HERE);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is a living StayAwakeToken.
   EXPECT_FALSE(is_idle);
@@ -195,7 +196,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
 
   EXPECT_FALSE(event1.has_aborted());
   EXPECT_FALSE(event2.has_aborted());
-  timer.EndEvent(event1.event_id());
+  timer.EndEvent(event1.event_id(), FROM_HERE);
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kEventTimeout +
                                base::TimeDelta::FromSeconds(1));
 
@@ -347,7 +348,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id);
+    timer.EndEvent(event_id, FROM_HERE);
     // EndEvent() immediately triggers the idle callback.
     EXPECT_TRUE(is_idle);
   }
@@ -363,11 +364,11 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     // Nothing happens since there are two inflight events.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id_1);
+    timer.EndEvent(event_id_1, FROM_HERE);
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id_2);
+    timer.EndEvent(event_id_2, FROM_HERE);
     // EndEvent() immediately triggers the idle callback when no inflight events
     // exist.
     EXPECT_TRUE(is_idle);
