@@ -2104,6 +2104,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "focus-mode",
+    "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "force-color-profile",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

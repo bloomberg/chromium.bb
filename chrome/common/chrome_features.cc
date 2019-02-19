@@ -263,6 +263,9 @@ const base::Feature kExperimentalAppBanners {
 const base::Feature kExternalExtensionDefaultButtonControl{
     "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Focus Mode which brings up a PWA-like window look.
+const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_VR)
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)

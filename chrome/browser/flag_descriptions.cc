@@ -251,6 +251,10 @@ const char kFCMInvalidationsName[] =
 const char kFCMInvalidationsDescription[] =
     "Use the new FCM-based protocol for deliveling invalidations";
 
+const char kFocusMode[] = "Focus Mode";
+const char kFocusModeDescription[] =
+    "If enabled, allows the user to switch to Focus Mode";
+
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
