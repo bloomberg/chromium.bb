@@ -4208,6 +4208,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebRtcHWVP9Encoding)},
 
+#if defined(OS_CHROMEOS)
+    {"user-activity-prediction-ml-service",
+     flag_descriptions::kUserActivityPredictionMlServiceName,
+     flag_descriptions::kUserActivityPredictionMlServiceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kUserActivityPredictionMlService)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

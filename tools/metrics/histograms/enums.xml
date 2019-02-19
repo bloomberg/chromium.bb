@@ -31321,6 +31321,7 @@ from previous Chrome versions.
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
+  <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1137696948" label="enable-chromeos-account-manager"/>
@@ -32482,6 +32483,7 @@ from previous Chrome versions.
   <int value="903267263" label="disable-offline-pages"/>
   <int value="908302031"
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
+  <int value="908370794" label="UserActivityPredictionMlService:enabled"/>
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
   <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
