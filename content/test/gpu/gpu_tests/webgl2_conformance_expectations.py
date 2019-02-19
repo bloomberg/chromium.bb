@@ -908,7 +908,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'no_passthrough', 'nvidia'], bug=832238)
 
     # Linux NVIDIA Quadro P400
-
+    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['linux', 'passthrough', ('nvidia', 0x1cb3)], bug=830046)
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
     # so mark them all flaky.
