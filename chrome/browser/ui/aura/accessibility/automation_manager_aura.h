@@ -92,6 +92,10 @@ class AutomationManagerAura : public ui::AXActionHandler,
 
   void PerformHitTest(const ui::AXActionData& data);
 
+  // Logs an error with details about a serialization failure.
+  void OnSerializeFailure(ax::mojom::Event event_type,
+                          const ui::AXTreeUpdate& update);
+
   // Whether automation support for views is enabled.
   bool enabled_;
 

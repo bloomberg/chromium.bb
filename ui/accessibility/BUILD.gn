@@ -77,6 +77,7 @@ jumbo_component("accessibility") {
     "ax_tree_serializer.cc",
     "ax_tree_serializer.h",
     "ax_tree_source.h",
+    "ax_tree_source_checker.h",
     "ax_tree_update.h",
     "platform/ax_android_constants.cc",
     "platform/ax_android_constants.h",
@@ -189,7 +190,6 @@ source_set("ax_assistant") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "ax_tree_source_checker.h",
     "tree_generator.cc",
     "tree_generator.h",
   ]
