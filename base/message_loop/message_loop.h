@@ -28,7 +28,6 @@ class MessageLoopImpl;
 
 namespace sequence_manager {
 class TaskQueue;
-class LazyThreadControllerForTest;
 namespace internal {
 class SequenceManagerImpl;
 class ThreadControllerImpl;
@@ -322,7 +321,6 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class sequence_manager::LazyThreadControllerForTest;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
