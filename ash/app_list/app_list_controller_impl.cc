@@ -955,8 +955,9 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
     return false;
   }
 
-  return home_launcher_gesture_handler_->mode() !=
-         HomeLauncherGestureHandler::Mode::kSlideUpToShow;
+  return home_launcher_gesture_handler_ &&
+         home_launcher_gesture_handler_->mode() !=
+             HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 
 void AppListControllerImpl::GetNavigableContentsFactory(
