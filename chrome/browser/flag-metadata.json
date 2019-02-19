@@ -3129,6 +3129,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "user-activity-prediction-ml-service",
+    "owners": [ "amoylan", "pmalani", "jiameng" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "v8-cache-options",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

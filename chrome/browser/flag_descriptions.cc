@@ -3488,6 +3488,11 @@ const char kUseMonitorColorSpaceDescription[] =
     "Enables Chrome to use the  color space information provided by the monitor"
     " instead of the default sRGB color space.";
 
+const char kUserActivityPredictionMlServiceName[] =
+    "ML Service Smart Dim model";
+const char kUserActivityPredictionMlServiceDescription[] =
+    "Uses the new ML Service model for user activity prediction (Smart Dim).";
+
 const char kVaapiJpegImageDecodeAccelerationName[] =
     "VA-API JPEG decode acceleration for images";
 const char kVaapiJpegImageDecodeAccelerationDescription[] =
