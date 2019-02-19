@@ -1195,7 +1195,8 @@ CreateAndInitializeVideoFrameWriter(
       base::DirectoryExists(g_thumbnail_output_dir)) {
     prefix_output_yuv = g_thumbnail_output_dir.Append(filepath.BaseName());
   } else {
-    prefix_output_yuv = GetTestDataFile(filepath);
+    prefix_output_yuv =
+        GetTestDataFile(filepath).AddExtension(FILE_PATH_LITERAL(".frames"));
   }
   return media::test::VideoFrameFileWriter::Create(
       prefix_output_yuv, media::test::VideoFrameFileWriter::OutputFormat::kYUV);
