@@ -11,10 +11,6 @@ namespace error_page {
 namespace switches {
 
 extern const char kDisableDinosaurEasterEgg[];
-extern const char kDisableShowSavedCopy[];
-extern const char kEnableShowSavedCopyPrimary[];
-extern const char kEnableShowSavedCopySecondary[];
-extern const char kShowSavedCopy[];
 
 }  // namespace switches
 }  // namespace error_page

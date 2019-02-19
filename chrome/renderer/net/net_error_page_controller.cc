@@ -41,10 +41,6 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame,
       .ToChecked();
 }
 
-bool NetErrorPageController::ShowSavedCopyButtonClick() {
-  return ButtonClick(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
-}
-
 bool NetErrorPageController::DownloadButtonClick() {
   return ButtonClick(NetErrorHelperCore::DOWNLOAD_BUTTON);
 }
@@ -139,8 +135,6 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<NetErrorPageController>::GetObjectTemplateBuilder(
              isolate)
-      .SetMethod("showSavedCopyButtonClick",
-                 &NetErrorPageController::ShowSavedCopyButtonClick)
       .SetMethod("downloadButtonClick",
                  &NetErrorPageController::DownloadButtonClick)
       .SetMethod("reloadButtonClick",

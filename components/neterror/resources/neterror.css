@@ -721,13 +721,11 @@ html[subframe] body {
 
 /* Styles for platform dependent separation of controls and details button. */
 .suggested-left > #control-buttons,
-.suggested-left #stale-load-button,
 .suggested-right > #details-button {
   float: left;
 }
 
 .suggested-right > #control-buttons,
-.suggested-right #stale-load-button,
 .suggested-left > #details-button {
   float: right;
 }

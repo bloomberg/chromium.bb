@@ -2115,27 +2115,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kEnableOfflineAutoReloadVisibleOnly);
     }
 
-    {
-      // Enable showing a saved copy if the user explicitly enabled it.
-      // Note that as far as the renderer is concerned, the feature is
-      // enabled if-and-only-if one of the kEnableShowSavedCopy* switches
-      // is on the command line; the yes/no/default behavior is only at
-      // the browser command line level.
-
-      // Command line switches override
-      const std::string& show_saved_copy_value =
-          browser_command_line.GetSwitchValueASCII(
-              error_page::switches::kShowSavedCopy);
-      if (show_saved_copy_value ==
-              error_page::switches::kEnableShowSavedCopyPrimary ||
-          show_saved_copy_value ==
-              error_page::switches::kEnableShowSavedCopySecondary ||
-          show_saved_copy_value ==
-              error_page::switches::kDisableShowSavedCopy) {
-        command_line->AppendSwitchASCII(error_page::switches::kShowSavedCopy,
-                                        show_saved_copy_value);
-      }
-    }
     MaybeAppendBlinkSettingsSwitchForFieldTrial(
         browser_command_line, command_line);
 

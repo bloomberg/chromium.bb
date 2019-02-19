@@ -1037,36 +1037,8 @@ void LocalizedError::GetStrings(
   AddSuggestionsDetails(error_code, error_strings, options.suggestions,
                         suggestions_details);
 
-  // Add action buttons.
-  const std::string& show_saved_copy_value =
-      command_line->GetSwitchValueASCII(error_page::switches::kShowSavedCopy);
-  bool show_saved_copy_primary =
-      (show_saved_copy_value ==
-       error_page::switches::kEnableShowSavedCopyPrimary);
-  bool show_saved_copy_secondary =
-      (show_saved_copy_value ==
-       error_page::switches::kEnableShowSavedCopySecondary);
-  bool show_saved_copy_visible =
-      (stale_copy_in_cache && !is_post &&
-      (show_saved_copy_primary || show_saved_copy_secondary));
-
-  if (show_saved_copy_visible) {
-    auto show_saved_copy_button = std::make_unique<base::DictionaryValue>();
-    show_saved_copy_button->SetString(
-        "msg", l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
-    show_saved_copy_button->SetString(
-        "title",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP));
-    if (show_saved_copy_primary)
-      show_saved_copy_button->SetString("primary", "true");
-    error_strings->Set("showSavedCopyButton",
-                       std::move(show_saved_copy_button));
-  }
-
 #if defined(OS_ANDROID)
-  if (!is_post && !reload_visible && !show_saved_copy_visible &&
-      !is_incognito && failed_url.is_valid() &&
+  if (!is_post && !reload_visible && !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
       IsOfflineError(error_domain, error_code)) {
     if (!auto_fetch_feature_enabled) {

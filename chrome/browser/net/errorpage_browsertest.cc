@@ -196,10 +196,6 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
                                         net::ErrorToShortString(error_code));
 }
 
-std::string GetShowSavedButtonLabel() {
-  return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY);
-}
-
 // Returns true if the platform has support for a diagnostics tool, and it
 // can be launched from |web_contents|.
 bool WebContentsCanShowDiagnosticsTool(content::WebContents* web_contents) {
@@ -220,14 +216,6 @@ class ErrorPageTest : public InProcessBrowserTest {
 
   ErrorPageTest() = default;
   ~ErrorPageTest() override = default;
-
-  // Navigates the active tab to a mock url created for the file at |file_path|.
-  // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        error_page::switches::kShowSavedCopy,
-        error_page::switches::kEnableShowSavedCopyPrimary);
-  }
 
   // Navigates the active tab to a mock url created for the file at |path|.
   void NavigateToFileURL(const std::string& path) {
@@ -304,57 +292,6 @@ class ErrorPageTest : public InProcessBrowserTest {
       FAIL();
     }
     test_navigation_observer.Wait();
-  }
-
-  // Confirms that the javascript variable indicating whether or not we have
-  // a stale copy in the cache has been set to |expected|, and that the
-  // stale load button is or isn't there based on the same expectation.
-  testing::AssertionResult ProbeStaleCopyValue(bool expected) {
-    const char* js_cache_probe =
-        "try {\n"
-        "    domAutomationController.send(\n"
-        "        loadTimeData.valueExists('showSavedCopyButton') ?"
-        "            'yes' : 'no');\n"
-        "} catch (e) {\n"
-        "    domAutomationController.send(e.message);\n"
-        "}\n";
-
-    std::string result;
-    bool ret =
-        content::ExecuteScriptAndExtractString(
-            browser()->tab_strip_model()->GetActiveWebContents(),
-            js_cache_probe,
-            &result);
-    if (!ret) {
-      return testing::AssertionFailure()
-          << "Failing return from ExecuteScriptAndExtractString.";
-    }
-
-    if ((expected && "yes" == result) || (!expected && "no" == result))
-      return testing::AssertionSuccess();
-
-    return testing::AssertionFailure() << "Cache probe result is " << result;
-  }
-
-  testing::AssertionResult ReloadStaleCopyFromCache() {
-    const char* js_reload_script =
-        "try {\n"
-        "    document.getElementById('show-saved-copy-button').click();\n"
-        "    domAutomationController.send('success');\n"
-        "} catch (e) {\n"
-        "    domAutomationController.send(e.message);\n"
-        "}\n";
-
-    std::string result;
-    bool ret = content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        js_reload_script,
-        &result);
-    EXPECT_TRUE(ret);
-    if (!ret)
-      return testing::AssertionFailure();
-    return ("success" == result ? testing::AssertionSuccess() :
-            (testing::AssertionFailure() << "Exception message is " << result));
   }
 };
 
@@ -934,62 +871,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Empty500) {
   EXPECT_EQ(0, num_requests());
 }
 
-// Checks that when an error occurs, the stale cache status of the page
-// is correctly transferred, and that stale cached copied can be loaded
-// from the javascript.
-IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, StaleCacheStatus) {
-  // Load cache with entry with "nocache" set, to create stale
-  // cache.  Currently it needs to at least have an etag for the cache to
-  // not give up on it entirely, however. See https://crbug.com/784520
-  GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
-  NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
-
-  // Reload same URL after forcing an error from the the network layer;
-  // confirm that the error page is told the cached copy exists.
-  {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
-        net::ERR_FAILED);
-  }
-
-  // With no navigation corrections to load, there's only one navigation.
-  ui_test_utils::NavigateToURL(browser(), test_url);
-  EXPECT_TRUE(ProbeStaleCopyValue(true));
-  EXPECT_TRUE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_NE(base::ASCIIToUTF16("Nocache Test Page"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Confirm that loading the stale copy from the cache works.
-  content::TestNavigationObserver same_tab_observer(
-      browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  ASSERT_TRUE(ReloadStaleCopyFromCache());
-  same_tab_observer.Wait();
-  EXPECT_EQ(base::ASCIIToUTF16("Nocache Test Page"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Reload the same URL with a post request; confirm the error page is told
-  // that there is no cached copy.
-  ui_test_utils::NavigateToURLWithPost(browser(), test_url);
-  EXPECT_TRUE(ProbeStaleCopyValue(false));
-  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_EQ(0, num_requests());
-
-  // Clear the cache and reload the same URL; confirm the error page is told
-  // that there is no cached copy.
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
-  remover->Remove(base::Time(), base::Time::Max(),
-                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
-                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-  ui_test_utils::NavigateToURL(browser(), test_url);
-  EXPECT_TRUE(ProbeStaleCopyValue(false));
-  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_EQ(0, num_requests());
-}
-
 // Check that the easter egg is present and initialised and is not disabled.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, CheckEasterEggIsNotDisabled) {
   ui_test_utils::NavigateToURL(browser(),
@@ -1231,55 +1112,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   EXPECT_EQ(WebContentsCanShowDiagnosticsTool(
                 browser()->tab_strip_model()->GetActiveWebContents()),
             IsDisplayingDiagnosticsLink(browser()));
-}
-
-// Checks that when an error occurs and a corrections fail to load, the stale
-// cache status of the page is correctly transferred, and we can load the
-// stale copy from the javascript.  Most logic copied from StaleCacheStatus
-// above.
-IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
-                       StaleCacheStatusFailedCorrections) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  // Load cache with entry with "nocache" set, to create stale
-  // cache.
-  GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
-  NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
-
-  // Reload same URL after forcing an error from the the network layer;
-  // confirm that the error page is told the cached copy exists.
-  {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
-        net::ERR_CONNECTION_FAILED);
-  }
-
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 2);
-  EXPECT_TRUE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_TRUE(ProbeStaleCopyValue(true));
-
-  // Confirm that loading the stale copy from the cache works.
-  content::TestNavigationObserver same_tab_observer(
-      browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  ASSERT_TRUE(ReloadStaleCopyFromCache());
-  same_tab_observer.Wait();
-  EXPECT_EQ(base::ASCIIToUTF16("Nocache Test Page"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Clear the cache and reload the same URL; confirm the error page is told
-  // that there is no cached copy.
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
-  remover->Remove(base::Time(), base::Time::Max(),
-                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
-                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 2);
-  EXPECT_TRUE(ProbeStaleCopyValue(false));
-  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
 }
 
 class ErrorPageOfflineTest : public ErrorPageTest {
