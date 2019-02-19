@@ -18,6 +18,8 @@ namespace blink {
 
 // ModuleScriptCreationParams contains parameters for creating ModuleScript.
 class ModuleScriptCreationParams {
+  DISALLOW_NEW();
+
  public:
   ModuleScriptCreationParams(
       const KURL& response_url,
