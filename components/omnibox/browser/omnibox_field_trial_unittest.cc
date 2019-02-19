@@ -89,9 +89,8 @@ void OmniboxFieldTrialTest::ExpectRuleValue(
     const std::string& rule_value,
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
-  EXPECT_EQ(rule_value,
-            OmniboxFieldTrial::GetValueForRuleInContext(
-                rule, page_classification));
+  EXPECT_EQ(rule_value, OmniboxFieldTrial::internal::GetValueForRuleInContext(
+                            rule, page_classification));
 }
 
 void OmniboxFieldTrialTest::VerifySuggestPollingStrategy(
