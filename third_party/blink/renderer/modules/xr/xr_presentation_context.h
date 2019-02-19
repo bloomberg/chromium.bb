@@ -18,7 +18,7 @@ class MODULES_EXPORT XRPresentationContext final
 
  public:
   class Factory : public CanvasRenderingContextFactory {
-    WTF_MAKE_NONCOPYABLE(Factory);
+    DISALLOW_COPY_AND_ASSIGN(Factory);
 
    public:
     Factory() {}

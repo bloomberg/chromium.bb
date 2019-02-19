@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -23,8 +24,6 @@ class V8RemotePlaybackAvailabilityCallback;
 class AvailabilityCallbackWrapper final
     : public GarbageCollectedFinalized<AvailabilityCallbackWrapper>,
       public NameClient {
-  WTF_MAKE_NONCOPYABLE(AvailabilityCallbackWrapper);
-
  public:
   explicit AvailabilityCallbackWrapper(V8RemotePlaybackAvailabilityCallback*);
   explicit AvailabilityCallbackWrapper(base::RepeatingClosure);
@@ -41,6 +40,8 @@ class AvailabilityCallbackWrapper final
   // Only one of these callbacks must be set.
   TraceWrapperMember<V8RemotePlaybackAvailabilityCallback> bindings_cb_;
   base::RepeatingClosure internal_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(AvailabilityCallbackWrapper);
 };
 
 }  // namespace blink

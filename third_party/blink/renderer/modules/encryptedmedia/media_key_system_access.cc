@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
@@ -32,8 +33,6 @@ namespace {
 // All other complete methods are not expected to be called, and will
 // reject the promise.
 class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
-  WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
-
  public:
   NewCdmResultPromise(
       ScriptState* script_state,
@@ -65,6 +64,8 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
 
  private:
   WebVector<WebEncryptedMediaSessionType> supported_session_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewCdmResultPromise);
 };
 
 // These methods are the inverses of those with the same names in

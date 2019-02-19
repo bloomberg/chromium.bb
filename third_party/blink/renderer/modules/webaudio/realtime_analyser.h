@@ -28,17 +28,17 @@
 
 #include <atomic>
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/audio/fft_frame.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class AudioBus;
 
 class RealtimeAnalyser final {
-  WTF_MAKE_NONCOPYABLE(RealtimeAnalyser);
   DISALLOW_NEW();
 
  public:
@@ -115,6 +115,8 @@ class RealtimeAnalyser final {
 
   // Time at which the FFT was last computed.
   double last_analysis_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(RealtimeAnalyser);
 };
 
 }  // namespace blink

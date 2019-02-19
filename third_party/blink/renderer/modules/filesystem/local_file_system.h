@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_LOCAL_FILE_SYSTEM_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -54,7 +56,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                               public Supplement<WorkerClients>,
                               public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
-  WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 
  public:
   enum SynchronousType { kAsynchronous, kSynchronous };
@@ -99,6 +100,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                           SynchronousType sync_type);
 
   const std::unique_ptr<FileSystemClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystem);
 };
 
 }  // namespace blink

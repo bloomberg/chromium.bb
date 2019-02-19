@@ -26,15 +26,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_TRANSACTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_TRANSACTION_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class SQLiteDatabase;
 
 class SQLiteTransaction {
-  WTF_MAKE_NONCOPYABLE(SQLiteTransaction);
   USING_FAST_MALLOC(SQLiteTransaction);
 
  public:
@@ -53,6 +52,8 @@ class SQLiteTransaction {
   SQLiteDatabase& db_;
   bool in_progress_;
   bool read_only_;
+
+  DISALLOW_COPY_AND_ASSIGN(SQLiteTransaction);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SERVICE_WORKER_REGISTRATION_SYNC_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SERVICE_WORKER_REGISTRATION_SYNC_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -18,7 +19,6 @@ class ServiceWorkerRegistrationSync final
     : public GarbageCollectedFinalized<ServiceWorkerRegistrationSync>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationSync);
-  WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationSync);
 
  public:
   static const char kSupplementName[];
@@ -35,6 +35,8 @@ class ServiceWorkerRegistrationSync final
  private:
   Member<ServiceWorkerRegistration> registration_;
   Member<SyncManager> sync_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationSync);
 };
 
 }  // namespace blink

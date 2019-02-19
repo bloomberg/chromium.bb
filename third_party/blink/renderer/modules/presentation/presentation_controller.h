@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
@@ -33,7 +34,6 @@ class MODULES_EXPORT PresentationController
       public ContextLifecycleObserver,
       public mojom::blink::PresentationController {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
-  WTF_MAKE_NONCOPYABLE(PresentationController);
 
  public:
   static const char kSupplementName[];
@@ -114,6 +114,8 @@ class MODULES_EXPORT PresentationController
   // Lazily-initialized binding for mojom::blink::PresentationController. Sent
   // to |presentation_service_|'s implementation.
   mojo::Binding<mojom::blink::PresentationController> controller_binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(PresentationController);
 };
 
 }  // namespace blink

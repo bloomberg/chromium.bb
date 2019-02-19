@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_OBJECT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -56,8 +57,6 @@ GLuint ObjectNonZero(const T* object) {
 }
 
 class WebGLObject : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(WebGLObject);
-
  public:
   // We can't call virtual functions like deleteObjectImpl in this class's
   // destructor; doing so results in a pure virtual function call. Further,
@@ -139,6 +138,8 @@ class WebGLObject : public ScriptWrappable {
   // Indicates whether the destructor has been entered and we therefore
   // need to be careful in subclasses to not touch other on-heap objects.
   bool destruction_in_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGLObject);
 };
 
 }  // namespace blink

@@ -74,7 +74,7 @@ class XR final : public EventTargetWithInlineData,
  private:
   class PendingSessionQuery final
       : public GarbageCollected<PendingSessionQuery> {
-    WTF_MAKE_NONCOPYABLE(PendingSessionQuery);
+    DISALLOW_COPY_AND_ASSIGN(PendingSessionQuery);
 
    public:
     PendingSessionQuery(ScriptPromiseResolver*, XRSession::SessionMode);

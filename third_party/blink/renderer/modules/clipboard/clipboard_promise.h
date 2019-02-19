@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
 
+#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
@@ -25,7 +26,6 @@ class ClipboardPromise final
     : public GarbageCollectedFinalized<ClipboardPromise>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
-  WTF_MAKE_NONCOPYABLE(ClipboardPromise);
 
  public:
   ClipboardPromise(ScriptState*);
@@ -96,6 +96,8 @@ class ClipboardPromise final
   scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
   SEQUENCE_CHECKER(async_clipboard_sequence_checker);
+
+  DISALLOW_COPY_AND_ASSIGN(ClipboardPromise);
 };
 
 }  // namespace blink

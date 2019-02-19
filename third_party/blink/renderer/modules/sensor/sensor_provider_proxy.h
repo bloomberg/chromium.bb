@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_
 
+#include "base/macros.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -21,7 +22,6 @@ class SensorProviderProxy final
     : public GarbageCollectedFinalized<SensorProviderProxy>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
-  WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
 
  public:
   static const char kSupplementName[];
@@ -58,6 +58,8 @@ class SensorProviderProxy final
 
   device::mojom::blink::SensorProviderPtr sensor_provider_;
   bool inspector_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(SensorProviderProxy);
 };
 
 }  // namespace blink

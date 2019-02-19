@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -22,7 +24,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
                                                public BaseRenderingContext2D {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
-  WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 
  public:
   static PaintRenderingContext2D* Create(
@@ -104,6 +105,8 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   Member<const PaintRenderingContext2DSettings> context_settings_;
   bool did_record_draw_commands_in_paint_recorder_;
   float effective_zoom_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintRenderingContext2D);
 };
 
 }  // namespace blink

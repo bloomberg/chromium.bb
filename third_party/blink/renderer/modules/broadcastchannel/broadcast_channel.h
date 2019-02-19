@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -23,7 +24,6 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BroadcastChannel);
   USING_PRE_FINALIZER(BroadcastChannel, Dispose);
-  WTF_MAKE_NONCOPYABLE(BroadcastChannel);
 
  public:
   static BroadcastChannel* Create(ExecutionContext*,
@@ -67,6 +67,8 @@ class BroadcastChannel final : public EventTargetWithInlineData,
 
   mojo::AssociatedBinding<mojom::blink::BroadcastChannelClient> binding_;
   mojom::blink::BroadcastChannelClientAssociatedPtr remote_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(BroadcastChannel);
 };
 
 }  // namespace blink

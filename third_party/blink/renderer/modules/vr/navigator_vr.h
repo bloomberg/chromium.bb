@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/modules/vr/vr_display_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -29,7 +29,6 @@ class MODULES_EXPORT NavigatorVR final
       public LocalDOMWindow::EventListenerObserver,
       public FocusChangedObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
-  WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
  public:
   static const char kSupplementName[];
@@ -95,6 +94,8 @@ class MODULES_EXPORT NavigatorVR final
   bool did_log_did_use_gamepad_ = false;
   bool did_use_gamepad_ = false;
   const int64_t ukm_source_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigatorVR);
 };
 
 }  // namespace blink

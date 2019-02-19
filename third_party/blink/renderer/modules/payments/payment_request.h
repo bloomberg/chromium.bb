@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -46,7 +46,6 @@ class MODULES_EXPORT PaymentRequest final
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest);
-  WTF_MAKE_NONCOPYABLE(PaymentRequest);
 
  public:
   static PaymentRequest* Create(ExecutionContext*,
@@ -155,6 +154,8 @@ class MODULES_EXPORT PaymentRequest final
   payments::mojom::blink::PaymentRequestPtr payment_provider_;
   mojo::Binding<payments::mojom::blink::PaymentRequestClient> client_binding_;
   TaskRunnerTimer<PaymentRequest> complete_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
 
 }  // namespace blink

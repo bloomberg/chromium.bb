@@ -27,6 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
@@ -59,8 +61,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
 
  public:
   class Factory : public CanvasRenderingContextFactory {
-    WTF_MAKE_NONCOPYABLE(Factory);
-
    public:
     Factory() = default;
     ~Factory() override = default;
@@ -73,6 +73,9 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
       return CanvasRenderingContext::kContextWebgl;
     }
     void OnError(HTMLCanvasElement*, const String& error) override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   WebGLRenderingContext(CanvasRenderingContextHost*,

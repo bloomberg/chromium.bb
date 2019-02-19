@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
@@ -27,7 +29,6 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
       public ContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationControllerImpl);
-  WTF_MAKE_NONCOPYABLE(ScreenOrientationControllerImpl);
 
  public:
   explicit ScreenOrientationControllerImpl(LocalFrame&);
@@ -75,6 +76,8 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   ScreenOrientationAssociatedPtr screen_orientation_service_;
   std::unique_ptr<WebLockOrientationCallback> pending_callback_;
   int request_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerImpl);
 };
 
 }  // namespace blink

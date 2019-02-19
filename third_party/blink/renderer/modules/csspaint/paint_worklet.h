@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
@@ -23,7 +24,6 @@ class CSSPaintImageGeneratorImpl;
 class MODULES_EXPORT PaintWorklet : public Worklet,
                                     public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorklet);
-  WTF_MAKE_NONCOPYABLE(PaintWorklet);
 
  public:
   static const char kSupplementName[];
@@ -80,6 +80,8 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // The number of paint calls remaining before Paint will select a new global
   // scope. SelectGlobalScope resets this at the beginning of each frame.
   int paints_before_switching_global_scope_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintWorklet);
 };
 
 }  // namespace blink

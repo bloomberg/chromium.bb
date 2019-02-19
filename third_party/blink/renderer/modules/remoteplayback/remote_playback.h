@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
@@ -50,7 +51,6 @@ class MODULES_EXPORT RemotePlayback final
       public RemotePlaybackController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
-  WTF_MAKE_NONCOPYABLE(RemotePlayback);
 
  public:
   // Result of WatchAvailabilityInternal that means availability is not
@@ -180,6 +180,8 @@ class MODULES_EXPORT RemotePlayback final
   mojom::blink::PresentationConnectionPtr target_presentation_connection_;
 
   HeapHashSet<Member<RemotePlaybackObserver>> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemotePlayback);
 };
 
 }  // namespace blink

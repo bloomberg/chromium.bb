@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -18,7 +18,6 @@ class WebPushClient;
 class PushController final : public GarbageCollected<PushController>,
                              public Supplement<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(PushController);
-  WTF_MAKE_NONCOPYABLE(PushController);
 
  public:
   static const char kSupplementName[];
@@ -38,6 +37,8 @@ class PushController final : public GarbageCollected<PushController>,
   WebPushClient* Client() const { return client_; }
 
   WebPushClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushController);
 };
 
 MODULES_EXPORT void ProvidePushControllerTo(LocalFrame& frame,
