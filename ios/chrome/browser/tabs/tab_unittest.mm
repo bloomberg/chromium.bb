@@ -441,8 +441,9 @@ TEST_P(TabTest, GetSuggestedFilenameFromDefaultName) {
 TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
   id partialMock = OCMPartialMock(
       SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
-  [[partialMock reject] removeImageWithSessionID:tab_.tabId];
+  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
+  [[partialMock reject] removeImageWithSessionID:tab_id];
 
   // Use @try/@catch as -reject raises an exception.
   @try {
@@ -458,8 +459,10 @@ TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
 TEST_P(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
   id partialMock = OCMPartialMock(
       SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
-  OCMExpect([partialMock removeImageWithSessionID:tab_.tabId]);
+  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
+
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
+  OCMExpect([partialMock removeImageWithSessionID:tab_id]);
 
   SnapshotTabHelper::FromWebState(tab_.webState)->RemoveSnapshot();
   EXPECT_OCMOCK_VERIFY(partialMock);
