@@ -106,13 +106,6 @@ ConfigurationParams::ConfigurationParams(const ConfigurationParams& other) =
     default;
 ConfigurationParams::~ConfigurationParams() {}
 
-ClearParams::ClearParams(const base::Closure& report_success_task)
-    : report_success_task(report_success_task) {
-  DCHECK(!report_success_task.is_null());
-}
-ClearParams::ClearParams(const ClearParams& other) = default;
-ClearParams::~ClearParams() {}
-
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncer threads involved.
 
@@ -196,9 +189,6 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
 
   DCHECK(syncer_);
 
-  if (mode == CLEAR_SERVER_DATA_MODE) {
-    DCHECK_EQ(mode_, CONFIGURATION_MODE);
-  }
   Mode old_mode = mode_;
   mode_ = mode;
   base::Time now = base::Time::Now();
@@ -291,17 +281,6 @@ void SyncSchedulerImpl::ScheduleConfiguration(
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
     params.ready_task.Run();
   }
-}
-
-void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(CLEAR_SERVER_DATA_MODE, mode_);
-  DCHECK(!pending_configure_params_);
-  DCHECK(!params.report_success_task.is_null());
-  DCHECK(started_) << "Scheduler must be running to clear.";
-
-  pending_clear_params_ = std::make_unique<ClearParams>(params);
-  TrySyncCycleJob();
 }
 
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
@@ -437,7 +416,6 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
   switch (mode) {
     ENUM_CASE(CONFIGURATION_MODE);
-    ENUM_CASE(CLEAR_SERVER_DATA_MODE);
     ENUM_CASE(NORMAL_MODE);
   }
   return "";
@@ -527,28 +505,6 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
     // Sync cycle might receive response from server that causes scheduler to
     // stop and draws pending_configure_params_ invalid.
   }
-}
-
-void SyncSchedulerImpl::DoClearServerDataSyncCycleJob(JobPriority priority) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(mode_, CLEAR_SERVER_DATA_MODE);
-
-  if (!CanRunJobNow(priority)) {
-    SDVLOG(2) << "Unable to run clear server data job right now.";
-    return;
-  }
-
-  SyncCycle cycle(cycle_context_, this);
-  const bool success = syncer_->PostClearServerData(&cycle);
-  if (!success) {
-    HandleFailure(cycle.status_controller().model_neutral_state());
-    return;
-  }
-
-  SDVLOG(2) << "Clear succeeded.";
-  pending_clear_params_->report_success_task.Run();
-  pending_clear_params_.reset();
-  HandleSuccess();
 }
 
 void SyncSchedulerImpl::HandleSuccess() {
@@ -699,7 +655,6 @@ void SyncSchedulerImpl::Stop() {
   poll_timer_.Stop();
   pending_wakeup_timer_.Stop();
   pending_configure_params_.reset();
-  pending_clear_params_.reset();
   if (started_)
     started_ = false;
 }
@@ -739,10 +694,6 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
     if (pending_configure_params_) {
       SDVLOG(2) << "Found pending configure job";
       DoConfigurationSyncCycleJob(priority);
-    }
-  } else if (mode_ == CLEAR_SERVER_DATA_MODE) {
-    if (pending_clear_params_) {
-      DoClearServerDataSyncCycleJob(priority);
     }
   } else if (CanRunNudgeJobNow(priority)) {
     if (nudge_tracker_.IsSyncRequired(GetEnabledAndUnblockedTypes())) {

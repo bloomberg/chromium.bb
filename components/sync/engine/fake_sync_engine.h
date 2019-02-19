@@ -82,8 +82,6 @@ class FakeSyncEngine : public SyncEngine {
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
 
-  void ClearServerData(const base::Closure& callback) override;
-
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
                           const base::Closure& callback) override;

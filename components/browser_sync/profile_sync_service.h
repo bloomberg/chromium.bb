@@ -342,10 +342,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Some tests rely on injecting calls to the encryption observer.
   syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 
-  // Calls sync engine to send ClearServerDataMessage to server. This is used
-  // to start accounts with a clean slate when performing end to end testing.
-  void ClearServerDataForTest(const base::Closure& callback);
-
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
@@ -460,22 +456,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Estimates and records memory usage histograms per type.
   void RecordMemoryUsageHistograms();
-
-  // After user switches to custom passphrase encryption a set of steps needs to
-  // be performed:
-  //
-  // - Download all latest updates from server (catch up configure).
-  // - Clear user data on server.
-  // - Clear directory so that data is merged from model types and encrypted.
-  //
-  // SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() and the following two
-  // functions perform these steps.
-
-  // Calls sync engine to send ClearServerDataMessage to server.
-  void ClearAndRestartSyncForPassphraseEncryption();
-
-  // Restarts sync clearing directory in the process.
-  void OnClearServerDataDone();
 
   // True if setup has been completed at least once and is not in progress.
   bool CanConfigureDataTypes(bool bypass_setup_in_progress_check) const;

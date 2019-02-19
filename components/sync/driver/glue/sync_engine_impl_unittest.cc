@@ -160,8 +160,6 @@ class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override {}
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override {}
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override {}
 };
 
 class MockInvalidationService : public invalidation::InvalidationService {
@@ -764,17 +762,6 @@ TEST_F(SyncEngineImplTest, DisableThenPurgeType) {
   EXPECT_EQ(Difference(enabled_types_, error_types), ready_types);
   EXPECT_FALSE(
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(error_types).Empty());
-}
-
-// Test that a call to ClearServerData is forwarded to the underlying
-// SyncManager.
-TEST_F(SyncEngineImplTest, ClearServerDataCallsAreForwarded) {
-  InitializeBackend(true);
-  CallbackCounter callback_counter;
-  backend_->ClearServerData(base::Bind(&CallbackCounter::Callback,
-                                       base::Unretained(&callback_counter)));
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(1, callback_counter.times_called());
 }
 
 // Ensure that redundant invalidations are ignored and that the most recent

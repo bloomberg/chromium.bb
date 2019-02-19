@@ -266,9 +266,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Association and time stats of data type configuration.
   std::vector<DataTypeConfigurationStats> configuration_stats_;
 
-  // True iff we are in the process of catching up datatypes.
-  bool catch_up_in_progress_;
-
   // Configuration process is started when ModelAssociationManager notifies
   // DataTypeManager that all types are ready for configure.
   // This flag ensures that this process is started only once.

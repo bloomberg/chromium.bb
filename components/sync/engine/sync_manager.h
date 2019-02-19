@@ -390,13 +390,6 @@ class SyncManager {
   // been updated.  Useful for initializing new observers' state.
   virtual void RequestEmitDebugInfo() = 0;
 
-  // Clears server data and invokes |callback| when complete.
-  //
-  // This is an asynchronous operation that requires interaction with the sync
-  // server. The operation will automatically be retried with backoff until it
-  // completes successfully or sync is shutdown.
-  virtual void ClearServerData(const base::Closure& callback) = 0;
-
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.

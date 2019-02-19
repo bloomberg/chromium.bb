@@ -2571,16 +2571,6 @@ TEST_F(SyncManagerTestWithMockScheduler, PurgeDisabledTypes) {
                                 ModelTypeSet::All()));
 }
 
-// Test that SyncManager::ClearServerData invokes the scheduler.
-TEST_F(SyncManagerTestWithMockScheduler, ClearServerData) {
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, _));
-  CallbackCounter callback_counter;
-  sync_manager_.ClearServerData(base::Bind(
-      &CallbackCounter::Callback, base::Unretained(&callback_counter)));
-  PumpLoop();
-  EXPECT_EQ(1, callback_counter.times_called());
-}
-
 // Test that PurgePartiallySyncedTypes purges only those types that have not
 // fully completed their initial download and apply.
 TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {

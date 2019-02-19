@@ -68,11 +68,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override;
-
-  // Calls data type manager to start catch up configure.
-  void BeginConfigureCatchUpBeforeClear();
 
   // Used to provide the engine when it is initialized.
   void SetSyncEngine(SyncEngine* engine) { state_.engine = engine; }

@@ -61,7 +61,6 @@ sync_pb::SyncEnums::GetUpdatesOrigin GetOriginFromReason(
       return sync_pb::SyncEnums::NEW_CLIENT;
     case CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
     case CONFIGURE_REASON_CRYPTO:
-    case CONFIGURE_REASON_CATCH_UP:
       return sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE;
     case CONFIGURE_REASON_PROGRAMMATIC:
       return sync_pb::SyncEnums::PROGRAMMATIC;
@@ -447,9 +446,6 @@ void SyncManagerImpl::OnPassphraseTypeChanged(
   allstatus_.SetKeystoreMigrationTime(
       sync_encryption_handler_->migration_time());
 }
-
-void SyncManagerImpl::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {}
 
 void SyncManagerImpl::StartSyncingNormally(
     base::Time last_poll_time) {
@@ -1031,13 +1027,6 @@ bool SyncManagerImpl::HasDirectoryTypeDebugInfoObserver(
 
 void SyncManagerImpl::RequestEmitDebugInfo() {
   model_type_registry_->RequestEmitDebugInfo();
-}
-
-void SyncManagerImpl::ClearServerData(const base::Closure& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scheduler_->Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, base::Time());
-  ClearParams params(callback);
-  scheduler_->ScheduleClearServerData(params);
 }
 
 void SyncManagerImpl::OnCookieJarChanged(bool account_mismatch,

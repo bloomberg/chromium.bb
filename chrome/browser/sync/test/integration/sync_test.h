@@ -194,9 +194,6 @@ class SyncTest : public InProcessBrowserTest {
   // Like SetupSync() but does not wait for the clients to be ready to sync.
   void SetupSyncNoWaitingForCompletion();
 
-  // Initialize, and clear data for given client.
-  bool SetupAndClearClient(size_t index);
-
   // Sets whether or not the sync clients in this test should respond to
   // notifications of their own commits.  Real sync clients do not do this, but
   // many test assertions require this behavior.
@@ -417,9 +414,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Initializes the invalidations that were set up in SetUpInvalidations.
   void InitializeInvalidations(int index);
-
-  // Clear server data, and restart sync.
-  bool ClearServerData(ProfileSyncServiceHarness* harness);
 
   // Internal routine for setting up sync.
   void SetupSyncInternal(bool wait_for_completion);

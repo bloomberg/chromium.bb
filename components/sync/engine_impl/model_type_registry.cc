@@ -367,9 +367,6 @@ void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
   }
 }
 
-void ModelTypeRegistry::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {}
-
 void ModelTypeRegistry::OnEncryptionStateChanged() {
   for (const auto& worker : model_type_workers_) {
     if (encrypted_types_.Has(worker->GetModelType())) {

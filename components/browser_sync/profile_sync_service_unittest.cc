@@ -132,35 +132,12 @@ class FakeSyncEngineCollectCredentials : public syncer::FakeSyncEngine {
   base::RepeatingClosure invalidate_credentials_callback_;
 };
 
-// FakeSyncEngine that calls an external callback when ClearServerData is
-// called.
-class FakeSyncEngineCaptureClearServerData : public syncer::FakeSyncEngine {
- public:
-  using ClearServerDataCalled =
-      base::RepeatingCallback<void(const base::Closure&)>;
-  explicit FakeSyncEngineCaptureClearServerData(
-      const ClearServerDataCalled& clear_server_data_called)
-      : clear_server_data_called_(clear_server_data_called) {}
-
-  void ClearServerData(const base::Closure& callback) override {
-    clear_server_data_called_.Run(callback);
-  }
-
- private:
-  ClearServerDataCalled clear_server_data_called_;
-};
-
 ACTION(ReturnNewFakeSyncEngine) {
   return std::make_unique<syncer::FakeSyncEngine>();
 }
 
 ACTION(ReturnNewFakeSyncEngineNoReturn) {
   return std::make_unique<FakeSyncEngineNoReturn>();
-}
-
-void OnClearServerDataCalled(base::Closure* captured_callback,
-                             const base::Closure& callback) {
-  *captured_callback = callback;
 }
 
 // A test harness that uses a real ProfileSyncService and in most cases a
@@ -272,8 +249,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void OnConfigureCalled(syncer::ConfigureReason configure_reason) {
     syncer::DataTypeManager::ConfigureResult result;
     result.status = syncer::DataTypeManager::OK;
-    if (configure_reason == syncer::CONFIGURE_REASON_CATCH_UP)
-      result.was_catch_up_configure = true;
     service()->OnConfigureDone(result);
   }
 
@@ -1157,193 +1132,6 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   EXPECT_EQ(prefs()->GetInteger(syncer::prefs::kSyncMemoryPressureWarningCount),
             2);
   EXPECT_TRUE(sync_prefs.DidSyncShutdownCleanly());
-}
-
-// Verify that OnLocalSetPassphraseEncryption triggers catch up configure sync
-// cycle, calls ClearServerData, shuts down and restarts sync.
-TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kSyncClearDataOnPassphraseEncryption);
-  SignIn();
-  CreateService(ProfileSyncService::AUTO_START);
-
-  base::Closure captured_callback;
-  syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-
-  // Initialize sync, ensure that both DataTypeManager and SyncEngine are
-  // initialized and DTM::Configure is called with
-  // CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE.
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(
-          Return(ByMove(std::make_unique<FakeSyncEngineCaptureClearServerData>(
-              base::BindRepeating(&OnClearServerDataCalled,
-                                  base::Unretained(&captured_callback))))));
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  InitializeForNthSync();
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  ASSERT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-  syncer::DataTypeManager::ConfigureResult result;
-  result.status = syncer::DataTypeManager::OK;
-  service()->OnConfigureDone(result);
-
-  // Simulate user entering encryption passphrase. Ensure that catch up
-  // configure cycle is started (DTM::Configure is called with
-  // CONFIGURE_REASON_CATCH_UP).
-  const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
-      nigori_state);
-  EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
-  EXPECT_TRUE(captured_callback.is_null());
-
-  // Simulate configure successful. Ensure that SBH::ClearServerData is called.
-  result.was_catch_up_configure = true;
-  service()->OnConfigureDone(result);
-  result.was_catch_up_configure = false;
-  EXPECT_FALSE(captured_callback.is_null());
-
-  // Once SBH::ClearServerData finishes successfully ensure that sync is
-  // restarted.
-  configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  captured_callback.Run();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-  service()->OnConfigureDone(result);
-}
-
-// Verify that if after OnLocalSetPassphraseEncryption catch up configure sync
-// cycle gets interrupted, it starts again after browser restart.
-TEST_F(ProfileSyncServiceTest,
-       OnLocalSetPassphraseEncryption_RestartDuringCatchUp) {
-  syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kSyncClearDataOnPassphraseEncryption);
-  SignIn();
-  CreateService(ProfileSyncService::AUTO_START);
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  InitializeForNthSync();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  ASSERT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-  syncer::DataTypeManager::ConfigureResult result;
-  result.status = syncer::DataTypeManager::OK;
-  service()->OnConfigureDone(result);
-
-  // Simulate user entering encryption passphrase. Ensure Configure was called
-  // but don't let it continue.
-  const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
-      nigori_state);
-  EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
-
-  // Simulate browser restart. First configuration is a regular one.
-  ShutdownAndDeleteService();
-  CreateService(ProfileSyncService::AUTO_START);
-  base::Closure captured_callback;
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(
-          Return(ByMove(std::make_unique<FakeSyncEngineCaptureClearServerData>(
-              base::BindRepeating(&OnClearServerDataCalled,
-                                  base::Unretained(&captured_callback))))));
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  InitializeForNthSync();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-  EXPECT_TRUE(captured_callback.is_null());
-
-  // Simulate configure successful. This time it should be catch up.
-  service()->OnConfigureDone(result);
-  EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
-  EXPECT_TRUE(captured_callback.is_null());
-
-  // Simulate catch up configure successful. Ensure that SBH::ClearServerData is
-  // called.
-  result.was_catch_up_configure = true;
-  service()->OnConfigureDone(result);
-  result.was_catch_up_configure = false;
-  EXPECT_FALSE(captured_callback.is_null());
-
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  captured_callback.Run();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-}
-
-// Verify that if after OnLocalSetPassphraseEncryption ClearServerData gets
-// interrupted, transition again from catch up sync cycle after browser restart.
-TEST_F(ProfileSyncServiceTest,
-       OnLocalSetPassphraseEncryption_RestartDuringClearServerData) {
-  base::Closure captured_callback;
-  syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kSyncClearDataOnPassphraseEncryption);
-  SignIn();
-  CreateService(ProfileSyncService::AUTO_START);
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(
-          Return(ByMove(std::make_unique<FakeSyncEngineCaptureClearServerData>(
-              base::BindRepeating(&OnClearServerDataCalled,
-                                  base::Unretained(&captured_callback))))));
-  InitializeForNthSync();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-
-  // Simulate user entering encryption passphrase.
-  const syncer::SyncEncryptionHandler::NigoriState nigori_state;
-  service()->GetEncryptionObserverForTest()->OnLocalSetPassphraseEncryption(
-      nigori_state);
-  EXPECT_FALSE(captured_callback.is_null());
-  captured_callback.Reset();
-
-  // Simulate browser restart. First configuration is a regular one.
-  ShutdownAndDeleteService();
-  CreateService(ProfileSyncService::AUTO_START);
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(
-          Return(ByMove(std::make_unique<FakeSyncEngineCaptureClearServerData>(
-              base::BindRepeating(&OnClearServerDataCalled,
-                                  base::Unretained(&captured_callback))))));
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  InitializeForNthSync();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
-  EXPECT_TRUE(captured_callback.is_null());
-
-  // Simulate configure successful. This time it should be catch up.
-  syncer::DataTypeManager::ConfigureResult result;
-  result.status = syncer::DataTypeManager::OK;
-  service()->OnConfigureDone(result);
-  EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
-  EXPECT_TRUE(captured_callback.is_null());
-
-  // Simulate catch up configure successful. Ensure that SBH::ClearServerData is
-  // called.
-  result.was_catch_up_configure = true;
-  service()->OnConfigureDone(result);
-  result.was_catch_up_configure = false;
-  EXPECT_FALSE(captured_callback.is_null());
-
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .WillOnce(ReturnNewFakeDataTypeManager(
-          GetRecordingConfigureCalledCallback(&configure_reason)));
-  captured_callback.Run();
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
 }
 
 // Test that the passphrase prompt due to version change logic gets triggered

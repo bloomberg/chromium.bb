@@ -204,21 +204,6 @@ bool ProfileSyncServiceHarness::SetupSync() {
   return result;
 }
 
-bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
-  bool result = SetupSyncImpl(syncer::UserSelectableTypes(),
-                              EncryptionSetupMode::kNoEncryption,
-                              /*encryption_passphrase=*/base::nullopt) &&
-                AwaitSyncSetupCompletion();
-  if (!result) {
-    LOG(ERROR) << profile_debug_name_
-               << ": SetupSyncForClear failed. Syncer status:\n"
-               << GetServiceStatus();
-  } else {
-    DVLOG(1) << profile_debug_name_ << ": SetupSyncForClear successful.";
-  }
-  return result;
-}
-
 bool ProfileSyncServiceHarness::SetupSyncNoWaitForCompletion(
     syncer::ModelTypeSet synced_datatypes) {
   return SetupSyncImpl(synced_datatypes, EncryptionSetupMode::kNoEncryption,

@@ -11,7 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine_impl/apply_control_data_updates.h"
-#include "components/sync/engine_impl/clear_server_data.h"
 #include "components/sync/engine_impl/commit.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
@@ -90,12 +89,6 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle) {
   HandleCycleBegin(cycle);
   DownloadAndApplyUpdates(&request_types, cycle, PollGetUpdatesDelegate());
   return HandleCycleEnd(cycle, sync_pb::SyncEnums::PERIODIC);
-}
-
-bool Syncer::PostClearServerData(SyncCycle* cycle) {
-  DCHECK(cycle);
-  ClearServerData clear_server_data(cycle->context()->account_name());
-  return clear_server_data.SendRequest(cycle).value() == SyncerError::SYNCER_OK;
 }
 
 bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,

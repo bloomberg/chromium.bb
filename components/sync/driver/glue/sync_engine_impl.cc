@@ -434,13 +434,6 @@ void SyncEngineImpl::UpdateInvalidationVersions(
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 
-void SyncEngineImpl::ClearServerData(const base::Closure& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncBackendHostCore::DoClearServerData, core_, callback));
-}
-
 void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,
                                         bool empty_jar,
                                         const base::Closure& callback) {
@@ -471,12 +464,6 @@ void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
       FROM_HERE,
       base::BindOnce(&SyncBackendHostCore::DoOnInvalidatorClientIdChange, core_,
                      client_id));
-}
-
-void SyncEngineImpl::ClearServerDataDoneOnFrontendLoop(
-    const base::Closure& frontend_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  frontend_callback.Run();
 }
 
 void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(

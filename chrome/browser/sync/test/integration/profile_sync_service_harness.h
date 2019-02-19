@@ -63,11 +63,6 @@ class ProfileSyncServiceHarness {
   // to process changes.
   bool SetupSync();
 
-  // Sets up sync without authenticating through the passphrase encryption.
-  // Use this method when you need to setup a client that you're going to call
-  // StopSyncService(), StartSyncService() directly after.
-  bool SetupSyncForClearingServerData();
-
   // Enables and configures sync only for the given |synced_datatypes|.
   // Does not wait for sync to be ready to process changes -- callers need to
   // ensure this by calling AwaitSyncSetupCompletion() or

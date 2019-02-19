@@ -119,12 +119,10 @@ class SyncEncryptionHandler {
                                          base::Time passphrase_time) = 0;
 
     // The user has set a passphrase using this device.
-    //
-    // |nigori_state| can be used to restore nigori state across
-    // SyncEncryptionHandlerImpl lifetimes. See also SyncEncryptionHandlerImpl's
-    // RestoredNigori method.
+    // TODO(treib): This method is only overridden in tests which use it to
+    // capture the NigoriState; we should find a better way to do that.
     virtual void OnLocalSetPassphraseEncryption(
-        const NigoriState& nigori_state) = 0;
+        const NigoriState& nigori_state) {}
   };
 
   class NigoriState {

@@ -810,25 +810,24 @@ void SyncTest::SetupSyncInternal(bool wait_for_completion) {
     }
   }
 
-  int clientIndex = 0;
-  // If we're using external servers, clear server data so the account starts
-  // with a clean slate.
+  // TODO(crbug.com/801482): If we ever start running tests against external
+  // servers again, we might have to find a way to clear any pre-existing data
+  // from the test account.
   if (UsingExternalServers()) {
-    if (!SetupAndClearClient(clientIndex++)) {
-      LOG(FATAL) << "Setting up and clearing data for client "
-                 << clientIndex - 1 << " failed";
-    }
+    LOG(ERROR) << "WARNING: Running against external servers with an existing "
+                  "account. If there is any pre-existing data in the account, "
+                  "things will likely break.";
   }
 
   // Sync each of the profiles.
-  for (; clientIndex < num_clients_; clientIndex++) {
-    ProfileSyncServiceHarness* client = GetClient(clientIndex);
-    DVLOG(1) << "Setting up " << clientIndex << " client";
+  for (int client_index = 0; client_index < num_clients_; client_index++) {
+    ProfileSyncServiceHarness* client = GetClient(client_index);
+    DVLOG(1) << "Setting up " << client_index << " client";
 
     auto decryption_passphrase_it =
-        client_decryption_passphrases_.find(clientIndex);
+        client_decryption_passphrases_.find(client_index);
     auto encryption_passphrase_it =
-        client_encryption_passphrases_.find(clientIndex);
+        client_encryption_passphrases_.find(client_index);
     bool decryption_passphrase_provided =
         (decryption_passphrase_it != client_decryption_passphrases_.end());
     bool encryption_passphrase_provided =
@@ -903,23 +902,6 @@ bool SyncTest::SetupSync() {
     }
   }
 
-  return true;
-}
-
-bool SyncTest::SetupAndClearClient(size_t index) {
-  // Setup the first client so the sync engine is initialized, which is
-  // required to clear server data.
-  DVLOG(1) << "Setting up first client for clear.";
-  if (!GetClient(index)->SetupSyncForClearingServerData()) {
-    LOG(FATAL) << "SetupSync() failed.";
-    return false;
-  }
-
-  DVLOG(1) << "Done setting up first client for clear.";
-  if (!ClearServerData(GetClient(index++))) {
-    LOG(FATAL) << "ClearServerData failed.";
-    return false;
-  }
   return true;
 }
 
@@ -1343,16 +1325,4 @@ void SyncTest::SetPreexistingPreferencesFileContents(
     int index,
     const std::string& contents) {
   preexisting_preferences_file_contents_[index] = contents;
-}
-
-bool SyncTest::ClearServerData(ProfileSyncServiceHarness* harness) {
-  // At this point our birthday is good.
-  base::RunLoop run_loop;
-  harness->service()->ClearServerDataForTest(run_loop.QuitClosure());
-  run_loop.Run();
-
-  // Our birthday is invalidated on the server here so restart sync to get
-  // the new birthday from the server.
-  harness->StopSyncServiceAndClearData();
-  return harness->StartSyncService();
 }

@@ -53,7 +53,6 @@ class DataTypeManager {
     ConfigureStatus status;
     ModelTypeSet requested_types;
     DataTypeStatusTable data_type_status_table;
-    bool was_catch_up_configure = false;
   };
 
   virtual ~DataTypeManager() {}
