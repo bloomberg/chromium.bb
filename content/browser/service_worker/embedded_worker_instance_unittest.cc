@@ -922,6 +922,6 @@ TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
 
 INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
                          EmbeddedWorkerInstanceTest,
-                         ::testing::Bool(););
+                         ::testing::Bool());
 
 }  // namespace content

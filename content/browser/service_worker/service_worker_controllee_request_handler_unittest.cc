@@ -519,7 +519,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
 
 INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
                          ServiceWorkerControlleeRequestHandlerTest,
-                         ::testing::Bool(););
+                         ::testing::Bool());
 
 }  // namespace service_worker_controllee_request_handler_unittest
 }  // namespace content
