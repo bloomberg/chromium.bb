@@ -811,6 +811,10 @@ deps = {
       'condition': 'checkout_linux',
   },
 
+  'src/third_party/grpc/src': {
+      'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + '872ca1f8a51ff41e2f3972d0d64b0e34461d639e',
+  },
+
   'src/third_party/freetype/src':
     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
