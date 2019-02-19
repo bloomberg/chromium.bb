@@ -5,6 +5,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -234,7 +235,7 @@ TEST(TestMockTimeTaskRunnerTest, RunLoopQuitFromIdle) {
 
 TEST(TestMockTimeTaskRunnerTest, TakePendingTasks) {
   auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
-  task_runner->PostTask(FROM_HERE, Bind([]() {}));
+  task_runner->PostTask(FROM_HERE, DoNothing());
   EXPECT_TRUE(task_runner->HasPendingTask());
   EXPECT_EQ(1u, task_runner->TakePendingTasks().size());
   EXPECT_FALSE(task_runner->HasPendingTask());

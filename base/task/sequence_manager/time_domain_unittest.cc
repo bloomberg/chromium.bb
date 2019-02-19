@@ -414,9 +414,9 @@ TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
   low_prio_runner->PostDelayedTask(FROM_HERE, task_2.Get(), kDelay);
   high_prio_runner->PostDelayedTask(FROM_HERE, task_1.Get(), kDelay * 2);
   high_prio_runner->PostTask(
-      FROM_HERE, Bind([](SimpleTestTickClock* clock,
-                         TimeDelta delay) { clock->Advance(delay); },
-                      base::Unretained(&clock), kDelay * 2));
+      FROM_HERE, BindOnce([](SimpleTestTickClock* clock,
+                             TimeDelta delay) { clock->Advance(delay); },
+                          base::Unretained(&clock), kDelay * 2));
   RunLoop().RunUntilIdle();
 }
 

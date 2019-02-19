@@ -163,7 +163,7 @@ void FilePathWatcherFSEvents::FSEventsCallback(
     // task_runner() and calls dispatch_sync, it is guaranteed that |watcher|
     // still exists when UpdateEventStream() runs.
     watcher->task_runner()->PostTask(
-        FROM_HERE, Bind(
+        FROM_HERE, BindOnce(
                        [](WeakPtr<FilePathWatcherFSEvents> weak_watcher,
                           FSEventStreamEventId root_change_at) {
                          if (!weak_watcher)
@@ -184,8 +184,8 @@ void FilePathWatcherFSEvents::OnFilePathsChanged(
   DCHECK(!resolved_target_.empty());
   task_runner()->PostTask(
       FROM_HERE,
-      Bind(&FilePathWatcherFSEvents::DispatchEvents, weak_factory_.GetWeakPtr(),
-           paths, target_, resolved_target_));
+      BindOnce(&FilePathWatcherFSEvents::DispatchEvents,
+               weak_factory_.GetWeakPtr(), paths, target_, resolved_target_));
 }
 
 void FilePathWatcherFSEvents::DispatchEvents(const std::vector<FilePath>& paths,
@@ -242,8 +242,8 @@ void FilePathWatcherFSEvents::UpdateEventStream(
 
   if (!FSEventStreamStart(fsevent_stream_)) {
     task_runner()->PostTask(FROM_HERE,
-                            Bind(&FilePathWatcherFSEvents::ReportError,
-                                 weak_factory_.GetWeakPtr(), target_));
+                            BindOnce(&FilePathWatcherFSEvents::ReportError,
+                                     weak_factory_.GetWeakPtr(), target_));
   }
 }
 
@@ -253,8 +253,8 @@ bool FilePathWatcherFSEvents::ResolveTargetPath() {
   resolved_target_ = resolved;
   if (resolved_target_.empty()) {
     task_runner()->PostTask(FROM_HERE,
-                            Bind(&FilePathWatcherFSEvents::ReportError,
-                                 weak_factory_.GetWeakPtr(), target_));
+                            BindOnce(&FilePathWatcherFSEvents::ReportError,
+                                     weak_factory_.GetWeakPtr(), target_));
   }
   return changed;
 }

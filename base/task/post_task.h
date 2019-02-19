@@ -27,27 +27,27 @@ namespace base {
 // This is the interface to post tasks.
 //
 // To post a simple one-off task with default traits:
-//     PostTask(FROM_HERE, Bind(...));
+//     PostTask(FROM_HERE, BindOnce(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
 //     PostTaskWithTraits(
 //         FROM_HERE,
 //         {TaskPriority::USER_BLOCKING},
-//         Bind(...));
+//         BindOnce(...));
 //
 // To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
 //         CreateSequencedTaskRunnerWithTraits(TaskTraits());
-//     task_runner.PostTask(FROM_HERE, Bind(...));
-//     task_runner.PostTask(FROM_HERE, Bind(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
 // To post tasks that may block, must run in sequence and can be skipped on
 // shutdown:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
 //         CreateSequencedTaskRunnerWithTraits(
 //             {MayBlock(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-//     task_runner.PostTask(FROM_HERE, Bind(...));
-//     task_runner.PostTask(FROM_HERE, Bind(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
 // The default traits apply to tasks that:
 //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
