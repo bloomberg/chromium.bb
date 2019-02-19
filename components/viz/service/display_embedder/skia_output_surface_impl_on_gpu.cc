@@ -67,7 +67,7 @@ class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
   ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
                            GLuint texture_client_id)
       : impl_on_gpu_(impl_on_gpu) {
-    if (!impl_on_gpu_->MakeCurrent()) {
+    if (!impl_on_gpu_->MakeCurrent(true /* need_fbo0 */)) {
       valid_ = false;
       return;
     }
@@ -557,7 +557,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
 
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
-  MakeCurrent();
+  MakeCurrent(false /* need_fbo0 */);
   copier_ = nullptr;
   texture_deleter_ = nullptr;
   context_provider_ = nullptr;
@@ -582,7 +582,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 
   if (!is_using_vulkan()) {
-    if (!MakeCurrent())
+    if (!MakeCurrent(true /* need_fbo0 */))
       return;
     size_ = size;
     color_space_ = color_space;
@@ -631,7 +631,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   DCHECK(ddl);
   DCHECK(sk_surface_);
 
-  if (!MakeCurrent())
+  if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
   PullTextureUpdates(std::move(sync_tokens));
@@ -676,7 +676,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(sk_surface_);
   base::TimeTicks swap_start, swap_end;
   if (!is_using_vulkan()) {
-    if (!MakeCurrent())
+    if (!MakeCurrent(true /* need_fbo0 */))
       return;
     swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
@@ -715,7 +715,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  if (!MakeCurrent())
+  if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
   PullTextureUpdates(std::move(sync_tokens));
@@ -758,12 +758,14 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!MakeCurrent())
+  bool from_fbo0 = !id;
+  if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
-  DCHECK(!id || offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
+  DCHECK(from_fbo0 ||
+         offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
   auto* surface =
-      id ? offscreen_surfaces_[id].surface.get() : sk_surface_.get();
+      from_fbo0 ? sk_surface_.get() : offscreen_surfaces_[id].surface.get();
 
   if (!is_using_vulkan()) {
     // Lazy initialize GLRendererCopier.
@@ -792,7 +794,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     bool flipped = !capabilities_.flipped_output_surface;
 
     base::Optional<ScopedSurfaceToTexture> texture_mapper;
-    if (id) {
+    if (!from_fbo0) {
       texture_mapper.emplace(context_provider_.get(), surface);
       gl_id = texture_mapper.value().client_id();
       internal_format = GL_RGBA;
@@ -893,7 +895,7 @@ void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   ScopedUseContextProvider use_context_provider(this, /*texture_client_id=*/0);
 
   delayed_work_pending_ = false;
-  if (MakeCurrent()) {
+  if (MakeCurrent(true /* need_fbo0 */)) {
     decoder()->PerformIdleWork();
     decoder()->ProcessPendingQueries(false);
     if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries()) {
@@ -986,7 +988,9 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
 void SkiaOutputSurfaceImplOnGpu::DestroySkImages(
     std::vector<sk_sp<SkImage>>&& images,
     uint64_t sync_fence_release) {
-  MakeCurrent();
+  // The window could be destroyed already, and the MakeCurrent will fail with
+  // an destroyed window, so MakeCurrent without requiring the fbo0.
+  MakeCurrent(false /* need_fbo0 */);
   images.clear();
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
@@ -1039,7 +1043,7 @@ int32_t SkiaOutputSurfaceImplOnGpu::GetRouteID() const {
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
-  if (!MakeCurrent())
+  if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
   auto* context = context_state_->real_context();
@@ -1155,9 +1159,11 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
   DCHECK(sk_surface_);
 }
 
-bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
+bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
   if (!is_using_vulkan()) {
-    if (!context_state_->MakeCurrent(gl_surface_.get())) {
+    // Only make current with |gl_surface_|, if following operations will use
+    // fbo0.
+    if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {
       LOG(ERROR) << "Failed to make current.";
       context_lost_callback_.Run();
       if (context_provider_)
