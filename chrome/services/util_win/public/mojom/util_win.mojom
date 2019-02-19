@@ -66,6 +66,27 @@ struct InspectionResult {
   mojo_base.mojom.String16 certificate_subject;
 };
 
+enum AntiVirusProductState {
+  // The security product software is turned on and protecting the user.
+  kOn,
+  // The security product software is turned off and protection is disabled.
+  kOff,
+  // The security product software is in the snoozed state, temporarily off,
+  // and not actively protecting the computer.
+  kSnoozed,
+  // The security product software has expired and is no longer actively
+  // protecting the computer.
+  kExpired,
+};
+
+struct AntiVirusProduct {
+  string product_name;
+  uint32 product_name_hash;
+  string product_version;
+  uint32 product_version_hash;
+  AntiVirusProductState state;
+};
+
 // Utility process interface exposed to the browser process on OS_WIN. Used to
 // improve stability by executing some tasks out-of-process. This include either
 // crashy tasks, or tasks that requires certain DLLs to be loaded into the
@@ -110,4 +131,10 @@ interface UtilWin {
   // on disk.
   InspectModule(mojo_base.mojom.FilePath module_path) =>
       (InspectionResult inspection_result);
+
+  // Returns the list of all antivirus software installed on the user's machine.
+  // |report_full_names| controls whether or not the full name of each software
+  // is included in the list, in order to preserve privacy.
+  GetAntiVirusProducts(bool report_full_names) =>
+      (array<AntiVirusProduct> av_products);
 };

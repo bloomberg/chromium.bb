@@ -23,7 +23,9 @@
 #include "base/win/win_util.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/services/util_win/av_products.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
 
 namespace {
@@ -249,4 +251,10 @@ void UtilWinImpl::CallExecuteSelectFile(
 void UtilWinImpl::InspectModule(const base::FilePath& module_path,
                                 InspectModuleCallback callback) {
   std::move(callback).Run(::InspectModule(module_path));
+}
+
+void UtilWinImpl::GetAntiVirusProducts(bool report_full_names,
+                                       GetAntiVirusProductsCallback callback) {
+  base::win::ScopedCOMInitializer scoped_com_initializer;
+  std::move(callback).Run(::GetAntiVirusProducts(report_full_names));
 }

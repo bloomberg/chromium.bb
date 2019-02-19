@@ -5,11 +5,14 @@
 #ifndef CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_UTIL_WIN_MOJOM_TRAITS_H_
 #define CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_UTIL_WIN_MOJOM_TRAITS_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
 
 namespace mojo {
@@ -61,6 +64,45 @@ struct StructTraits<chrome::mojom::FileFilterSpecDataView, ui::FileFilterSpec> {
 
   static bool Read(chrome::mojom::FileFilterSpecDataView data,
                    ui::FileFilterSpec* output);
+};
+
+template <>
+struct StructTraits<chrome::mojom::AntiVirusProductDataView,
+                    metrics::SystemProfileProto_AntiVirusProduct> {
+  static const std::string& product_name(
+      const metrics::SystemProfileProto_AntiVirusProduct& input) {
+    return input.product_name();
+  }
+  static uint32_t product_name_hash(
+      const metrics::SystemProfileProto_AntiVirusProduct& input) {
+    return input.product_name_hash();
+  }
+  static const std::string& product_version(
+      const metrics::SystemProfileProto_AntiVirusProduct& input) {
+    return input.product_version();
+  }
+  static uint32_t product_version_hash(
+      const metrics::SystemProfileProto_AntiVirusProduct& input) {
+    return input.product_version_hash();
+  }
+  static chrome::mojom::AntiVirusProductState state(
+      const metrics::SystemProfileProto_AntiVirusProduct& input) {
+    switch (input.product_state()) {
+      case metrics::SystemProfileProto_AntiVirusState_STATE_ON:
+        return chrome::mojom::AntiVirusProductState::kOn;
+      case metrics::SystemProfileProto_AntiVirusState_STATE_OFF:
+        return chrome::mojom::AntiVirusProductState::kOff;
+      case metrics::SystemProfileProto_AntiVirusState_STATE_SNOOZED:
+        return chrome::mojom::AntiVirusProductState::kSnoozed;
+      case metrics::SystemProfileProto_AntiVirusState_STATE_EXPIRED:
+        return chrome::mojom::AntiVirusProductState::kExpired;
+    }
+    NOTREACHED();
+    return chrome::mojom::AntiVirusProductState::kOff;
+  }
+
+  static bool Read(chrome::mojom::AntiVirusProductDataView data,
+                   metrics::SystemProfileProto_AntiVirusProduct* output);
 };
 
 }  // namespace mojo

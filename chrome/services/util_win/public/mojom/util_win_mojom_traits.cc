@@ -4,6 +4,8 @@
 
 #include "chrome/services/util_win/public/mojom/util_win_mojom_traits.h"
 
+#include <utility>
+
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 
@@ -172,6 +174,35 @@ bool StructTraits<chrome::mojom::FileFilterSpecDataView, ui::FileFilterSpec>::
     Read(chrome::mojom::FileFilterSpecDataView input, ui::FileFilterSpec* out) {
   return input.ReadDescription(&out->description) &&
          input.ReadExtensionSpec(&out->extension_spec);
+}
+
+// static
+bool StructTraits<chrome::mojom::AntiVirusProductDataView,
+                  metrics::SystemProfileProto_AntiVirusProduct>::
+    Read(chrome::mojom::AntiVirusProductDataView input,
+         metrics::SystemProfileProto_AntiVirusProduct* output) {
+  output->set_product_state(
+      static_cast<metrics::SystemProfileProto_AntiVirusState>(input.state()));
+
+  output->set_product_name_hash(input.product_name_hash());
+  output->set_product_version_hash(input.product_version_hash());
+
+  // Protobufs have the ability to distinguish unset strings from empty strings,
+  // while mojo doesn't. To preserve current behavior, make sure empty product
+  // name and versions are not set in the protobuf.
+  std::string product_name;
+  if (!input.ReadProductName(&product_name))
+    return false;
+  if (!product_name.empty())
+    output->set_product_name(std::move(product_name));
+
+  std::string product_version;
+  if (!input.ReadProductName(&product_version))
+    return false;
+  if (!product_version.empty())
+    output->set_product_version(std::move(product_version));
+
+  return true;
 }
 
 }  // namespace mojo

@@ -12,5 +12,6 @@ source_set("manifest") {
     "//base",
     "//chrome/services/util_win/public/mojom",
     "//services/service_manager/public/cpp",
+    "//third_party/metrics_proto",
   ]
 }
