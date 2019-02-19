@@ -877,16 +877,22 @@ Delete Examples:
           default=False)
       if proceed:
         branch.Create(push=push, force=force)
+        logging.info('Successfully created branch %s.', branch.name)
+      else:
+        logging.info('Aborted branch creation.')
 
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)
       branch = Branch(checkout, self.options.new)
       branch.Rename(self.options.old, push=push, force=force)
+      logging.info('Successfully renamed branch %s to %s',
+                   self.options.old, self.options.new)
 
     elif self.options.subcommand == 'delete':
       checkout.SyncBranch(self.options.branch)
       branch = Branch(checkout, self.options.branch)
       branch.Delete(push=push, force=force)
+      logging.info('Successfully deleted branch %s.', self.options.branch)
 
     else:
       raise BranchError('Unrecognized option.')
