@@ -142,7 +142,7 @@ Polymer({
    * @private
    */
   computeSignedIn_: function() {
-    return !!this.syncStatus.signedIn;
+    return !!this.syncStatus && !!this.syncStatus.signedIn;
   },
 
   /** @private */

@@ -130,7 +130,9 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
+      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: false,
         signedInUsername: '',
         statusAction: settings.StatusAction.NO_ACTION,
@@ -222,7 +224,9 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, no error', function() {
+      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
@@ -256,7 +260,9 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, has error', function() {
+      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -279,6 +285,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -297,6 +304,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
@@ -315,6 +323,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.REAUTHENTICATE,
@@ -364,7 +373,9 @@ cr.define('settings_sync_account_control', function() {
       const banner = testElement.$$('#banner');
       assertVisible(banner, true);
 
+      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
@@ -378,6 +389,7 @@ cr.define('settings_sync_account_control', function() {
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -390,6 +402,7 @@ cr.define('settings_sync_account_control', function() {
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -402,6 +415,7 @@ cr.define('settings_sync_account_control', function() {
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -415,6 +429,7 @@ cr.define('settings_sync_account_control', function() {
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -428,7 +443,9 @@ cr.define('settings_sync_account_control', function() {
 
     test('hide buttons', function() {
       testElement.hideButtons = true;
+      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
@@ -441,6 +458,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
@@ -452,6 +470,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.syncStatus = {
+        setupInProgress: false,
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
