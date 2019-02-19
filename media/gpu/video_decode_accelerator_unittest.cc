@@ -1729,6 +1729,7 @@ TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
   const std::vector<std::string>& frame_checksums =
       frame_validator->GetFrameChecksums();
   base::FilePath md5_file_path(video_file->file_name);
+  md5_file_path = md5_file_path.AddExtension(FILE_PATH_LITERAL(".frames.md5"));
   base::File md5_file(md5_file_path, base::File::FLAG_CREATE_ALWAYS |
                                          base::File::FLAG_WRITE |
                                          base::File::FLAG_APPEND);
