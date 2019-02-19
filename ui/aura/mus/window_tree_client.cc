@@ -1184,7 +1184,6 @@ void WindowTreeClient::OnTopLevelCreated(
 
 void WindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
-    const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
@@ -1228,7 +1227,6 @@ void WindowTreeClient::OnWindowBoundsChanged(
 
 void WindowTreeClient::OnWindowTransformChanged(
     ws::Id window_id,
-    const gfx::Transform& old_transform,
     const gfx::Transform& new_transform) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
@@ -1332,7 +1330,6 @@ void WindowTreeClient::OnWindowVisibilityChanged(ws::Id window_id,
 }
 
 void WindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
-                                              float old_opacity,
                                               float new_opacity) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)

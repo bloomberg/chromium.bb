@@ -505,12 +505,10 @@ interface WindowTreeClient {
   // is only supplied for roots.
   OnWindowBoundsChanged(
       uint64 window,
-      gfx.mojom.Rect old_bounds,
       gfx.mojom.Rect new_bounds,
       viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   OnWindowTransformChanged(uint64 window,
-                           gfx.mojom.Transform old_transform,
                            gfx.mojom.Transform new_transform);
 
   OnTransientWindowAdded(uint64 window_id,
@@ -546,7 +544,7 @@ interface WindowTreeClient {
   OnWindowVisibilityChanged(uint64 window, bool visible);
 
   // Invoked when the opacity of the specified window has changed.
-  OnWindowOpacityChanged(uint64 window, float old_opacity, float new_opacity);
+  OnWindowOpacityChanged(uint64 window, float new_opacity);
 
   // Invoked when the window moves to a new display. This is only called on
   // a top-level window or an embedded root.

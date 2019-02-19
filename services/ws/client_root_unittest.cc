@@ -106,19 +106,19 @@ TEST(ClientRoot, EmbedBoundsInScreen) {
   auto iter =
       FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
   ASSERT_NE(iter, embedding_changes->end());
-  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), iter->bounds2);
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), iter->bounds);
   embedding_changes->clear();
 
   window->SetBounds(gfx::Rect(11, 12, 100, 100));
   iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
   ASSERT_NE(iter, embedding_changes->end());
-  EXPECT_EQ(gfx::Rect(12, 14, 3, 4), iter->bounds2);
+  EXPECT_EQ(gfx::Rect(12, 14, 3, 4), iter->bounds);
   embedding_changes->clear();
 
   top_level->SetBounds(gfx::Rect(100, 50, 100, 100));
   iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
   ASSERT_NE(iter, embedding_changes->end());
-  EXPECT_EQ(gfx::Rect(112, 64, 3, 4), iter->bounds2);
+  EXPECT_EQ(gfx::Rect(112, 64, 3, 4), iter->bounds);
 }
 
 TEST(ClientRoot, EmbedWindowServerVisibilityChanges) {

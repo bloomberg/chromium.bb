@@ -137,12 +137,10 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                              local_surface_id_allocation) override;
   void OnWindowBoundsChanged(
       ws::Id window_id,
-      const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation) override;
   void OnWindowTransformChanged(ws::Id window_id,
-                                const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
   void OnTransientWindowAdded(ws::Id window_id,
                               ws::Id transient_window_id) override;
@@ -159,7 +157,6 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void OnWindowDeleted(ws::Id window_id) override;
   void OnWindowVisibilityChanged(ws::Id window_id, bool visible) override;
   void OnWindowOpacityChanged(ws::Id window_id,
-                              float old_opacity,
                               float new_opacity) override;
   void OnWindowDisplayChanged(ws::Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(ws::Id window_id, bool drawn) override;

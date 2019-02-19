@@ -525,7 +525,7 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
           viz::LocalSurfaceId(1, base::UnguessableToken::Create()),
           base::TimeTicks::Now());
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(&root_window), original_bounds, server_changed_bounds,
+      server_id(&root_window), server_changed_bounds,
       server_changed_local_surface_id_allocation);
 
   WindowMus* root_window_mus = WindowMus::Get(&root_window);
@@ -546,7 +546,6 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
 
   // Simulate server changing back to original bounds. Should take immediately.
   window_tree_client()->OnWindowBoundsChanged(server_id(&root_window),
-                                              server_changed_bounds,
                                               original_bounds, base::nullopt);
   EXPECT_EQ(original_bounds, root_window.bounds());
 }
@@ -2418,7 +2417,6 @@ TEST_F(WindowTreeClientTest, OnWindowDeletedDoesntNotifyServer) {
 }
 
 TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
-  const gfx::Rect original_bounds(root_window()->bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, root_window()->bounds());
   root_window()->SetBounds(new_bounds);
@@ -2428,7 +2426,7 @@ TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
   // dips.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), original_bounds, server_changed_bounds,
+      server_id(root_window()), server_changed_bounds,
       GenerateLocalSurfaceIdForNewTopLevel());
   EXPECT_EQ(server_changed_bounds, root_window()->bounds());
 }
@@ -2865,7 +2863,7 @@ TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
   parent_local_surface_id_allocator_.GenerateId();
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root), server_changed_bounds, server_changed_bounds,
+      server_id(root), server_changed_bounds,
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
   const viz::LocalSurfaceId local_surface_id1 =
       root->GetLocalSurfaceIdAllocation().local_surface_id();

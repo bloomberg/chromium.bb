@@ -1253,7 +1253,7 @@ bool WindowTree::SetWindowBoundsImpl(
   // Tell the client the new value, and return false, which triggers the client
   // to use the value supplied to OnWindowBoundsChanged().
   window_tree_client_->OnWindowBoundsChanged(TransportIdForWindow(window),
-                                             original_bounds, window->bounds(),
+                                             window->bounds(),
                                              local_surface_id_allocation);
   return false;
 }

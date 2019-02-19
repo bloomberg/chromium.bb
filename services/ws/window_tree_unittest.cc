@@ -205,7 +205,7 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   top_level->SetBounds(bounds_from_server);
   ASSERT_EQ(1u, setup.changes()->size());
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*setup.changes())[0].type);
-  EXPECT_EQ(bounds_from_server, (*setup.changes())[0].bounds2);
+  EXPECT_EQ(bounds_from_server, (*setup.changes())[0].bounds);
   ASSERT_TRUE((*setup.changes())[0].local_surface_id_allocation);
   EXPECT_NE((*setup.changes())[0].local_surface_id_allocation,
             child_allocator.GetCurrentLocalSurfaceIdAllocation());
@@ -229,7 +229,7 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   // requested, so the client should get OnWindowBoundsChanged() with
   // |restricted_bounds|.
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*setup.changes())[0].type);
-  EXPECT_EQ(restricted_bounds, (*setup.changes())[0].bounds2);
+  EXPECT_EQ(restricted_bounds, (*setup.changes())[0].bounds);
 
   // And because the layout manager changed the bounds the result is false.
   EXPECT_EQ("ChangeCompleted id=3 success=false",
@@ -434,7 +434,7 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
   const Change bounds_change =
       (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change.type);
-  EXPECT_EQ(bounds2, bounds_change.bounds2);
+  EXPECT_EQ(bounds2, bounds_change.bounds);
   EXPECT_EQ(local_surface_id_allocation,
             bounds_change.local_surface_id_allocation);
   embedding_helper->window_tree_client.tracker()->changes()->clear();
@@ -453,7 +453,7 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
   const Change bounds_change2 =
       (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change2.type);
-  EXPECT_EQ(bounds2, bounds_change2.bounds2);
+  EXPECT_EQ(bounds2, bounds_change2.bounds);
   EXPECT_EQ(local_surface_id_allocation2,
             bounds_change2.local_surface_id_allocation);
   embedding_helper->window_tree_client.tracker()->changes()->clear();
