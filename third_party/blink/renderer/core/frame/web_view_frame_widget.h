@@ -50,6 +50,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
+  void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
   void RecordStartOfFrameMetrics() override;

@@ -101,6 +101,9 @@ class WebWidget {
   virtual void BeginFrame(base::TimeTicks last_frame_time,
                           bool record_main_frame_metrics) {}
 
+  // Called after UpdateAllLifecyclePhases has run in response to a BeginFrame.
+  virtual void DidBeginFrame() {}
+
   // Called when main frame metrics are desired. The local frame's UKM
   // aggregator must be informed that collection is starting for the
   // frame.
