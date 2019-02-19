@@ -963,11 +963,12 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
 
-  EXPECT_EQ(nullptr, ToLocalFrame(WebView()->GetPage()->MainFrame())
-                         ->Loader()
-                         .GetDocumentLoader()
-                         ->GetHistoryItem()
-                         ->GetViewState());
+  EXPECT_FALSE(ToLocalFrame(WebView()->GetPage()->MainFrame())
+                   ->Loader()
+                   .GetDocumentLoader()
+                   ->GetHistoryItem()
+                   ->GetViewState()
+                   .has_value());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
