@@ -126,9 +126,8 @@ std::string JSONReader::ErrorCodeToString(JsonParseError error_code) {
   return std::string();
 }
 
-std::unique_ptr<Value> JSONReader::ReadToValue(StringPiece json) {
-  Optional<Value> value = parser_->Parse(json);
-  return value ? std::make_unique<Value>(std::move(*value)) : nullptr;
+Optional<Value> JSONReader::ReadToValue(StringPiece json) {
+  return parser_->Parse(json);
 }
 
 std::unique_ptr<Value> JSONReader::ReadToValueDeprecated(StringPiece json) {
