@@ -299,9 +299,8 @@ void Ui::OnSpeechRecognitionStateChanged(int new_state) {
   model_->speech.speech_recognition_state = new_state;
 }
 
-void Ui::SetOmniboxSuggestions(
-    std::unique_ptr<OmniboxSuggestions> suggestions) {
-  model_->omnibox_suggestions = suggestions->suggestions;
+void Ui::SetOmniboxSuggestions(std::vector<OmniboxSuggestion> suggestions) {
+  model_->omnibox_suggestions = std::move(suggestions);
 }
 
 void Ui::ShowSoftInput(bool show) {

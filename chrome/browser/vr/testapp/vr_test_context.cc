@@ -637,7 +637,7 @@ void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
-  auto result = std::make_unique<OmniboxSuggestions>();
+  std::vector<OmniboxSuggestion> result;
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
 
   if (request.text.empty()) {
@@ -649,40 +649,39 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
   base::string16 full_string = base::UTF8ToUTF16("wikipedia.org");
   if (!request.prevent_inline_autocomplete && request.text.size() >= 2 &&
       full_string.find(request.text) == 0) {
-    result->suggestions.emplace_back(OmniboxSuggestion(
-        full_string, base::string16(), ACMatchClassifications(),
-        ACMatchClassifications(), &vector_icons::kSearchIcon, GURL(),
-        request.text, full_string.substr(request.text.size())));
+    result.emplace_back(full_string, base::string16(), ACMatchClassifications(),
+                        ACMatchClassifications(), &vector_icons::kSearchIcon,
+                        GURL(), request.text,
+                        full_string.substr(request.text.size()));
   }
 
   // Supply a verbatim search match.
-  result->suggestions.emplace_back(OmniboxSuggestion(
-      request.text, base::string16(), ACMatchClassifications(),
-      ACMatchClassifications(), &vector_icons::kSearchIcon, GURL(),
-      base::string16(), base::string16()));
+  result.emplace_back(request.text, base::string16(), ACMatchClassifications(),
+                      ACMatchClassifications(), &vector_icons::kSearchIcon,
+                      GURL(), base::string16(), base::string16());
 
   // Add a suggestion to exercise classification text styling.
-  result->suggestions.emplace_back(OmniboxSuggestion(
+  result.emplace_back(
       base::UTF8ToUTF16("Suggestion with classification"),
       base::UTF8ToUTF16("none url match dim"), ACMatchClassifications(),
-      {
+      ACMatchClassifications{
           ACMatchClassification(0, ACMatchClassification::NONE),
           ACMatchClassification(5, ACMatchClassification::URL),
           ACMatchClassification(9, ACMatchClassification::MATCH),
           ACMatchClassification(15, ACMatchClassification::DIM),
       },
       &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
-      base::string16(), base::string16()));
+      base::string16(), base::string16());
 
-  while (result->suggestions.size() < 4) {
-    result->suggestions.emplace_back(OmniboxSuggestion(
+  while (result.size() < 4) {
+    result.emplace_back(
         base::UTF8ToUTF16("Suggestion"),
         base::UTF8ToUTF16(
             "Very lengthy description of the suggestion that would wrap "
             "if not truncated through some other means."),
         ACMatchClassifications(), ACMatchClassifications(),
         &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
-        base::string16(), base::string16()));
+        base::string16(), base::string16());
   }
 
   browser_ui->SetOmniboxSuggestions(std::move(result));
@@ -690,7 +689,7 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
 
 void VrTestContext::StopAutocomplete() {
   ui_->GetBrowserUiWeakPtr()->SetOmniboxSuggestions(
-      std::make_unique<OmniboxSuggestions>());
+      std::vector<OmniboxSuggestion>{});
 }
 
 void VrTestContext::ShowPageInfo() {

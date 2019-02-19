@@ -53,13 +53,6 @@ struct VR_BASE_EXPORT OmniboxSuggestion {
   Autocompletion autocompletion;
 };
 
-struct VR_BASE_EXPORT OmniboxSuggestions {
-  OmniboxSuggestions();
-  ~OmniboxSuggestions();
-
-  std::vector<OmniboxSuggestion> suggestions;
-};
-
 // This struct contains the minimal set of information required to construct an
 // AutocompleteInput on VR's behalf.
 struct VR_BASE_EXPORT AutocompleteRequest {
