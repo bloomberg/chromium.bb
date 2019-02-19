@@ -265,7 +265,6 @@ namespace autotestPrivate {
     // Enable/disable the Play Store.
     // |enabled|: if set, enable the Play Store.
     // |callback|: Called when the operation has completed.
-    // [deprecated="Use setWhitelistedPref('kArcLocationServiceEnabled')"]
     static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
 
     // Get details about a histogram displayed at chrome://histogram.

@@ -230,9 +230,6 @@ class AutotestPrivateGetArcStateFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-// Deprecated: use AutotestPrivateSetWhitelistedPrefFunction instead.
-// TODO(meilinw): remove this deprecated API after updating any existing
-// autotests (b/123957540).
 class AutotestPrivateSetPlayStoreEnabledFunction
     : public UIThreadExtensionFunction {
  public:
