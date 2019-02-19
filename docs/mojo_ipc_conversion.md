@@ -423,15 +423,33 @@ Use `WTF::Bind()` and an appropriate wrapper function depending on the type of
 object and the callback.
 
 For garbage-collected (Oilpan) classes owning the `InterfacePtr`, it is recommended
-to use `WrapPersistent(this)` for response callbacks and `WrapWeakPersistent(this)`
-for connection error handlers:
+to use `WrapWeakPersistent(this)` for connection error handlers since they
+are not guaranteed to get called in a finite time period (wrapping the object
+with `WrapPersistent` in this case would cause memory leaks).
+
+If the response can be discarded in case the object is not alive by the time
+the response is received, use `WrapWeakPersistent(this)` for binding the response callback:
 
 ``` cpp
-// src/third_party/blink/renderer/modules/vr/vr_controller.h
-service_.set_connection_error_handler(
-      WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this)));
-service_->RequestDevice(
-      WTF::Bind(&VRController::OnRequestDeviceReturned, WrapPersistent(this)));
+// src/third_party/blink/renderer/modules/device_orientation/device_sensor_entry.cc
+sensor_.set_connection_error_handler(WTF::Bind(
+    &DeviceSensorEntry::HandleSensorError, WrapWeakPersistent(this)));
+sensor_->ConfigureReadingChangeNotifications(/*enabled=*/false);
+sensor_->AddConfiguration(
+    std::move(config), WTF::Bind(&DeviceSensorEntry::OnSensorAddConfiguration,
+                                 WrapWeakPersistent(this)));
+```
+
+Otherwise (for example, if the response callback is used to resolve a Promise),
+use `WrapPersistent(this)` to keep the object alive:
+
+``` cpp
+// src/third_party/blink/renderer/modules/nfc/nfc.cc
+ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+... 
+nfc_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
+                                 WrapPersistent(this),
+                                 WrapPersistent(resolver)));
 ```
 
 Non-garbage-collected objects can use `WTF::Unretained(this)` for both response
