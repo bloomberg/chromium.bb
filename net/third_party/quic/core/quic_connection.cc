@@ -47,10 +47,6 @@ class QuicEncrypter;
 
 namespace {
 
-// Maximum number of acks received before sending an ack in response.
-// TODO(fayang): Remove this constant when deprecating QUIC_VERSION_35.
-const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
-
 // Maximum number of consecutive sent nonretransmittable packets.
 const QuicPacketCount kMaxConsecutiveNonRetransmittablePackets = 19;
 
@@ -466,8 +462,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;
   }
-  if (transport_version() != QUIC_VERSION_35 &&
-      config.HasClientSentConnectionOption(kNSTP, perspective_)) {
+  if (config.HasClientSentConnectionOption(kNSTP, perspective_)) {
     no_stop_waiting_frames_ = true;
   }
   if (config.HasReceivedStatelessResetToken()) {
@@ -688,6 +683,7 @@ void QuicConnection::OnVersionNegotiationPacket(
   server_supported_versions_ = packet.versions;
 
   if (GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_no_client_conn_ver_negotiation);
     CloseConnection(
         QUIC_INVALID_VERSION,
         QuicStrCat(
@@ -909,11 +905,11 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
       return false;
     }
 
-    QUIC_BUG << ENDPOINT
-             << "Received an unencrypted data frame: closing connection"
-             << " packet_number:" << last_header_.packet_number
-             << " stream_id:" << frame.stream_id
-             << " received_packets:" << received_packet_manager_.ack_frame();
+    QUIC_PEER_BUG << ENDPOINT
+                  << "Received an unencrypted data frame: closing connection"
+                  << " packet_number:" << last_header_.packet_number
+                  << " stream_id:" << frame.stream_id << " received_packets:"
+                  << received_packet_manager_.ack_frame();
     CloseConnection(QUIC_UNENCRYPTED_STREAM_DATA,
                     "Unencrypted stream data seen.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -1455,14 +1451,6 @@ void QuicConnection::OnAuthenticatedIetfStatelessResetPacket(
 
 void QuicConnection::MaybeQueueAck(bool was_missing) {
   ++num_packets_received_since_last_ack_sent_;
-  // Always send an ack every 20 packets in order to allow the peer to discard
-  // information from the SentPacketManager and provide an RTT measurement.
-  if (transport_version() == QUIC_VERSION_35 &&
-      num_packets_received_since_last_ack_sent_ >=
-          kMaxPacketsReceivedBeforeAckSend) {
-    ack_queued_ = true;
-  }
-
   // Determine whether the newly received packet was missing before recording
   // the received packet.
   if (was_missing) {
@@ -2477,15 +2465,13 @@ void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
     return;
   }
 
-  if (transport_version() != QUIC_VERSION_35) {
-    if (serialized_packet->retransmittable_frames.empty() &&
-        !serialized_packet->original_packet_number.IsInitialized()) {
-      // Increment consecutive_num_packets_with_no_retransmittable_frames_ if
-      // this packet is a new transmission with no retransmittable frames.
-      ++consecutive_num_packets_with_no_retransmittable_frames_;
-    } else {
-      consecutive_num_packets_with_no_retransmittable_frames_ = 0;
-    }
+  if (serialized_packet->retransmittable_frames.empty() &&
+      !serialized_packet->original_packet_number.IsInitialized()) {
+    // Increment consecutive_num_packets_with_no_retransmittable_frames_ if
+    // this packet is a new transmission with no retransmittable frames.
+    ++consecutive_num_packets_with_no_retransmittable_frames_;
+  } else {
+    consecutive_num_packets_with_no_retransmittable_frames_ = 0;
   }
   SendOrQueuePacket(serialized_packet);
 }

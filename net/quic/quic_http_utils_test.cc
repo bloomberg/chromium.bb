@@ -39,7 +39,7 @@ TEST(QuicHttpUtilsTest, ConvertQuicPriorityToRequestPriority) {
 
 TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
   quic::QuicTransportVersionVector supported_versions = {
-      quic::QUIC_VERSION_35, quic::QUIC_VERSION_39, quic::QUIC_VERSION_44};
+      quic::QUIC_VERSION_46, quic::QUIC_VERSION_39, quic::QUIC_VERSION_44};
 
   std::vector<uint32_t> alt_svc_versions_google = {quic::QUIC_VERSION_44,
                                                    quic::QUIC_VERSION_43};

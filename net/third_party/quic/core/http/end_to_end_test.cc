@@ -402,9 +402,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
       copt.push_back(kTPCC);
     }
 
-    if (support_server_push_) {
-      copt.push_back(kSPSH);
-    }
     if (GetParam().client_supports_stateless_rejects) {
       copt.push_back(kSREJ);
     }
@@ -3251,7 +3248,6 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   QuicConnection* client_connection =
       client_->client()->client_session()->connection();
   client_connection->set_debug_visitor(&observer);
-  QuicTransportVersion version = client_connection->transport_version();
   // 100KB body.
   QuicString body(100 * 1024, 'a');
   SpdyHeaderBlock headers;
@@ -3263,12 +3259,8 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
   client_->Disconnect();
-  if (version != QUIC_VERSION_35) {
-    EXPECT_LT(0u, observer.num_window_update_frames());
-    EXPECT_EQ(0u, observer.num_ping_frames());
-  } else {
-    EXPECT_EQ(0u, observer.num_window_update_frames());
-  }
+  EXPECT_LT(0u, observer.num_window_update_frames());
+  EXPECT_EQ(0u, observer.num_ping_frames());
 }
 
 TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {

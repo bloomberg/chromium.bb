@@ -347,7 +347,7 @@ void QuicSpdySession::Initialize() {
               QuicUtils::GetHeadersStreamId(connection()->transport_version()));
   }
 
-  if (connection()->transport_version() == QUIC_VERSION_99) {
+  if (VersionUsesQpack(connection()->transport_version())) {
     qpack_encoder_ = QuicMakeUnique<QpackEncoder>(this, this);
     qpack_decoder_ = QuicMakeUnique<QpackDecoder>(this, this);
   }
@@ -366,28 +366,28 @@ void QuicSpdySession::Initialize() {
 }
 
 void QuicSpdySession::OnDecoderStreamError(QuicStringPiece error_message) {
-  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
 
   // TODO(112770235): Signal connection error on decoder stream errors.
   QUIC_NOTREACHED();
 }
 
 void QuicSpdySession::WriteEncoderStreamData(QuicStringPiece data) {
-  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
 
   // TODO(112770235): Send encoder stream data on encoder stream.
   QUIC_NOTREACHED();
 }
 
 void QuicSpdySession::OnEncoderStreamError(QuicStringPiece error_message) {
-  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
 
   // TODO(112770235): Signal connection error on encoder stream errors.
   QUIC_NOTREACHED();
 }
 
 void QuicSpdySession::WriteDecoderStreamData(QuicStringPiece data) {
-  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
 
   // TODO(112770235): Send decoder stream data on decoder stream.
   QUIC_NOTREACHED();
@@ -511,6 +511,18 @@ size_t QuicSpdySession::SendMaxHeaderListSize(size_t value) {
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
+}
+
+QpackEncoder* QuicSpdySession::qpack_encoder() {
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
+
+  return qpack_encoder_.get();
+}
+
+QpackDecoder* QuicSpdySession::qpack_decoder() {
+  DCHECK(VersionUsesQpack(connection()->transport_version()));
+
+  return qpack_decoder_.get();
 }
 
 QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(

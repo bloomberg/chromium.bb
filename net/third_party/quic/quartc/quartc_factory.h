@@ -30,16 +30,19 @@ struct QuartcSessionConfig {
   // endpoint must act as a server and the one on the other side must act as a
   // client.
   Perspective perspective = Perspective::IS_CLIENT;
-  // This is only needed when is_server = false.  It must be unique
-  // for each endpoint the local endpoint may communicate with. For example,
-  // a WebRTC client could use the remote endpoint's crypto fingerprint
-  QuicString unique_remote_server_id;
+
+  // If a pre-shared cryptographic key is available for this session, specify it
+  // here.  This value will only be used if non-empty.
+  QuicString pre_shared_key;
+
   // The way the QuicConnection will send and receive packets, like a virtual
   // UDP socket. For WebRTC, this will typically be an IceTransport.
   QuartcPacketTransport* packet_transport = nullptr;
+
   // The maximum size of the packet can be written with the packet writer.
   // 1200 bytes by default.
   QuicPacketLength max_packet_size = 1200;
+
   // Timeouts for the crypto handshake. Set them to higher values to
   // prevent closing the session before it started on a slow network.
   // Zero entries are ignored and QUIC defaults are used in that case.
@@ -57,7 +60,7 @@ struct QuartcSessionConfig {
 // Factory that creates instances of QuartcSession.  Implements the
 // QuicConnectionHelperInterface used by the QuicConnections. Only one
 // QuartcFactory is expected to be created.
-class QUIC_EXPORT_PRIVATE QuartcFactory {
+class QuartcFactory {
  public:
   explicit QuartcFactory(const QuartcFactoryConfig& factory_config);
 
@@ -79,7 +82,24 @@ class QUIC_EXPORT_PRIVATE QuartcFactory {
 
   // Helper used by all QuicConnections.
   std::unique_ptr<QuicConnectionHelperInterface> connection_helper_;
+
+  // Used by QuicCryptoServerStream to track most recently compressed certs.
+  std::unique_ptr<QuicCompressedCertsCache> compressed_certs_cache_;
+
+  // This helper is needed to create QuicCryptoServerStreams.
+  std::unique_ptr<QuicCryptoServerStream::Helper> stream_helper_;
 };
+
+QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config);
+
+std::unique_ptr<QuicConnection> CreateQuicConnection(
+    QuicConnectionId connection_id,
+    const QuicSocketAddress& peer_address,
+    QuicConnectionHelperInterface* connection_helper,
+    QuicAlarmFactory* alarm_factory,
+    QuicPacketWriter* packet_writer,
+    Perspective perspective,
+    ParsedQuicVersionVector supported_versions);
 
 // Creates a new instance of QuartcFactory.
 std::unique_ptr<QuartcFactory> CreateQuartcFactory(

@@ -825,7 +825,7 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                                    const QuicFrames& frames,
                                    char* buffer,
                                    size_t packet_length) {
-  QuicDataWriter writer(packet_length, buffer, endianness());
+  QuicDataWriter writer(packet_length, buffer);
   if (!AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";
     return 0;
@@ -1157,7 +1157,7 @@ size_t QuicFramer::BuildConnectivityProbingPacket(
     return BuildConnectivityProbingPacketNew(header, buffer, packet_length);
   }
 
-  QuicDataWriter writer(packet_length, buffer, endianness());
+  QuicDataWriter writer(packet_length, buffer);
 
   if (!AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";
@@ -1278,7 +1278,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
   std::unique_ptr<char[]> buffer(new char[len]);
   // Endianness is not a concern here, as writer is not going to write integers
   // or floating numbers.
-  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+  QuicDataWriter writer(len, buffer.get());
 
   uint8_t flags = static_cast<uint8_t>(PACKET_PUBLIC_FLAGS_RST |
                                        PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
@@ -1312,7 +1312,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
   size_t len = kPacketHeaderTypeSize + random_bytes_length +
                sizeof(stateless_reset_token);
   std::unique_ptr<char[]> buffer(new char[len]);
-  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+  QuicDataWriter writer(len, buffer.get());
 
   uint8_t type = 0;
   type |= FLAGS_FIXED_BIT;
@@ -1363,7 +1363,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
   std::unique_ptr<char[]> buffer(new char[len]);
   // Endianness is not a concern here, version negotiation packet does not have
   // integers or floating numbers.
-  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+  QuicDataWriter writer(len, buffer.get());
 
   uint8_t flags = static_cast<uint8_t>(
       PACKET_PUBLIC_FLAGS_VERSION | PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID |
@@ -1399,7 +1399,7 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
                PACKET_8BYTE_CONNECTION_ID +
                (versions.size() + 1) * kQuicVersionSize;
   std::unique_ptr<char[]> buffer(new char[len]);
-  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+  QuicDataWriter writer(len, buffer.get());
 
   // TODO(fayang): Randomly select a value for the type.
   uint8_t type = static_cast<uint8_t>(FLAGS_LONG_HEADER | VERSION_NEGOTIATION);
@@ -1430,7 +1430,7 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
 }
 
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
-  QuicDataReader reader(packet.data(), packet.length(), endianness());
+  QuicDataReader reader(packet.data(), packet.length());
 
   bool last_packet_is_ietf_quic = false;
   if (infer_packet_header_type_from_version_) {
@@ -1441,7 +1441,6 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   }
   if (last_packet_is_ietf_quic) {
     QUIC_DVLOG(1) << ENDPOINT << "Processing IETF QUIC packet.";
-    reader.set_endianness(NETWORK_BYTE_ORDER);
   }
 
   visitor_->OnPacket();
@@ -1466,9 +1465,6 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
       return true;
     }
   }
-
-  // framer's version may change, reset reader's endianness.
-  reader.set_endianness(endianness());
 
   bool rv;
   if (IsVersionNegotiation(header, last_packet_is_ietf_quic)) {
@@ -1607,7 +1603,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
     set_detailed_error("Unable to decrypt payload.");
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
-  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
+  QuicDataReader reader(decrypted_buffer, decrypted_length);
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -1673,7 +1669,7 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
 
-  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
+  QuicDataReader reader(decrypted_buffer, decrypted_length);
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -3468,11 +3464,6 @@ bool QuicFramer::ProcessBlockedFrame(QuicDataReader* reader,
 
 void QuicFramer::ProcessPaddingFrame(QuicDataReader* reader,
                                      QuicPaddingFrame* frame) {
-  if (version_.transport_version == QUIC_VERSION_35) {
-    frame->num_padding_bytes = reader->BytesRemaining() + 1;
-    reader->ReadRemainingPayload();
-    return;
-  }
   // Type byte has been read.
   frame->num_padding_bytes = 1;
   uint8_t next_byte;
@@ -3570,7 +3561,7 @@ size_t QuicFramer::EncryptInPlace(EncryptionLevel level,
   DCHECK(packet_number.IsInitialized());
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(
-          version_.transport_version, packet_number.ToUint64(),
+          packet_number.ToUint64(),
           QuicStringPiece(buffer, ad_len),  // Associated data
           QuicStringPiece(buffer + ad_len, total_len - ad_len),  // Plaintext
           buffer + ad_len,  // Destination buffer
@@ -3599,7 +3590,7 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(
-          version_.transport_version, packet_number.ToUint64(), associated_data,
+          packet_number.ToUint64(), associated_data,
           packet.Plaintext(version_.transport_version), buffer + ad_len,
           &output_length, buffer_len - ad_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
@@ -3641,9 +3632,8 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
       header.nonce != nullptr, header.packet_number_length);
 
   bool success = decrypter_->DecryptPacket(
-      version_.transport_version, header.packet_number.ToUint64(),
-      associated_data, encrypted, decrypted_buffer, decrypted_length,
-      buffer_length);
+      header.packet_number.ToUint64(), associated_data, encrypted,
+      decrypted_buffer, decrypted_length, buffer_length);
   if (success) {
     visitor_->OnDecryptedPacket(decrypter_level_);
   } else if (alternative_decrypter_ != nullptr) {
@@ -3665,9 +3655,8 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
 
     if (try_alternative_decryption) {
       success = alternative_decrypter_->DecryptPacket(
-          version_.transport_version, header.packet_number.ToUint64(),
-          associated_data, encrypted, decrypted_buffer, decrypted_length,
-          buffer_length);
+          header.packet_number.ToUint64(), associated_data, encrypted,
+          decrypted_buffer, decrypted_length, buffer_length);
     }
     if (success) {
       visitor_->OnDecryptedPacket(alternative_decrypter_level_);
@@ -4775,11 +4764,6 @@ bool QuicFramer::AppendBlockedFrame(const QuicBlockedFrame& frame,
 
 bool QuicFramer::AppendPaddingFrame(const QuicPaddingFrame& frame,
                                     QuicDataWriter* writer) {
-  if (version_.transport_version == QUIC_VERSION_35) {
-    writer->WritePadding();
-    return true;
-  }
-
   if (frame.num_padding_bytes == 0) {
     return false;
   }
@@ -4833,11 +4817,6 @@ bool QuicFramer::IsVersionNegotiation(const QuicPacketHeader& header,
   return header.long_packet_type == VERSION_NEGOTIATION;
 }
 
-Endianness QuicFramer::endianness() const {
-  return version_.transport_version != QUIC_VERSION_35 ? NETWORK_BYTE_ORDER
-                                                       : HOST_BYTE_ORDER;
-}
-
 bool QuicFramer::StartsWithChlo(QuicStreamId id,
                                 QuicStreamOffset offset) const {
   if (data_producer_ == nullptr) {
@@ -4845,7 +4824,7 @@ bool QuicFramer::StartsWithChlo(QuicStreamId id,
     return false;
   }
   char buf[sizeof(kCHLO)];
-  QuicDataWriter writer(sizeof(kCHLO), buf, endianness());
+  QuicDataWriter writer(sizeof(kCHLO), buf);
   if (data_producer_->WriteStreamData(id, offset, sizeof(kCHLO), &writer) !=
       WRITE_SUCCESS) {
     QUIC_BUG << "Failed to write data for stream " << id << " with offset "

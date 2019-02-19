@@ -241,7 +241,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 
 // If true, QuicSpdyStream::WritevBody() will convert iovs into QuicMemSliceSpan
 // and call WriteMemSlices instead.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, true)
 
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
@@ -256,7 +256,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)
 // opinion about whether their packet writers are blocked.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_check_blocked_writer_for_blockage,
-          false)
+          true)
 
 // If true, for QUIC V44, if a server connection is post handshake and has no
 // termination packets, add it to time wait list with
@@ -271,7 +271,7 @@ QUIC_FLAG(
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_connection_do_not_add_to_write_blocked_list_if_disconnected,
-    false)
+    true)
 
 // Changes internal in-memory representation of QUIC connection IDs to network
 // byte order.
@@ -304,7 +304,7 @@ QUIC_FLAG(bool,
 // ack decimation with reordering.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_keep_ack_decimation_reordering,
-          false)
+          true)
 
 // If true, log leaf cert subject name into warning log.
 QUIC_FLAG(bool,
@@ -320,11 +320,11 @@ QUIC_FLAG(
 
 // If true, QuicCryptoServerConfig will correctly rotate configs based on
 // primary time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, true)
 
 // If true, use numeric_limits<uint64_t>::max() to represent uninitialized
 // packet number.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_uint64max_uninitialized_pn, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_uint64max_uninitialized_pn, true)
 
 // If true, Set is_current_packet_connectivity_probing_ to false in the end
 // of QuicConnection::ProcessUdpPacket.

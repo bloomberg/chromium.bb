@@ -38,7 +38,11 @@ const uint64_t kVarInt62Mask2Bytes = UINT64_C(0x0000000000003fc0);
 // of the QuicDataWriter.
 class QUIC_EXPORT_PRIVATE QuicDataWriter {
  public:
-  // Creates a QuicDataWriter where |buffer| is not owned.
+  // Creates a QuicDataWriter where |buffer| is not owned
+  // using NETWORK_BYTE_ORDER endianness.
+  QuicDataWriter(size_t size, char* buffer);
+  // Creates a QuicDataWriter where |buffer| is not owned
+  // using the specified endianness.
   QuicDataWriter(size_t size, char* buffer, Endianness endianness);
   QuicDataWriter(const QuicDataWriter&) = delete;
   QuicDataWriter& operator=(const QuicDataWriter&) = delete;

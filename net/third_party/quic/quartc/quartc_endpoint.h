@@ -13,8 +13,15 @@
 
 namespace quic {
 
+// Private implementation of QuartcEndpoint.  Enables different implementations
+// for client and server endpoints.
+class QuartcEndpointImpl {
+ public:
+  virtual ~QuartcEndpointImpl() = default;
+};
+
 // Endpoint (client or server) in a peer-to-peer Quartc connection.
-class QUIC_EXPORT_PRIVATE QuartcEndpoint {
+class QuartcEndpoint {
  public:
   class Delegate {
    public:
@@ -46,20 +53,6 @@ class QUIC_EXPORT_PRIVATE QuartcEndpoint {
   void Connect(const QuartcSessionConfig& config);
 
  private:
-  friend class CreateSessionDelegate;
-  class CreateSessionDelegate : public QuicAlarm::Delegate {
-   public:
-    CreateSessionDelegate(QuartcEndpoint* endpoint) : endpoint_(endpoint) {}
-
-    void OnAlarm() override { endpoint_->OnCreateSessionAlarm(); };
-
-   private:
-    QuartcEndpoint* endpoint_;
-  };
-
-  // Callback which occurs when |create_session_alarm_| fires.
-  void OnCreateSessionAlarm();
-
   // Implementation of QuicAlarmFactory used by this endpoint.  Unowned.
   QuicAlarmFactory* alarm_factory_;
 
@@ -69,23 +62,10 @@ class QUIC_EXPORT_PRIVATE QuartcEndpoint {
   // Delegate which receives callbacks for newly created sessions.
   Delegate* delegate_;
 
-  // Alarm for creating sessions asynchronously.  The alarm is set when
-  // Connect() is called.  When it fires, the endpoint creates a session and
-  // calls the delegate.
-  std::unique_ptr<QuicAlarm> create_session_alarm_;
-
-  // QuartcFactory used by this endpoint to create sessions.  This is an
-  // implementation detail of the QuartcEndpoint, and will eventually be
-  // replaced by a dispatcher (for servers) or version-negotiation agent (for
-  // clients).
-  std::unique_ptr<QuartcFactory> factory_;
-
-  // Config to be used for new sessions.
-  QuartcSessionConfig config_;
-
-  // The currently-active session.  Nullptr until |Connect| and
-  // |Delegate::OnSessionCreated| are called.
-  std::unique_ptr<QuartcSession> session_;
+  // Implementation of the endpoint.  Created when Connect() is called.  This
+  // indirection enables different implementations for client and server
+  // endpoints.
+  std::unique_ptr<QuartcEndpointImpl> impl_;
 };
 
 }  // namespace quic

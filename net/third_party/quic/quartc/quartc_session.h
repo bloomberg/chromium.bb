@@ -14,49 +14,24 @@
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_types.h"
-#include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/quartc_stream.h"
 
 namespace quic {
 
-// A helper class is used by the QuicCryptoServerStream.
-class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
- public:
-  QuicConnectionId GenerateConnectionIdForReject(
-      QuicTransportVersion version,
-      QuicConnectionId connection_id) const override;
-
-  bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
-                            const QuicSocketAddress& client_address,
-                            const QuicSocketAddress& peer_address,
-                            const QuicSocketAddress& self_address,
-                            QuicString* error_details) const override;
-};
-
 // QuartcSession owns and manages a QUIC connection.
-class QUIC_EXPORT_PRIVATE QuartcSession
-    : public QuicSession,
-      public QuartcPacketTransport::Delegate,
-      public QuicCryptoClientStream::ProofHandler {
+class QuartcSession : public QuicSession,
+                      public QuartcPacketTransport::Delegate {
  public:
   QuartcSession(std::unique_ptr<QuicConnection> connection,
                 const QuicConfig& config,
                 const ParsedQuicVersionVector& supported_versions,
-                const QuicString& unique_remote_server_id,
-                Perspective perspective,
-                QuicConnectionHelperInterface* helper,
-                const QuicClock* clock,
-                std::unique_ptr<QuartcPacketWriter> packet_writer);
+                const QuicClock* clock);
   QuartcSession(const QuartcSession&) = delete;
   QuartcSession& operator=(const QuartcSession&) = delete;
   ~QuartcSession() override;
 
   // QuicSession overrides.
-  QuicCryptoStream* GetMutableCryptoStream() override;
-
-  const QuicCryptoStream* GetCryptoStream() const override;
-
   QuartcStream* CreateOutgoingBidirectionalStream();
 
   // Sends short unreliable message using quic message frame (message must fit
@@ -96,12 +71,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
                           ConnectionCloseSource source) override;
 
   // QuartcSession methods.
-
-  // Sets a pre-shared key for use during the crypto handshake.  Must be set
-  // before StartCryptoHandshake() is called.
-  void SetPreSharedKey(QuicStringPiece key);
-
-  void StartCryptoHandshake();
+  virtual void StartCryptoHandshake() = 0;
 
   // Closes the connection with the given human-readable error details.
   // The connection closes with the QUIC_CONNECTION_CANCELLED error code to
@@ -171,15 +141,6 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   void OnMessageReceived(QuicStringPiece message) override;
 
-  // ProofHandler overrides.
-  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
-
-  // Called by the client crypto handshake when proof verification details
-  // become available, either because proof verification is complete, or when
-  // cached details are used.
-  void OnProofVerifyDetailsAvailable(
-      const ProofVerifyDetails& verify_details) override;
-
   // Returns number of queued (not sent) messages submitted by
   // SendOrQueueMessage. Messages are queued if connection is congestion
   // controlled.
@@ -207,32 +168,16 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   void ProcessSendMessageQueue();
 
-  // For crypto handshake.
-  std::unique_ptr<QuicCryptoStream> crypto_stream_;
-  const QuicString unique_remote_server_id_;
-  Perspective perspective_;
-
-  // Packet writer used by |connection_|.
-  std::unique_ptr<QuartcPacketWriter> packet_writer_;
-
   // Take ownership of the QuicConnection.  Note: if |connection_| changes,
   // the new value of |connection_| must be given to |packet_writer_| before any
   // packets are written.  Otherwise, |packet_writer_| will crash.
   std::unique_ptr<QuicConnection> connection_;
-  // Not owned by QuartcSession. From the QuartcFactory.
-  QuicConnectionHelperInterface* helper_;
+
   // For recording packet receipt time
   const QuicClock* clock_;
+
   // Not owned by QuartcSession.
   Delegate* session_delegate_ = nullptr;
-  // Used by QUIC crypto server stream to track most recently compressed certs.
-  std::unique_ptr<QuicCompressedCertsCache> quic_compressed_certs_cache_;
-  // This helper is needed when create QuicCryptoServerStream.
-  QuartcCryptoServerStreamHelper stream_helper_;
-  // Config for QUIC crypto client stream, used by the client.
-  std::unique_ptr<QuicCryptoClientConfig> quic_crypto_client_config_;
-  // Config for QUIC crypto server stream, used by the server.
-  std::unique_ptr<QuicCryptoServerConfig> quic_crypto_server_config_;
 
   // Options passed to the packet writer for each packet.
   std::unique_ptr<QuartcPerPacketOptions> per_packet_options_;
@@ -241,6 +186,89 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   // yet or blocked by congestion control. Messages are queued in the order
   // of sent by SendOrQueueMessage().
   QuicDeque<QuicString> send_message_queue_;
+};
+
+class QuartcClientSession : public QuartcSession,
+                            public QuicCryptoClientStream::ProofHandler {
+ public:
+  QuartcClientSession(
+      std::unique_ptr<QuicConnection> connection,
+      const QuicConfig& config,
+      const ParsedQuicVersionVector& supported_versions,
+      const QuicClock* clock,
+      std::unique_ptr<QuartcPacketWriter> packet_writer,
+      std::unique_ptr<QuicCryptoClientConfig> client_crypto_config);
+  QuartcClientSession(const QuartcClientSession&) = delete;
+  QuartcClientSession& operator=(const QuartcClientSession&) = delete;
+
+  ~QuartcClientSession() override;
+
+  // Initialize should not be called on a QuartcSession.  Instead, call
+  // StartCryptoHandshake().
+  // TODO(mellem): Move creation of the crypto stream into Initialize() and
+  // remove StartCryptoHandshake() to bring QuartcSession in line with other
+  // implementations of QuicSession, which can be started by calling
+  // Initialize().
+  void Initialize() override;
+
+  // Accessors for the client crypto stream.
+  QuicCryptoStream* GetMutableCryptoStream() override;
+  const QuicCryptoStream* GetCryptoStream() const override;
+
+  // Initializes the session and sends a handshake.
+  void StartCryptoHandshake() override;
+
+  // ProofHandler overrides.
+  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
+
+  // Called by the client crypto handshake when proof verification details
+  // become available, either because proof verification is complete, or when
+  // cached details are used.
+  void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) override;
+
+ private:
+  // Packet writer used by |connection_|.
+  std::unique_ptr<QuartcPacketWriter> packet_writer_;
+
+  // Config for QUIC crypto stream.
+  std::unique_ptr<QuicCryptoClientConfig> client_crypto_config_;
+
+  // Client perspective crypto stream.
+  std::unique_ptr<QuicCryptoClientStream> crypto_stream_;
+};
+
+class QuartcServerSession : public QuartcSession {
+ public:
+  QuartcServerSession(std::unique_ptr<QuicConnection> connection,
+                      const QuicConfig& config,
+                      const ParsedQuicVersionVector& supported_versions,
+                      const QuicClock* clock,
+                      const QuicCryptoServerConfig* server_crypto_config,
+                      QuicCompressedCertsCache* const compressed_certs_cache,
+                      QuicCryptoServerStream::Helper* const stream_helper);
+  QuartcServerSession(const QuartcServerSession&) = delete;
+  QuartcServerSession& operator=(const QuartcServerSession&) = delete;
+
+  // Accessors for the server crypto stream.
+  QuicCryptoStream* GetMutableCryptoStream() override;
+  const QuicCryptoStream* GetCryptoStream() const override;
+
+  // Initializes the session and prepares to receive a handshake.
+  void StartCryptoHandshake() override;
+
+ private:
+  // Config for QUIC crypto stream.
+  const QuicCryptoServerConfig* server_crypto_config_;
+
+  // Used by QUIC crypto server stream to track most recently compressed certs.
+  QuicCompressedCertsCache* const compressed_certs_cache_;
+
+  // This helper is needed to create QuicCryptoServerStream.
+  QuicCryptoServerStream::Helper* const stream_helper_;
+
+  // Server perspective crypto stream.
+  std::unique_ptr<QuicCryptoServerStream> crypto_stream_;
 };
 
 }  // namespace quic

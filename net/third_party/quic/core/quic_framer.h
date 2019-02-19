@@ -508,9 +508,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if data with |offset| of stream |id| starts with 'CHLO'.
   bool StartsWithChlo(QuicStreamId id, QuicStreamOffset offset) const;
 
-  // Returns byte order to read/write integers and floating numbers.
-  Endianness endianness() const;
-
   // Returns true if |header| is considered as an stateless reset packet.
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 

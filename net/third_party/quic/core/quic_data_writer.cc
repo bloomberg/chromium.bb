@@ -15,6 +15,9 @@
 
 namespace quic {
 
+QuicDataWriter::QuicDataWriter(size_t size, char* buffer)
+    : QuicDataWriter(size, buffer, NETWORK_BYTE_ORDER) {}
+
 QuicDataWriter::QuicDataWriter(size_t size, char* buffer, Endianness endianness)
     : buffer_(buffer), capacity_(size), length_(0), endianness_(endianness) {}
 
