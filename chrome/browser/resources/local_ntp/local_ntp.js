@@ -95,6 +95,7 @@ var CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
+  REMOVE_FAKEBOX: 'remove-fakebox',  // Hides the fakebox from the page.
   RTL: 'rtl',  // Right-to-left language text.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
@@ -133,6 +134,7 @@ var IDS = {
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo',
+  USER_CONTENT: 'user-content',
 };
 
 
@@ -1087,7 +1089,7 @@ function init() {
     customBackgrounds.init(showErrorNotification, hideNotification);
 
     if (configData.removeFakebox) {
-      $(IDS.FAKEBOX_CONTAINER).style.display = 'none';
+      document.body.classList.add(CLASSES.REMOVE_FAKEBOX);
     } else {
       // Set up the fakebox (which only exists on the Google NTP).
       ntpApiHandle.oninputstart = onInputStart;
@@ -1316,7 +1318,7 @@ function injectSearchSuggestions(suggestions) {
   suggestionsContainer.id = IDS.SUGGESTIONS;
   suggestionsContainer.style.visibility = 'hidden';
   suggestionsContainer.innerHTML += suggestions.suggestionsHtml;
-  $(IDS.NTP_CONTENTS).insertBefore(suggestionsContainer, $('most-visited'));
+  $(IDS.USER_CONTENT).insertAdjacentElement('afterbegin', suggestionsContainer);
 
   let endOfBodyScript = document.createElement('script');
   endOfBodyScript.type = 'text/javascript';
