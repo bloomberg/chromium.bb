@@ -3075,8 +3075,12 @@
   },
   {
     "name": "use-angle",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "angle-team@google.com" ],
+    // This flag is used by certain customers to set ANGLE to use its OpenGL
+    // backend on Windows. Its usage is small enough that it isn't worth
+    // promoting this to a chrome://settings entry, but it needs to be readily
+    // available.
+    "expiry_milestone": -1
   },
   {
     "name": "use-ddljson-api",
