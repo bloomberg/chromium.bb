@@ -745,16 +745,16 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
                   this.busy_ = false;
                 } else {
                   directoryModel.updateAndSelectNewDirectory(newDirectory)
-                      .then(
-                          () => {
-                            listContainer.endBatchUpdates();
-                            fileManager.namingController.initiateRename();
-                            this.busy_ = false;
-                          },
-                          () => {
-                            listContainer.endBatchUpdates();
-                            this.busy_ = false;
-                          });
+                      .then(() => {
+                        listContainer.endBatchUpdates();
+                        fileManager.namingController.initiateRename();
+                        this.busy_ = false;
+                      })
+                      .catch(error => {
+                        listContainer.endBatchUpdates();
+                        this.busy_ = false;
+                        console.error(error);
+                      });
                 }
               },
               (error) => {
