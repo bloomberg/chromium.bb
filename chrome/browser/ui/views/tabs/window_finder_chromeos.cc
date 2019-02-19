@@ -48,8 +48,11 @@ class WindowFinderMus : public WindowFinder {
       const gfx::Point& screen_point,
       const std::set<gfx::NativeWindow>& ignore) override {
     DCHECK_LE(ignore.size(), 1u);
-    aura::Window* window =
-        ignore.empty() ? tracker_->topmost() : tracker_->second_topmost();
+    aura::Window* window = tracker_->GetTopmost();
+    if (ignore.find(window) != ignore.end())
+      window = tracker_->GetSecondTopmost();
+    if (ignore.find(window) != ignore.end())
+      window = nullptr;
     if (!window)
       return nullptr;
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);

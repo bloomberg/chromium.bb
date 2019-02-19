@@ -1956,8 +1956,13 @@ TabDragController::Liveness TabDragController::GetLocalProcessWindow(
   if (exclude_dragged_view) {
     gfx::NativeWindow dragged_window =
         attached_tabstrip_->GetWidget()->GetNativeWindow();
-    if (dragged_window)
+    if (dragged_window) {
+#if defined(OS_CHROMEOS)
+      if (features::IsUsingWindowService())
+        dragged_window = dragged_window->GetRootWindow();
+#endif
       exclude.insert(dragged_window);
+    }
   }
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Exclude windows which are pending deletion via Browser::TabStripEmpty().
