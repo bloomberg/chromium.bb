@@ -678,9 +678,10 @@ TEST_F(FrameSchedulerImplTest, SubesourceLoadingPaused) {
     std::unique_ptr<MockLifecycleObserver> loader_observer_added_after_stopped =
         std::make_unique<MockLifecycleObserver>();
 
-    auto loader_observer_handle = frame_scheduler_->AddLifecycleObserver(
-        FrameScheduler::ObserverType::kLoader,
-        loader_observer_added_after_stopped.get());
+    auto loader_observer_added_after_stopped_handle =
+        frame_scheduler_->AddLifecycleObserver(
+            FrameScheduler::ObserverType::kLoader,
+            loader_observer_added_after_stopped.get());
     // This observer should see stopped when added.
     loader_observer_added_after_stopped->CheckObserverState(FROM_HERE, 0, 0, 0,
                                                             1u);

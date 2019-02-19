@@ -339,10 +339,10 @@ void DynamicsCompressorKernel::Process(
       float x2 = x * x;
       float x3 = x2 * x;
       float x4 = x2 * x2;
-      float release_frames = a + b * x + c * x2 + d * x3 + e * x4;
+      float calc_release_frames = a + b * x + c * x2 + d * x3 + e * x4;
 
 #define kSpacingDb 5
-      float db_per_frame = kSpacingDb / release_frames;
+      float db_per_frame = kSpacingDb / calc_release_frames;
 
       envelope_rate = DecibelsToLinear(db_per_frame);
     } else {
@@ -382,9 +382,9 @@ void DynamicsCompressorKernel::Process(
 
         // Predelay signal, computing compression amount from un-delayed
         // version.
-        for (unsigned i = 0; i < number_of_channels; ++i) {
-          float* delay_buffer = pre_delay_buffers_[i]->Data();
-          float undelayed_source = source_channels[i][frame_index];
+        for (unsigned j = 0; j < number_of_channels; ++j) {
+          float* delay_buffer = pre_delay_buffers_[j]->Data();
+          float undelayed_source = source_channels[j][frame_index];
           delay_buffer[pre_delay_write_index] = undelayed_source;
 
           float abs_undelayed_source =
@@ -455,9 +455,9 @@ void DynamicsCompressorKernel::Process(
               (db_real_gain - metering_gain_) * metering_release_k_;
 
         // Apply final gain.
-        for (unsigned i = 0; i < number_of_channels; ++i) {
-          float* delay_buffer = pre_delay_buffers_[i]->Data();
-          destination_channels[i][frame_index] =
+        for (unsigned j = 0; j < number_of_channels; ++j) {
+          float* delay_buffer = pre_delay_buffers_[j]->Data();
+          destination_channels[j][frame_index] =
               delay_buffer[pre_delay_read_index] * total_gain;
         }
 

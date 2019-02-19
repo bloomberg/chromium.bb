@@ -90,9 +90,9 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
   case ResourceType::k##name: {                                             \
     DEFINE_THREAD_SAFE_STATIC_LOCAL(                                        \
-        EnumerationHistogram, resource_histogram,                           \
+        EnumerationHistogram, _single_resource_histogram,                   \
         ("Blink.MemoryCache.RevalidationPolicy." prefix #name, kLoad + 1)); \
-    resource_histogram.Count(policy);                                       \
+    _single_resource_histogram.Count(policy);                               \
     break;                                                                  \
   }
 

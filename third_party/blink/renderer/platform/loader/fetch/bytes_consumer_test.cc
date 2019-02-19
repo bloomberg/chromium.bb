@@ -11,14 +11,13 @@ namespace blink {
 
 namespace {
 
-using Result = BytesConsumer::Result;
-
 TEST(BytesConusmerTest, ClosedBytesConsumer) {
   BytesConsumer* consumer = BytesConsumer::CreateClosed();
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::Result::kDone,
+            consumer->BeginRead(&buffer, &available));
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
 }
 
@@ -28,7 +27,8 @@ TEST(BytesConusmerTest, ErroredBytesConsumer) {
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::Result::kError,
+            consumer->BeginRead(&buffer, &available));
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
   EXPECT_EQ(error.Message(), consumer->GetError().Message());
 

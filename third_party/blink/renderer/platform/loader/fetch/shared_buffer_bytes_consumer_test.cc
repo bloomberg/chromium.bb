@@ -15,7 +15,6 @@
 
 namespace blink {
 
-using Result = BytesConsumer::Result;
 using PublicState = BytesConsumer::PublicState;
 
 TEST(SharedBufferBytesConsumerTest, Read) {
@@ -36,9 +35,9 @@ TEST(SharedBufferBytesConsumerTest, Read) {
   auto* test_reader =
       MakeGarbageCollected<BytesConsumerTestReader>(bytes_consumer);
   Vector<char> data_from_consumer;
-  Result result;
+  BytesConsumer::Result result;
   std::tie(result, data_from_consumer) = test_reader->Run(task_runner.get());
-  EXPECT_EQ(Result::kDone, result);
+  EXPECT_EQ(BytesConsumer::Result::kDone, result);
   EXPECT_EQ(PublicState::kClosed, bytes_consumer->GetPublicState());
   EXPECT_EQ(flatten_expected_data,
             std::string(data_from_consumer.data(), data_from_consumer.size()));
@@ -59,9 +58,9 @@ TEST(SharedBufferBytesConsumerTest, Cancel) {
   bytes_consumer->Cancel();
   const char* buffer;
   size_t available;
-  Result result = bytes_consumer->BeginRead(&buffer, &available);
+  BytesConsumer::Result result = bytes_consumer->BeginRead(&buffer, &available);
   EXPECT_EQ(0u, available);
-  EXPECT_EQ(Result::kDone, result);
+  EXPECT_EQ(BytesConsumer::Result::kDone, result);
   EXPECT_EQ(PublicState::kClosed, bytes_consumer->GetPublicState());
 }
 

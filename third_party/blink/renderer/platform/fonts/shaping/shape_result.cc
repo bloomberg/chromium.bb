@@ -364,17 +364,17 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
   }
 }
 
-void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t glyph_id,
-                                                uint16_t character_index,
-                                                float advance,
-                                                const FloatSize& offset,
-                                                bool safe_to_break_before) {
-  glyph = glyph_id;
-  DCHECK_LE(character_index, kMaxCharacterIndex);
-  this->character_index = character_index;
-  this->advance = advance;
-  this->offset = offset;
-  this->safe_to_break_before = safe_to_break_before;
+void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t new_glyph_id,
+                                                uint16_t new_character_index,
+                                                float new_advance,
+                                                const FloatSize& new_offset,
+                                                bool new_safe_to_break_before) {
+  this->glyph = new_glyph_id;
+  DCHECK_LE(new_character_index, kMaxCharacterIndex);
+  this->character_index = new_character_index;
+  this->advance = new_advance;
+  this->offset = new_offset;
+  this->safe_to_break_before = new_safe_to_break_before;
   this->bounds_before_raw_value = std::numeric_limits<int16_t>::max();
   this->bounds_after_raw_value = std::numeric_limits<int16_t>::max();
 }
