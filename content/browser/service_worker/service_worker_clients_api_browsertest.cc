@@ -258,6 +258,36 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
+// Tests a WindowClient.navigate() call during a browser-initiated navigation.
+// Regression test for https://crbug.com/930154.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
+                       NavigateDuringBrowserNavigation) {
+  // Load a page that registers a service worker.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('client_api_worker.js');"));
+
+  // Load the test page.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/service_worker/request_navigate.html")));
+
+  // Start a browser-initiated navigation.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  TestNavigationManager navigation(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+  EXPECT_TRUE(navigation.WaitForRequestStart());
+
+  // Have the service worker call client.navigate() to try to go to another
+  // URL. It should fail.
+  EXPECT_EQ("navigate failed", EvalJs(shell(), "requestToNavigate();"));
+
+  // The browser-initiated navigation should finish.
+  navigation.WaitForNavigationFinished();  // Resume navigation.
+  EXPECT_TRUE(navigation.was_successful());
+}
+
 // Tests a successful Clients.openWindow() call.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest, OpenWindow) {
   ActivatedServiceWorkerObserver observer;
