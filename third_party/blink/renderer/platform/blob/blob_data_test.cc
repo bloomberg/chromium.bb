@@ -166,9 +166,9 @@ class BlobDataHandleTest : public testing::Test {
 
         base::RunLoop loop;
         Vector<uint8_t> received_bytes;
-        mojom::blink::BytesProviderPtr data(
+        mojom::blink::BytesProviderPtr actual_data(
             std::move(actual->get_bytes()->data));
-        data->RequestAsReply(base::BindOnce(
+        actual_data->RequestAsReply(base::BindOnce(
             [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;

@@ -906,9 +906,9 @@ void ResourceLoader::DidReceiveResponseInternal(
       (resource_->IsCacheValidator() && response.HttpStatusCode() == 304)
           ? resource_->GetResponse()
           : response;
-  base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      CheckResponseNosniff(request_context, nosniffed_response);
-  if (blocked_reason) {
+
+  if (base::Optional<ResourceRequestBlockedReason> blocked_reason =
+          CheckResponseNosniff(request_context, nosniffed_response)) {
     HandleError(ResourceError::CancelledDueToAccessCheckError(
         response.CurrentRequestUrl(), blocked_reason.value()));
     return;

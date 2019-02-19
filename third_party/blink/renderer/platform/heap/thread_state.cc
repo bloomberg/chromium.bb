@@ -371,7 +371,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kVisitPersistentRoots);
   {
-    ThreadHeapStatsCollector::Scope stats_scope(
+    ThreadHeapStatsCollector::Scope inner_stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
     // See ProcessHeap::CrossThreadPersistentMutex().
@@ -379,7 +379,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
     ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   }
   {
-    ThreadHeapStatsCollector::Scope stats_scope(
+    ThreadHeapStatsCollector::Scope inner_stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitPersistents);
     persistent_region_->TracePersistentNodes(visitor);
   }
@@ -1231,9 +1231,10 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     UMA_HISTOGRAM_TIMES(                                                  \
         "BlinkGC.AtomicPhaseMarking_" #reason,                            \
         event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]); \
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,  \
+    DEFINE_STATIC_LOCAL(CustomCountHistogram,                             \
+                        collection_rate_reason_histogram,                 \
                         ("BlinkGC.CollectionRate_" #reason, 1, 100, 20)); \
-    collection_rate_histogram.Count(collection_rate_percent);             \
+    collection_rate_reason_histogram.Count(collection_rate_percent);      \
     break;                                                                \
   }
 

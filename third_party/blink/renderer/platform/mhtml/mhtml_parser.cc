@@ -95,7 +95,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
 
   MIMEHeader();
 
-  enum Encoding {
+  enum class Encoding {
     kQuotedPrintable,
     kBase64,
     kEightBit,
@@ -236,20 +236,20 @@ MIMEHeader::Encoding MIMEHeader::ParseContentTransferEncoding(
     const String& text) {
   String encoding = text.StripWhiteSpace().DeprecatedLower();
   if (encoding == "base64")
-    return kBase64;
+    return Encoding::kBase64;
   if (encoding == "quoted-printable")
-    return kQuotedPrintable;
+    return Encoding::kQuotedPrintable;
   if (encoding == "8bit")
-    return kEightBit;
+    return Encoding::kEightBit;
   if (encoding == "7bit")
-    return kSevenBit;
+    return Encoding::kSevenBit;
   if (encoding == "binary")
-    return kBinary;
+    return Encoding::kBinary;
   DVLOG(1) << "Unknown encoding '" << text << "' found in MIME header.";
-  return kUnknown;
+  return Encoding::kUnknown;
 }
 
-MIMEHeader::MIMEHeader() : content_transfer_encoding_(kUnknown) {}
+MIMEHeader::MIMEHeader() : content_transfer_encoding_(Encoding::kUnknown) {}
 
 static bool SkipLinesUntilBoundaryFound(SharedBufferChunkReader& line_reader,
                                         const String& boundary) {
@@ -346,13 +346,13 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   // If no content transfer encoding is specified, default to binary encoding.
   MIMEHeader::Encoding content_transfer_encoding =
       mime_header.ContentTransferEncoding();
-  if (content_transfer_encoding == MIMEHeader::kUnknown)
-    content_transfer_encoding = MIMEHeader::kBinary;
+  if (content_transfer_encoding == MIMEHeader::Encoding::kUnknown)
+    content_transfer_encoding = MIMEHeader::Encoding::kBinary;
 
   Vector<char> content;
   const bool check_boundary = !end_of_part_boundary.IsEmpty();
   bool end_of_part_reached = false;
-  if (content_transfer_encoding == MIMEHeader::kBinary) {
+  if (content_transfer_encoding == MIMEHeader::Encoding::kBinary) {
     if (!check_boundary) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
@@ -413,7 +413,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
       content.Append(line.Utf8().data(), line.length());
-      if (content_transfer_encoding == MIMEHeader::kQuotedPrintable) {
+      if (content_transfer_encoding == MIMEHeader::Encoding::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated
         // lines.
@@ -428,18 +428,18 @@ ArchiveResource* MHTMLParser::ParseNextPart(
 
   Vector<char> data;
   switch (content_transfer_encoding) {
-    case MIMEHeader::kBase64:
+    case MIMEHeader::Encoding::kBase64:
       if (!Base64Decode(content.data(), content.size(), data)) {
         DVLOG(1) << "Invalid base64 content for MHTML part.";
         return nullptr;
       }
       break;
-    case MIMEHeader::kQuotedPrintable:
+    case MIMEHeader::Encoding::kQuotedPrintable:
       QuotedPrintableDecode(content.data(), content.size(), data);
       break;
-    case MIMEHeader::kEightBit:
-    case MIMEHeader::kSevenBit:
-    case MIMEHeader::kBinary:
+    case MIMEHeader::Encoding::kEightBit:
+    case MIMEHeader::Encoding::kSevenBit:
+    case MIMEHeader::Encoding::kBinary:
       data.Append(content.data(), content.size());
       break;
     default:

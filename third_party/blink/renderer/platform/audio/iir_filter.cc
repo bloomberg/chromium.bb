@@ -86,9 +86,9 @@ void IIRFilter::Process(const float* source_p,
 
     // Run both the feedforward and feedback terms together, when possible.
     for (int k = 1; k < min_length; ++k) {
-      int n = (buffer_index_ - k) & (kBufferLength - 1);
-      yn += feedforward[k] * x_buffer[n];
-      yn -= feedback[k] * y_buffer[n];
+      int m = (buffer_index_ - k) & (kBufferLength - 1);
+      yn += feedforward[k] * x_buffer[m];
+      yn -= feedback[k] * y_buffer[m];
     }
 
     // Handle any remaining feedforward or feedback terms.
