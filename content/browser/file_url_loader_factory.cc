@@ -852,6 +852,7 @@ void CreateFileURLLoader(
     network::mojom::URLLoaderRequest loader,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer,
+    bool allow_directory_listing,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
   // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
   // other file URL-loading-related code. Some callers require USER_VISIBLE
@@ -861,12 +862,13 @@ void CreateFileURLLoader(
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&FileURLLoader::CreateAndStart, base::FilePath(), request,
-                     std::move(loader), client.PassInterface(),
-                     DirectoryLoadingPolicy::kFail,
-                     FileAccessPolicy::kUnrestricted,
-                     LinkFollowingPolicy::kDoNotFollow, std::move(observer),
-                     std::move(extra_response_headers)));
+      base::BindOnce(
+          &FileURLLoader::CreateAndStart, base::FilePath(), request,
+          std::move(loader), client.PassInterface(),
+          allow_directory_listing ? DirectoryLoadingPolicy::kRespondWithListing
+                                  : DirectoryLoadingPolicy::kFail,
+          FileAccessPolicy::kUnrestricted, LinkFollowingPolicy::kDoNotFollow,
+          std::move(observer), std::move(extra_response_headers)));
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
