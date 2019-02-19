@@ -632,10 +632,10 @@ cr.define('cr.ui', function() {
         const listItem = this.getListItemByIndex(change.index);
         if (listItem) {
           listItem.selected = change.selected;
+          listItem.setAttribute('aria-selected', listItem.selected);
           if (change.selected) {
             listItem.setAttribute('aria-posinset', change.index + 1);
             listItem.setAttribute('aria-setsize', this.dataModel.length);
-            this.setAttribute('aria-activedescendant', listItem.id);
           } else {
             listItem.removeAttribute('aria-posinset');
             listItem.removeAttribute('aria-setsize');
@@ -664,6 +664,9 @@ cr.define('cr.ui', function() {
           element.lead = true;
         }
         if (e.oldValue != e.newValue) {
+          if (element) {
+            this.setAttribute('aria-activedescendant', element.id);
+          }
           this.scrollIndexIntoView(e.newValue);
           // If the lead item has a different height than other items, then we
           // may run into a problem that requires a second attempt to scroll
