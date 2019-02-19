@@ -27,7 +27,6 @@ class MessageLoopBase;
 class MessageLoopImpl;
 
 namespace sequence_manager {
-class LazyThreadControllerForTest;
 
 namespace internal {
 class SequenceManagerImpl;
@@ -204,7 +203,6 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class MessagePumpLibeventTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class sequence_manager::LazyThreadControllerForTest;
   friend class sequence_manager::internal::SequenceManagerImpl;
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
