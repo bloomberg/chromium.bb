@@ -85,10 +85,10 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     }
   }
   if (!removed.empty()) {
-    NotifySendTabToSelfEntryDeleted(removed);
+    NotifyRemoteSendTabToSelfEntryDeleted(removed);
   }
   if (!added.empty()) {
-    NotifySendTabToSelfEntryAdded(added);
+    NotifyRemoteSendTabToSelfEntryAdded(added);
   }
   return base::nullopt;
 }
@@ -187,12 +187,7 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   change_processor()->Put(guid, std::move(entity_data), &metadata_change_list);
 
-  const SendTabToSelfEntry* result =
-      entries_.emplace(guid, std::move(entry)).first->second.get();
-
-  NotifySendTabToSelfEntryAdded(std::vector<const SendTabToSelfEntry*>{result});
-
-  return result;
+  return entries_.emplace(guid, std::move(entry)).first->second.get();
 }
 
 void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
@@ -207,7 +202,6 @@ void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
 
   entries_.erase(guid);
 
-  NotifySendTabToSelfEntryDeleted(std::vector<std::string>{guid});
 }
 
 void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
@@ -220,17 +214,17 @@ void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
   // TODO(jeffreycohen) Implement once there is local storage.
 }
 
-void SendTabToSelfBridge::NotifySendTabToSelfEntryAdded(
+void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
   for (SendTabToSelfModelObserver& observer : observers_) {
-    observer.SendTabToSelfEntriesAdded(new_entries);
+    observer.EntriesAddedRemotely(new_entries);
   }
 }
 
-void SendTabToSelfBridge::NotifySendTabToSelfEntryDeleted(
+void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
     const std::vector<std::string>& guids) {
   for (SendTabToSelfModelObserver& observer : observers_) {
-    observer.SendTabToSelfEntriesRemoved(guids);
+    observer.EntriesRemovedRemotely(guids);
   }
 }
 

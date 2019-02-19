@@ -72,13 +72,15 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   using SendTabToSelfEntries =
       std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>;
 
-  // Notify all observers of added |entries| when the underlying model changes.
-  void NotifySendTabToSelfEntryAdded(
+  // Notify all observers of any added |entries| when they are added the the
+  // model via sync.
+  void NotifyRemoteSendTabToSelfEntryAdded(
       const std::vector<const SendTabToSelfEntry*>& new_entries);
 
   // Notify all observers when the entries with |guids| have been removed from
-  // the model.
-  void NotifySendTabToSelfEntryDeleted(const std::vector<std::string>& guids);
+  // the model via sync.
+  void NotifyRemoteSendTabToSelfEntryDeleted(
+      const std::vector<std::string>& guids);
 
   // Used as callback given to LocalDeviceInfoProvider.
   void OnDeviceProviderInitialized();

@@ -35,10 +35,10 @@ class SendTabToSelfUrlChecker
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
-  void SendTabToSelfEntriesAdded(
+  void EntriesAddedRemotely(
       const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
           new_entries) override;
-  void SendTabToSelfEntriesRemoved(
+  void EntriesRemovedRemotely(
       const std::vector<std::string>& guids_removed) override;
 
  private:
@@ -65,10 +65,10 @@ class SendTabToSelfModelEqualityChecker
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
-  void SendTabToSelfEntriesAdded(
+  void EntriesAddedRemotely(
       const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
           new_entries) override;
-  void SendTabToSelfEntriesRemoved(
+  void EntriesRemovedRemotely(
       const std::vector<std::string>& guids_removed) override;
 
  private:

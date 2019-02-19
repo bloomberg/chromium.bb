@@ -43,13 +43,13 @@ void SendTabToSelfUrlChecker::SendTabToSelfModelLoaded() {
   CheckExitCondition();
 }
 
-void SendTabToSelfUrlChecker::SendTabToSelfEntriesAdded(
+void SendTabToSelfUrlChecker::EntriesAddedRemotely(
     const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
         new_entries) {
   CheckExitCondition();
 }
 
-void SendTabToSelfUrlChecker::SendTabToSelfEntriesRemoved(
+void SendTabToSelfUrlChecker::EntriesRemovedRemotely(
     const std::vector<std::string>& guids_removed) {
   CheckExitCondition();
 }
@@ -106,13 +106,13 @@ void SendTabToSelfModelEqualityChecker::SendTabToSelfModelLoaded() {
   CheckExitCondition();
 }
 
-void SendTabToSelfModelEqualityChecker::SendTabToSelfEntriesAdded(
+void SendTabToSelfModelEqualityChecker::EntriesAddedRemotely(
     const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
         new_entries) {
   CheckExitCondition();
 }
 
-void SendTabToSelfModelEqualityChecker::SendTabToSelfEntriesRemoved(
+void SendTabToSelfModelEqualityChecker::EntriesRemovedRemotely(
     const std::vector<std::string>& guids_removed) {
   CheckExitCondition();
 }
