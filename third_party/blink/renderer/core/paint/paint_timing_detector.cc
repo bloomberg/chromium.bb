@@ -28,8 +28,13 @@ PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
           MakeGarbageCollected<ImagePaintTimingDetector>(frame_view)) {}
 
 void PaintTimingDetector::NotifyPrePaintFinished() {
-  text_paint_timing_detector_->OnPrePaintFinished();
+  // The image detector is hooking up the prepaint stage.
   image_paint_timing_detector_->OnPrePaintFinished();
+}
+
+void PaintTimingDetector::NotifyPaintFinished() {
+  // The text detector is hooking up the paint stage.
+  text_paint_timing_detector_->OnPaintFinished();
 }
 
 void PaintTimingDetector::NotifyObjectPrePaint(

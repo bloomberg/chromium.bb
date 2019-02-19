@@ -2674,6 +2674,9 @@ void LocalFrameView::PaintTree() {
     if (auto* layout_view = frame_view.GetLayoutView())
       layout_view->Layer()->ClearNeedsRepaintRecursively();
   });
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+    GetPaintTimingDetector().NotifyPaintFinished();
 }
 
 const cc::Layer* LocalFrameView::RootCcLayer() const {
