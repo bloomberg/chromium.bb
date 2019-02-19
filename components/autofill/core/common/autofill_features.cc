@@ -166,6 +166,11 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether Autofill uses server-side validation to ensure that fields
+// with invalid data are not suggested.
+const base::Feature kAutofillProfileServerValidation{
+    "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute
 // a form if there are signals to suggest that this might a checkout page.
@@ -258,9 +263,6 @@ const base::Feature kAutofillShowTypePredictions{
 // FormFieldData.SimilarFieldAs.
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillProfileServerValidation{
-    "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
