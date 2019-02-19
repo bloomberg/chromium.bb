@@ -241,7 +241,8 @@ public class DownloadForegroundService extends Service {
     @VisibleForTesting
     void startForegroundInternal(int notificationId, Notification notification) {
         Log.w(TAG, "startForegroundInternal id: " + notificationId);
-        startForeground(notificationId, notification);
+        AppHooks.get().startForeground(
+                this, notificationId, notification, 0 /* foregroundServiceType */);
     }
 
     @VisibleForTesting
