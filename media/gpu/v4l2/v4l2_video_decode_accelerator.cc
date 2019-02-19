@@ -1341,6 +1341,12 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
+
+  // Early return if we are running after DestroyTask() or a resolution change.
+  // This can happen due to the PostDelayedTask() in CheckGLFences().
+  if (IsDestroyPending() || decoder_state_ == kChangingResolution)
+    return;
+
   DCHECK(input_queue_);
   DCHECK(output_queue_);
 
