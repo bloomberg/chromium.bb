@@ -259,7 +259,20 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   service_manager::InterfaceProvider* GetInterfaceProvider() override;
 
+  // Binds |js_handle| to the current implementation bound to
+  // |document_interface_broker_| to share the same broker between C++ and
+  // JavaScript clients.
+  void BindDocumentInterfaceBroker(
+      mojo::ScopedMessagePipeHandle js_handle) override;
+
   mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() override;
+
+  // Binds |document_interface_broker_| to |blink_handle|. Used in tests to set
+  // a custom override for DocumentInterfaceBroker methods. Returns the handle
+  // to the previously bound 'production' implementation, which will be used to
+  // forward the calls to methods that have not been overridden.
+  mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
+      mojo::ScopedMessagePipeHandle blink_handle) override;
 
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
@@ -302,6 +315,18 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool UsePrintingLayout() const override;
 
  private:
+  struct DocumentInterfaceBrokerForwarderTraits {
+    using Interface = mojom::blink::DocumentInterfaceBroker;
+    using PointerType = WeakPersistent<LocalFrameClientImpl>;
+    static bool IsNull(PointerType ptr) {
+      return !ptr || !ptr->document_interface_broker_;
+    }
+    static Interface* GetRawPointer(PointerType* ptr) {
+      return (*ptr)->GetDocumentInterfaceBroker();
+    }
+  };
+  friend struct DocumentInterfaceBrokerForwarderTraits;
+
   bool IsLocalFrameClientImpl() const override { return true; }
   WebDevToolsAgentImpl* DevToolsAgent();
 
@@ -313,6 +338,19 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   blink::UserAgentMetadata user_agent_metadata_;
 
   mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
+
+  // |document_interface_broker_bindings_| basically just forwards the broker
+  // methods to GetDocumentInterfaceBroker()
+  // via DocumentInterfaceBrokerForwarderTraits.
+  // Used to connect JavaScript clients of DocumentInterfaceBroker with the same
+  // implementation that |document_interface_broker_| is bound to.
+  using DocumentInterfaceBrokerBinding =
+      mojo::Binding<mojom::blink::DocumentInterfaceBroker,
+                    DocumentInterfaceBrokerForwarderTraits>;
+  mojo::BindingSetBase<mojom::blink::DocumentInterfaceBroker,
+                       DocumentInterfaceBrokerBinding,
+                       void>
+      document_interface_broker_bindings_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,
