@@ -46,6 +46,8 @@ class TracingProfileBuilder
   TracingProfileBuilder(base::PlatformThreadId sampled_thread_id)
       : sampled_thread_id_(sampled_thread_id) {}
 
+  base::ModuleCache* GetModuleCache() override { return &module_cache_; }
+
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override {
     int process_priority = base::Process::Current().GetPriority();
@@ -125,6 +127,7 @@ class TracingProfileBuilder
                           base::TimeDelta sampling_period) override {}
 
  private:
+  base::ModuleCache module_cache_;
   base::PlatformThreadId sampled_thread_id_;
 };
 

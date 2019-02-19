@@ -100,6 +100,10 @@ class BASE_EXPORT StackSamplingProfiler {
     ProfileBuilder() = default;
     virtual ~ProfileBuilder() = default;
 
+    // Gets the ModuleCache to be used by the StackSamplingProfiler when looking
+    // up modules from addresses.
+    virtual ModuleCache* GetModuleCache() = 0;
+
     // Records metadata to be associated with the current sample. To avoid
     // deadlock on locks taken by the suspended profiled thread, implementations
     // of this method must not execute any code that could take a lock,
