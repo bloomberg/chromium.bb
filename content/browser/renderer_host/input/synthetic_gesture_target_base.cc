@@ -27,11 +27,6 @@ namespace {
 // fling on Android and Aura.
 const int kPointerAssumedStoppedTimeMs = 100;
 
-// SyntheticGestureTargetBase passes input events straight on to the renderer
-// without going through a gesture recognition framework. There is thus no touch
-// slop.
-const float kTouchSlopInDips = 0.0f;
-
 }  // namespace
 
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
@@ -117,58 +112,15 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   }
 }
 
-void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
-      const blink::WebTouchEvent& web_touch,
-      const ui::LatencyInfo& latency_info) {
-  // We assume that platforms supporting touch have their own implementation of
-  // SyntheticGestureTarget to route the events through their respective input
-  // stack.
-  LOG(ERROR) << "Touch events not supported for this browser.";
-}
-
-void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
-      const blink::WebMouseWheelEvent& web_wheel,
-      const ui::LatencyInfo& latency_info) {
-  host_->ForwardWheelEventWithLatencyInfo(web_wheel, latency_info);
-}
-
-void SyntheticGestureTargetBase::DispatchWebGestureEventToPlatform(
-    const blink::WebGestureEvent& web_gesture,
-    const ui::LatencyInfo& latency_info) {
-  host_->ForwardGestureEventWithLatencyInfo(web_gesture, latency_info);
-}
-
-void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
-      const blink::WebMouseEvent& web_mouse,
-      const ui::LatencyInfo& latency_info) {
-  host_->ForwardMouseEventWithLatencyInfo(web_mouse, latency_info);
-}
-
-SyntheticGestureParams::GestureSourceType
-SyntheticGestureTargetBase::GetDefaultSyntheticGestureSourceType() const {
-  return SyntheticGestureParams::MOUSE_INPUT;
-}
-
 base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
     const {
   return base::TimeDelta::FromMilliseconds(kPointerAssumedStoppedTimeMs);
-}
-
-float SyntheticGestureTargetBase::GetTouchSlopInDips() const {
-  return kTouchSlopInDips;
 }
 
 float SyntheticGestureTargetBase::GetSpanSlopInDips() const {
   // * 2 because span is the distance between two touch points in a pinch-zoom
   // gesture so we're accounting for movement in two points.
   return 2.f * GetTouchSlopInDips();
-}
-
-float SyntheticGestureTargetBase::GetMinScalingSpanInDips() const {
-  // The minimum scaling distance is only relevant for touch gestures and the
-  // base target doesn't support touch.
-  NOTREACHED();
-  return 0.0f;
 }
 
 int SyntheticGestureTargetBase::GetMouseWheelMinimumGranularity() const {

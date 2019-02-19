@@ -283,6 +283,26 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   RunCallbackHelper(callback_and_context);
 }
 
+bool ThrowIfPointOutOfBounds(GpuBenchmarkingContext* context,
+                             gin::Arguments* args,
+                             const gfx::Point& point,
+                             const std::string& message) {
+  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+
+  // If the bounds are not available here, as is the case with an OOPIF,
+  // for now, we will forgo the renderer-side bounds check.
+  if (rect.IsEmpty())
+    return false;
+
+  if (!rect.Contains(point)) {
+    args->ThrowTypeError(message);
+    return true;
+  }
+
+  return false;
+}
+
 bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        gin::Arguments* args,
                        mojom::InputInjectorPtr& injector,
@@ -298,10 +318,8 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        bool precise_scrolling_deltas,
                        bool scroll_by_page,
                        bool cursor_visible) {
-  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
-  rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(start_x, start_y)) {
-    args->ThrowTypeError("Start point not in bounds");
+  if (ThrowIfPointOutOfBounds(context, args, gfx::Point(start_x, start_y),
+                              "Start point not in bounds")) {
     return false;
   }
 
@@ -398,12 +416,11 @@ bool BeginSmoothDrag(GpuBenchmarkingContext* context,
                      v8::Local<v8::Function> callback,
                      int gesture_source_type,
                      float speed_in_pixels_s) {
-  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
-  rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(start_x, start_y)) {
-    args->ThrowTypeError("Start point not in bounds");
+  if (ThrowIfPointOutOfBounds(context, args, gfx::Point(start_x, start_y),
+                              "Start point not in bounds")) {
     return false;
   }
+
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,
                              context->web_frame()->MainWorldScriptContext());
@@ -812,10 +829,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
     return false;
   }
 
-  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
-  rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(start_x, start_y)) {
-    args->ThrowTypeError("Start point not in bounds");
+  if (ThrowIfPointOutOfBounds(&context, args, gfx::Point(start_x, start_y),
+                              "Start point not in bounds")) {
     return false;
   }
 
@@ -878,10 +893,8 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
     return false;
   }
 
-  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
-  rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(anchor_x, anchor_y)) {
-    args->ThrowTypeError("Anchor point not in bounds");
+  if (ThrowIfPointOutOfBounds(&context, args, gfx::Point(anchor_x, anchor_y),
+                              "Anchor point not in bounds")) {
     return false;
   }
 
@@ -1006,10 +1019,9 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
     return false;
   }
 
-  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
-  rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(position_x, position_y)) {
-    args->ThrowTypeError("Start point not in bounds");
+  if (ThrowIfPointOutOfBounds(&context, args,
+                              gfx::Point(position_x, position_y),
+                              "Start point not in bounds")) {
     return false;
   }
 
