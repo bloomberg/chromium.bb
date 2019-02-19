@@ -914,8 +914,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   ui::EventTarget* GetParentTarget() override;
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
-  void ConvertEventToTarget(ui::EventTarget* target,
-                            ui::LocatedEvent* event) override;
+  void ConvertEventToTarget(const ui::EventTarget* target,
+                            ui::LocatedEvent* event) const override;
   gfx::PointF GetScreenLocationF(const ui::LocatedEvent& event) const override;
 
   // Overridden from ui::EventHandler:
