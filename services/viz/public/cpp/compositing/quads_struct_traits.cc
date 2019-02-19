@@ -41,6 +41,10 @@ viz::DrawQuad* AllocateAndConstruct(
       quad = list->AllocateAndConstruct<viz::TileDrawQuad>();
       quad->material = viz::DrawQuad::TILED_CONTENT;
       return quad;
+    case viz::mojom::DrawQuadStateDataView::Tag::VIDEO_HOLE_QUAD_STATE:
+      quad = list->AllocateAndConstruct<viz::VideoHoleDrawQuad>();
+      quad->material = viz::DrawQuad::VIDEO_HOLE;
+      return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::YUVVideoDrawQuad>();
       quad->material = viz::DrawQuad::YUV_VIDEO_CONTENT;
@@ -166,6 +170,15 @@ bool StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.ids[viz::TileDrawQuad::kResourceIdIndex] = data.resource_id();
   quad->resources.count = 1;
   return true;
+}
+
+// static
+bool StructTraits<viz::mojom::VideoHoleQuadStateDataView, viz::DrawQuad>::Read(
+    viz::mojom::VideoHoleQuadStateDataView data,
+    viz::DrawQuad* out) {
+  viz::VideoHoleDrawQuad* video_hole_quad =
+      static_cast<viz::VideoHoleDrawQuad*>(out);
+  return data.ReadOverlayId(&video_hole_quad->overlay_id);
 }
 
 // static

@@ -604,6 +604,15 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       DrawUnsupportedQuad(quad, &paint);
       NOTREACHED();
       break;
+    case DrawQuad::VIDEO_HOLE:
+      // VideoHoleDrawQuad should only be used by Cast, and should
+      // have been replaced by cast-specific OverlayProcessor before
+      // reach here. In non-cast build, an untrusted render could send such
+      // Quad and the quad would then reach here unexpectedly. Therefore
+      // we should skip NOTREACHED() so an untrusted render is not capable
+      // of causing a crash.
+      DrawUnsupportedQuad(quad, &paint);
+      break;
   }
 
   current_canvas_->resetMatrix();
