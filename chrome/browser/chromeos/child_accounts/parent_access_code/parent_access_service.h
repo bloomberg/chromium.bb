@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/config_source.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "components/account_id/account_id.h"
 
 namespace base {
@@ -22,7 +23,8 @@ namespace parent_access {
 class Authenticator;
 
 // Parent access code validation service.
-class ParentAccessService : public ConfigSource::Observer {
+class ParentAccessService : public LoginScreenClient::ParentAccessDelegate,
+                            public ConfigSource::Observer {
  public:
   // Delegate that gets notified about attempts to validate parent access code.
   class Delegate {
@@ -42,6 +44,11 @@ class ParentAccessService : public ConfigSource::Observer {
   ~ParentAccessService() override;
 
   void SetDelegate(Delegate* delegate);
+
+  // LoginScreenClient::ParentAccessDelegate:
+  void ValidateParentAccessCode(
+      const std::string& access_code,
+      ValidateParentAccessCodeCallback callback) override;
 
   // ConfigSource::Observer:
   void OnConfigChanged(const ConfigSource::ConfigSet& configs) override;
