@@ -107,8 +107,8 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
   if is_luci and _is_gtest(json_to_upload) and (
       name in GTEST_CONVERSION_WHITELIST):
     path_util.AddTracingToPath()
-    from tracing.value import (
-        gtest_json_converter)  # pylint: disable=no-name-in-module
+    from tracing.value import (  # pylint: disable=no-name-in-module
+        gtest_json_converter)
     gtest_json_converter.ConvertGtestJsonFile(json_to_upload)
     _data_format_cache[json_to_upload] = DATA_FORMAT_HISTOGRAMS
 
