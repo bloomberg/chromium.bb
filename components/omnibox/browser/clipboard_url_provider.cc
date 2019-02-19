@@ -71,7 +71,8 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  AddCreatedMatchWithTracking(input, std::move(optional_match).value());
+  AddCreatedMatchWithTracking(input, std::move(optional_match).value(),
+                              clipboard_content_->GetClipboardContentAge());
 }
 
 void ClipboardURLProvider::Stop(bool clear_cached_results,
@@ -82,7 +83,8 @@ void ClipboardURLProvider::Stop(bool clear_cached_results,
 
 void ClipboardURLProvider::AddCreatedMatchWithTracking(
     const AutocompleteInput& input,
-    const AutocompleteMatch& match) {
+    const AutocompleteMatch& match,
+    const base::TimeDelta clipboard_contents_age) {
   // Record the number of times the currently-offered URL has been suggested.
   // This only works over this run of Chrome; if the URL was in the clipboard
   // on a previous run, those offerings will not be counted.
@@ -112,7 +114,7 @@ void ClipboardURLProvider::AddCreatedMatchWithTracking(
   UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL",
                         !matches_.empty());
   UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
-                               clipboard_content_->GetClipboardContentAge());
+                               clipboard_contents_age);
 
   matches_.emplace_back(match);
 }
@@ -228,6 +230,12 @@ bool ClipboardURLProvider::CreateImageMatch(const AutocompleteInput& input) {
     return false;
   }
 
+  // We want to get the age here because the contents of the clipboard could
+  // change after this point. We want the age of the image we actually use, not
+  // the age of whatever's on the clipboard when the histogram is created (i.e
+  // when the match is created).
+  base::TimeDelta clipboard_contents_age =
+      clipboard_content_->GetClipboardContentAge();
   done_ = false;
   PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -235,7 +243,7 @@ bool ClipboardURLProvider::CreateImageMatch(const AutocompleteInput& input) {
                      optional_image.value()),
       base::BindOnce(&ClipboardURLProvider::ConstructImageMatchCallback,
                      callback_weak_ptr_factory_.GetWeakPtr(), input,
-                     url_service));
+                     url_service, clipboard_contents_age));
   return true;
 }
 
@@ -248,6 +256,7 @@ ClipboardURLProvider::EncodeClipboardImage(gfx::Image image) {
 void ClipboardURLProvider::ConstructImageMatchCallback(
     const AutocompleteInput& input,
     TemplateURLService* url_service,
+    base::TimeDelta clipboard_contents_age,
     scoped_refptr<base::RefCountedMemory> image_bytes) {
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
@@ -277,7 +286,7 @@ void ClipboardURLProvider::ConstructImageMatchCallback(
 
   match.transition = ui::PAGE_TRANSITION_GENERATED;
 
-  AddCreatedMatchWithTracking(input, match);
+  AddCreatedMatchWithTracking(input, match, clipboard_contents_age);
   listener_->OnProviderUpdate(true);
   done_ = true;
 }
