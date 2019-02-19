@@ -15,7 +15,7 @@ from wpr import update_wpr
 WPR_UPDATER = 'wpr.update_wpr.WprUpdater.'
 
 
-class UpdateWPRTest(unittest.TestCase):
+class UpdateWprTest(unittest.TestCase):
   def setUp(self):
     self.maxDiff = None
 
@@ -38,7 +38,10 @@ class UpdateWPRTest(unittest.TestCase):
     mock.patch('wpr.update_wpr.RESULTS2JSON', '.../results2json').start()
     mock.patch('wpr.update_wpr.HISTOGRAM2CSV', '.../histograms2csv').start()
     mock.patch('wpr.update_wpr.RUN_BENCHMARK', '.../run_benchmark').start()
+    mock.patch('wpr.update_wpr.DATA_DIR', '.../data/dir').start()
+    mock.patch('wpr.update_wpr.RECORD_WPR', '.../record_wpr').start()
     mock.patch('os.path.join', lambda *parts: '/'.join(parts)).start()
+    mock.patch('os.path.exists', return_value=True).start()
 
     self.wpr_updater = update_wpr.WprUpdater(argparse.Namespace(
       story='<story>', device_id=None, repeat=1, binary=None))
@@ -95,9 +98,9 @@ class UpdateWPRTest(unittest.TestCase):
     # Check correct arguments when running benchmark.
     self._check_log.assert_called_once_with(
         [
-          '.../run_benchmark', 'run', 'system_health.memory_desktop',
-          '--browser=system', '--output-format=html', '--show-stdout',
-          '--reset-results', '--story-filter=^\\<story\\>$',
+          '.../run_benchmark', 'run', '--browser=system',
+          'system_health.memory_desktop', '--output-format=html',
+          '--show-stdout', '--reset-results', '--story-filter=^\\<story\\>$',
           '--browser-logging-verbosity=verbose', '--pageset-repeat=1',
           '--output-dir', '/tmp/dir', '--use-live-sites'
         ],
@@ -153,6 +156,45 @@ class UpdateWPRTest(unittest.TestCase):
                 '.network." "<outfile>" | cut -d " " -f 20- | sort | uniq -c '
                 '| sort -nr'),
     ])
+
+  @mock.patch('os.remove')
+  def testDeleteExistingWpr(self, os_remove):
+    self._open.return_value.__enter__.return_value.read.return_value = (
+        '{"archives": {"<story>": {"DEFAULT": "<archive>"}}}')
+    self.wpr_updater._DeleteExistingWpr()
+    self.assertListEqual(os_remove.mock_calls, [
+      mock.call('.../data/dir/<archive>'),
+      mock.call('.../data/dir/<archive>.sha1'),
+    ])
+
+  def testRecordWprDesktop(self):
+    mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
+    mock.patch(WPR_UPDATER + '_DeleteExistingWpr').start()
+    self.wpr_updater.RecordWpr()
+    self._check_log.assert_called_once_with([
+      '.../record_wpr', '--story-filter=^\\<story\\>$',
+      '--browser=system', 'desktop_system_health_story_set'
+    ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
+
+  def testRecordWprMobile(self):
+    mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
+    mock.patch(WPR_UPDATER + '_DeleteExistingWpr').start()
+    self.wpr_updater.device_id = '<serial>'
+    self.wpr_updater.RecordWpr()
+    self._check_log.assert_called_once_with([
+      '.../record_wpr', '--story-filter=^\\<story\\>$',
+      '--browser=android-system-chrome', '--device=<serial>',
+      'mobile_system_health_story_set'
+    ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
+
+  def testReplayWpr(self):
+    print_run_info = mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
+    run_benchmark = mock.patch(
+        WPR_UPDATER + '_RunSystemHealthMemoryBenchmark',
+        return_value='<out-file>').start()
+    self.wpr_updater.ReplayWpr()
+    run_benchmark.assert_called_once_with(log_name='replay', live=False)
+    print_run_info.assert_called_once_with('<out-file>')
 
 
 if __name__ == "__main__":

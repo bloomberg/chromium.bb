@@ -7,6 +7,7 @@
 
 import argparse
 import datetime
+import json
 import os
 import re
 import shutil
@@ -23,11 +24,16 @@ RESULTS2JSON = os.path.join(
 HISTOGRAM2CSV = os.path.join(
     SRC_ROOT, 'third_party', 'catapult', 'tracing', 'bin', 'histograms2csv')
 RUN_BENCHMARK = os.path.join(SRC_ROOT, 'tools', 'perf', 'run_benchmark')
+DATA_DIR = os.path.join(SRC_ROOT, 'tools', 'perf', 'page_sets', 'data')
+RECORD_WPR = os.path.join(SRC_ROOT, 'tools', 'perf', 'record_wpr')
 
 
 class WprUpdater(object):
   def __init__(self, args):
     self.story = args.story
+    # TODO(sergiyb): Impelement a method that auto-detects a single connected
+    # device when device_id is set to 'auto'. This should take advantage of the
+    # method adb_wrapper.Devices in catapult repo.
     self.device_id = args.device_id
     self.repeat = args.repeat
     self.binary = args.binary
@@ -44,11 +50,11 @@ class WprUpdater(object):
 
   def _CheckLog(self, command, log_name):
     # This is a wrapper around cli_helpers.CheckLog that adds timestamp to the
-    # log filename and substitutes placeholders such as {src}, {name},
+    # log filename and substitutes placeholders such as {src}, {story},
     # {device_id} in the command.
-    name_regex = '^%s$' % re.escape(self.story)
+    story_regex = '^%s$' % re.escape(self.story)
     command = [
-        c.format(src=SRC_ROOT, name=name_regex, device_id=self.device_id)
+        c.format(src=SRC_ROOT, story=story_regex, device_id=self.device_id)
         for c in command]
     timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     log_path = os.path.join(self.output_dir, '%s_%s' % (log_name, timestamp))
@@ -57,6 +63,31 @@ class WprUpdater(object):
 
   def _IsDesktop(self):
     return self.device_id is None
+
+  def _ExistingWpr(self):
+    """Returns a path to the current WPR archive for specified story."""
+    config_file = os.path.join(DATA_DIR, 'system_health_%s.json' % (
+        'desktop' if self._IsDesktop() else 'mobile'))
+    with open(config_file) as f:
+      config = json.load(f)
+    archives = config['archives']
+    archive = archives.get(self.story)
+    if archive is None:
+      return None
+    archive = archive['DEFAULT']
+    return os.path.join(DATA_DIR, archive)
+
+  def _DeleteExistingWpr(self):
+    """Deletes current WPR archive."""
+    archive = self._ExistingWpr()
+    if archive is None:
+      return
+    cli_helpers.Info('Deleting WPR: {archive}', archive=archive)
+    if os.path.exists(archive):
+      os.remove(archive)
+    archive_sha1 = archive + '.sha1'
+    if os.path.exists(archive_sha1):
+      os.remove(archive_sha1)
 
   def _ExtractLogFile(self, out_file):
     # This method extracts the name of the chrome log file from the
@@ -73,27 +104,30 @@ class WprUpdater(object):
     results_file = out_file + '.results.html'
     os.rename(os.path.join(self.output_dir, 'results.html'), results_file)
 
+  def _BrowserArgs(self):
+    """Generates args to be passed to RUN_BENCHMARK and UPDATE_WPR scripts."""
+    if self.binary:
+      return [
+        '--browser-executable=%s' % self.binary,
+        '--browser=exact',
+      ]
+    elif self._IsDesktop():
+      return ['--browser=system']
+    else:
+      return ['--browser=android-system-chrome']
+
   def _RunSystemHealthMemoryBenchmark(self, log_name, live=False):
-    args = [RUN_BENCHMARK, 'run']
+    args = [RUN_BENCHMARK, 'run'] + self._BrowserArgs()
 
     if self._IsDesktop():
       args.append('system_health.memory_desktop')
     else:
       args.extend('system_health.memory_mobile')
 
-    if self.binary:
-      args.extend([
-        '--browser-executable=%s' % self.binary,
-        '--browser=exact',
-      ])
-    elif self._IsDesktop():
-      args.append('--browser=system')
-    else:
-      args.append('--browser=android-system-chrome')
 
     args.extend([
       '--output-format=html', '--show-stdout',
-      '--reset-results', '--story-filter={name}',
+      '--reset-results', '--story-filter={story}',
       '--browser-logging-verbosity=verbose',
       '--pageset-repeat=%s' % self.repeat,
       '--output-dir', self.output_dir])
@@ -176,6 +210,24 @@ class WprUpdater(object):
         'No problem. All logs will remain in %s - feel free to remove that '
         'directory when done.' % self.output_dir)
 
+  def RecordWpr(self):
+    cli_helpers.Step('RECORD WPR: %s' % self.story)
+    self._DeleteExistingWpr()
+    args = [RECORD_WPR, '--story-filter={story}'] + self._BrowserArgs()
+    if self._IsDesktop():
+      args.append('desktop_system_health_story_set')
+    else:
+      args.extend(['--device={device_id}', 'mobile_system_health_story_set'])
+    out_file = self._CheckLog(args, log_name='record')
+    self._PrintRunInfo(out_file, results_details=False)
+
+  def ReplayWpr(self):
+    cli_helpers.Step('REPLAY WPR: %s' % self.story)
+    out_file = self._RunSystemHealthMemoryBenchmark(
+        log_name='replay', live=False)
+    self._PrintRunInfo(out_file)
+    return out_file
+
 
 def Main(argv):
   parser = argparse.ArgumentParser()
@@ -194,7 +246,7 @@ def Main(argv):
       help='Path to the Chromium/Chrome binary relative to output directory. '
            'Defaults to default Chrome browser installed if not specified.')
   parser.add_argument(
-      'command', choices=['live'],
+      'command', choices=['live', 'record', 'replay'],
       help='Mode in which to run this script.')
 
   args = parser.parse_args(argv)
@@ -202,4 +254,8 @@ def Main(argv):
   updater = WprUpdater(args)
   if args.command =='live':
     updater.LiveRun()
+  elif args.command == 'record':
+    updater.RecordWpr()
+  elif args.command == 'replay':
+    updater.ReplayWpr()
   updater.Cleanup()
