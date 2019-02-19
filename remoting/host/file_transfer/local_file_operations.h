@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_FILE_TRANSFER_LOCAL_FILE_OPERATIONS_H_
 #define REMOTING_HOST_FILE_TRANSFER_LOCAL_FILE_OPERATIONS_H_
 
+#include <memory>
+
+#include "base/macros.h"
 #include "remoting/host/file_transfer/file_operations.h"
 
 namespace remoting {
@@ -14,9 +17,15 @@ namespace remoting {
 
 class LocalFileOperations : public FileOperations {
  public:
-  void WriteFile(const base::FilePath& filename,
-                 WriteFileCallback callback) override;
-  void ReadFile(ReadFileCallback) override;
+  LocalFileOperations() = default;
+  ~LocalFileOperations() override = default;
+
+  // FileOperations implementation.
+  std::unique_ptr<Reader> CreateReader() override;
+  std::unique_ptr<Writer> CreateWriter() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LocalFileOperations);
 };
 
 }  // namespace remoting

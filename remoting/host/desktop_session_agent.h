@@ -105,8 +105,7 @@ class DesktopSessionAgent
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
 
   // IpcFileOperations::ResultHandler implementation.
-  void OnResult(std::uint64_t file_id,
-                protocol::FileTransferResult<Monostate> result) override;
+  void OnResult(std::uint64_t file_id, ResultHandler::Result result) override;
 
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned.

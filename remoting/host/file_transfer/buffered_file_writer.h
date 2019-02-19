@@ -22,18 +22,25 @@ namespace remoting {
 class BufferedFileWriter {
  public:
   // Constructor.
-  // |on_error| may be called an any time if any operation fails. If no error
-  // occurs, |on_complete| will be called after Close() has been called and all
-  // chunks have been successfully written. Callbacks will never be called after
-  // Cancel is called or BufferedFileWriter is destroyed.
+  // |file_writer| should be in the kCreated state. |on_error| may be called at
+  // any time if any operation fails. If no error occurs, |on_complete| will be
+  // called after Close() has been called and all chunks have been successfully
+  // written. Callbacks will never be called after BufferedFileWriter is
+  // destroyed.
   BufferedFileWriter(
+      std::unique_ptr<FileOperations::Writer> file_writer,
       base::OnceClosure on_complete,
       base::OnceCallback<void(protocol::FileTransfer_Error)> on_error);
+
+  // Cancels the underlying Writer. If Close has already been called, this will
+  // either do nothing (if writing the file has already completed) or cancel
+  // writing out the file (if there are still chunks waiting be be written).
+  // No callbacks will be invoked.
   ~BufferedFileWriter();
 
   // Start writing a new file using the provided FileOperations implementation.
   // Must be called exactly once before any other methods.
-  void Start(FileOperations* file_operations, const base::FilePath& filename);
+  void Start(const base::FilePath& filename);
 
   // Enqueue the provided chunk to be written to the file.
   void Write(std::string data);
@@ -41,11 +48,6 @@ class BufferedFileWriter {
   // Close the file. If any chunks are currently queued, they will be written
   // before the file is closed.
   void Close();
-
-  // Cancels the underlying Writer. If Close has already been called, this will
-  // either do nothing (if writing the file has already completed) or cancel
-  // writing out the file (if there are still chunks waiting te be written).
-  void Cancel();
 
  private:
   enum State {
@@ -64,13 +66,10 @@ class BufferedFileWriter {
     kFailed,
   };
 
-  void OnWriteFileResult(
-      protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
-          result);
   void WriteNextChunk();
-  void OnWriteResult(protocol::FileTransferResult<Monostate> result);
+  void OnOperationResult(FileOperations::Writer::Result result);
   void DoClose();
-  void OnCloseResult(protocol::FileTransferResult<Monostate> result);
+  void OnCloseResult(FileOperations::Writer::Result result);
   void SetState(State state);
 
   // Tracks internal state.
@@ -89,8 +88,6 @@ class BufferedFileWriter {
   // Chunks that have been provided to Write but have not yet been passed to the
   // Writer instance.
   base::queue<std::string> chunks_;
-
-  base::WeakPtrFactory<BufferedFileWriter> weak_ptr_factory_;
 };
 
 }  // namespace remoting

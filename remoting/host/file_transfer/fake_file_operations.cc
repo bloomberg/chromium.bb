@@ -4,6 +4,8 @@
 
 #include "remoting/host/file_transfer/fake_file_operations.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -12,50 +14,38 @@ namespace remoting {
 
 class FakeFileOperations::FakeFileWriter : public FileOperations::Writer {
  public:
-  FakeFileWriter(TestIo* test_io, const base::FilePath& filename);
+  FakeFileWriter(TestIo* test_io);
   ~FakeFileWriter() override;
 
+  void Open(const base::FilePath& filename, Callback callback) override;
   void WriteChunk(std::string data, Callback callback) override;
   void Close(Callback callback) override;
-  void Cancel() override;
-  FileOperations::State state() override;
+  FileOperations::State state() const override;
 
  private:
+  void DoOpen(Callback callback);
   void DoWrite(std::string data, Callback callback);
   void DoClose(Callback callback);
-  FileOperations::State state_ = FileOperations::kReady;
+  FileOperations::State state_ = FileOperations::kCreated;
   TestIo* test_io_;
   base::FilePath filename_;
   std::vector<std::string> chunks_;
   base::WeakPtrFactory<FakeFileWriter> weak_ptr_factory_;
 };
 
-void FakeFileOperations::WriteFile(const base::FilePath& filename,
-                                   WriteFileCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeFileOperations::DoWriteFile, base::Unretained(this),
-                     filename, std::move(callback)));
+std::unique_ptr<FileOperations::Reader> FakeFileOperations::CreateReader() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
-void FakeFileOperations::ReadFile(ReadFileCallback) {
-  NOTIMPLEMENTED();
+std::unique_ptr<FileOperations::Writer> FakeFileOperations::CreateWriter() {
+  return std::make_unique<FakeFileWriter>(test_io_);
 }
 
 FakeFileOperations::FakeFileOperations(FakeFileOperations::TestIo* test_io)
     : test_io_(test_io) {}
 
 FakeFileOperations::~FakeFileOperations() = default;
-
-void FakeFileOperations::DoWriteFile(const base::FilePath& filename,
-                                     WriteFileCallback callback) {
-  if (!test_io_->io_error) {
-    std::move(callback).Run(
-        std::make_unique<FakeFileWriter>(test_io_, filename));
-  } else {
-    std::move(callback).Run(*test_io_->io_error);
-  }
-}
 
 FakeFileOperations::OutputFile::OutputFile(base::FilePath filename,
                                            bool failed,
@@ -70,14 +60,30 @@ FakeFileOperations::TestIo::TestIo() = default;
 FakeFileOperations::TestIo::TestIo(const TestIo& other) = default;
 FakeFileOperations::TestIo::~TestIo() = default;
 
-FakeFileOperations::FakeFileWriter::FakeFileWriter(
-    TestIo* test_io,
-    const base::FilePath& filename)
-    : test_io_(test_io), filename_(filename), weak_ptr_factory_(this) {}
+FakeFileOperations::FakeFileWriter::FakeFileWriter(TestIo* test_io)
+    : test_io_(test_io), weak_ptr_factory_(this) {}
 
 FakeFileOperations::FakeFileWriter::~FakeFileWriter() {
-  Cancel();
+  if (state_ == FileOperations::kCreated ||
+      state_ == FileOperations::kComplete ||
+      state_ == FileOperations::kFailed) {
+    return;
+  }
+
+  test_io_->files_written.push_back(
+      OutputFile(filename_, true /* failed */, std::move(chunks_)));
 }
+
+void FakeFileOperations::FakeFileWriter::Open(const base::FilePath& filename,
+                                              Callback callback) {
+  CHECK_EQ(kCreated, state_) << "Open called twice";
+  state_ = kBusy;
+  filename_ = filename;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeFileWriter::DoOpen, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
+};
 
 void FakeFileOperations::FakeFileWriter::WriteChunk(std::string data,
                                                     Callback callback) {
@@ -98,18 +104,21 @@ void FakeFileOperations::FakeFileWriter::Close(Callback callback) {
                      std::move(callback)));
 }
 
-void FakeFileOperations::FakeFileWriter::Cancel() {
-  if (state_ == FileOperations::kClosed || state_ == FileOperations::kFailed) {
-    return;
-  }
-
-  state_ = kFailed;
-  test_io_->files_written.push_back(
-      OutputFile(filename_, true /* failed */, std::move(chunks_)));
+FileOperations::State FakeFileOperations::FakeFileWriter::state() const {
+  return state_;
 }
 
-FileOperations::State FakeFileOperations::FakeFileWriter::state() {
-  return state_;
+void FakeFileOperations::FakeFileWriter::DoOpen(Callback callback) {
+  if (state_ == kFailed) {
+    return;
+  }
+  if (!test_io_->io_error) {
+    state_ = kReady;
+    std::move(callback).Run(kSuccessTag);
+  } else {
+    state_ = kFailed;
+    std::move(callback).Run(*test_io_->io_error);
+  }
 }
 
 void FakeFileOperations::FakeFileWriter::DoWrite(std::string data,
@@ -136,7 +145,7 @@ void FakeFileOperations::FakeFileWriter::DoClose(Callback callback) {
   if (!test_io_->io_error) {
     test_io_->files_written.push_back(
         OutputFile(filename_, false /* failed */, std::move(chunks_)));
-    state_ = kClosed;
+    state_ = kComplete;
     std::move(callback).Run(kSuccessTag);
   } else {
     state_ = kFailed;

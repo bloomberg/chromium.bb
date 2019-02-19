@@ -33,21 +33,15 @@ class SessionFileOperationsHandler : public IpcFileOperations::RequestHandler {
   void Cancel(std::uint64_t file_id) override;
 
  private:
-  void OnWriteFileResult(
-      std::uint64_t file_id,
-      protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
-          result);
-  void OnWriteChunkResult(std::uint64_t file_id,
-                          protocol::FileTransferResult<Monostate> result);
+  void OnOperationResult(std::uint64_t file_id,
+                         FileOperations::Writer::Result result);
   void OnCloseResult(std::uint64_t file_id,
-                     protocol::FileTransferResult<Monostate> result);
+                     FileOperations::Writer::Result result);
 
   IpcFileOperations::ResultHandler* result_handler_;
   std::unique_ptr<FileOperations> file_operations_;
   base::flat_map<std::uint64_t, std::unique_ptr<FileOperations::Writer>>
       writers_;
-
-  base::WeakPtrFactory<SessionFileOperationsHandler> weak_ptr_factory_;
 };
 
 }  // namespace remoting

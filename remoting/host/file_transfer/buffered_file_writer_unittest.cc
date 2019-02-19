@@ -61,13 +61,14 @@ TEST_F(BufferedFileWriterTest, WritesThreeChunks) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
   BufferedFileWriter writer(
+      file_operations->CreateWriter(),
       base::BindOnce(
           &BufferedFileWriterTest_WritesThreeChunks_Test::OnCompleted,
           base::Unretained(this)),
       base::BindOnce(&BufferedFileWriterTest_WritesThreeChunks_Test::OnError,
                      base::Unretained(this)));
 
-  writer.Start(file_operations.get(), kTestFilename);
+  writer.Start(kTestFilename);
   scoped_task_environment_.RunUntilIdle();
   writer.Write(kTestDataOne);
   scoped_task_environment_.RunUntilIdle();
@@ -92,6 +93,7 @@ TEST_F(BufferedFileWriterTest, QueuesOperations) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
   BufferedFileWriter writer(
+      file_operations->CreateWriter(),
       base::BindOnce(&BufferedFileWriterTest_QueuesOperations_Test::OnCompleted,
                      base::Unretained(this)),
       base::BindOnce(&BufferedFileWriterTest_QueuesOperations_Test::OnError,
@@ -99,7 +101,7 @@ TEST_F(BufferedFileWriterTest, QueuesOperations) {
 
   // FakeFileWriter will CHECK that BufferedFileWriter properly serializes
   // file operations.
-  writer.Start(file_operations.get(), kTestFilename);
+  writer.Start(kTestFilename);
   writer.Write(kTestDataOne);
   writer.Write(kTestDataTwo);
   writer.Write(kTestDataThree);
@@ -121,6 +123,7 @@ TEST_F(BufferedFileWriterTest, HandlesWriteError) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
   BufferedFileWriter writer(
+      file_operations->CreateWriter(),
       base::BindOnce(
           &BufferedFileWriterTest_HandlesWriteError_Test::OnCompleted,
           base::Unretained(this)),
@@ -129,7 +132,7 @@ TEST_F(BufferedFileWriterTest, HandlesWriteError) {
   protocol::FileTransfer_Error fake_error = protocol::MakeFileTransferError(
       FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR);
 
-  writer.Start(file_operations.get(), kTestFilename);
+  writer.Start(kTestFilename);
   writer.Write(kTestDataOne);
   writer.Write(kTestDataTwo);
   scoped_task_environment_.RunUntilIdle();
@@ -150,20 +153,22 @@ TEST_F(BufferedFileWriterTest, HandlesWriteError) {
 TEST_F(BufferedFileWriterTest, CancelsWriter) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
-  BufferedFileWriter writer(
-      base::BindOnce(&BufferedFileWriterTest_CancelsWriter_Test::OnCompleted,
-                     base::Unretained(this)),
-      base::BindOnce(&BufferedFileWriterTest_CancelsWriter_Test::OnError,
-                     base::Unretained(this)));
-  protocol::FileTransfer_Error fake_error = protocol::MakeFileTransferError(
-      FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR);
+  {
+    BufferedFileWriter writer(
+        file_operations->CreateWriter(),
+        base::BindOnce(&BufferedFileWriterTest_CancelsWriter_Test::OnCompleted,
+                       base::Unretained(this)),
+        base::BindOnce(&BufferedFileWriterTest_CancelsWriter_Test::OnError,
+                       base::Unretained(this)));
+    protocol::FileTransfer_Error fake_error = protocol::MakeFileTransferError(
+        FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR);
 
-  writer.Start(file_operations.get(), kTestFilename);
-  writer.Write(kTestDataOne);
-  writer.Write(kTestDataTwo);
-  scoped_task_environment_.RunUntilIdle();
-  writer.Write(kTestDataThree);
-  writer.Cancel();
+    writer.Start(kTestFilename);
+    writer.Write(kTestDataOne);
+    writer.Write(kTestDataTwo);
+    scoped_task_environment_.RunUntilIdle();
+    writer.Write(kTestDataThree);
+  }
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(!complete_called_ && !error_);
 

@@ -112,12 +112,12 @@ void FileTransferMessageHandler::StartFile(
   // BufferedFileWriter is destroyed, which is in turn owned by this
   // FileTransferMessageHandler.
   buffered_file_writer_.emplace(
+      file_operations_->CreateWriter(),
       base::BindOnce(&FileTransferMessageHandler::OnComplete,
                      base::Unretained(this)),
       base::BindOnce(&FileTransferMessageHandler::OnError,
                      base::Unretained(this)));
   buffered_file_writer_->Start(
-      file_operations_.get(),
       // Ensure filename is safe, and convert from UTF-8 to a FilePath.
       net::GenerateFileName(GURL(), std::string(), std::string(),
                             metadata.filename(), std::string(),
