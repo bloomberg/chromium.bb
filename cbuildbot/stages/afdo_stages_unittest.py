@@ -11,6 +11,7 @@ from chromite.cbuildbot import afdo
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 
+from chromite.lib import alerts
 from chromite.lib import gs
 from chromite.lib import portage_util
 from chromite.lib.buildstore import FakeBuildStore
@@ -36,7 +37,7 @@ def _GenerateAFDOGenerateTest(chrome_version_str, expected_to_generate_profile,
 
       self.PatchObject(afdo_stages.AFDODataGenerateStage, '_GetCurrentArch',
                        lambda *_: 'some_arch')
-
+      self.PatchObject(alerts, 'SendEmailLog')
       self._Prepare()
       self.buildstore = FakeBuildStore()
 
