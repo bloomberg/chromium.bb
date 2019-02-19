@@ -173,15 +173,7 @@ std::string GetPrinterType(chromeos::CupsPrintersManager::PrinterClass type) {
 std::string SetWhitelistedPref(Profile* profile,
                                const std::string& pref_name,
                                const base::Value& value) {
-  if (pref_name == arc::prefs::kArcLocationServiceEnabled) {
-    DCHECK(value.is_bool());
-
-    if (!arc::IsArcAllowedForProfile(profile))
-      return "ARC is not available for the current user";
-
-    if (!arc::SetArcPlayStoreEnabledForProfile(profile, value.GetBool()))
-      return "ARC enabled state cannot be changed for the current user";
-  } else if (pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
+  if (pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
     DCHECK(value.is_bool());
 
     if (arc::IsAssistantAllowedForProfile(profile) !=
@@ -648,14 +640,23 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetPlayStoreEnabledFunction " << params->enabled;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  const std::string& err_msg =
-      SetWhitelistedPref(profile, arc::prefs::kArcLocationServiceEnabled,
-                         base::Value(params->enabled));
-
-  if (!err_msg.empty())
-    return RespondNow(Error(err_msg));
-
-  return RespondNow(NoArguments());
+  if (arc::IsArcAllowedForProfile(profile)) {
+    if (!arc::SetArcPlayStoreEnabledForProfile(profile, params->enabled)) {
+      return RespondNow(
+          Error("ARC enabled state cannot be changed for the current user"));
+    }
+    // kArcLocationServiceEnabled and kArcBackupRestoreEnabled are prefs that
+    // set together with enabling ARC. That is why we set it here not using
+    // SetWhitelistedPref. At this moment, we don't distinguish the actual
+    // values and set kArcLocationServiceEnabled to true and leave
+    // kArcBackupRestoreEnabled unmodified, which is acceptable for autotests
+    // currently.
+    profile->GetPrefs()->SetBoolean(arc::prefs::kArcLocationServiceEnabled,
+                                    true);
+    return RespondNow(NoArguments());
+  } else {
+    return RespondNow(Error("ARC is not available for the current user"));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
