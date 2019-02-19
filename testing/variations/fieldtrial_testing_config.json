@@ -2345,7 +2345,7 @@
             ]
         }
     ],
-    "JankTracking": [
+    "JankTrackingSweepLine": [
         {
             "platforms": [
                 "android",
@@ -2358,7 +2358,6 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "JankTracking",
                         "JankTrackingSweepLine"
                     ]
                 }
