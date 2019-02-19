@@ -40,7 +40,8 @@ import tempfile
 _PUSH_URL = 'gs://chrome-supersize/milestones/'
 
 _DESIRED_CPUS = ['arm', 'arm_64']
-_DESIRED_APKS = ['Monochrome.apk', 'ChromeModern.apk', 'AndroidWebview.apk']
+# Measure Chrome.apk since it's not a bundle.
+_DESIRED_APKS = ['Monochrome.apk', 'Chrome.apk', 'AndroidWebview.apk']
 # Versions are manually gathered from
 # https://omahaproxy.appspot.com/history?os=android&channel=stable
 _DESIRED_VERSIONS = [
@@ -55,26 +56,34 @@ _DESIRED_VERSIONS = [
     '68.0.3440.85',
     '69.0.3497.91',
     '70.0.3538.64',
-    '71.0.3578.83',  # Beta
-    '72.0.3626.7',  # Beta
+    '71.0.3578.99',
+    '72.0.3626.105',
+    '73.0.3683.41',  # Beta
 ]
 
 
-def _GetDesiredVersions(apk):
-  if apk != 'AndroidWebview.apk':
-    return _DESIRED_VERSIONS
-  # Webview .size files do not exist before M71.
-  return [v for v in _DESIRED_VERSIONS if int(v.split('.')[0]) >= 71]
+def _VersionTuple(version):
+  return tuple(int(x) for x in version.split('.'))
 
 
-def _RequestedReports():
-  cpu_and_apk_combos = list(itertools.product(_DESIRED_CPUS, _DESIRED_APKS))
-  for cpu, apk in cpu_and_apk_combos:
-    apk_versions = _GetDesiredVersions(apk)
-    for after_version in apk_versions:
+def _IsBundle(apk, version):
+  return apk == 'Monochrome.apk' and _VersionTuple(version) >= (73,)
+
+
+def _EnumerateReports():
+  for cpu, apk in itertools.product(_DESIRED_CPUS, _DESIRED_APKS):
+    # KitKat doesn't support arm64.
+    if cpu == 'arm_64' and apk == 'Chrome.apk':
+      continue
+    versions = _DESIRED_VERSIONS
+    # Webview .size files do not exist before M71.
+    if apk == 'AndroidWebview.apk':
+      versions = [v for v in versions if _VersionTuple(v) >= (71,)]
+
+    for after_version in versions:
       yield Report(cpu, apk, None, after_version)
-    for i, before_version in enumerate(apk_versions):
-      for after_version in apk_versions[i + 1:]:
+    for i, before_version in enumerate(versions):
+      for after_version in versions[i + 1:]:
         yield Report(cpu, apk, before_version, after_version)
 
 
@@ -85,8 +94,7 @@ def _TemplateToRegex(template):
 
 
 class Report(
-    collections.namedtuple('Report',
-                           ['cpu', 'apk', 'before_version', 'after_version'])):
+    collections.namedtuple('Report', 'cpu,apk,before_version,after_version')):
 
   _NDJSON_TEMPLATE_VIEW = '{cpu}/{apk}/report_{after_version}.ndjson'
   _NDJSON_TEMPLATE_COMPARE = (
@@ -94,7 +102,6 @@ class Report(
   _PUSH_URL_REGEX_VIEW = _TemplateToRegex(_PUSH_URL + _NDJSON_TEMPLATE_VIEW)
   _PUSH_URL_REGEX_COMPARE = _TemplateToRegex(_PUSH_URL +
                                              _NDJSON_TEMPLATE_COMPARE)
-  _SIZE_URL_TEMPLATE = '{version}/{cpu}/{apk}.size'
 
   @classmethod
   def FromUrl(cls, url):
@@ -107,17 +114,21 @@ class Report(
       return cls(before_version=None, **match.groupdict())
     return None
 
+  def _CreateSizeSubpath(self, version):
+    ret = '{version}/{cpu}/{apk}.size'.format(version=version, **self._asdict())
+    if _IsBundle(self.apk, version):
+      ret = ret.replace('.apk', '.minimal.apks')
+    return ret
+
   @property
   def before_size_file_subpath(self):
     if self.before_version:
-      return self._SIZE_URL_TEMPLATE.format(
-          version=self.before_version, **self._asdict())
+      return self._CreateSizeSubpath(self.before_version)
     return None
 
   @property
   def after_size_file_subpath(self):
-    return self._SIZE_URL_TEMPLATE.format(
-        version=self.after_version, **self._asdict())
+    return self._CreateSizeSubpath(self.after_version)
 
   @property
   def ndjson_subpath(self):
@@ -180,6 +191,8 @@ def _FetchExistingMilestoneReports():
 
 def _WriteMilestonesJson(path):
   with open(path, 'w') as out_file:
+    # TODO(agrieve): Record the full list of reports rather than three arrays
+    #    so that the UI can prevent selecting non-existent entries.
     pushed_reports_obj = {
         'pushed': {
             'apk': _DESIRED_APKS,
@@ -209,7 +222,7 @@ def _BuildOneReport(arg_tuples):
 
 
 def _CreateReportObjects(skip_existing):
-  desired_reports = set(_RequestedReports())
+  desired_reports = set(_EnumerateReports())
   logging.warning('Querying storage bucket for existing reports.')
   existing_reports = set(_FetchExistingMilestoneReports())
   missing_reports = desired_reports - existing_reports
