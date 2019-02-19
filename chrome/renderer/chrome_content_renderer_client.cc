@@ -162,6 +162,7 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #endif
 
@@ -504,6 +505,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderFrameCreated(
       render_frame, registry);
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    registry->AddInterface(base::BindRepeating(
+        &extensions::MimeHandlerViewContainerManager::BindRequest,
+        render_frame->GetRoutingID()));
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
