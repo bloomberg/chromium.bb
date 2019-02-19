@@ -494,20 +494,10 @@ V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
                      base::OnceClosure destroy_cb)
     : type_(type), device_(dev), destroy_cb_(std::move(destroy_cb)) {
-  // TODO(acourbot): fix clients - the constructor should be called on the same
-  // sequence as the rest.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 V4L2Queue::~V4L2Queue() {
-  // TODO(acourbot): we do this prior to checking the sequence because we
-  // tolerate queues to be destroyed in the wrong thread if they are properly
-  // cleaned up. But ultimately clients should be fixed.
-  if (!is_streaming_ && buffers_.empty()) {
-    std::move(destroy_cb_).Run();
-    return;
-  }
-
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (is_streaming_) {
@@ -825,9 +815,7 @@ scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
     return scoped_refptr<V4L2Queue>(it->second);
 
   scoped_refptr<V4L2Queue> queue = V4L2QueueFactory::CreateQueue(
-      this, type,
-      media::BindToCurrentLoop(
-          base::BindOnce(&V4L2Device::OnQueueDestroyed, this, type)));
+      this, type, base::BindOnce(&V4L2Device::OnQueueDestroyed, this, type));
 
   queues_[type] = queue.get();
   return queue;
