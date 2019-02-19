@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/language/content/browser/language_code_locator.h"
 
-class S2LangQuadTreeNode;
+class SerializedLanguageTree;
 
 namespace language {
 
@@ -21,8 +21,8 @@ namespace language {
 // constructor.
 class UlpLanguageCodeLocator : public LanguageCodeLocator {
  public:
-  UlpLanguageCodeLocator(
-      std::vector<std::unique_ptr<S2LangQuadTreeNode>>&& roots);
+  UlpLanguageCodeLocator(std::vector<std::unique_ptr<SerializedLanguageTree>>&&
+                             serialized_langtrees);
   ~UlpLanguageCodeLocator() override;
 
   // LanguageCodeLocator implementation.
@@ -30,7 +30,7 @@ class UlpLanguageCodeLocator : public LanguageCodeLocator {
                                             double longitude) const override;
 
  private:
-  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots_;
+  std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees_;
   struct CellLanguagePair;
   mutable std::vector<CellLanguagePair> cache_;
   DISALLOW_COPY_AND_ASSIGN(UlpLanguageCodeLocator);

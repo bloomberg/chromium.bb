@@ -18,9 +18,10 @@ struct UlpLanguageCodeLocator::CellLanguagePair {
 };
 
 UlpLanguageCodeLocator::UlpLanguageCodeLocator(
-    std::vector<std::unique_ptr<S2LangQuadTreeNode>>&& roots) {
-  roots_ = std::move(roots);
-  cache_ = std::vector<CellLanguagePair>(roots_.size());
+    std::vector<std::unique_ptr<SerializedLanguageTree>>&&
+        serialized_langtrees) {
+  serialized_langtrees_ = std::move(serialized_langtrees);
+  cache_ = std::vector<CellLanguagePair>(serialized_langtrees_.size());
 }
 
 UlpLanguageCodeLocator::~UlpLanguageCodeLocator() {}
@@ -30,15 +31,16 @@ std::vector<std::string> UlpLanguageCodeLocator::GetLanguageCodes(
     double longitude) const {
   S2CellId cell(S2LatLng::FromDegrees(latitude, longitude));
   std::vector<std::string> languages;
-  for (size_t index = 0; index < roots_.size(); index++) {
+  for (size_t index = 0; index < serialized_langtrees_.size(); index++) {
     CellLanguagePair cached = cache_[index];
     std::string language;
     if (cached.cell.is_valid() && cached.cell.contains(cell)) {
       language = cached.language;
     } else {
-      const auto& root = roots_[index];
+      const S2LangQuadTreeNode& root =
+          S2LangQuadTreeNode::Deserialize(serialized_langtrees_[index].get());
       int level;
-      language = root.get()->Get(cell, &level);
+      language = root.Get(cell, &level);
       if (level != -1) {
         //|cell|.parent(|level|) is the ancestor S2Cell of |cell| for which
         // there's a matching language in the tree.

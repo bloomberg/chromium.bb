@@ -28,6 +28,42 @@ std::string S2LangQuadTreeNode::Get(const S2CellId& cell,
   return "";
 }
 
+S2LangQuadTreeNode S2LangQuadTreeNode::Deserialize(
+    const SerializedLanguageTree* serialized_langtree) {
+  S2LangQuadTreeNode root;
+  int bits_per_lang_index = serialized_langtree->GetBitsPerLanguageIndex();
+  DeserializeSubtree(serialized_langtree, bits_per_lang_index, 0, &root);
+  return root;
+}
+
+size_t S2LangQuadTreeNode::DeserializeSubtree(
+    const SerializedLanguageTree* serialized_langtree,
+    int bits_per_lang_index,
+    size_t bit_offset,
+    S2LangQuadTreeNode* root) {
+  if (serialized_langtree->GetBitAt(bit_offset)) {
+    int index = 0;
+    for (int bit_index = 1; bit_index <= bits_per_lang_index; bit_index++) {
+      index <<= 1;
+      index += serialized_langtree->GetBitAt(bit_offset + bit_index);
+    }
+    if (index != 0)
+      root->language_ = serialized_langtree->GetLanguageAt(index - 1);
+    return bits_per_lang_index + 1;
+  } else {
+    size_t subtree_size = 1;
+    for (int child_index = 0; child_index < 4; child_index++) {
+      S2LangQuadTreeNode child;
+      subtree_size +=
+          DeserializeSubtree(serialized_langtree, bits_per_lang_index,
+                             bit_offset + subtree_size, &child);
+      if (!child.IsNullLeaf())
+        root->children_[child_index] = child;
+    }
+    return subtree_size;
+  }
+}
+
 const S2LangQuadTreeNode* S2LangQuadTreeNode::GetChild(
     const int child_index) const {
   auto it = children_.find(child_index);
