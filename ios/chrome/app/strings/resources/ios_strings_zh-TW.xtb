@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3024255823539804759">過去 1 天</translation>
 <translation id="3037605927509011580">糟糕！</translation>
-<translation id="3059750684806925578">搜尋複製的圖片</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3157684681743766797">全部標示…</translation>
 <translation id="3175081911749765310">網路服務</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">無法連上伺服器。</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
+<translation id="3424059454230285158">你隨時可以<ph name="BEGIN_LINK" />自訂這些設定<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
 <translation id="3448016392200048164">分割檢視</translation>
 <translation id="345565170154308620">管理密碼...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
-<translation id="3771149149411027381">搜尋複製的文字</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">搜尋</translation>
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定你的電子郵件帳戶。</translation>
 <translation id="4124987746317609294">時間範圍</translation>
-<translation id="4155190233692914060">前往複製的連結。</translation>
 <translation id="4172051516777682613">一律顯示</translation>
 <translation id="418156467088430727">在新分頁中檢視離線版本</translation>
 <translation id="4237682350741091554">前往<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理 Chrome 同步功能和個人化設定</translation>

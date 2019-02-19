@@ -91,6 +91,7 @@
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="421369550622382712">Chromium ಗಾಗಿ ಅದ್ಭುತ ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳು, ಗೇಮ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಹಾಗೂ ಥೀಮ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.</translation>
+<translation id="4216212958613226427">Chromium UI ತೋರಿಸಲು ಈ ಭಾಷೆಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ</translation>
 <translation id="4222580632002216401">ಇದೀಗ ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4224199872375172890">Chromium ಅನ್ನು ನವೀಕರಿಸಿದೆ.</translation>
 <translation id="4230135487732243613">ಈ ಖಾತೆಗೆ ನಿಮ್ಮ Chromium ಡೇಟಾವನ್ನು ಲಿಂಕ್ ಮಾಡುವುದೇ?</translation>
@@ -135,6 +136,7 @@
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="5698481217667032250">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5712253116097046984">ಈ ಅಪ್‌ಡೇಟ್‌ ಅನ್ನು ಅನ್ವಯಿಸಲು, ನೀವು Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ ಎಂದು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಕೇಳಿಕೊಳ್ಳುತ್ತಾರೆ</translation>
+<translation id="5756484659843248772">Chromium OS UI ತೋರಿಸಲು ಈ ಭಾಷೆಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ</translation>
 <translation id="5768914737813585044">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5796460469508169315">Chromium ಬಹುತೇಕ ಸಿದ್ಧಗೊಂಡಿದೆ.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -177,8 +179,8 @@
 <translation id="6810143991807788455">ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯಮಾಡಿ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
+<translation id="6877899728743402439">ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು ಪರ್ಯಾಯ ಬ್ರೌಸರ್ ಅನ್ನು ತೆರೆಯುವಂತೆ Chromium ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="6893813176749746474">Chromium ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ, ಆದರೆ ನೀವು ಕನಿಷ್ಠ 30 ದಿನಗಳವರೆಗಾದರೂ ಇದನ್ನು ಬಳಸಿರಲಿಕ್ಕಿಲ್ಲ.</translation>
-<translation id="692832138936263906">Chromium ಪುಟದ ಚಿತ್ರಗಳನ್ನು Google ಸರ್ವರ್‌ಗಳಿಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ ಅದರಲ್ಲಿರುವ ಚಿತ್ರಗಳು ಮತ್ತು ಪಠ್ಯವನ್ನು ಗುರುತಿಸಬಹುದು, ಈ ಮೂಲಕ ಪುಟದ ವಿಷಯವನ್ನು ಚೆನ್ನಾಗಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡಬಹುದು.</translation>
 <translation id="6964305034639999644">Chromium ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="6970811910055250180">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6990124437352146030">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸಲು Chromium ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>

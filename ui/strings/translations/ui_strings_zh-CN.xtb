@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">删除</translation>
 <translation id="1243314992276662751">上传</translation>
 <translation id="1269641567813814718">Win 键</translation>
+<translation id="1290982764014248209">将“<ph name="DRAGGED_APP" />”移至文件夹“<ph name="FOLDER_NAME" />”内。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推荐的应用</translation>
 <translation id="1368832886055348810">从左向右</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">点击</translation>
 <translation id="3036649622769666520">打开文件</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">任务栏位于屏幕左侧</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">恢复</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="335581015389089642">语音</translation>
 <translation id="3479552764303398839">以后再说</translation>
+<translation id="348799646910989694">任务栏已自动隐藏</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{还剩 1 天}other{还剩 # 天}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="4316910396681052118">所有应用</translation>
 <translation id="4588090240171750605">向右滚动</translation>
+<translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
 <translation id="4730374152663651037">常用应用</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">开合三角标记</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">删除(&amp;D)</translation>
+<translation id="5395308026110844773">将“<ph name="DRAGGED_APP_NAME" />”拖放到“<ph name="IN_PLACE_APP" />”上，然后松开，即可创建文件夹。</translation>
 <translation id="5463830097259460683">表情符号与符号</translation>
 <translation id="5476505524087279545">取消选中</translation>
+<translation id="547979256943495781">任务栏位于屏幕右侧</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> 系统</translation>
 <translation id="5583640892426849032">退格</translation>
 <translation id="5613020302032141669">向左箭头</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自动填充</translation>
 <translation id="815598010540052116">向下滚动</translation>
+<translation id="8170087467028567933">移除这项推荐内容会致使它在您的帐号中隐而不见（无论您使用何种设备）。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻页</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">移除这项推荐内容？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 文件 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">一律显示任务栏</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+ 另外 <ph name="NUMBER" /> 项</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">为图片添加注释</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">任务栏始终处于隐藏状态</translation>
 <translation id="9002566407876343676">打开</translation>
+<translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 页中第 <ph name="ROW_NUMBER" /> 行与第 <ph name="COLUMN_NUMBER" /> 列的相交处。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9059834730836941392">收起通知</translation>
 <translation id="9150735707954472829">标签</translation>

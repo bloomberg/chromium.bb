@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
 <translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
-<translation id="3059750684806925578">Kopiertes Bild suchen</translation>
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
+<translation id="3424059454230285158">Sie können <ph name="BEGIN_LINK" />diese Einstellungen jederzeit anpassen<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
 <translation id="345565170154308620">Passwörter verwalten…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
-<translation id="3771149149411027381">Kopierten Text suchen</translation>
 <translation id="3779810277399252432">Keine Internetverbindung</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Suche</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4124987746317609294">Zeitraum</translation>
-<translation id="4155190233692914060">Kopierten Link besuchen</translation>
 <translation id="4172051516777682613">Immer anzeigen</translation>
 <translation id="418156467088430727">Offlineversion in einem neuen Tab ansehen</translation>
 <translation id="4237682350741091554">Chrome-Synchronisierung und -Personalisierung in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> verwalten</translation>

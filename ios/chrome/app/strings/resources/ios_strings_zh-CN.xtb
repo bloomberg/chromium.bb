@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3024255823539804759">过去 1 天</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
-<translation id="3059750684806925578">搜索复制的图片</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3157684681743766797">全部标为…</translation>
 <translation id="3175081911749765310">网络服务</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
+<translation id="3424059454230285158">您可以随时<ph name="BEGIN_LINK" />自定义这些设置<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
 <translation id="345565170154308620">管理密码…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
-<translation id="3771149149411027381">搜索复制的文字</translation>
 <translation id="3779810277399252432">无互联网连接。</translation>
 <translation id="3783017676699494206">保存图片</translation>
 <translation id="3789841737615482174">安装</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">搜索</translation>
 <translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐号。</translation>
 <translation id="4124987746317609294">时间范围</translation>
-<translation id="4155190233692914060">访问复制的链接</translation>
 <translation id="4172051516777682613">一律显示</translation>
 <translation id="418156467088430727">在新标签页中查看离线版本</translation>
 <translation id="4237682350741091554">在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理 Chrome 同步和个性化</translation>

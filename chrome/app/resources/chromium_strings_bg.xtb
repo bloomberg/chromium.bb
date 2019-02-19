@@ -91,6 +91,7 @@
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="407254336480250557">Изберете <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" /></translation>
 <translation id="421369550622382712">Открийте отлични приложения, игри, разширения и теми за Chromium.</translation>
+<translation id="4216212958613226427">Този език служи за показване на ПИ на Chromium</translation>
 <translation id="4222580632002216401">Вече влязохте в Chromium! Синхронизирането е деактивирано от администратора ви.</translation>
 <translation id="4224199872375172890">Chromium е актуален.</translation>
 <translation id="4230135487732243613">Да се свържат ли данните ви в Chromium с този профил?</translation>
@@ -135,6 +136,7 @@
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
 <translation id="5712253116097046984">Администраторът ви моли да рестартирате Chromium OS, за да се приложи тази актуализация</translation>
+<translation id="5756484659843248772">Този език служи за показване на ПИ на Chromium OS</translation>
 <translation id="5768914737813585044">Показване на Chromium OS на този език</translation>
 <translation id="5796460469508169315">Chromium е почти готов.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -177,8 +179,8 @@
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
+<translation id="6877899728743402439">Системният ви администратор е конфигурирал Chromium да отваря алтернативен браузър.</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
-<translation id="692832138936263906">Chromium може да разпознае изображенията на дадена страница и текста в тях, като ги изпрати до сървърите на Google, и така да направи съдържанието й по-разбираемо за вас.</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
 <translation id="6990124437352146030">Chromium се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>

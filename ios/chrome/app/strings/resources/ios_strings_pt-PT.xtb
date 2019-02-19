@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Abrir num Novo Separador</translation>
 <translation id="3024255823539804759">Dia anterior</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
-<translation id="3059750684806925578">Pesquisar imagem copiada</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3157684681743766797">Marcar tudo…</translation>
 <translation id="3175081911749765310">Serviços Web</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
 <translation id="3393920035788932672">Pop-ups Permitidos</translation>
+<translation id="3424059454230285158">Pode <ph name="BEGIN_LINK" />personalizar estas definições<ph name="END_LINK" /> em qualquer altura.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
 <translation id="345565170154308620">Gerir palavras-passe…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
-<translation id="3771149149411027381">Pesquisar texto copiado</translation>
 <translation id="3779810277399252432">Sem ligação à Internet.</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Pesquisar</translation>
 <translation id="4121993058175073134">P/enviar dados exp. da Int., config. a conta de email na ap. Definiç.</translation>
 <translation id="4124987746317609294">Intervalo de tempo</translation>
-<translation id="4155190233692914060">Aceder ao link copiado</translation>
 <translation id="4172051516777682613">Mostrar sempre</translation>
 <translation id="418156467088430727">Ver versão offline num novo separador</translation>
 <translation id="4237682350741091554">Gerir a Sincronização do Chrome e a personalização nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" /></translation>

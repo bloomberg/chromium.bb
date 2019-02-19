@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Megnyitás új lapon</translation>
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
-<translation id="3059750684806925578">Másolt kép keresése</translation>
 <translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nem lehet kapcsolódni a szerverhez.</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
 <translation id="3393920035788932672">Pop-up megengedett</translation>
+<translation id="3424059454230285158">Bármikor <ph name="BEGIN_LINK" />személyre szabhatja ezeket a beállításokat<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
 <translation id="345565170154308620">Jelszavak kezelése…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
-<translation id="3771149149411027381">Másolt szöveg keresése</translation>
 <translation id="3779810277399252432">Nincs internetkapcsolat.</translation>
 <translation id="3783017676699494206">Kép mentése</translation>
 <translation id="3789841737615482174">Telepítés</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Keresés</translation>
 <translation id="4121993058175073134">Net-export adatok küldéséhez, kérjük, konfigurálja e-mail fiókját a Beállítások alkalmazásban.</translation>
 <translation id="4124987746317609294">Időintervallum</translation>
-<translation id="4155190233692914060">Másolt link megnyitása</translation>
 <translation id="4172051516777682613">Mindig mutassa</translation>
 <translation id="418156467088430727">Offline verzió megtekintése új lapon</translation>
 <translation id="4237682350741091554">A Chrome-szinkronizálást és a személyre szabást a <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> kezelheti</translation>

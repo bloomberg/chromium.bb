@@ -171,7 +171,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 
 Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Muli nang ilulunsad ang Chrome}=1{Muling ilulunsad ang Chrome sa loob ng 1 segundo}one{Muling ilulunsad ang Chrome sa loob ng # segundo}other{Muling ilulunsad ang Chrome sa loob ng # na segundo}}</translation>
-<translation id="5505603430818498864">Makikilala ng Google Chrome ang mga larawan at text sa isang larawan sa pamamagitan ng pagpapadala ng mga larawan ng page sa mga server ng Google, na nagbibigay-daan sa iyong mas maunawaan ang content ng page.</translation>
 <translation id="556024056938947818">Sinusubukan ng Google Chrome na magpakita ng mga password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Maaaring mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
@@ -202,6 +201,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6566149418543181476">Ina-update ang Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chrome. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chrome nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
+<translation id="6609605543612238677">Na-configure ng iyong system administrator na magbukas ang Google Chrome ng alternatibong browser para i-access ang <ph name="URL" />.</translation>
 <translation id="6634887557811630702">Napapanahon ang Google Chrome.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6679975945624592337">Hayaang Tumakbo sa Background ang Google Chrome</translation>
@@ -220,6 +220,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="7164397146364144019">Makakatulong ka na gawing mas ligtas at mas madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pag-uulat ng mga detalye ng mga posibleng isyu sa seguridad sa Google.</translation>
 <translation id="7242029209006116544">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. Maaari ka ring gumawa ng bagong profile upang ihiwalay ang iyong umiiral na data sa Chrome. <ph name="LEARN_MORE" /></translation>
+<translation id="7295052994004373688">Ginagamit ang wikang ito para ipakita ang Google Chrome UI</translation>
 <translation id="7296210096911315575">Mahalagang impormasyon sa paggamit at kaligtasan</translation>
 <translation id="7308322188646931570">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file</translation>
 <translation id="7339898014177206373">Bagong window</translation>
@@ -282,6 +283,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>
 <translation id="873133009373065397">Hindi matukoy o maitakda ng Google Chrome ang default na browser</translation>
 <translation id="8736674169840206667">Inaatasan ka ng iyong administrator na muling ilunsad ang Chrome para malapat ang update</translation>
+<translation id="8788264404293392165">Ginagamit ang wikang ito para ipakita ang Chrome OS UI</translation>
 <translation id="8791470158600044404">{0,plural, =1{Magre-restart ang Chrome OS sa loob ng 1 minuto}one{Magre-restart ang Chrome OS sa loob ng # minuto}other{Magre-restart ang Chrome OS sa loob ng # na minuto}}</translation>
 <translation id="8823341990149967727">Luma na ang Chrome</translation>
 <translation id="884296878221830158">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o na-click ang button ng Home.</translation>

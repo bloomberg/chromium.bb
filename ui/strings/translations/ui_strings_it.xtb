@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1243314992276662751">Carica</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Sposta <ph name="DRAGGED_APP" /> nella cartella <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APP CONSIGLIATE</translation>
 <translation id="1368832886055348810">Da sinistra a destra</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">fai clic</translation>
 <translation id="3036649622769666520">Apri file</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Shelf a sinistra</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Ripristina</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 giorno}other{# giorni}}</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3479552764303398839">Non adesso</translation>
+<translation id="348799646910989694">Shelf nascosto in automatico</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 giorno rimanente}other{# giorni rimanenti}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Avvia comandi vocali</translation>
 <translation id="4316910396681052118">TUTTE LE APP</translation>
 <translation id="4588090240171750605">Scorri a destra</translation>
+<translation id="4690510401873698237">Shelf in basso</translation>
 <translation id="4724120544754982507">Centro notifiche, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifiche da leggere</translation>
 <translation id="4730374152663651037">USATE SPESSO</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mese rimasto}other{# mesi rimasti}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Triangolo di apertura</translation>
 <translation id="528468243742722775">Fine</translation>
 <translation id="5329858601952122676">&amp;Elimina</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sopra <ph name="IN_PLACE_APP" />, rilascia per creare una cartella.</translation>
 <translation id="5463830097259460683">Emoji e simboli</translation>
 <translation id="5476505524087279545">deseleziona</translation>
+<translation id="547979256943495781">Shelf a destra</translation>
 <translation id="5574202486608032840">Sistema <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Freccia sinistra</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completamento automatico</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>
+<translation id="8170087467028567933">Questo suggerimento, se rimosso, verrà nascosto dal tuo account su tutti i tuoi dispositivi.</translation>
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8210608804940886430">Pagina giù</translation>
 <translation id="8245914219290430011">Tabulazione</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Rimuovere questo suggerimento?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 a}other{# a}}</translation>
 <translation id="8602707065186045623">File <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Shelf sempre visualizzato</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
 <translation id="8725488761726303204">+ altre <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Fine</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Annota immagine</translation>
 <translation id="8841375032071747811">Pulsante Indietro</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
+<translation id="8926951137623668982">Shelf sempre nascosto</translation>
 <translation id="9002566407876343676">apri</translation>
+<translation id="9039076430527029379">Vai alla Pagina <ph name="PAGE_NUMBER" />, riga <ph name="ROW_NUMBER" />, colonna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec}other{# sec}}</translation>
 <translation id="9059834730836941392">Comprimi la notifica</translation>
 <translation id="9150735707954472829">Scheda</translation>

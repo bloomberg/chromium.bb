@@ -160,10 +160,25 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
+<translation id="1383493480903114193">Denne regelen tvinger nettverkskode til å kjøre i nettleserprosessen.
+
+      Som standard er denne regelen slått av. Hvis den slås på, kan brukere være utsatt for sikkerhetsproblemene når nettverksprosessen kjøres isolert.
+
+      Formålet med denne regelen er å gi bedrifter mulighet til å gå over til tredjepartsprogramvare som ikke er avhengig av å bruke nettverks-API-ene. Proxy-tjenere anbefales fremfor LSP-er og Win32 API-patching.
+
+      Hvis denne regelen ikke er angitt, kan nettverkskode kjøre utenfor nettleserprosessen, men dette avhenger av feltforsøkene i NetworkService-eksperimentet.</translation>
 <translation id="1384459581748403878">Referanse: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">La brukerne administrere installerte sertifikater.</translation>
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
+<translation id="1404043648050567997">Safe Browsing-tjenesten viser en advarselsside når brukere navigerer til nettsteder som er merket som potensielt skadelige. Hvis du slår på denne innstillingen, kan ikke brukerne ignorere advarselssiden og gå videre til det skadelige nettstedet.
+
+      Denne regelen forhindrer bare brukerne fra å gå videre når de får Safe Browsing-advarsler (f.eks. om skadelig programvare og nettfisking), ikke når de får advarsler om problemer med SSL-sertifikater (f.eks. ugyldige eller utløpte sertifikater).
+
+      Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne velge å gå videre til det merkede nettstedet etter å ha sett advarselen.
+
+      Se https://developers.google.com/safe-browsing for å finne ut mer om Safe Browsing.</translation>
 <translation id="1413936351612032792">Rapportér informasjon om bruken av Linux-apper</translation>
 <translation id="142346659686073702">Tillat at brukere uten tilknytning bruker Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -1095,6 +1110,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
+<translation id="357917253161699596">Tillat brukere å administrere brukersertifikater</translation>
 <translation id="3583230441447348508">Spesifiserer en liste over forhåndskonfigurerte delte nettverksressurser.
 
       Hvert listeelement i regelen er et objekt med to deler: «share_url» og «mode». «share_url» skal være nettadressen til den delte nettverksressursen, og «mode» skal være enten «drop_down» eller «pre_mount». «drop_down»-modus indikerer at «share_url» skal legges til i rullegardinmenyen for funn av delte nettverksressurser. «pre_mount»-modus indikerer at «share_url» skal settes inn.</translation>
@@ -1430,6 +1446,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
 <translation id="437791893267799639">Innstillingen er ikke angitt – ikke tillat dataoverføring og ARC</translation>
+<translation id="4389073105055031853">La brukerne administrere alle sertifikater</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
 <translation id="4408428864159735559">Liste over forhåndskonfigurert deling av nettverksfiler.</translation>
 <translation id="4410236409016356088">Slå på reduksjon av båndbredde for nettverk</translation>
@@ -1676,6 +1693,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er spesifisert som 0, kan ikke passordet for maskinkontoen endres.
 
       Vær oppmerksom på at passord kan bli eldre enn det spesifiserte antallet dager hvis klienten har vært uten nett over lengre tid.</translation>
+<translation id="510196893779239086">Denne regelen styrer om Chrome skal lukkes helt når den siste fanen ville ha byttet til en annen nettleser.
+
+      Når denne regelen er satt til «true» (sann) eller ikke er angitt, holder Chrome minst én fane åpen etter å ha byttet til en annen nettleser.
+
+      Når denne regelen er satt til «false» (usann), lukker Chrome fanen etter å ha byttet til en annen nettleser, selv om det var den siste fanen. Dette gjør at Chrome avsluttes helt.</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5108031557082757679">Deaktiverte bedriftsskrivere</translation>
 <translation id="5113732180192599620">Denne regelen kontrollerer listen over nettsteder som aldri fører til bytting av nettleser.
@@ -2278,6 +2300,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Tillat at nettsteder navigerer og åpner forgrunnsvinduer samtidig</translation>
 <translation id="6447948611083700881">Sikkerhetskopiering og gjenoppretting er deaktivert</translation>
+<translation id="6449476513004303784">Ikke la brukerne administrere sertifikater</translation>
 <translation id="645425387487868471">Slå på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Slå på autofyll for adresser</translation>
 <translation id="6473623140202114570">Konfigurer listen over domener hvor Safe Browsing ikke utløser advarsler.</translation>
@@ -2340,6 +2363,13 @@ Hvis denne regelen er deaktivert eller ikke angitt, kan Flash-innhold av annen o
 
           Hvis denne innstillingen ikke angis, deaktiveres skjermtastaturet når påloggingsskjermen først vises. Brukere kan aktivere eller deaktivere
 skjermtastaturet når som helst og statusen den har på påloggingsskjermen er vedvarende mellom brukerne.</translation>
+<translation id="6570691255874112762">Denne regelen styrer om brukerne kan importere og fjerne sertifikater via Sertifikatadministrator.
+
+      Hvis denne regelen er satt til «La brukerne administrere alle sertifikater» eller ikke er angitt, kan brukerne administrere sertifikater.
+
+      Hvis denne regelen er satt til «La brukerne administrere brukersertifikater», kan brukerne administrere brukersertifikater, men ikke sertifikater for hele enheten.
+
+      Hvis denne regelen er satt til «Ikke la brukerne administrere sertifikater», kan brukerne bare se sertifikater. De kan ikke administrere dem.</translation>
 <translation id="6573305661369899995">Angi en ekstern kilde for nettadressebegrensninger</translation>
 <translation id="6598235178374410284">Brukerbilde</translation>
 <translation id="6603004149426829878">Send alltid eventuelle tilgjengelige posisjonssignaler til tjeneren mens tidssonen påvises</translation>
@@ -2669,6 +2699,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis innstillingen ikke angis, slås lupen av når påloggingssiden vises for første gang. Brukere kan slå lupen på eller av når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="7249828445670652637">Slå på CA-sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
+<translation id="7252681704926980614">Send brukernavnet og filnavnet til tjeneren for egne skrivere sammen med hver utskriftsjobb. Dette sendes ikke som standard.
+
+      Hvis denne regelen er satt til «true» (sann), deaktiveres også skrivere som bruker andre protokoller enn IPPS, USB og IPP-over-USB, siden brukernavn og filnavn ikke skal sendes åpent over nettverket.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
@@ -2734,6 +2767,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="7336785017449297672">Kontrollerer innstillinger for klokke og tidssone.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
+<translation id="7339315111520512972">Tving nettverkskode til å kjøre i nettleserprosessen</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="7343497214039883642">Konfigurasjonsfil for enheter på bedriftsskriver</translation>
 <translation id="7349338075015720646">Spesifiserer en liste over nettsteder som er installert gjennom bakgrunnsinstallasjon (uten brukerinteraksjon), og som brukere ikke kan avinstallere eller slå av.
@@ -2960,22 +2994,12 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 
           Du finner detaljerte eksempler her:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Hold den siste fanen åpen i Chrome.</translation>
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
 <translation id="793473937901685727">Angi sertifikattilgjengeligheten for ARC-apper</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
-<translation id="7952002811557367112">Denne regelen hindrer at brukerne kan laste inn nettsider fra nettadresser som er svartelistet. Svartelisten inneholder nettadressemønstre som spesifiserer hvilke nettadresser som svartelistes.
-
-      Nettadressmønstre må formateres i samsvar med https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Unntak kan spesifiseres i regelen for godkjenning av nettadresser. Disse reglene er begrenset til 1000 oppføringer, og eventuelle oppføringer som overskrider dette, ignoreres.
-
-      Vær oppmerksom på at vi ikke anbefaler å blokkere interne «chrome://*»-nettadresser, siden det kan føre til uventede feil.
-
-      Vær oppmerksom på at denne regelen ikke hindrer dynamisk oppdatering av sider ved hjelp av JavaScript. Eksempel: La oss si at du blokkerer «eksempel.no/abc». Brukerne kan kanskje likevel gå til «eksempel.no» og klikke på en link til «eksempel.no/abc», så lenge siden ikke lastes inn på nytt.
-
-      Hvis denne regelen ikke er angitt, svartelistes ingen nettadresser i nettleseren.</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>

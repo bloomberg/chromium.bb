@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Abrir en una pestaña nueva</translation>
 <translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
-<translation id="3059750684806925578">Buscar imagen copiada</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3175081911749765310">Servicios web</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">No se ha podido establecer conexión con el servidor.</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
+<translation id="3424059454230285158">Puedes <ph name="BEGIN_LINK" />personalizar estos ajustes<ph name="END_LINK" /> en cualquier momento</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
 <translation id="345565170154308620">Gestionar contraseñas...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Precargar páginas web</translation>
 <translation id="3691593122358196899">Marcador añadido a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
-<translation id="3771149149411027381">Buscar texto copiado</translation>
 <translation id="3779810277399252432">No hay conexión a Internet.</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Buscar</translation>
 <translation id="4121993058175073134">Configura tu correo en Configuración para enviar datos de exportaciones netas.</translation>
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
-<translation id="4155190233692914060">Visitar enlace copiado</translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
 <translation id="418156467088430727">Ver versión sin conexión en una nueva pestaña</translation>
 <translation id="4237682350741091554">Administra la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" /></translation>

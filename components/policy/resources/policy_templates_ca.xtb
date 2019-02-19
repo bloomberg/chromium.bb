@@ -163,10 +163,25 @@
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
+<translation id="1383493480903114193">Aquesta política obliga a executar codi de xarxes socials al procés del navegador.
+
+      Aquesta política està desactivada de manera predeterminada. Si s'activa, deixa els usuaris exposats als problemes de seguretat quan el procés de xarxes socials entra a la zona de proves.
+
+      L'objectiu d'aquesta política és donar l'oportunitat a les empreses de migrar a programari de tercers que no depengui de connectar les API de xarxes socials. Es recomana utilitzar servidors intermediaris en comptes d'LSP o pedaços de l'API Win32.
+
+      Si aquesta política no s'estableix, és possible que el codi de xarxes socials surti del procés de navegador en funció de les proves de camps de l'experiment NetworkService.</translation>
 <translation id="1384459581748403878">Referència: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Permet que els usuaris gestionin els certificats instal·lats.</translation>
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
+<translation id="1404043648050567997">El servei Navegació segura mostra una pàgina d'advertiment quan els usuaris naveguen a llocs web marcats com a potencialment maliciosos. Si actives aquesta opció, els usuaris no podran accedir de cap manera al lloc web maliciós des de la pàgina d'advertiment.
+
+      Aquesta política només impedirà l'accés dels usuaris des dels advertiments de Navegació segura (per exemple, en cas de programari maliciós i pesca de credencials), no en cas de problemes relacionats amb els certificats SSL (per exemple, si han caducat o no són vàlids).
+
+      Si desactives o no configures aquesta opció, els usuaris podran decidir si volen accedir al lloc web marcat després de veure l'advertiment.
+
+      Consulta https://developers.google.com/safe-browsing per obtenir més informació sobre Navegació segura.</translation>
 <translation id="1413936351612032792">Ofereix informació sobre l'ús d'aplicacions per a Linux</translation>
 <translation id="142346659686073702">Permet que els usuaris no afiliats facin servir Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -1080,6 +1095,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
+<translation id="357917253161699596">Permet que els usuaris gestionin els certificats electrònics</translation>
 <translation id="3583230441447348508">Especifica una llista de fitxers compartits de la xarxa configurats prèviament.
 
       Cada element de la llista de la política és un objecte amb dos membres: "share_url" i "mode". "share_url" ha de ser l'URL del fitxer compartit i "mode" ha de ser "drop_down" o "pre_mount". El mode "drop_down" indica que "share_url" s'afegirà a la llista desplegable de detecció de fitxers compartits. El mode "pre_mount" indica que "share_url" s'activarà.</translation>
@@ -1410,6 +1426,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4372704773119750918">No permetis que l'usuari empresarial formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
 <translation id="437791893267799639">La política no està definida; no permetis la migració de dades i ARC</translation>
+<translation id="4389073105055031853">Permet que els usuaris gestionin tots els certificats</translation>
 <translation id="4389091865841123886">Configura el testimoni remot amb el mecanisme TPM.</translation>
 <translation id="4408428864159735559">Llista de fitxers compartits de la xarxa configurats prèviament.</translation>
 <translation id="4410236409016356088">Activa la limitació de l'amplada de banda de la xarxa</translation>
@@ -1647,6 +1664,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si la política es defineix en 0, el canvi de contrasenya del compte de l'ordinador es desactiva.
 
       Tingues en compte que les contrasenyes poden tenir una antiguitat superior al nombre de dies especificat si el dispositiu del client ha estat sense connexió durant un període més llarg de temps.</translation>
+<translation id="510196893779239086">Aquesta política controla si es tanca Chrome totalment quan l'última pestanya canvia a un altre navegador.
+
+      Si aquesta política es deixa sense establir o s'estableix en "true", Chrome mantindrà oberta almenys una pestanya després de canviar a un navegador alternatiu.
+
+      Si aquesta política s'estableix en "false", Chrome tancarà la pestanya després de canviar a un navegador alternatiu, encara que sigui l'última. És a dir, Chrome es tancarà totalment.</translation>
 <translation id="5105313908130842249">Retard del bloqueig de pantalla quan s'utilitza bateria</translation>
 <translation id="5108031557082757679">Impressores desactivades per a dispositius d'empresa</translation>
 <translation id="5113732180192599620">Aquesta política controla la llista de llocs web que mai no provocaran un canvi de navegador.
@@ -2200,6 +2222,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permet que els llocs web naveguin i obrin finestres emergents simultàniament</translation>
 <translation id="6447948611083700881">Còpia de seguretat i restauració desactivades</translation>
+<translation id="6449476513004303784">No permetis que els usuaris gestionin els certificats</translation>
 <translation id="645425387487868471">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Activa la funció Emplenament automàtic per a les adreces</translation>
 <translation id="6473623140202114570">Configura la llista de dominis en què Navegació segura no activarà advertiments.</translation>
@@ -2261,6 +2284,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si configureu aquesta política, els usuaris poden substituir-la temporalment si activen o desactiven el teclat en pantalla. No obstant això, la decisió de l'usuari no és permanent i el valor predeterminat es restaura cada vegada que es mostra de nou la pantalla d'inici de sessió o si l'usuari es troba inactiu a la pantalla d'inici de sessió durant un minut.
 
           Si aquesta política es deixa sense configurar, el teclat en pantalla estarà desactivat la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris podran activar o desactivar el teclat en pantalla en qualsevol moment i l'estat que tingui a la pantalla d'inici de sessió es conservarà entre els usuaris.</translation>
+<translation id="6570691255874112762">Aquesta política controla si els usuaris poden importar i suprimir certificats a través del gestor de certificats.
+
+      Si s'estableix en "Permet que els usuaris gestionin tots els certificats" o es deixa sense establir, els usuaris podran gestionar els certificats.
+
+      Si s'estableix en "Permet que els usuaris gestionin els certificats electrònics", els usuaris podran gestionar els certificats electrònics, però no els que afecten tot el dispositiu.
+
+      Si s'estableix en "No permetis que els usuaris gestionin els certificats", els usuaris no podran gestionar els certificats, sinó només veure'ls.</translation>
 <translation id="6573305661369899995">Estableix una font externa de restriccions d'URL</translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="6603004149426829878">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària</translation>
@@ -2584,6 +2614,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si no s'estableix aquesta política, la lupa es desactivarà la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris poden activar o desactivar la lupa en qualsevol moment i el seu estat a la pàgina d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
+<translation id="7252681704926980614">Envia el nom d'usuari i el del fitxer al servidor de les impressores natives amb cada tasca d'impressió. Amb la configuració predeterminada, no s'envia.
+
+      Si s'estableix aquesta política en "true", també es desactiven les impressores que utilitzen altres protocols que no siguin IPPS, USB o IPP per USB, ja que el nom d'usuari i el del fitxer no es poden enviar obertament a través de la xarxa.</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="7260277299188117560">Actualització automàtica de P2P activada</translation>
 <translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
@@ -2647,6 +2680,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Controla la configuració del rellotge i de la zona horària.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
+<translation id="7339315111520512972">Obliga a executar el codi de xarxes socials al procés del navegador</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
 <translation id="7343497214039883642">Fitxer de configuració de la impressora d'empresa per a dispositius</translation>
 <translation id="7349338075015720646">Especifica una llista de llocs web que s'instal·len en segon pla, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
@@ -2868,22 +2902,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Per veure exemples detallats, aneu a:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Mantén oberta l'última pestanya a Chrome.</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
 <translation id="793473937901685727">Estableix la disponibilitat de certificats per a aplicacions ARC</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
-<translation id="7952002811557367112">Aquesta política impedeix que l'usuari carregui pàgines web d'URL inclosos a la llista negra. La llista negra facilita una llista de patrons d'URL que especifiquen quins URL s'hi afegiran.
-
-      Els patrons d'URL han de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Es poden definir excepcions des de la política de llista blanca d'URL. Aquestes polítiques es limiten a 1.000 entrades; les posteriors s'ignoren.
-
-      Tingues en compte que no és recomanable bloquejar els URL interns del tipus "chrome://*", ja que es podrien produir errors imprevistos.
-
-      Tingues en compte que aquesta política no impedeix que la pàgina s'actualitzi de manera dinàmica a través de JavaScript. Per exemple, si bloqueges "example.com/abc", els usuaris podran continuar visitant "example.com" i fer clic en un enllaç per visitar "example.com/abc", sempre que la pàgina no s'actualitzi.
-
-      Si aquesta política no s'estableix, no s'afegirà cap URL a la llista negra del navegador.</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7961779417826583251">Desactiva l'aplicació de la Transparència de certificats a les autoritats certificadores heretades incloses en una llista</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>

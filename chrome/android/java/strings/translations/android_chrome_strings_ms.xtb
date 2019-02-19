@@ -292,6 +292,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3166827708714933426">Pintasan tab dan tetingkap</translation>
 <translation id="3190152372525844641">Hidupkan kebenaran untuk Chrome dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data disimpan</translation>
+<translation id="3205824638308738187">Hampir selesai!</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> dipadamkan</translation>
 <translation id="321773570071367578">Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3744111309925758534">Apl lain <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3745176700485982507">Pautan ke tapak web kegemaran anda boleh didapati di halaman ini</translation>
+<translation id="3771001275138982843">Tidak dapat memuat turun kemas kini</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Hidupkan Bluetooth<ph name="END_LINK" /> untuk membenarkan penggandingan</translation>
 <translation id="3778956594442850293">Ditambahkan pada Skrin utama</translation>
 <translation id="3781011235031427080">Lagi seperti ini dibuka pada ketinggian separa</translation>
@@ -535,6 +537,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="497421865427891073">Ke hadapan</translation>
 <translation id="4988210275050210843">Memuat turun fail (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Halaman</translation>
+<translation id="4994033804516042629">Tiada kenalan ditemui</translation>
 <translation id="4996978546172906250">Kongsi melalui</translation>
 <translation id="5004416275253351869">Kawalan aktiviti Google</translation>
 <translation id="5005498671520578047">Salin kata laluan</translation>
@@ -759,6 +762,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6643016212128521049">Kosongkan</translation>
 <translation id="6643649862576733715">Isih mengikut jumlah penjimatan data</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lagi}other{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lagi}}</translation>
+<translation id="6649642165559792194">Pratonton imej <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk mengimbas peranti. <ph name="BEGIN_LINK" />Kemaskinikan kebenaran<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -776,7 +780,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6746124502594467657">Alihkan ke bawah</translation>
 <translation id="6766622839693428701">Leret ke bawah untuk tutup.</translation>
 <translation id="6766758767654711248">Ketik untuk pergi ke tapak</translation>
-<translation id="6776813977906306442">Muat turun video dengan menggunakan butang Muat Turun untuk ditonton kemudian</translation>
 <translation id="6782111308708962316">Halang tapak web pihak ketiga daripada menyimpan dan membaca data kuki</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="679325081238418596">Dapatkan penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti anda.</translation>
@@ -934,7 +937,9 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7929962904089429003">Buka menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> telah lapuk.</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>
+<translation id="7960977077911686065">Dengan meneruskan, anda bersetuju membenarkan Chrome menghantar data daripada Autolengkap Chrome, URL tapak dan kandungannya kepada Google untuk menyediakan perkhidmatan ini. Anda juga bersetuju membenarkan Chrome menghantar data peribadi yang anda pilih ke tapak web tersebut melalui Autolengkap Chrome. \n\nLawati tetapan Chrome untuk mematikan Google Assistant dalam Chrome dan Autolengkap Chrome.  <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7975379999046275268">Pratonton halaman <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pramuat halaman untuk penyemakan imbas dan pencarian yang lebih cepat</translation>
 <translation id="79859296434321399">Untuk melihat kandungan realiti tambahan, pasang ARCore</translation>
 <translation id="7986741934819883144">Pilih kenalan</translation>
@@ -1069,7 +1074,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8959122750345127698">Tidak dapat mencapai navigasi: <ph name="URL" /></translation>
 <translation id="8965591936373831584">belum selesai</translation>
 <translation id="8972098258593396643">Muat turun ke folder lalai?</translation>
-<translation id="8979405271719829084">Muat turun video untuk ditonton kemudian</translation>
 <translation id="8981454092730389528">Kawalan Aktiviti Google</translation>
 <translation id="8983677657449185470">Bantu meningkatkan Penyemakan Imbas Selamat</translation>
 <translation id="8986494364107987395">Hantar statistik penggunaan dan laporan nahas kepada Google secara automatik</translation>
@@ -1091,6 +1095,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
+<translation id="9138504265731110181">Google Assistant menjimatkan masa anda dengan membantu anda mendaftar keluar di web</translation>
 <translation id="9139068048179869749">Tanya sebelum membenarkan tapak menghantar pemberitahuan (disyorkan)</translation>
 <translation id="9139318394846604261">Beli-belah</translation>
 <translation id="9155898266292537608">Anda juga boleh mencari dengan mengetik pantas pada perkataan</translation>

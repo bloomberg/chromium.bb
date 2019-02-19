@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Otwórz w nowej karcie</translation>
 <translation id="3024255823539804759">Ostatni dzień</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
-<translation id="3059750684806925578">Wyszukaj skopiowany obraz</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
 <translation id="3157684681743766797">Oznacz wszystko…</translation>
 <translation id="3175081911749765310">Usługi internetowe</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nie można połączyć się z serwerem.</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
+<translation id="3424059454230285158">W każdej chwili możesz <ph name="BEGIN_LINK" />zmienić te ustawienia<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
 <translation id="345565170154308620">Zarządzaj hasłami…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3691593122358196899">Utworzono zakładkę w folderze <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Karty incognito</translation>
-<translation id="3771149149411027381">Wyszukaj skopiowany tekst</translation>
 <translation id="3779810277399252432">Brak połączenia z internetem.</translation>
 <translation id="3783017676699494206">Zapisz obraz</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Szukaj</translation>
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
 <translation id="4124987746317609294">Zakres czasowy</translation>
-<translation id="4155190233692914060">Otwórz skopiowany link</translation>
 <translation id="4172051516777682613">Zawsze pokazuj</translation>
 <translation id="418156467088430727">Wyświetl wersję offline w nowej karcie</translation>
 <translation id="4237682350741091554">Zarządzaj synchronizacją Chrome i personalizacją w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" /></translation>

@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Openen op nieuw tabblad</translation>
 <translation id="3024255823539804759">De afgelopen dag</translation>
 <translation id="3037605927509011580">Helaas.</translation>
-<translation id="3059750684806925578">Gekopieerde afbeelding zoeken</translation>
 <translation id="3112556859945124369">Markeren…</translation>
 <translation id="3157684681743766797">Alles markeren…</translation>
 <translation id="3175081911749765310">Webservices</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Kan geen verbinding maken met de server.</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
 <translation id="3393920035788932672">Pop-ups toegestaan</translation>
+<translation id="3424059454230285158">Je kunt op elk gewenst moment <ph name="BEGIN_LINK" />deze instellingen aanpassen<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Gesplitste weergave</translation>
 <translation id="345565170154308620">Wachtwoorden beheren…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
-<translation id="3771149149411027381">Zoeken naar gekopieerde tekst</translation>
 <translation id="3779810277399252432">Geen internetverbinding.</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
 <translation id="3789841737615482174">Installeren</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Zoeken</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4124987746317609294">Tijdsbereik</translation>
-<translation id="4155190233692914060">Gekopieerde link bezoeken</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
 <translation id="418156467088430727">Offline versie bekijken op nieuw tabblad</translation>
 <translation id="4237682350741091554">Chrome-synchronisatie en -personalisatie beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" /></translation>

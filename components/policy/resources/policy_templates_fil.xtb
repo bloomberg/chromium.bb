@@ -175,10 +175,25 @@
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
+<translation id="1383493480903114193">Sapilitang pinapagana ng patakarang ito ang networking code sa proseso ng browser.
+
+      Naka-disable bilang default ang patakarang ito, at kung ii-enable, maaaring makaranas ang mga user ng mga isyu sa seguridad kapag na-sandbox ang proseso ng networking.
+
+      Layunin ng patakarang ito na bigyan ang mga enterprise ng pagkakataong mag-migrate sa software ng 3rd party na hindi umaasa sa pag-hook ng mga networking API. Inirerekomenda ang mga proxy server kaysa sa mga LSP at pag-patch ng Win32 API.
+
+      Kung hindi itatakda ang patakarang ito, maaaring maalis sa proseso ng browser ang networking code depende sa mga trial ng field ng eksperimento ng NetworkService.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Payagan ang mga user na pamahalaan ang mga naka-install na certificate.</translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="1404043648050567997">Nagpapakita ang serbisyo ng Ligtas na Pag-browse ng page ng babala kapag nag-navigate ang mga user sa mga site na na-flag bilang potensyal na nakakahamak. Kapag na-enable ang setting na ito, mapipigilan ang mga user na magpatuloy pa rin mula sa anumang page ng babala papunta sa nakakahamak na site.
+
+      Pinipigilan lang ng patakarang ito ang mga user na magpatuloy sa mga babala ng Ligtas na Pag-browse (hal., malware at phishing) na hindi para sa mga isyung may kaugnayan sa SSL certificate tulad ng mga invalid o nag-expire nang certificate.
+
+      Kung naka-disable o hindi naka-configure ang setting na ito, makakapili ang mga user na magpatuloy sa naka-flag na site pagkatapos pakitaan ng babala.
+
+      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="1413936351612032792">Mag-ulat ng impormasyon tungkol sa paggamit ng mga Linux app</translation>
 <translation id="142346659686073702">Payagan ang mga hindi affiliate na user na gamitin ang Crostini</translation>
 <translation id="1426410128494586442">Oo</translation>
@@ -1123,6 +1138,7 @@
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="355118380775352753">Mga website na bubuksan sa alternatibong browser</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
+<translation id="357917253161699596">Payagan ang mga user na pamahalaan ang mga certificate ng user</translation>
 <translation id="3583230441447348508">Tumutukoy ng listahan ng mga naka-preconfigure na file share sa network.
 
       Ang bawat item sa listahan ng patakaran ay isang bagay na may dalawang miyembro: "share_url" at "mode." Ang "share_url" ay ang URL dapat ng pagbabahagi at ang "mode" ay ang "drop_down" o "pre_mount" dapat. Isinasaad ng mode na "drop_down" na idaragdag ang "share_url" sa drop down ng pagtuklas ng pagbabahagi. Isinasaad ng mode na "pre_mount" na ima-mount ang "share_url."</translation>
@@ -1459,6 +1475,7 @@
 <translation id="4372704773119750918">Hindi pinapayagan ang enterprise user na maging bahagi ng multiprofile (pangunahin o pangalawa)</translation>
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
 <translation id="437791893267799639">Hindi nakatakda ang patakaran, huwag payagan ang paglipat ng data at ARC</translation>
+<translation id="4389073105055031853">Payagan ang mga user na pamahalaan ang lahat ng certificate</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
 <translation id="4408428864159735559">Listahan ng mga naka-preconfigure na file share sa network.</translation>
 <translation id="4410236409016356088">I-enable ang pag-throttle sa bandwidth ng network</translation>
@@ -1708,6 +1725,11 @@
       Kung nakatakda ang patakaran sa 0, naka-disable ang pagpapalit ng password ng machine account.
 
       Tandaan na maaaring maging mas luma kaysa sa tinukoy na bilang ng araw ang mga password kung nag-offline ang client sa loob ng mas mahabang panahon.</translation>
+<translation id="510196893779239086">Kinokontrol ng patakarang ito kung ganap na isasara ang Chrome kapag lumipat sa ibang browser ang huling tab.
+
+      Kapag iniwang hindi nakatakda ang patakarang ito, o nakatakda sa true, magpapanatili ang Chrome ng kahit isang nakabukas na tab, pagkatapos lumipat sa isang alternatibong browser.
+
+      Kapag nakatakda sa false ang patakarang ito, isasara ng Chrome ang tab pagkatapos lumipat sa isang alternatibong browser, kahit na ito ang huling tab. Magiging dahilan ito ng ganap na pagsasara ng Chrome.</translation>
 <translation id="5105313908130842249">Delay ng pag-lock ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="5108031557082757679">Mga naka-disable na printer ng device ng enterprise</translation>
 <translation id="5113732180192599620">Kinokontrol ng patakarang ito ang listahan ng mga website na hindi kailanman magdudulot ng paglipat ng browser.
@@ -2311,6 +2333,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Payagan ang mga site na sabay na mag-navigate at magbukas ng mga pop-up</translation>
 <translation id="6447948611083700881">Na-disable ang pag-backup at pag-restore</translation>
+<translation id="6449476513004303784">Huwag payagan ang mga user na pamahalaan ang mga certificate</translation>
 <translation id="645425387487868471">I-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">I-enable ang AutoFill para sa mga address</translation>
 <translation id="6473623140202114570">I-configure ang listahan ng mga domain kung saan hindi magti-trigger ng mga babala ang Ligtas na Pag-browse.</translation>
@@ -2372,6 +2395,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itinakda mo ang patakarang ito, maaari itong pansamantalang i-override ng mga user sa pamamagitan ng pag-enable o pag-disable ng on-screen na keyboard. Gayunpaman, hindi permanente ang pipiliin ng user at ipinapanumbalik ang default sa tuwing ipinapakita ang screen sa pag-log in o nananatiling idle ang user sa screen sa pag-log in sa loob ng isang minuto.
 
           Kung iniwang hindi nakatakda ang patakarang ito, naka-disable ang on-screen na keyboard kapag unang ipinakita ang screen sa pag-log in. Maaaring i-enable o i-disable ng mga user ang on-screen na keyboard anumang oras at magpapatuloy ang status nito sa screen sa pag-log in sa pagitan ng mga user.</translation>
+<translation id="6570691255874112762">Kinokontrol ng patakarang ito kung makakapag-import at makakapag-alis ang user ng mga certificate sa pamamagitan ng Certificate Manager.
+
+      Kung itatakda ang patakarang ito sa ''Payagan ang mga user na pamahalaan ang lahat ng certificate'' o iiwanang hindi nakatakda, magagawa ng mga user na pamahalaan ang mga certificate.
+
+      Kung itatakda ang patakarang ito sa ''Payagan ang mga user na pamahalaan ang mga certificate ng user,'' magagawa ng mga user na pamahalaan ang mga certificate ng user, ngunit hindi ang mga certificate sa buong device.
+
+      Kung itatakda ang patakarang ito sa ''Huwag payagan ang mga user na pamahalaan ang mga certificate,'' hindi magagawa ng mga user na pamahalaan ang mga certificate, maaari lang nilang tingnan ang mga certificate.</translation>
 <translation id="6573305661369899995">Magtakda ng external na pagmumulan ng mga paghihigpit sa URL</translation>
 <translation id="6598235178374410284">Larawan ng avatar ng user</translation>
 <translation id="6603004149426829878">Palaging magpadala ng anumang available na signal ng lokasyon sa server habang nireresolba ang timezone</translation>
@@ -2712,6 +2742,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, madi-disable ang magnifier ng screen kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang magnifier ng screen anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
 <translation id="7249828445670652637">I-enable ang mga CA certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
+<translation id="7252681704926980614">Ipadala ang username at filename sa server ng mga native na printer kasama ang bawat pag-print. Ang default ay hindi ipadala.
+
+      Kapag itinakda ang patakarang ito sa true, madi-disable din ang mga printer na gumagamit ng mga protocol na iba sa IPPS, USB, o IPP-over-USB dahil hindi dapat ipapadala nang bukas ang username at filename sa network.</translation>
 <translation id="7258823566580374486">Paganahin ang paghadlang sa mga host ng malayuang pag-access</translation>
 <translation id="7260277299188117560">Naka-enable ang auto update p2p</translation>
 <translation id="7261252191178797385">Larawan ng wallpaper sa device</translation>
@@ -2777,6 +2810,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="7336785017449297672">Nagkokontrol sa mga setting ng clock at time zone.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
+<translation id="7339315111520512972">Sapilitang paganahin ang networking code sa proseso ng browser</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
 <translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
@@ -3006,22 +3040,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Panatilihing nakabukas ang huling tab sa Chrome.</translation>
 <translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
 <translation id="793473937901685727">Itakda ang availability ng certificate para sa mga ARC app</translation>
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="7941975817681987555">Huwag hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
-<translation id="7952002811557367112">Pinipigilan ng patakarang itong mag-load ang user ng mga web page mula sa mga naka-blacklist na URL. Ang blacklist ay nagbibigay ng listahan ng mga pattern ng URL na tumutukoy kung aling mga URL ang dapat i-blacklist.
-
-      Naka-format dapat alinsunod sa https://www.chromium.org/administrators/url-blacklist-filter-format ang pattern ng URL.
-
-      Maaaring tumukoy ng mga exception sa patakaran sa pag-whitelist ng URL. Limitado sa 1000 entry ang mga patakarang ito; babalewalain ang mga entry na lalampas dito.
-
-      Tandaang hindi inirerekomendang i-block ang mga internal na 'chrome://*' URL dahil maaari itong magdulot ng mga hindi inaasahang error.
-
-      Tandaang hindi pinipigilan ng patakarang ito ang dynamic na pag-update ng page sa pamamagitan ng JavaScript. Halimbawa, kung iba-block mo ang 'example.com/abc,' maaari pa ring bisitahin ng mga user ang 'example.com' at mag-click sila ng link para bumisita sa 'example.com/abc,' hangga't hindi nagre-refresh ang page.
-
-      Kung hindi nakatakda ang patakarang ito, walang URL na iba-blacklist sa browser.</translation>
 <translation id="7953256619080733119">Mga pinapamahalaang host ng manu-manong exception ng user</translation>
 <translation id="7961779417826583251">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng Mga Legacy Certificate Authority</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.

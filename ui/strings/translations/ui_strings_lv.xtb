@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="1243314992276662751">Augšupielādēt</translation>
 <translation id="1269641567813814718">Windows</translation>
+<translation id="1290982764014248209">Pārvietot lietotni <ph name="DRAGGED_APP" /> uz mapi <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Atsolis</translation>
 <translation id="1306549533752902673">IETEIKTĀS LIETOTNES</translation>
 <translation id="1368832886055348810">No kreisās uz labo pusi</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">noklikšķināt</translation>
 <translation id="3036649622769666520">Atvērt failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Plaukts tiek rādīts kreisajā pusē</translation>
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Atjaunot</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 diena}zero{# dienas}one{# diena}other{# dienas}}</translation>
 <translation id="335581015389089642">Runa</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
+<translation id="348799646910989694">Plaukts tiek automātiski paslēpts</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
 <translation id="3608915363409716668">Vairāk nekā <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Meklēt “<ph name="LOOKUP_STRING" />”</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
+<translation id="4690510401873698237">Plaukts tiek rādīts apakšā</translation>
 <translation id="4724120544754982507">Paziņojumu centrs, <ph name="UNREAD_NOTIFICATION_COUNT" /> nelasīts(-i) paziņojums(-i)</translation>
 <translation id="4730374152663651037">BIEŽI IZMANTOTĀS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Atlicis 1 mēnesis}zero{Atlikuši # mēneši}one{Atlicis # mēnesis}other{Atlikuši # mēneši}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Atklāšanas trijstūris</translation>
 <translation id="528468243742722775">Beigas</translation>
 <translation id="5329858601952122676">Dzēst</translation>
+<translation id="5395308026110844773">Lietotne <ph name="DRAGGED_APP_NAME" /> tiek vilkta <ph name="IN_PLACE_APP" /> lietotnes vietā, atlaidiet, lai izveidotu mapi.</translation>
 <translation id="5463830097259460683">Emocijzīmes un simboli</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
+<translation id="547979256943495781">Plaukts tiek rādīts labajā pusē</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistēma</translation>
 <translation id="5583640892426849032">Atkāpšanās taustiņš</translation>
 <translation id="5613020302032141669">Kreisā bulta</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Atlikusi 1 s}zero{Atlikušas # s}one{Atlikusi # s}other{Atlikušas # s}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automātiski pabeigts</translation>
 <translation id="815598010540052116">Ritināt lejup</translation>
+<translation id="8170087467028567933">Ja noņemsiet šo ieteikumu, tas vairs netiks rādīts jūsu kontā nevienā jūsu ierīcē.</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8210608804940886430">Lejup</translation>
 <translation id="8245914219290430011">Tabulēšanas taustiņš</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Vai noņemt šo ieteikumu?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 g.}zero{# g.}one{# g.}other{# g.}}</translation>
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Plaukts tiek rādīts vienmēr</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">vēl <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gatavs</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Anotēt attēlu</translation>
 <translation id="8841375032071747811">Poga Atpakaļ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">Plaukts vienmēr tiek paslēpts</translation>
 <translation id="9002566407876343676">atvērt</translation>
+<translation id="9039076430527029379">Pārvietot uz <ph name="PAGE_NUMBER" />. lpp., <ph name="ROW_NUMBER" />. rindu, <ph name="COLUMN_NUMBER" />. kolonnu.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}zero{# s}one{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Sakļaut paziņojumu</translation>
 <translation id="9150735707954472829">Cilne</translation>

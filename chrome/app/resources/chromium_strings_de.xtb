@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="407254336480250557">Wählen Sie <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> aus</translation>
 <translation id="421369550622382712">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Chromium.</translation>
+<translation id="4216212958613226427">Diese Sprache wird für die Chromium-UI verwendet</translation>
 <translation id="4222580632002216401">Sie sind nun in Chromium angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4224199872375172890">Chromium ist auf dem neuesten Stand.</translation>
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">In Chromium anmelden</translation>
 <translation id="5698481217667032250">Chromium in dieser Sprache anzeigen</translation>
 <translation id="5712253116097046984">Laut Ihrem Administrator müssen Sie Chromium OS neu starten, um dieses Update durchzuführen</translation>
+<translation id="5756484659843248772">Diese Sprache wird für die Chromium OS-UI verwendet</translation>
 <translation id="5768914737813585044">Chromium OS in dieser Sprache anzeigen</translation>
 <translation id="5796460469508169315">Chromium ist gleich bereit.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -181,8 +183,8 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6810143991807788455">Helfen Sie uns mit Ihrem Feedback zu den aktuellen Einstellungen bei der Verbesserung von Chromium.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (in Chromium kopiert)</translation>
+<translation id="6877899728743402439">Ihr Systemadministrator hat Chromium so konfiguriert, dass ein alternativer Browser geöffnet wird.</translation>
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
-<translation id="692832138936263906">Chromium kann Bilder sowie Text in einem Bild erkennen, indem es Seitenbilder an die Google-Server sendet, sodass Sie Seiteninhalte besser verstehen.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognito-Fenster öffnen</translation>
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>

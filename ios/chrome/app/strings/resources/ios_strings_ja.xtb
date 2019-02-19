@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3024255823539804759">過去 1 日</translation>
 <translation id="3037605927509011580">エラー</translation>
-<translation id="3059750684806925578">コピーした画像を検索</translation>
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">サーバーに接続できませんでした。</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
 <translation id="3393920035788932672">ポップアップ許可済み</translation>
+<translation id="3424059454230285158">いつでも<ph name="BEGIN_LINK" />これらの設定をカスタマイズ<ph name="END_LINK" />できます</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
 <translation id="345565170154308620">パスワードを管理...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
-<translation id="3771149149411027381">コピーしたテキストを検索</translation>
 <translation id="3779810277399252432">インターネットに接続されていません。</translation>
 <translation id="3783017676699494206">画像を保存</translation>
 <translation id="3789841737615482174">インストール</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">検索</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4124987746317609294">期間</translation>
-<translation id="4155190233692914060">コピーしたリンクにアクセス</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
 <translation id="4237682350741091554">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で Chrome 同期とパーソナライズを管理できます</translation>

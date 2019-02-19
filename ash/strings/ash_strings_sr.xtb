@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Упарени уређаји</translation>
 <translation id="1195412055398077112">ивично подручје екрана</translation>
 <translation id="119944043368869598">Обриши све</translation>
+<translation id="123828989343052515">Нов радни сто</translation>
 <translation id="1247372569136754018">Микрофон (интерни)</translation>
 <translation id="1252999807265626933">Пуњење из уређаја <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво је време?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Унесите поруку</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
+<translation id="209965399369889474">Нисте повезани на мрежу</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2135456203358955318">Монтирана лупа екрана</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
@@ -435,6 +437,7 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8297006494302853456">Слаб</translation>
 <translation id="8308637677604853869">Претходни мени</translation>
+<translation id="8332664326438198339">Назад на покретач</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8375916635258623388">Овај <ph name="DEVICE_NAME" /> и телефон ће се аутоматски повезати</translation>

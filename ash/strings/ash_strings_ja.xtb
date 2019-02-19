@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="119944043368869598">すべてクリア</translation>
+<translation id="123828989343052515">新しいデスク</translation>
 <translation id="1247372569136754018">マイク（内蔵）</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1255033239764210633">今日の天気は？</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">メッセージを入力</translation>
 <translation id="2050339315714019657">縦</translation>
 <translation id="2067602449040652523">キーボードの明るさ</translation>
+<translation id="209965399369889474">ネットワークに接続されていません</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2135456203358955318">拡大鏡（ドッキング）</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
@@ -436,6 +438,7 @@
 <translation id="8261506727792406068">削除</translation>
 <translation id="8297006494302853456">弱い</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
+<translation id="8332664326438198339">ランチャーに戻る</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8375916635258623388">この <ph name="DEVICE_NAME" /> とお使いのスマートフォンは自動的に接続されます</translation>

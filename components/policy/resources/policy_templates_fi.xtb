@@ -173,10 +173,25 @@
 
       Jos tämän käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei salli kirjautumista vierasprofiililla.</translation>
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
+<translation id="1383493480903114193">Käytäntö pakottaa verkostokoodin suorittamisen selainprosessin osana.
+
+      Käytäntö on oletuksena pois käytöstä. Jos se on käytössä, käyttäjät voivat altistua tietoturvaongelmille, kun verkkoprosessi tapahtuu hiekkalaatikossa.
+
+      Käytännön tarkoitus on antaa yrityksille mahdollisuus siirtyä kolmannen osapuolen ohjelmistoihin, jotka eivät edellytä verkkosovellusliittymien liittämistä. Välityspalvelimia suositellaan LSP- ja Win 32 API ‑virheenkorjaukseen.
+
+      Jos tätä käytäntöä ei ole määritetty, verkkokoodia voidaan suorittaa selainprosessin ulkopuolella riippuen NetworkService-kokeilun testaamisen tilasta.</translation>
 <translation id="1384459581748403878">Viite: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Anna käyttäjien määrittää asennetut varmenteet</translation>
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
+<translation id="1404043648050567997">Selaussuojapalvelu näyttää varoitussivun käyttäjän siirtyessä sivustoille, jotka on merkitty mahdollisesti haitallisiksi. Jos otat tämän asetuksen käyttöön, käyttäjä ei voi jatkaa varoitussivulta haitalliselle sivustolle.
+
+      Käytäntö estää käyttäjää jatkamasta vain Selaussuoja-varoituksen (esim. haittaohjelma- tai tietojenkalasteluvaroituksen) jälkeen. Käyttäjää ei estetä, jos kyse on SSL-varmenteen ongelmasta, esimerkiksi virheellisestä tai vanhentuneesta varmenteesta.
+
+      Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, käyttäjä voi halutessaan jatkaa varoitussivulta mahdollisesti haitalliselle sivustolle.
+
+      Lue lisää Selaussuojasta osoitteessa https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Raportoi tietoja Linux-sovellusten käytöstä</translation>
 <translation id="142346659686073702">Salli ulkopuolisten käyttäjien käyttää Crostinia</translation>
 <translation id="1426410128494586442">Kyllä</translation>
@@ -1096,6 +1111,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="355118380775352753">Sivustot, jotka avataan vaihtoehtoisessa selaimessa</translation>
 <translation id="3577251398714997599">Häiritseviä mainoksia sisältävien sivustojen mainosasetukset</translation>
+<translation id="357917253161699596">Anna käyttäjien määrittää käyttäjävarmenteet</translation>
 <translation id="3583230441447348508">Määrittää luettelon ennalta määritetyistä verkon tiedostojaoista.
 
       Käytännön jokainen luettelokohde koostuu kahdesta osasta: share_url ja mode. share_url on jaon URL-osoite ja mode-arvon on oltava drop_down tai pre_mount. drop_down-arvo osoittaa, että share_url lisätään avattavaan jaon kohteiden hakuvalikkoon. pre_mount-arvo osoittaa, että share_url otetaan käyttöön.</translation>
@@ -1430,6 +1446,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4372704773119750918">Älä salli yrityskäyttäjän olla osa moniprofiilia (ensisijainen tai toissijainen)</translation>
 <translation id="4377599627073874279">Salli kaikkien sivustojen näyttää kaikki kuvat</translation>
 <translation id="437791893267799639">Käytäntöä ei määritetty, estä tietojen siirtäminen ja ARC</translation>
+<translation id="4389073105055031853">Anna käyttäjien määrittää kaikki varmenteet</translation>
 <translation id="4389091865841123886">Määritä etätodennus TPM-mekanismilla.</translation>
 <translation id="4408428864159735559">Ennalta määritettyjen verkon tiedostojakojen luettelo</translation>
 <translation id="4410236409016356088">Ota verkon kaistanleveyden rajoitus käyttöön</translation>
@@ -1666,6 +1683,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Jos käytännön arvo on 0, konetilin salasanan vaihto ei ole käytössä.
 
       Salasanojen ikä saattaa ylittää määritellyn päivien lukumäärän, jos asiakas on ollut offline-tilassa pidemmän aikaa.</translation>
+<translation id="510196893779239086">Tämä käytäntö määrää, suljetaanko Chrome kokonaan, jos viimeinen välilehti on vaihtamassa toiseen selaimeen.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on asetettu tosi, Chrome jättää vähintään yhden välilehden auki vaihdettuaan toiseen selaimeen.
+
+      Jos käytännön arvoksi on asetettu tosi, Chrome sulkee välilehden vaihdettuaan toiseen selaimeen, vaikka se olisi viimeinen välilehti. Tästä seuraa Chromen täysi sulkeminen.</translation>
 <translation id="5105313908130842249">Ruudun lukituksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="5108031557082757679">Käytöstä poistetut yrityslaitteiden tulostimet</translation>
 <translation id="5113732180192599620">Tämä käytäntö määrittää luettelon sivustoista, jotka eivät koskaan aiheuta selaimen vaihtoa.
@@ -2237,6 +2259,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6430366557948788869">Chromen ilmoituslaajennus</translation>
 <translation id="6440051664870270040">Salli sivustojen käyttää siirtymistoimintoja ja avata ponnahdusikkunoita samanaikaisesti</translation>
 <translation id="6447948611083700881">Varmuuskopiointi ja palautus poistettu käytöstä</translation>
+<translation id="6449476513004303784">Estä käyttäjiä määrittämästä varmenteita</translation>
 <translation id="645425387487868471">Ota käyttöön pakotettu kirjautuminen tuotteessa <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Salli osoitteiden automaattinen täyttö</translation>
 <translation id="6473623140202114570">Määritä luettelo niistä verkkotunnuksista, joissa selaussuoja ei käynnistä varoituksia.</translation>
@@ -2298,6 +2321,13 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Jos määrität tämän käytännön, käyttäjät voivat ohittaa sen väliaikaisesti ottamalla ruutunäppäimistön käyttöön tai poistamalla sen käytöstä. Käyttäjän valinta ei kuitenkaan tallennu, ja oletusasetus palautetaan käyttöön, kun kirjautumisruutu näytetään seuraavan kerran tai käyttäjä ei tee kirjautumisruudussa mitään yhteen minuuttiin.
 
            Jos tätä käytäntöä ei määritetä, ruutunäppäimistö ei tule näkyviin kirjautumisruudussa. Käyttäjät voivat ottaa ruutunäppäimistön käyttöön tai poistaa sen käytöstä milloin tahansa, ja käyttäjän tekemä ruutunäppäimistön tilan muutos säilyy kaikilla käyttäjillä, kunnes sitä muutetaan.</translation>
+<translation id="6570691255874112762">Tämä käytäntö määrittää, voiko käyttäjä tuoda ja poistaa varmenteita Varmenteiden hallinnassa.
+
+      Jos käytännön arvo on "Anna käyttäjien määrittää kaikki varmenteet" tai sitä ei määritetä, käyttäjät voivat määrittää varmenteet.
+
+      Jos käytännön arvo on Anna käyttäjien määrittää käyttäjävarmenteet, käyttäjät voivat määrittää käyttäjävarmenteita mutta eivät laitevarmenteita.
+
+      Jos käytännön arvo on Estä käyttäjiä määrittämästä varmenteita, käyttäjät eivät voi määrittää varmenteita, ainoastaan lukea niitä.</translation>
 <translation id="6573305661369899995">Aseta URL-rajoitusten ulkopuolinen lähde</translation>
 <translation id="6598235178374410284">Käyttäjän avatar-kuva</translation>
 <translation id="6603004149426829878">Lähetä aina käytettävissä olevat sijaintisignaalit palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
@@ -2622,6 +2652,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tätä käytäntöä ei määritetä, näytön suurentaja ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa näytön suurentajan käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
 <translation id="7249828445670652637">Salli <ph name="PRODUCT_OS_NAME" /> -CA-varmenteiden käyttö ARC-sovelluksille</translation>
+<translation id="7252681704926980614">Lähetä käyttäjänimi ja tiedostonimi natiivitulostimien palvelimelle jokaisen tulostustyön yhteydessä. Oletus on olla lähettämättä.
+
+      Jos tämän käytännön arvoksi asetetaan tosi, muita kuin IPPS-, USB- tai IPP-USB-protokollia käyttävät tulostimet poistetaan käytöstä, sillä käyttäjänimiä ja tiedostonimiä ei saa lähettää verkossa avoimesti.</translation>
 <translation id="7258823566580374486">Ota etäisäntien verhoaminen käyttöön</translation>
 <translation id="7260277299188117560">Automaattinen p2p-päivitys käytössä</translation>
 <translation id="7261252191178797385">Laitteen taustakuva</translation>
@@ -2685,6 +2718,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Määrittää kellon ja aikavyöhykkeen asetukset</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
+<translation id="7339315111520512972">Pakota verkostokoodin suorittaminen selainprosessissa</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7343497214039883642">Yritystulostimen määritystiedosto laitteille</translation>
 <translation id="7349338075015720646">Määrittää listan verkkosivustoja, jotka asennetaan hiljaisesti, ilman käyttäjän toimia, ja joita käyttäjä ei voi poistaa käytöstä eikä poistaa kokonaan.
@@ -2907,22 +2941,12 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Löydät yksityiskohtaisia esimerkkejä seuraavasta osoitteesta:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Jätä Chromen viimeinen välilehti auki</translation>
 <translation id="793134539373873765">Tarkentaa, käytetäänkö p2p-menetelmää käyttöjärjestelmän päivityksen tietosisältöön. Jos määritys on Tosi, laitteet jakavat ja yrittävät käyttää päivitysten tietosisältöjä LAN-verkossa, mahdollisesti vähentäen laajakaistan käyttöä ja ruuhkaa. Jos päivityksen tietosisältö ei ole LAN-verkossa, laite palaa lataamaan päivityspalvelimelta. Jos määritys on Epätosi tai sitä ei ole asetettu, p2p-menetelmää ei käytetä.</translation>
 <translation id="7933141401888114454">Ota valvottujen käyttäjien luominen käyttöön</translation>
 <translation id="793473937901685727">Määritä ARC-sovellusten oikeus käyttää varmenteita</translation>
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
-<translation id="7952002811557367112">Tämä käytäntö estää käyttäjää lataamasta verkkosivuja, jotka sijaitsevat mustalle listalle lisätyissä URL-osoitteissa. Musta lista sisältää URL-osoitemalleja, joita käytetään estettävien URL-osoitteiden määrittämiseen.
-
-      URL-osoitemallit tulee muotoilla täällä olevien ohjeiden mukaisesti: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Voit määritellä poikkeuksia käyttämällä sallittujen URL-osoitteiden luettelon käytäntöä. Voit lisätä näihin käytäntöihin enintään 1 000 merkintää, ja tämän rajan ylittävät merkinnät ohitetaan.
-
-      Huomaa, että sisäisten chrome://*-osoitteiden estämistä ei suositella, sillä se voi aiheuttaa odottamattomia virheitä.
-
-      Tämä käytäntö ei myöskään estä sivujen dynaamista päivittämistä JavaScriptin avulla. Jos estät esimerkiksi osoitteen example.com/abc, käyttäjät voivat silti siirtyä osoitteeseen example.com ja klikata example.com/abc-sivulle johtavaa linkkiä, kunhan sivua ei päivitetä.
-
-      Jos tätä käytäntöä ei ole määritetty, selaimen mustalle listalle ei lisätä URL-osoitteita.</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7961779417826583251">Poista Certificate Transparency ‑noudattamisvaatimukset käytöstä tietyiltä vanhoilta varmenteen myöntäjiltä</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>

@@ -42,6 +42,7 @@
 <translation id="2291999235780842123">核取方塊</translation>
 <translation id="2311842470354187719">分頁符號</translation>
 <translation id="2335594187091864976">日期和時間選擇器</translation>
+<translation id="245932805758469625">影片剩餘秒數</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="2508569020611168319">分頁清單</translation>
@@ -111,6 +112,7 @@
 <translation id="4992066212339426712">取消靜音</translation>
 <translation id="49969490063480558">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
 <translation id="5034860022980953847">進度指標</translation>
+<translation id="5090250355906949916">影片時間拖曳工具</translation>
 <translation id="5093189678851173835">題詞</translation>
 <translation id="5117590920725113268">顯示下一個月</translation>
 <translation id="512758898067543763">列標題</translation>

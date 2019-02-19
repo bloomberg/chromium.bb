@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1243314992276662751">Lähetä</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Siirrä <ph name="DRAGGED_APP" /> kansioon <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">SOVELLUSSUOSITUKSET</translation>
 <translation id="1368832886055348810">Vasemmalta oikealle</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">klikata</translation>
 <translation id="3036649622769666520">Avaa tiedostot</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> Mt</translation>
+<translation id="3068711042108640621">Hylly vasemmalla</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Palauta</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 päivä}other{# päivää}}</translation>
 <translation id="335581015389089642">Puhe</translation>
 <translation id="3479552764303398839">Ei nyt</translation>
+<translation id="348799646910989694">Hylly piilotettu automaattisesti</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 päivä jäljellä}other{# päivää jäljellä}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Hae ”<ph name="LOOKUP_STRING" />”</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Aloita puhuminen</translation>
 <translation id="4316910396681052118">KAIKKI SOVELLUKSET</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
+<translation id="4690510401873698237">Hylly alareunassa</translation>
 <translation id="4724120544754982507">Ilmoituskeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lukematonta ilmoitusta</translation>
 <translation id="4730374152663651037">USEIN KÄYTETYT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuukausi jäljellä}other{# kuukautta jäljellä}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Näyttämiskolmio</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Poista</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> on sovelluksen <ph name="IN_PLACE_APP" /> päällä, päästä irti luodaksesi kansion.</translation>
 <translation id="5463830097259460683">Emojit ja merkit</translation>
 <translation id="5476505524087279545">poista valinta</translation>
+<translation id="547979256943495781">Hylly oikealla</translation>
 <translation id="5574202486608032840">Järjestelmä <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Askelpalautin</translation>
 <translation id="5613020302032141669">Nuoli vas.</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s jäljellä}other{# s jäljellä}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaattinen täydennys</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
+<translation id="8170087467028567933">Tämän ehdotuksen poistaminen piilottaa sen pysyvästi tililtäsi kaikilla laitteilla.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Sivu alas</translation>
 <translation id="8245914219290430011">Sarkain</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Poistetaanko tämä ehdotus?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 v}other{# v}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-tiedosto (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Hylly näytetään aina</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kt/s</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> lisää</translation>
 <translation id="8730621377337864115">Valmis</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Lisää kuvaan muistiinpano</translation>
 <translation id="8841375032071747811">Takaisin-painike</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kt</translation>
+<translation id="8926951137623668982">Hylly piilotetaan aina</translation>
 <translation id="9002566407876343676">avata</translation>
+<translation id="9039076430527029379">Avaa sivu <ph name="PAGE_NUMBER" />, rivi <ph name="ROW_NUMBER" />, sarake <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Tiivistä ilmoitus</translation>
 <translation id="9150735707954472829">Välilehti</translation>

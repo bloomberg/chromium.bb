@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Mở bằng Tab Mới</translation>
 <translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
-<translation id="3059750684806925578">Tìm kiếm hình ảnh đã sao chép</translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Không thể kết nối với máy chủ.</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
+<translation id="3424059454230285158">Bạn có thể <ph name="BEGIN_LINK" />tùy chỉnh các tùy chọn cài đặt này<ph name="END_LINK" /> bất cứ lúc nào</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
 <translation id="345565170154308620">Quản lý mật khẩu...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Tab ẩn danh</translation>
-<translation id="3771149149411027381">Tìm kiếm văn bản đã sao chép</translation>
 <translation id="3779810277399252432">Không có kết nối Internet.</translation>
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
 <translation id="3789841737615482174">Cài đặt</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Tìm kiếm</translation>
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
 <translation id="4124987746317609294">Phạm vi thời gian</translation>
-<translation id="4155190233692914060">Truy cập vào liên kết đã sao chép</translation>
 <translation id="4172051516777682613">Luôn hiển thị</translation>
 <translation id="418156467088430727">Xem phiên bản ngoại tuyến trong tab mới</translation>
 <translation id="4237682350741091554">Quản lý Chrome Sync và cá nhân hóa trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" /></translation>

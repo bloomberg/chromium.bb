@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">नवीन टॅबमध्ये उघडा</translation>
 <translation id="3024255823539804759">काल</translation>
 <translation id="3037605927509011580">च्चक!</translation>
-<translation id="3059750684806925578">कॉपी केलेली इमेज शोधा</translation>
 <translation id="3112556859945124369">चिन्हांकित करा…</translation>
 <translation id="3157684681743766797">सर्व चिन्हांकित करा…</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
+<translation id="3424059454230285158">तुम्ही कधीही <ph name="BEGIN_LINK" />ही सेटिंग्ज कस्टमाइझ करू शकता<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
 <translation id="345565170154308620">पासवर्ड व्यवस्थापित करा...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
-<translation id="3771149149411027381">कॉपी केलेला मजकूर शोधा</translation>
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">शोध</translation>
 <translation id="4121993058175073134">निव्वळ-एक्सपोर्ट डेटा पाठविण्यासाठी, कृपया सेटिंग्ज ॲप मध्ये तुमचे ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ वर्गवारी</translation>
-<translation id="4155190233692914060">कॉपी केलेल्या लिंकला भेट द्या</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
 <translation id="418156467088430727">नवीन टॅबमध्‍ये ऑफलाइन आवृत्ती पहा</translation>
 <translation id="4237682350741091554">Chrome सिंक आणि पर्सनलायझेशन <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मधून व्यवस्थापित करा.</translation>

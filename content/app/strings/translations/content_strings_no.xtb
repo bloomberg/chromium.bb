@@ -42,6 +42,7 @@
 <translation id="2291999235780842123">avmerkingsboks</translation>
 <translation id="2311842470354187719">sideskift</translation>
 <translation id="2335594187091864976">dato- og klokkeslettvelger</translation>
+<translation id="245932805758469625">antall sekunder med video som gjenstår</translation>
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vennligst fyll ut dette feltet.</translation>
 <translation id="2508569020611168319">faneliste</translation>
@@ -111,6 +112,7 @@
 <translation id="4992066212339426712">Slå på lyden</translation>
 <translation id="49969490063480558">Skriv inn en del etterfulgt av «<ph name="ATSIGN" />». «<ph name="INVALIDADDRESS" />» er ufullstendig.</translation>
 <translation id="5034860022980953847">fremdriftsindikator</translation>
+<translation id="5090250355906949916">videotidslinje</translation>
 <translation id="5093189678851173835">epigraf</translation>
 <translation id="5117590920725113268">Se neste måned</translation>
 <translation id="512758898067543763">radoverskrift</translation>

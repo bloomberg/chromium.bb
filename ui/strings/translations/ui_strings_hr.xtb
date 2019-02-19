@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Premjesti aplikaciju <ph name="DRAGGED_APP" /> u mapu <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">PREPORUČENE APLIKACIJE</translation>
 <translation id="1368832886055348810">Slijeva udesno</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">klikanje</translation>
 <translation id="3036649622769666520">Otvori datoteke</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Polica na lijevoj strani</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Vrati</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dan}one{# dan}few{# dana}other{# dana}}</translation>
 <translation id="335581015389089642">Govor</translation>
 <translation id="3479552764303398839">Ne sada</translation>
+<translation id="348799646910989694">Polica je automatski skrivena</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Još 1 dan}one{Još # dan}few{Još # dana}other{Još # dana}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Potraži "<ph name="LOOKUP_STRING" />"</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Počni govoriti</translation>
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4588090240171750605">Pomakni se desno</translation>
+<translation id="4690510401873698237">Polica pri dnu</translation>
 <translation id="4724120544754982507">Centar za obavijesti, nepročitanih obavijesti: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČESTO KORIŠTENO</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Još mjesec dana}one{Još # mjesec}few{Još # mjeseca}other{Još # mjeseci}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Trokut za otkrivanje</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Obriši</translation>
+<translation id="5395308026110844773">Aplikacija <ph name="DRAGGED_APP_NAME" /> povučena je iznad aplikacije <ph name="IN_PLACE_APP" />. Pustite je da biste izradili mapu.</translation>
 <translation id="5463830097259460683">Emoji i simboli</translation>
 <translation id="5476505524087279545">ukloni oznaku</translation>
+<translation id="547979256943495781">Polica na desnoj strani</translation>
 <translation id="5574202486608032840">Sustav <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Strelica lijevo</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Još 1 s}one{Još # s}few{Još # s}other{Još # s}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, samodovrši</translation>
 <translation id="815598010540052116">Pomakni se dolje</translation>
+<translation id="8170087467028567933">Ako ga uklonite, taj će se prijedlog sakriti na vašem računu na svim vašim uređajima.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stranica prema dolje</translation>
 <translation id="8245914219290430011">Kartica</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Ukloniti prijedlog?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 g}one{# g}few{# g}other{# g}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Datoteka (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Polica se uvijek prikazuje</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">Još <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gotovo</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Dodaj napomenu slici</translation>
 <translation id="8841375032071747811">Gumb Natrag</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">Polica je uvijek skrivena</translation>
 <translation id="9002566407876343676">otvaranje</translation>
+<translation id="9039076430527029379">Pomicanje na <ph name="PAGE_NUMBER" />. stranicu, redak <ph name="ROW_NUMBER" />, stupac <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}few{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Sažmi obavijest</translation>
 <translation id="9150735707954472829">Kartica</translation>

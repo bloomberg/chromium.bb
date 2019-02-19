@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
-<translation id="3059750684806925578">Caută imaginea copiată</translation>
 <translation id="3112556859945124369">Marchează…</translation>
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3175081911749765310">Servicii web</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nu s-a putut realiza conexiunea la server.</translation>
 <translation id="3335947283844343239">Redeschide fila închisă</translation>
 <translation id="3393920035788932672">Pop-upuri permise</translation>
+<translation id="3424059454230285158">Poți <ph name="BEGIN_LINK" />personaliza aceste setări<ph name="END_LINK" /> oricând</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
 <translation id="345565170154308620">Gestionează parolele...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">File incognito</translation>
-<translation id="3771149149411027381">Caută textul copiat</translation>
 <translation id="3779810277399252432">Nicio conexiune la internet.</translation>
 <translation id="3783017676699494206">Salvează imaginea</translation>
 <translation id="3789841737615482174">Instalează</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Caută</translation>
 <translation id="4121993058175073134">Pentru trimitere date de export în rețea, configurați e-mailul în Setări.</translation>
 <translation id="4124987746317609294">Interval de timp</translation>
-<translation id="4155190233692914060">Accesează linkul copiat</translation>
 <translation id="4172051516777682613">Afișați întotdeauna</translation>
 <translation id="418156467088430727">Vezi versiunea offline într-o filă nouă</translation>
 <translation id="4237682350741091554">Gestionează Sincronizarea Chrome și personalizarea în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" /></translation>

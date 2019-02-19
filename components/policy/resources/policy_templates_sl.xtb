@@ -175,10 +175,25 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
+<translation id="1383493480903114193">Ta pravilnik vsili, da se omrežna koda izvaja v procesu brskalnika.
+
+      Ta pravilnik je privzeto onemogočen, če pa je omogočen, so uporabniki izpostavljeni varnostnim težavam, ko se omrežni proces izvaja v peskovniku.
+
+      Namen tega pravilnika je, da se velikim podjetjem omogoči selitev na programsko opremo drugih ponudnikov, ki ni odvisna od uporabe omrežnih API-jev. Priporočamo, da namesto LSP-jev in popravkov API-jev Win32 uporabite strežnike proxy.
+
+      Če ta pravilnik ni nastavljen, se lahko omrežna koda izvaja zunaj procesa brskalnika, kar je odvisno od terenskih preizkušanj preizkusa NetworkService.</translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Uporabnikom dovoli upravljanje nameščenih potrdil.</translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
+<translation id="1404043648050567997">Storitev varnega brskanja prikaže opozorilno stran, ko uporabniki pridejo na spletna mesta, ki so označena kot morebiti zlonamerna. Če omogočite to nastavitev, uporabnikom preprečite, da bi z opozorilne strani vseeno šli na zlonamerno spletno mesto.
+
+      Ta pravilnik prepreči samo, da bi uporabniki nadaljevali po opozorilih storitve varnega brskanja (npr. o zlonamerni programski opremi ali lažnem predstavljanju), ne pa tudi pri težavah, povezanih s potrdili SSL, kot so neveljavna ali potekla potrdila.
+
+      Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki po prikazu opozorila nadaljujejo na spletno mesto, označeno z zastavico.
+
+      Več informacij o Varnem brskanju je na voljo na strani https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Poročanje podatkov o uporabi aplikacij za Linux</translation>
 <translation id="142346659686073702">Omogočanje uporabe Crostinija nepovezanim uporabnikom</translation>
 <translation id="1426410128494586442">Da</translation>
@@ -1128,6 +1143,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="355118380775352753">Spletna mesta za odpiranje v nadomestnem brskalniku</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
+<translation id="357917253161699596">Uporabnikom dovoli upravljanje uporabniških potrdil</translation>
 <translation id="3583230441447348508">Določa seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.
 
       Vsak seznam elementov pravilnika je predmet z dvema členoma: »share_url« in »mode«. »share_url« mora biti URL datotečnega sredstva v skupni rabi, »mode« pa mora imeti vrednost »drop_down« ali »pre_mount«. Način »drop_down« označuje, da bo »share_url« dodan v spustni meni odkrivanja datotečnih sredstev v skupni rabi. Način »pre_mount« označuje, da bo vpet »share_url«.</translation>
@@ -1464,6 +1480,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4372704773119750918">Ne dovoli uporabnikom v podjetjih, da so del večkratnega profila (primarnega ali sekundarnega)</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
 <translation id="437791893267799639">Preklic nastavitev pravilnika, prepoved selitve podatkov in ARC-ja</translation>
+<translation id="4389073105055031853">Uporabnikom dovoli upravljanje vseh potrdil</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
 <translation id="4408428864159735559">Seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.</translation>
 <translation id="4410236409016356088">Omogoči omejevanje omrežne pasovne širine</translation>
@@ -1713,6 +1730,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik nastavljen na 0, je geslo računa v napravi onemogočeno.
 
       Če je odjemalec dalj časa brez povezave, so lahko zgodi, da so gesla starejša od navedenega števila dni.</translation>
+<translation id="510196893779239086">Ta pravilnik nadzira, ali naj se Chrome povsem zapre, ko bi zadnji zavihek preklopil na drug brskalnik.
+
+      Če tega pravilnika ne nastavite ali ga nastavite na »true«, bo Chrome po preklopu na drug brskalnik ohranil odprt vsaj en zavihek.
+
+      Če je ta pravilnik nastavljen na »false«, bo Chrome po preklopu na drug brskalnik zaprl zavihek, tudi če gre za zadnji zavihek. S tem se bo Chrome povsem zaprl.</translation>
 <translation id="5105313908130842249">Časovni zamik zaklepa zaslona, če se napaja iz akumulatorja</translation>
 <translation id="5108031557082757679">Onemogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="5113732180192599620">Ta pravilnik nadzira seznam spletnih mest, ki ne bodo nikoli povzročila preklopa brskalnika.
@@ -2318,6 +2340,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6430366557948788869">Razširitev za poročanje za Chrome</translation>
 <translation id="6440051664870270040">Spletnim mestom dovoli hkratno krmarjenje in odpiranje pojavnih oken</translation>
 <translation id="6447948611083700881">Varnostno kopiranje in obnovitev sta onemogočena</translation>
+<translation id="6449476513004303784">Uporabnikom ne dovoli upravljanja potrdil</translation>
 <translation id="645425387487868471">Omogoči vsiljeno prijavo za izdelek <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Omogočanje samodejnega izpolnjevanja za naslove</translation>
 <translation id="6473623140202114570">Konfigurirajte seznam domen, v katerih funkcija varnega brskanja ne bo sprožila opozoril.</translation>
@@ -2379,6 +2402,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če nastavite ta pravilnik, ga lahko uporabniki začasno preglasijo, tako da omogočijo ali onemogočijo zaslonsko tipkovnico. Uporabnikova izbira ni trajna in privzeta možnost je obnovljena, ko se zaslon za prijavo prikaže na novo ali če uporabnik na zaslonu za prijavo eno minuto ne izvede nobenega dejanja.
 
           Če ta pravilnik ni nastavljen, je zaslonska tipkovnica onemogočena pri prvem prikazu zaslona za prijavo. Uporabniki lahko zaslonsko tipkovnico kadar koli omogočijo ali onemogočijo in njeno stanje na zaslonu za prijavo velja za vse uporabnike.</translation>
+<translation id="6570691255874112762">Ta pravilnik nadzira, ali lahko uporabnik z upraviteljem potrdil uvaža in odstranjuje potrdila.
+
+      Če je ta pravilnik nastavljen na »Uporabnikom dovoli upravljanje vseh potrdil« ali ni nastavljen, bodo lahko uporabniki upravljali potrdila.
+
+      Če je ta pravilnik nastavljen na »Uporabnikom dovoli upravljanje uporabniških potrdil«, bodo lahko uporabniki upravljali uporabniška potrdila, ne pa tudi potrdil za celotno napravo.
+
+      Če je ta pravilnik nastavljen na »Uporabnikom ne dovoli upravljanja potrdil«, uporabniki ne bodo mogli upravljati potrdil, temveč si jih bodo lahko samo ogledali.</translation>
 <translation id="6573305661369899995">Nastavitev zunanjega vira omejitev za URL-je</translation>
 <translation id="6598235178374410284">Slika za avatar uporabnika</translation>
 <translation id="6603004149426829878">Vedno pošlji vse razpoložljive signale lokacije v strežnik pri določanju časovnega pasu</translation>
@@ -2719,6 +2749,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če pravilnik ni vklopljen, je lupa onemogočena, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
 <translation id="7249828445670652637">Omogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
+<translation id="7252681704926980614">Pošiljanje uporabniškega imena in imena datoteke strežniku izvornih tiskalnikov z vsakim tiskalnim opravilom. Privzeta nastavitev je, da se ne pošiljata.
+
+      Če ta pravilnik nastavite na »true«, onemogočite tudi tiskalnike, ki uporabljajo druge protokole kot IPPS, USB ali IPP-over-USB, ker uporabniškega imena in imena datoteke ni dovoljeno odkrito pošiljati prek omrežja.</translation>
 <translation id="7258823566580374486">Omogočanje zakrivanja gostiteljev za oddaljeni dostop</translation>
 <translation id="7260277299188117560">Samodejno posodabljanje prek p2p omogočeno</translation>
 <translation id="7261252191178797385">Slika za ozadje naprave</translation>
@@ -2784,6 +2817,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, samodejno čiščenje uporablja privzeto vgrajeno strategijo. Trenutno je to strategija »RemoveLRUIfDormant«.</translation>
 <translation id="7336785017449297672">Nadzira nastavitve ure in časovnega pasu.</translation>
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
+<translation id="7339315111520512972">Vsili izvajanje omrežne kode v procesu brskalnika</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="7343497214039883642">Datoteka s konfiguracijami tiskalnikov v podjetjih za naprave</translation>
 <translation id="7349338075015720646">Določa seznam spletnih aplikacij, ki se namestijo brez obveščanja in brez poseganja uporabnika ter ki jih uporabnik ne more ne odstraniti ne onemogočiti.
@@ -3011,22 +3045,12 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če želite podrobnejše primere, obiščite:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Ohrani zadnji zavihek odprt v Chromu.</translation>
 <translation id="793134539373873765">Določa, ali se za prenos posodobitvenih paketov operacijskega sistema uporablja p2p. Če je nastavljeno na »True«, naprave dajo posodobitvene pakete v skupno rabo v krajevnem omrežju in jih poskušajo uporabiti ter s tem morebiti zmanjšati uporabo internetne pasovne širine in zamašitve. Če posodobitveni paket ni na voljo v krajevnem omrežju, ga naprava poskuša prenesti iz posodobitvenegea strežnika. Če je nastavljeno na »False« ali ni nastavljeno, se uporabi p2p.</translation>
 <translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
 <translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
-<translation id="7952002811557367112">Ta pravilnik uporabniku preprečuje nalaganje spletnih strani URL-jev s seznama blokiranih. Seznam blokiranih posreduje seznam vzorcev URL-jev, ki določajo, kateri URL-ji bodo uvrščeni na seznam blokiranih.
-
-      Vzorec URL-ja mora biti oblikovan glede na to: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Izjeme je mogoče opredeliti s pravilnikom o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
-
-      Upoštevajte, da ni priporočljivo blokirati notranjih URL-jev »chrome://*«, saj lahko to privede do nepričakovanih napak.
-
-      Upoštevajte, da ta pravilnik stranem ne preprečuje dinamičnega posodabljanja prek JavaScripta. Če na primer blokirate »example.com/abc«, bodo uporabniki morda še vedno lahko obiskali »example.com« in s klikom povezave obiskali »example.com/abc«, dokler se stran ne osveži.
-
-      Če ta pravilnik ni nastavljen, ne bo noben URL uvrščen na seznam blokiranih v brskalniku.</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="7961779417826583251">Onemogoči uveljavljanje preglednosti potrdila za seznam starejših overiteljev potrdil</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.

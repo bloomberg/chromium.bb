@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
-<translation id="3059750684806925578">Rechercher à l'aide de l'image copiée</translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3175081911749765310">Services Web</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
 <translation id="3393920035788932672">Pop-up autorisés</translation>
+<translation id="3424059454230285158">Vous pouvez <ph name="BEGIN_LINK" />personnaliser ces paramètres<ph name="END_LINK" /> à tout moment</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
 <translation id="345565170154308620">Gérer les mots de passe…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
-<translation id="3771149149411027381">Rechercher le texte copié</translation>
 <translation id="3779810277399252432">Aucune connexion Internet.</translation>
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Rechercher</translation>
 <translation id="4121993058175073134">Configurez compte mess. dans appli Paramètres pour envoyer données net-export.</translation>
 <translation id="4124987746317609294">Période</translation>
-<translation id="4155190233692914060">Consulter le lien copié</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="418156467088430727">Afficher version hors connexion dans nouvel onglet</translation>
 <translation id="4237682350741091554">Gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /></translation>

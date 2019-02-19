@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">새 탭에서 열기</translation>
 <translation id="3024255823539804759">지난 1일</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
-<translation id="3059750684806925578">복사한 이미지 검색</translation>
 <translation id="3112556859945124369">표시…</translation>
 <translation id="3157684681743766797">모두 표시...</translation>
 <translation id="3175081911749765310">웹 서비스</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">서버에 연결하지 못했습니다.</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
 <translation id="3393920035788932672">팝업 허용</translation>
+<translation id="3424059454230285158">언제든지 <ph name="BEGIN_LINK" />이 설정을 맞춤설정<ph name="END_LINK" />할 수 있습니다.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3448016392200048164">분할 보기</translation>
 <translation id="345565170154308620">비밀번호 관리...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
-<translation id="3771149149411027381">복사한 텍스트 검색</translation>
 <translation id="3779810277399252432">인터넷에 연결되어 있지 않습니다.</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
 <translation id="3789841737615482174">설치</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">검색</translation>
 <translation id="4121993058175073134">순 내보내기 데이터를 전송하려면 설정 앱에서 이메일 계정을 설정하시기 바랍니다.</translation>
 <translation id="4124987746317609294">기간</translation>
-<translation id="4155190233692914060">복사된 링크 방문</translation>
 <translation id="4172051516777682613">항상 표시</translation>
 <translation id="418156467088430727">새 탭에서 오프라인 버전 보기</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 Chrome 동기화 및 맞춤설정을 관리하세요.</translation>

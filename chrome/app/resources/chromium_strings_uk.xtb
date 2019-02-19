@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Знаходьте чудові додатки, ігри, розширення й теми для Chromium.</translation>
+<translation id="4216212958613226427">Цією мовою відображається інтерфейс Chromium</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="4224199872375172890">У вас остання версія Chromium.</translation>
 <translation id="4230135487732243613">Пов’язати ваші дані Chromium із цим обліковим записом?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
 <translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
 <translation id="5712253116097046984">Адміністратор просить перезапустити ОС Chromium, щоб застосувати це оновлення</translation>
+<translation id="5756484659843248772">Цією мовою відображається інтерфейс ОС Chromium</translation>
 <translation id="5768914737813585044">Вибрати цю мову для ОС Chromium</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
@@ -181,8 +183,8 @@
 <translation id="6810143991807788455">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопійовано в Chromium)</translation>
+<translation id="6877899728743402439">Ваш системний адміністратор налаштував Chromium відкривати альтернативний веб-переглядач.</translation>
 <translation id="6893813176749746474">Chromium оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
-<translation id="692832138936263906">Chromium може розпізнавати зображення й текст на зображеннях, надсилаючи їх на сервери Google. Завдяки цьому вам буде легше зрозуміти вміст сторінки.</translation>
 <translation id="6964305034639999644">Відкрити посилання в аноні&amp;мному вікні Chromium</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="6990124437352146030">Chromium потрібен дозвіл на використання мікрофона, щоб надати цьому сайту доступ до нього</translation>
