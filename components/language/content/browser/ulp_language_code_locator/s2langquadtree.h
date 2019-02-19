@@ -89,15 +89,12 @@ class S2LangQuadTreeNode {
       size_t bit_offset,
       S2LangQuadTreeNode* root);
 
-  const S2LangQuadTreeNode* GetChild(const int child_index) const;
+  const S2LangQuadTreeNode& GetChild(const int child_index) const;
 
   // Return true iff the node is a leaf.
   bool IsLeaf() const;
 
-  // Return true iff the node is a leaf with no language.
-  bool IsNullLeaf() const;
-
-  std::map<int, S2LangQuadTreeNode> children_;
+  std::vector<S2LangQuadTreeNode> children_;
   std::string language_;
 };
 

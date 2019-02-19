@@ -25,13 +25,13 @@ S2LangQuadTreeNode GetTree(const std::vector<std::string>& languages,
 
 namespace language {
 
-TEST(S2LangQuadTreeTest, Empty) {
+TEST(S2LangQuadTreeTest, RootIsEmptyLeaf) {
   S2LangQuadTreeNode root;
   const S2CellId cell = S2CellId::FromFace(0);
   int level;
   const std::string language = root.Get(cell, &level);
   EXPECT_TRUE(language.empty());
-  EXPECT_EQ(level, -1);
+  EXPECT_EQ(level, 0);
 }
 
 TEST(S2LangQuadTreeTest, RootIsLeaf_FaceIsPresent) {
