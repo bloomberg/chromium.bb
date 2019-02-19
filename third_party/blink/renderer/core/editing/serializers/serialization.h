@@ -44,8 +44,8 @@ class ExceptionState;
 class Node;
 class CSSPropertyValueSet;
 
-enum EChildrenOnly { kIncludeNode, kChildrenOnly };
-enum EAbsoluteURLs { kDoNotResolveURLs, kResolveAllURLs, kResolveNonLocalURLs };
+enum ChildrenOnly { kIncludeNode, kChildrenOnly };
+enum AbsoluteURLs { kDoNotResolveURLs, kResolveAllURLs, kResolveNonLocalURLs };
 enum class ConvertBlocksToInlines { kNotConvert, kConvert };
 
 DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
@@ -85,22 +85,22 @@ void ReplaceChildrenWithFragment(ContainerNode*,
 void ReplaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
 CORE_EXPORT String CreateMarkup(const Node*,
-                                EChildrenOnly = kIncludeNode,
-                                EAbsoluteURLs = kDoNotResolveURLs);
+                                ChildrenOnly = kIncludeNode,
+                                AbsoluteURLs = kDoNotResolveURLs);
 
 CORE_EXPORT String
 CreateMarkup(const Position& start,
              const Position& end,
-             EAnnotateForInterchange = kDoNotAnnotateForInterchange,
+             AnnotateForInterchange = kDoNotAnnotateForInterchange,
              ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
-             EAbsoluteURLs = kDoNotResolveURLs,
+             AbsoluteURLs = kDoNotResolveURLs,
              Node* constraining_ancestor = nullptr);
 CORE_EXPORT String
 CreateMarkup(const PositionInFlatTree& start,
              const PositionInFlatTree& end,
-             EAnnotateForInterchange = kDoNotAnnotateForInterchange,
+             AnnotateForInterchange = kDoNotAnnotateForInterchange,
              ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
-             EAbsoluteURLs = kDoNotResolveURLs,
+             AbsoluteURLs = kDoNotResolveURLs,
              Node* constraining_ancestor = nullptr);
 
 void MergeWithNextTextNode(Text*, ExceptionState&);

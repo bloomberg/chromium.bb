@@ -73,8 +73,6 @@ namespace blink {
 
 using namespace html_names;
 
-enum EFragmentType { kEmptyFragment, kSingleTextNodeFragment, kTreeFragment };
-
 // --- ReplacementFragment helper class
 
 class ReplacementFragment final {

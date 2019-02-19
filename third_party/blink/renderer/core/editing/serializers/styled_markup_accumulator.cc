@@ -52,11 +52,11 @@ wtf_size_t TotalLength(const Vector<String>& strings) {
 using namespace html_names;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(
-    EAbsoluteURLs should_resolve_urls,
+    AbsoluteURLs should_resolve_urls,
     const TextOffset& start,
     const TextOffset& end,
     Document* document,
-    EAnnotateForInterchange should_annotate,
+    AnnotateForInterchange should_annotate,
     ConvertBlocksToInlines convert_blocks_to_inlines)
     : formatter_(should_resolve_urls),
       start_(start),
