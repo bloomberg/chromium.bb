@@ -9,11 +9,10 @@
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
-
-class TransformationMatrix;
 
 // Clips can use FloatRect::Intersect or FloatRect::InclusiveIntersect.
 enum InclusiveIntersectOrNot { kNonInclusiveIntersect, kInclusiveIntersect };
@@ -26,15 +25,79 @@ enum InclusiveIntersectOrNot { kNonInclusiveIntersect, kInclusiveIntersect };
 // change. If any mutation occurs, a new GeometryMapper object must be allocated
 // corresponding to the new state.
 //
-// ** WARNING** Callers to the methods below may not assume that any const
-// references returned remain const across multiple calls into GeometryMapper.
-// If needed, callers must store local copies of the return values.
-//
 // Design document: http://bit.ly/28P4FDA
 class PLATFORM_EXPORT GeometryMapper {
   STATIC_ONLY(GeometryMapper);
 
  public:
+  // The return value of SourceToDestinationProjection. If the result is known
+  // to be accumulation of 2d translations, |matrix| is nullptr, and
+  // |translation_2d| is the accumulated 2d translation. Otherwise |matrix|
+  // points to the accumulated projection, and |translation_2d| is zero.
+  class Translation2DOrMatrix {
+   public:
+    Translation2DOrMatrix() { DCHECK(IsIdentity()); }
+    explicit Translation2DOrMatrix(const FloatSize& translation_2d)
+        : translation_2d_(translation_2d) {
+      DCHECK(IsIdentityOr2DTranslation());
+    }
+    explicit Translation2DOrMatrix(const TransformationMatrix& matrix)
+        : matrix_(matrix) {
+      DCHECK(!IsIdentityOr2DTranslation());
+    }
+
+    bool IsIdentity() const { return !matrix_ && translation_2d_.IsZero(); }
+    bool IsIdentityOr2DTranslation() const { return !matrix_; }
+    const FloatSize& Translation2D() const {
+      DCHECK(IsIdentityOr2DTranslation());
+      return translation_2d_;
+    }
+    const TransformationMatrix& Matrix() const {
+      DCHECK(!IsIdentityOr2DTranslation());
+      return *matrix_;
+    }
+
+    template <typename Rect>
+    void MapRect(Rect& rect) const {
+      if (LIKELY(IsIdentityOr2DTranslation()))
+        MoveRect(rect, Translation2D());
+      else
+        rect = Matrix().MapRect(rect);
+    }
+
+    void MapFloatClipRect(FloatClipRect& rect) const {
+      if (LIKELY(IsIdentityOr2DTranslation()))
+        rect.MoveBy(FloatPoint(Translation2D()));
+      else
+        rect.Map(Matrix());
+    }
+
+    FloatPoint MapPoint(const FloatPoint& point) const {
+      if (LIKELY(IsIdentityOr2DTranslation()))
+        return point + Translation2D();
+      return Matrix().MapPoint(point);
+    }
+
+    void PostTranslate(float x, float y) {
+      if (LIKELY(IsIdentityOr2DTranslation()))
+        translation_2d_.Expand(x, y);
+      else
+        matrix_->PostTranslate(x, y);
+    }
+
+    SkMatrix ToSkMatrix() const {
+      if (LIKELY(IsIdentityOr2DTranslation())) {
+        return SkMatrix::MakeTrans(Translation2D().Width(),
+                                   Translation2D().Height());
+      }
+      return TransformationMatrix::ToSkMatrix44(Matrix());
+    }
+
+   private:
+    FloatSize translation_2d_;
+    base::Optional<TransformationMatrix> matrix_;
+  };
+
   // Returns the matrix that is suitable to map geometries on the source plane
   // to some backing in the destination plane.
   // Formal definition:
@@ -45,7 +108,7 @@ class PLATFORM_EXPORT GeometryMapper {
   // 2. Both nodes are co-planar to a common singular ancestor:
   // Not every cases outlined above are supported!
   // Read implementation comments for specific restrictions.
-  static const TransformationMatrix& SourceToDestinationProjection(
+  static Translation2DOrMatrix SourceToDestinationProjection(
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination);
 
@@ -64,7 +127,7 @@ class PLATFORM_EXPORT GeometryMapper {
     // Fast-path optimization for mapping through just |source| when |source| is
     // a 2d translation.
     if (&destination == source.Parent() && source.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, source.Matrix().E(), source.Matrix().F());
+      MoveRect(mapping_rect, source.Matrix().To2DTranslation());
       return;
     }
 
@@ -72,16 +135,17 @@ class PLATFORM_EXPORT GeometryMapper {
     // |destination| is a 2d translation.
     if (&source == destination.Parent() &&
         destination.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, -destination.Matrix().E(),
-               -destination.Matrix().F());
+      MoveRect(mapping_rect, -destination.Matrix().To2DTranslation());
       return;
     }
 
     bool success = false;
-    const TransformationMatrix& source_to_destination =
+    const auto& source_to_destination =
         SourceToDestinationProjectionInternal(source, destination, success);
-    mapping_rect =
-        success ? source_to_destination.MapRect(mapping_rect) : Rect();
+    if (!success)
+      mapping_rect = Rect();
+    else
+      source_to_destination.MapRect(mapping_rect);
   }
 
   // Returns the clip rect between |local_state| and |ancestor_state|. The clip
@@ -162,7 +226,7 @@ class PLATFORM_EXPORT GeometryMapper {
   // successful on return. See comments of the public functions for failure
   // conditions.
 
-  static const TransformationMatrix& SourceToDestinationProjectionInternal(
+  static Translation2DOrMatrix SourceToDestinationProjectionInternal(
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination,
       bool& success);
@@ -195,17 +259,17 @@ class PLATFORM_EXPORT GeometryMapper {
       InclusiveIntersectOrNot,
       bool& success);
 
-  static void MoveRect(FloatRect& rect, double dx, double dy) {
-    rect.Move(static_cast<float>(dx), static_cast<float>(dy));
+  static void MoveRect(FloatRect& rect, const FloatSize& delta) {
+    rect.Move(delta.Width(), delta.Height());
   }
 
-  static void MoveRect(LayoutRect& rect, double dx, double dy) {
-    rect.Move(LayoutUnit(dx), LayoutUnit(dy));
+  static void MoveRect(LayoutRect& rect, const FloatSize& delta) {
+    rect.Move(LayoutSize(delta.Width(), delta.Height()));
   }
 
-  static void MoveRect(IntRect& rect, double dx, double dy) {
+  static void MoveRect(IntRect& rect, const FloatSize& delta) {
     auto float_rect = FloatRect(rect);
-    MoveRect(float_rect, dx, dy);
+    MoveRect(float_rect, delta);
     rect = EnclosingIntRect(float_rect);
   }
 

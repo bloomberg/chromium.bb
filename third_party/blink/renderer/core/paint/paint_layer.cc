@@ -632,9 +632,9 @@ void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.
   rect.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
-  rect = GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
-                                                       dest_state.Transform())
-             .MapRect(rect);
+  GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
+                                                dest_state.Transform())
+      .MapRect(rect);
   rect.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
 }
 

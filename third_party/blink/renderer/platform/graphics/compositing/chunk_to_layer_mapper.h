@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 
+#include "SkMatrix.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 
 namespace blink {
@@ -32,7 +34,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   IntRect MapVisualRect(const FloatRect&) const;
 
   // Returns the combined transform from the current chunk to the layer.
-  const TransformationMatrix& Transform() const { return transform_; }
+  SkMatrix Transform() const { return translation_2d_or_matrix_.ToSkMatrix(); }
 
   // Returns the combined clip from the current chunk to the layer if it can
   // be calculated (there is no filter that moves pixels), or infinite loose
@@ -53,7 +55,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   // SwitchToChunk().
   PropertyTreeState chunk_state_;
   float outset_for_raster_effects_ = 0.f;
-  TransformationMatrix transform_;
+  GeometryMapper::Translation2DOrMatrix translation_2d_or_matrix_;
   FloatClipRect clip_rect_;
   // True if there is any pixel-moving filter between chunk state and layer
   // state, and we will call GeometryMapper for each mapping.

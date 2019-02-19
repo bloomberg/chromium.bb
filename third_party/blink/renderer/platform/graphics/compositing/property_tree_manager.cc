@@ -162,8 +162,12 @@ void PropertyTreeManager::SetupRootScrollNode() {
 
 static bool TransformsAre2dAxisAligned(const TransformPaintPropertyNode& a,
                                        const TransformPaintPropertyNode& b) {
-  return &a == &b || GeometryMapper::SourceToDestinationProjection(a, b)
-                         .Preserves2dAxisAlignment();
+  if (&a == &b)
+    return true;
+  const auto& translation_2d_or_matrix =
+      GeometryMapper::SourceToDestinationProjection(a, b);
+  return translation_2d_or_matrix.IsIdentityOr2DTranslation() ||
+         translation_2d_or_matrix.Matrix().Preserves2dAxisAlignment();
 }
 
 void PropertyTreeManager::SetCurrentEffectState(

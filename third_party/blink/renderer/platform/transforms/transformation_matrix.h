@@ -495,7 +495,10 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // If this transformation is identity or 2D translation, returns the
   // translation.
-  FloatSize To2DTranslation() const;
+  FloatSize To2DTranslation() const {
+    DCHECK(IsIdentityOr2DTranslation());
+    return FloatSize(matrix_[3][0], matrix_[3][1]);
+  }
 
   typedef float FloatMatrix4[16];
   void ToColumnMajorFloatArray(FloatMatrix4& result) const;

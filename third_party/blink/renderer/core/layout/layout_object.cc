@@ -1532,10 +1532,12 @@ bool LayoutObject::HasDistortingVisualEffects() const {
                                           .LocalBorderBoxProperties();
 
   // The only allowed transforms are 2D translation and proportional up-scaling.
-  const TransformationMatrix& matrix =
+  const auto& translation_2d_or_matrix =
       GeometryMapper::SourceToDestinationProjection(
           paint_properties.Transform(), root_properties.Transform());
-  if (!matrix.Is2DProportionalUpscaleAndOr2DTranslation())
+  if (!translation_2d_or_matrix.IsIdentityOr2DTranslation() &&
+      !translation_2d_or_matrix.Matrix()
+           .Is2DProportionalUpscaleAndOr2DTranslation())
     return true;
 
   return false;
