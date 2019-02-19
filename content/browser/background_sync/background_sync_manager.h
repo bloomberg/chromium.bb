@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 namespace mojom {
@@ -125,7 +126,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // The following methods are virtual for testing.
   virtual void StoreDataInBackend(
       int64_t sw_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& backend_key,
       const std::string& data,
       ServiceWorkerStorage::StatusCallback callback);
@@ -139,7 +140,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerVersion::StatusCallback callback);
   virtual void ScheduleDelayedTask(base::OnceClosure callback,
                                    base::TimeDelta delay);
-  virtual void HasMainFrameProviderHost(const GURL& origin,
+  virtual void HasMainFrameProviderHost(const url::Origin& origin,
                                         BoolCallback callback);
 
  private:
@@ -154,7 +155,7 @@ class CONTENT_EXPORT BackgroundSyncManager
     ~BackgroundSyncRegistrations();
 
     RegistrationMap registration_map;
-    GURL origin;
+    url::Origin origin;
   };
 
   using SWIdToRegistrationsMap = std::map<int64_t, BackgroundSyncRegistrations>;
@@ -190,7 +191,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void AddActiveRegistration(
       int64_t sw_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const BackgroundSyncRegistration& sync_registration);
 
   void InitImpl(base::OnceClosure callback);

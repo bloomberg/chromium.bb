@@ -75,14 +75,14 @@ class BackgroundSyncControllerImplTest : public testing::Test {
 };
 
 TEST_F(BackgroundSyncControllerImplTest, RapporTest) {
-  GURL url("http://www.example.com/foo/");
+  url::Origin origin = url::Origin::Create(GURL("http://www.example.com/foo/"));
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
-  controller_->NotifyBackgroundSyncRegistered(url.GetOrigin());
+  controller_->NotifyBackgroundSyncRegistered(origin);
   EXPECT_EQ(1, rappor_service_.GetReportsCount());
 
   std::string sample;
   rappor::RapporType type;
-  LOG(ERROR) << url.GetOrigin().GetOrigin();
+  LOG(ERROR) << origin;
   EXPECT_TRUE(rappor_service_.GetRecordedSampleForMetric(
       "BackgroundSync.Register.Origin", &sample, &type));
   EXPECT_EQ("example.com", sample);
@@ -90,11 +90,11 @@ TEST_F(BackgroundSyncControllerImplTest, RapporTest) {
 }
 
 TEST_F(BackgroundSyncControllerImplTest, NoRapporWhenOffTheRecord) {
-  GURL url("http://www.example.com/foo/");
+  url::Origin origin = url::Origin::Create(GURL("http://www.example.com/foo/"));
   controller_.reset(new TestBackgroundSyncControllerImpl(
       profile_.GetOffTheRecordProfile(), &rappor_service_));
 
-  controller_->NotifyBackgroundSyncRegistered(url.GetOrigin());
+  controller_->NotifyBackgroundSyncRegistered(origin);
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
 }
 

@@ -15,10 +15,12 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 
-class GURL;
-
 namespace base {
 class TimeDelta;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -89,7 +91,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   // Override to allow delays to be injected by tests.
   void StoreDataInBackend(
       int64_t sw_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& key,
       const std::string& data,
       ServiceWorkerStorage::StatusCallback callback) override;
@@ -115,7 +117,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   // Override to avoid actual check for main frame, instead return the value set
   // by tests.
-  void HasMainFrameProviderHost(const GURL& origin,
+  void HasMainFrameProviderHost(const url::Origin& origin,
                                 BoolCallback callback) override;
 
  private:
@@ -123,7 +125,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   // delays injected by tests.
   void StoreDataInBackendContinue(
       int64_t sw_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& key,
       const std::string& data,
       ServiceWorkerStorage::StatusCallback callback);

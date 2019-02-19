@@ -34,7 +34,7 @@ void TestBackgroundSyncManager::ClearDelayedTask() {
 
 void TestBackgroundSyncManager::StoreDataInBackend(
     int64_t sw_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& key,
     const std::string& data,
     ServiceWorkerStorage::StatusCallback callback) {
@@ -94,14 +94,14 @@ void TestBackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
 }
 
 void TestBackgroundSyncManager::HasMainFrameProviderHost(
-    const GURL& origin,
+    const url::Origin& origin,
     BoolCallback callback) {
   std::move(callback).Run(has_main_frame_provider_host_);
 }
 
 void TestBackgroundSyncManager::StoreDataInBackendContinue(
     int64_t sw_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& key,
     const std::string& data,
     ServiceWorkerStorage::StatusCallback callback) {

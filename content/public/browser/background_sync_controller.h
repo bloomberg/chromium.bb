@@ -8,7 +8,10 @@
 #include <stdint.h>
 
 #include "content/common/content_export.h"
-#include "url/gurl.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -28,7 +31,7 @@ class CONTENT_EXPORT BackgroundSyncController {
 
   // Notification that a service worker registration with origin |origin| just
   // registered a background sync event.
-  virtual void NotifyBackgroundSyncRegistered(const GURL& origin) {}
+  virtual void NotifyBackgroundSyncRegistered(const url::Origin& origin) {}
 
   // If |enabled|, ensures that the browser is running when the device next goes
   // online after |min_ms| has passed. The behavior is platform dependent:

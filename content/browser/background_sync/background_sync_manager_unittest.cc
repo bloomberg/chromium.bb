@@ -1173,8 +1173,8 @@ TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
   EXPECT_EQ(0, GetController()->registration_count());
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, GetController()->registration_count());
-  EXPECT_EQ(GURL(kScope1).GetOrigin().spec(),
-            GetController()->registration_origin().spec());
+  EXPECT_EQ(url::Origin::Create(GURL(kScope1)),
+            GetController()->registration_origin());
 }
 
 TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {

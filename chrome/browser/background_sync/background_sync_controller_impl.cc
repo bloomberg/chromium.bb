@@ -12,6 +12,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_sync_launcher_android.h"
@@ -102,15 +103,15 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
 }
 
 void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(origin, origin.GetOrigin());
 
   if (profile_->IsOffTheRecord())
     return;
 
-  rappor::SampleDomainAndRegistryFromGURL(
-      GetRapporServiceImpl(), "BackgroundSync.Register.Origin", origin);
+  rappor::SampleDomainAndRegistryFromGURL(GetRapporServiceImpl(),
+                                          "BackgroundSync.Register.Origin",
+                                          origin.GetURL());
 }
 
 void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
