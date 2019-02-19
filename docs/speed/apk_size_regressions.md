@@ -42,7 +42,7 @@
 
  * The regression most likely already occurred in the upstream
    MonochromePublic.apk target. Look at the
-   [graph of Monochrome.apk and MonochromePublic.apk overlaid](https://chromeperf.appspot.com/report?sid=cfc29eed1238fd38fb5e6cf83bdba6c619be621b606e03e5dfc2e99db14c418b&num_points=1500)
+   [graph of Monochrome.apk and MonochromePublic.apk overlaid](https://chromeperf.appspot.com/report?sid=0564daf322ebf9959099fec631ea1966d3293b109ca086f7ee476d5fdc6f7d50&num_points=1500)
    to find the culprit and de-dupe with upstream alert.
  * If no upstream regression was found, look through the downstream commits
    within the given date range to find the culprit.
@@ -69,7 +69,7 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > Commit: **abc123abc123abc123abc123abc123abc123abcd**
 >
 > Link to size graph:
-> [https://chromeperf.appspot.com/report?sid=bb23072657e2d7ca892a1c3fa4643b1ee29b3a0a44d0732adda87168e89c0380&num_points=10&rev=**$CRREV**](https://chromeperf.appspot.com/report?sid=bb23072657e2d7ca892a1c3fa4643b1ee29b3a0a44d0732adda87168e89c0380&num_points=10&rev=480214)<br>
+> [https://chromeperf.appspot.com/report?sid=29a24f1d2b8b785551b26d945108889a5a5eed9a83848feb9f93ce8b58b1884d&num_points=10&rev=**$CRREV**](https://chromeperf.appspot.com/report?sid=29a24f1d2b8b785551b26d945108889a5a5eed9a83848feb9f93ce8b58b1884d&num_points=10&rev=480214)<br>
 > Link to trybot result:
 > [https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size/**$TRYJOB_NUMBER**](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size/11111)
 >
@@ -143,11 +143,6 @@ for a description of binary size tools.**
 
  * Look at the SuperSize reports from the trybot to look for unexpected methods.
  * Ensure any new Java deps are as specific as possible.
- * If the change doesn't look suspect, check to see if the regression still
-   exists when internal proguard is used (see
-   [downstream graphs](https://chromeperf.appspot.com/report?sid=83bf643964a326648325f7eb6767d8adb85d67db8306dd94aa7476ed70d7dace)
-   or use `diagnose_bloat.py -v --enable-chrome-android-internal REV`
-   to build locally)
 
 ### Growth is from "other lib size" or "Unknown files size"
 
