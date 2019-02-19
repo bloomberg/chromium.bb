@@ -26,6 +26,7 @@ if (enable_ipc_fuzzer) {
   assert(!is_component_build, "IPC fuzzer does not support component builds.")
 
   group("ipc_fuzzer_all") {
+    testonly = true
     deps = [
       "//tools/ipc_fuzzer/fuzzer:ipc_fuzzer",
       "//tools/ipc_fuzzer/message_dump:ipc_message_dump",

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 loadable_module("ipc_message_dump") {
+  testonly = true
   configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_tool_config" ]
   deps = [
     "//tools/ipc_fuzzer/message_lib:ipc_message_lib",

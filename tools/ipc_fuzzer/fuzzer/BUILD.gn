@@ -5,6 +5,7 @@
 import("//build/config/sanitizers/sanitizers.gni")
 
 executable("ipc_fuzzer") {
+  testonly = true
   configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_tool_config" ]
   sources = [
     "fuzzer.cc",
