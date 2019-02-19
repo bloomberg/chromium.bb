@@ -152,10 +152,10 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   // Chrome Autofill feature methods.
   // Triggers Chrome Autofill in the specified input element on the specified
   // document.
-  virtual bool AutofillForm(content::RenderFrameHost* frame,
-                            const std::string& focus_element_css_selector,
+  virtual bool AutofillForm(const std::string& focus_element_css_selector,
                             const std::vector<std::string> iframe_path,
-                            const int attempts = 1);
+                            const int attempts,
+                            content::RenderFrameHost* frame);
   virtual bool AddAutofillProfileInfo(const std::string& field_type,
                                       const std::string& field_value);
   virtual bool SetupAutofillProfile();
@@ -212,28 +212,30 @@ class TestRecipeReplayer {
                   const base::FilePath recipe_file_path);
 
   static void SetUpCommandLine(base::CommandLine* command_line);
-  static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
-                                  const std::string& element_xpath,
-                                  const std::vector<std::string> iframe_path);
+  static bool ScrollElementIntoView(const std::string& element_xpath,
+                                    content::RenderFrameHost* frame);
+  static bool PlaceFocusOnElement(const std::string& element_xpath,
+                                  const std::vector<std::string> iframe_path,
+                                  content::RenderFrameHost* frame);
   static bool GetBoundingRectOfTargetElement(
-      content::RenderFrameHost* frame,
       const std::string& target_element_xpath,
       const std::vector<std::string> iframe_path,
+      content::RenderFrameHost* frame,
       gfx::Rect* output_rect);
   static bool SimulateLeftMouseClickAt(
-      content::RenderFrameHost* render_frame_host,
-      const gfx::Point& point);
+      const gfx::Point& point,
+      content::RenderFrameHost* render_frame_host);
   static bool SimulateMouseHoverAt(content::RenderFrameHost* render_frame_host,
                                    const gfx::Point& point);
 
  private:
   static bool GetIFrameOffsetFromIFramePath(
-      content::RenderFrameHost* frame,
       const std::vector<std::string>& iframe_path,
+      content::RenderFrameHost* frame,
       gfx::Vector2d* offset);
   static bool GetBoundingRectOfTargetElement(
-      content::RenderFrameHost* frame,
       const std::string& target_element_xpath,
+      content::RenderFrameHost* frame,
       gfx::Rect* output_rect);
 
   Browser* browser();
@@ -278,9 +280,9 @@ class TestRecipeReplayer {
   bool GetTargetHTMLElementVisibilityEnumFromAction(
       const base::DictionaryValue& action,
       int* visibility_enum_val);
-  bool WaitForElementToBeReady(content::RenderFrameHost* frame,
-                               const std::string& xpath,
-                               const int visibility_enum_val);
+  bool WaitForElementToBeReady(const std::string& xpath,
+                               const int visibility_enum_val,
+                               content::RenderFrameHost* frame);
   bool WaitForStateChange(
       content::RenderFrameHost* frame,
       const std::vector<std::string>& state_assertions,
