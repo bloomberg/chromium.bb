@@ -36,6 +36,20 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncDataTypeSectionIdentifier section.
   SyncEverythingItemType = kItemTypeEnumZero,
+  // kSyncAutofill.
+  AutofillDataTypeItemType,
+  // kSyncBookmarks.
+  BookmarksDataTypeItemType,
+  // kSyncOmniboxHistory.
+  HistoryDataTypeItemType,
+  // kSyncOpenTabs.
+  OpenTabsDataTypeItemType,
+  // kSyncPasswords
+  PasswordsDataTypeItemType,
+  // kSyncReadingList.
+  ReadingListDataTypeItemType,
+  // kSyncPreferences.
+  SettingsDataTypeItemType,
 };
 
 }  // namespace
@@ -49,6 +63,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Model item for sync everything.
 @property(nonatomic, strong) SyncSwitchItem* syncEverythingItem;
+// Model item for each data types.
+@property(nonatomic, strong) NSArray<SyncSwitchItem*>* syncSwitchItems;
+// Returns whether the Sync settings should be disabled because of a Sync error.
+@property(nonatomic, assign, readonly) BOOL disabledBecauseOfSyncError;
 
 @end
 
@@ -75,17 +93,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateSyncEverythingItemNotifyConsumer:NO];
   [model addItem:self.syncEverythingItem
       toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+  self.syncSwitchItems = @[
+    [self switchItemWithDataType:SyncSetupService::kSyncAutofill],
+    [self switchItemWithDataType:SyncSetupService::kSyncBookmarks],
+    [self switchItemWithDataType:SyncSetupService::kSyncOmniboxHistory],
+    [self switchItemWithDataType:SyncSetupService::kSyncOpenTabs],
+    [self switchItemWithDataType:SyncSetupService::kSyncPasswords],
+    [self switchItemWithDataType:SyncSetupService::kSyncReadingList],
+    [self switchItemWithDataType:SyncSetupService::kSyncPreferences]
+  ];
+  [self updateSyncDataItemsNotifyConsumer:NO];
+  for (SyncSwitchItem* switchItem in self.syncSwitchItems) {
+    [model addItem:switchItem
+        toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+  }
 }
 
 // Updates the sync everything item, and notify the consumer if |notifyConsumer|
 // is set to YES.
 - (void)updateSyncEverythingItemNotifyConsumer:(BOOL)notifyConsumer {
-  SyncSetupService::SyncServiceState state =
-      self.syncSetupService->GetSyncServiceState();
   BOOL shouldSyncEverythingBeEditable =
       self.syncSetupService->IsSyncEnabled() &&
-      (state == SyncSetupService::kNoSyncServiceError ||
-       state == SyncSetupService::kSyncServiceNeedsPassphrase);
+      !self.disabledBecauseOfSyncError;
   BOOL shouldSyncEverythingItemBeOn =
       self.syncSetupService->IsSyncEnabled() &&
       self.syncSetupService->IsSyncingAllDataTypes();
@@ -97,6 +126,87 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (needsUpdate && notifyConsumer) {
     [self.consumer reloadItem:self.syncEverythingItem];
   }
+}
+
+// Updates all the sync data type items, and notify the consumer if
+// |notifyConsumer| is set to YES.
+- (void)updateSyncDataItemsNotifyConsumer:(BOOL)notifyConsumer {
+  BOOL isSyncDataTypeItemEnabled =
+      (!self.syncSetupService->IsSyncingAllDataTypes() &&
+       self.syncSetupService->IsSyncEnabled() &&
+       !self.disabledBecauseOfSyncError);
+  for (SyncSwitchItem* syncSwitchItem in self.syncSwitchItems) {
+    SyncSetupService::SyncableDatatype dataType =
+        static_cast<SyncSetupService::SyncableDatatype>(
+            syncSwitchItem.dataType);
+    syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
+    BOOL isDataTypeSynced =
+        self.syncSetupService->IsDataTypePreferred(modelType);
+    BOOL needsUpdate = (syncSwitchItem.on != isDataTypeSynced) ||
+                       (syncSwitchItem.isEnabled != isSyncDataTypeItemEnabled);
+    syncSwitchItem.on = isDataTypeSynced;
+    syncSwitchItem.enabled = isSyncDataTypeItemEnabled;
+    if (needsUpdate && notifyConsumer) {
+      [self.consumer reloadItem:syncSwitchItem];
+    }
+  }
+}
+
+#pragma mark - Private
+
+// Creates a SyncSwitchItem instance.
+- (SyncSwitchItem*)switchItemWithDataType:
+    (SyncSetupService::SyncableDatatype)dataType {
+  NSInteger itemType = 0;
+  int textStringID = 0;
+  switch (dataType) {
+    case SyncSetupService::kSyncBookmarks:
+      itemType = BookmarksDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_BOOKMARKS;
+      break;
+    case SyncSetupService::kSyncOmniboxHistory:
+      itemType = HistoryDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_TYPED_URLS;
+      break;
+    case SyncSetupService::kSyncPasswords:
+      itemType = PasswordsDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_PASSWORDS;
+      break;
+    case SyncSetupService::kSyncOpenTabs:
+      itemType = OpenTabsDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_TABS;
+      break;
+    case SyncSetupService::kSyncAutofill:
+      itemType = AutofillDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_AUTOFILL;
+      break;
+    case SyncSetupService::kSyncPreferences:
+      itemType = SettingsDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_PREFERENCES;
+      break;
+    case SyncSetupService::kSyncReadingList:
+      itemType = ReadingListDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_READING_LIST;
+      break;
+    case SyncSetupService::kNumberOfSyncableDatatypes:
+      NOTREACHED();
+      break;
+  }
+  DCHECK_NE(itemType, 0);
+  DCHECK_NE(textStringID, 0);
+  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
+  switchItem.text = GetNSString(textStringID);
+  switchItem.dataType = dataType;
+  return switchItem;
+}
+
+#pragma mark - Properties
+
+- (BOOL)disabledBecauseOfSyncError {
+  SyncSetupService::SyncServiceState state =
+      self.syncSetupService->GetSyncServiceState();
+  return state != SyncSetupService::kNoSyncServiceError &&
+         state != SyncSetupService::kSyncServiceNeedsPassphrase;
 }
 
 #pragma mark - ManageSyncSettingsTableViewControllerModelDelegate
@@ -115,6 +225,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
+  [self updateSyncDataItemsNotifyConsumer:YES];
 }
 
 #pragma mark - ManageSyncSettingsServiceDelegate
@@ -126,10 +237,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // settings.
     base::AutoReset<BOOL> autoReset(&_ignoreSyncStateChanges, YES);
     switchItem.on = value;
-    DCHECK(switchItem.type == SyncEverythingItemType);
-    self.syncSetupService->SetSyncingAllDataTypes(value);
+    if (switchItem.type == SyncEverythingItemType) {
+      self.syncSetupService->SetSyncingAllDataTypes(value);
+    } else {
+      SyncSetupService::SyncableDatatype dataType =
+          static_cast<SyncSetupService::SyncableDatatype>(switchItem.dataType);
+      syncer::ModelType modelType =
+          self.syncSetupService->GetModelType(dataType);
+      self.syncSetupService->SetDataTypeEnabled(modelType, value);
+    }
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
+  [self updateSyncDataItemsNotifyConsumer:YES];
 }
 
 @end
