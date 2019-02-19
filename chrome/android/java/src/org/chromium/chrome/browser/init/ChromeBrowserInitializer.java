@@ -250,7 +250,6 @@ public class ChromeBrowserInitializer {
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
         ApplicationStatus.registerStateListenerForAllActivities(
                 createActivityStateListener());
-        mApplication.initDefaultNightMode();
 
         mPreInflationStartupComplete = true;
     }

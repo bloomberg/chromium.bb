@@ -45,6 +45,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
     public static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
     public static final String PREF_HOMEPAGE = "homepage";
+    public static final String PREF_NIGHT_MODE = "night_mode";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
     public static final String PREF_LANGUAGES = "languages";
@@ -224,6 +225,12 @@ public class MainPreferences extends PreferenceFragment
                     ContextualSuggestionsEnabledStateUtils.getEnabledState());
         } else {
             removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
+        }
+
+        if (FeatureUtilities.isNightModeAvailable()) {
+            addPreferenceIfAbsent(PREF_NIGHT_MODE);
+        } else {
+            removePreferenceIfPresent(PREF_NIGHT_MODE);
         }
 
         if (DeveloperPreferences.shouldShowDeveloperPreferences()) {

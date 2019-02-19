@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.share.ShareMenuActionHandler;
@@ -304,6 +305,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
         return mTabFactory.createTabCreators();
+    }
+
+    @Override
+    protected NightModeStateProvider createNightModeStateProvider() {
+        return new CustomTabNightModeStateController(getDelegate());
     }
 
     @Override
