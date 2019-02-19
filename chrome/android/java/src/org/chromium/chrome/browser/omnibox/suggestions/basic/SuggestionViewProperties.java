@@ -102,7 +102,7 @@ class SuggestionViewProperties {
     }
 
     /** The delegate to handle actions on the suggestion view. */
-    public static final WritableObjectPropertyKey<SuggestionView.SuggestionViewDelegate> DELEGATE =
+    public static final WritableObjectPropertyKey<SuggestionViewDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
     /** Whether the suggestion is for an answer. */

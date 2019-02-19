@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.SuggestionViewDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.modelutil.PropertyModel;
 
