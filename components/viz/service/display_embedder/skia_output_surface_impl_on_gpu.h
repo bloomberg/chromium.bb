@@ -192,7 +192,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
-  bool MakeCurrent();
+  bool MakeCurrent(bool need_fbo0);
 
   void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
 
