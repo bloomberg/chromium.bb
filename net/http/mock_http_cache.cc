@@ -430,6 +430,41 @@ int32_t MockDiskCache::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
 }
 
+net::Error MockDiskCache::OpenOrCreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    disk_cache::EntryWithOpened* entry_struct,
+    CompletionOnceCallback callback) {
+  DCHECK(!callback.is_null());
+  base::RepeatingCallback<void(int)> copyable_callback;
+  if (callback)
+    copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+
+  if (force_fail_callback_later_) {
+    CallbackLater(copyable_callback, ERR_CACHE_OPEN_OR_CREATE_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
+  if (fail_requests_)
+    return ERR_CACHE_OPEN_OR_CREATE_FAILURE;
+
+  disk_cache::Entry** entry = &(entry_struct->entry);
+
+  // First try opening the entry.
+  entry_struct->opened = true;
+  net::Error rv = OpenEntry(key, request_priority, entry, copyable_callback);
+  if (rv == OK || rv == ERR_IO_PENDING)
+    return rv;
+
+  // Unable to open, try creating the entry.
+  entry_struct->opened = false;
+  rv = CreateEntry(key, request_priority, entry, copyable_callback);
+  if (rv == OK || rv == ERR_IO_PENDING)
+    return rv;
+
+  return ERR_CACHE_OPEN_OR_CREATE_FAILURE;
+}
+
 net::Error MockDiskCache::OpenEntry(const std::string& key,
                                     net::RequestPriority request_priority,
                                     disk_cache::Entry** entry,
