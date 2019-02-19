@@ -91,7 +91,8 @@ class OffscreenTab : protected content::WebContentsDelegate,
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::RepeatingCallback<void(bool)>& callback) final;
-  bool HandleContextMenu(const content::ContextMenuParams& params) final;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) final;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) final;

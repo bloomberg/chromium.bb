@@ -246,7 +246,8 @@ class CONTENT_EXPORT WebContentsDelegate {
                            const base::Callback<void(bool)>& callback);
 
   // Returns true if the context menu operation was handled by the delegate.
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+  virtual bool HandleContextMenu(RenderFrameHost* render_frame_host,
+                                 const ContextMenuParams& params);
 
   // Allows delegates to handle keyboard events before sending to the renderer.
   // See enum for description of return values.

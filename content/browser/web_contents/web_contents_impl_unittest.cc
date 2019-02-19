@@ -3364,4 +3364,27 @@ TEST_F(WebContentsImplTest, DidFirstVisuallyNonEmptyPaint) {
   EXPECT_TRUE(observer.observed_did_first_visually_non_empty_paint());
 }
 
+namespace {
+
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  MOCK_METHOD2(HandleContextMenu,
+               bool(RenderFrameHost*, const ContextMenuParams&));
+};
+
+}  // namespace
+
+TEST_F(WebContentsImplTest, HandleContextMenuDelegate) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  RenderFrameHost* rfh = main_test_rfh();
+  EXPECT_CALL(delegate, HandleContextMenu(rfh, ::testing::_));
+
+  ContextMenuParams params;
+  contents()->ShowContextMenu(rfh, params);
+
+  contents()->SetDelegate(nullptr);
+}
+
 }  // namespace content

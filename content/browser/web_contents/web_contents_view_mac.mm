@@ -255,12 +255,6 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
 void WebContentsViewMac::ShowContextMenu(
     RenderFrameHost* render_frame_host,
     const ContextMenuParams& params) {
-  // Allow delegates to handle the context menu operation first.
-  if (web_contents_->GetDelegate() &&
-      web_contents_->GetDelegate()->HandleContextMenu(params)) {
-    return;
-  }
-
   if (delegate())
     delegate()->ShowContextMenu(render_frame_host, params);
   else

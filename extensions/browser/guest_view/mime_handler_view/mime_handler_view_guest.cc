@@ -284,6 +284,7 @@ void MimeHandlerViewGuest::NavigationStateChanged(
 }
 
 bool MimeHandlerViewGuest::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   return delegate_ && delegate_->HandleContextMenu(web_contents(), params);
 }

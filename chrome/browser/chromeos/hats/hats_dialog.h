@@ -42,7 +42,8 @@ class HatsDialog : public ui::WebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
   std::string html_data_;
 
