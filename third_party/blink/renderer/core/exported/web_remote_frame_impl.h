@@ -72,8 +72,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
       bool is_potentially_trustworthy_opaque_origin) override;
   void SetReplicatedSandboxFlags(WebSandboxFlags) override;
   void SetReplicatedName(const WebString&) override;
-  void SetReplicatedFeaturePolicyHeader(
-      const ParsedFeaturePolicy& parsed_header) override;
+  void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      const ParsedFeaturePolicy& parsed_header,
+      const FeaturePolicy::FeatureState&) override;
   void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
       mojom::ContentSecurityPolicyType,
@@ -125,6 +126,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
+
+  // Feature policy state inherited from an opener. It is always empty for child
+  // frames.
+  FeaturePolicy::FeatureState opener_feature_state_;
 
   ParsedFeaturePolicy feature_policy_header_;
 

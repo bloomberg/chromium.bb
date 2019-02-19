@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -62,6 +63,7 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       WebNavigationPolicy,
                       bool,
                       WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
@@ -91,9 +93,10 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WebWindowFeatures features;
-  EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
-                         frame, request, features,
-                         kNavigationPolicyNewForegroundTab, kSandboxNone, ""));
+  EXPECT_EQ(nullptr,
+            chrome_client_impl_->CreateWindow(
+                frame, request, features, kNavigationPolicyNewForegroundTab,
+                kSandboxNone, FeaturePolicy::FeatureState(), ""));
 }
 
 class FakeColorChooserClient

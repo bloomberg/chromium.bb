@@ -29,6 +29,7 @@
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -160,6 +161,7 @@ class CORE_EXPORT ChromeClient
                      const WebWindowFeatures&,
                      NavigationPolicy,
                      SandboxFlags,
+                     const FeaturePolicy::FeatureState&,
                      const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
 
@@ -403,6 +405,7 @@ class CORE_EXPORT ChromeClient
                                      const WebWindowFeatures&,
                                      NavigationPolicy,
                                      SandboxFlags,
+                                     const FeaturePolicy::FeatureState&,
                                      const SessionStorageNamespaceId&) = 0;
 
  private:

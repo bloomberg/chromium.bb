@@ -33,6 +33,7 @@
 
 #include "base/strings/string_piece.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -73,6 +74,7 @@ class WebViewClient {
       WebNavigationPolicy policy,
       bool suppress_opener,
       WebSandboxFlags,
+      const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;
   }

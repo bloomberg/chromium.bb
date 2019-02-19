@@ -130,6 +130,16 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
                                 GetDefaultFeatureList());
 }
 
+// static
+std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateWithOpenerPolicy(
+    const FeatureState& inherited_policies,
+    const url::Origin& origin) {
+  std::unique_ptr<FeaturePolicy> new_policy =
+      base::WrapUnique(new FeaturePolicy(origin, GetDefaultFeatureList()));
+  new_policy->inherited_policies_ = inherited_policies;
+  return new_policy;
+}
+
 bool FeaturePolicy::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature) const {
   mojom::PolicyValueType feature_type = feature_list_.at(feature).second;

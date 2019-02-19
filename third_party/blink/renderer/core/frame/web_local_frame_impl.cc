@@ -1625,10 +1625,12 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
-    WebSandboxFlags sandbox_flags) {
+    WebSandboxFlags sandbox_flags,
+    const FeaturePolicy::FeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
       web_view, client, interface_registry,
-      std::move(document_interface_broker_handle), opener, name, sandbox_flags);
+      std::move(document_interface_broker_handle), opener, name, sandbox_flags,
+      opener_feature_state);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
@@ -1663,11 +1665,14 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
-    WebSandboxFlags sandbox_flags) {
+    WebSandboxFlags sandbox_flags,
+    const FeaturePolicy::FeatureState& opener_feature_state) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       WebTreeScopeType::kDocument, client, interface_registry,
       std::move(document_interface_broker_handle));
   frame->SetOpener(opener);
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
+    frame->opener_feature_state_ = opener_feature_state;
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(page, nullptr, name);

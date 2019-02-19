@@ -1326,7 +1326,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       // This conversion is a little sad, as this often comes from a
       // WebString...
       WebString::FromUTF8(replicated_state.name),
-      replicated_state.frame_policy.sandbox_flags);
+      replicated_state.frame_policy.sandbox_flags,
+      replicated_state.opener_feature_state);
   if (has_committed_real_load)
     render_frame->frame_->SetCommittedFirstRealLoad();
 

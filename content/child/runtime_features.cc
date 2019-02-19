@@ -417,6 +417,9 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);
   }
 
+  if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox))
+    WebRuntimeFeatures::EnableFeaturePolicyForSandbox(true);
+
   if (base::FeatureList::IsEnabled(features::kPageLifecycle))
     WebRuntimeFeatures::EnablePageLifecycle(true);
 

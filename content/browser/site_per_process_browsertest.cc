@@ -14337,4 +14337,102 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             actual_scroll_delta);
 }
 
+class FeaturePolicyPropagationToAuxiliaryBrowsingContextTest
+    : public SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+      public testing::WithParamInterface<std::tuple<
+          const char* /* Whether or not <iframe> is sandbox or can escape it */,
+          bool /* <iframe> same origin? */,
+          bool /* opened window same origin? */,
+          const char* /* window feature in window.open() */>> {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessFeaturePolicyJavaScriptBrowserTest::SetUpCommandLine(
+        command_line);
+    feature_list_.InitAndEnableFeature(features::kFeaturePolicyForSandbox);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// This test verifies the correct propagation of FeaturePolicy from an *opener*
+// to the opened auxiliary browsing context. This test runs for both cross and
+// same origin frames.
+IN_PROC_BROWSER_TEST_P(FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
+                       PropagationForDifferentOrigins) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/feature_policy_window_open_embedder.html")));
+  const GURL same_origin_child = embedded_test_server()->GetURL(
+      "a.com", "/feature_policy_window_open_embedded.html");
+  const GURL cross_origin_child = embedded_test_server()->GetURL(
+      "b.com", "/feature_policy_window_open_embedded.html");
+  const GURL cross_origin_window_url =
+      embedded_test_server()->GetURL("c.com", "/title1.html");
+  const GURL same_origin_window_url = GURL("about:blank");
+  const std::string kScriptCheckPolicy =
+      "document.featurePolicy.allowsFeature('sync-xhr')";
+  // Test parameters
+  const char* iframe_type = std::get<0>(GetParam());
+  const char* iframe_src =
+      (std::get<1>(GetParam()) ? same_origin_child : cross_origin_child)
+          .spec()
+          .c_str();
+  const char* window_url = (std::get<2>(GetParam()) ? same_origin_window_url
+                                                    : cross_origin_window_url)
+                               .spec()
+                               .c_str();
+  const char* window_feature = std::get<3>(GetParam());
+  SCOPED_TRACE(testing::Message() << " <iframe> Type: " << iframe_type
+                                  << " <iframe> Source: " << iframe_src
+                                  << " window URL: " << window_url
+                                  << " window Feature: " << window_feature);
+  // TODO(ekaramad): Modify the test expectation once we resolve the following
+  // issues in feature policies:
+  //   - "rel='noopener'" might end up resetting the feature policies.
+  //   - A new feature to escape feature policies is introduced (similar to the
+  //     sandbox version "allow-popups-to-escape-sandbox".
+  // For now, only the sandbox-escaping case should be allowed to have a new
+  // (default) feature policy state.
+  bool expected_feature_state_in_auxiliary_browsing_context = iframe_type =
+      "sandboxed-escaping";
+  ShellAddedObserver shell_added_observer;
+  ASSERT_TRUE(
+      ExecJs(shell(), JsReplace("test($1, $2, $3, $4)", iframe_type, iframe_src,
+                                window_url, window_feature)));
+  auto* new_shell = shell_added_observer.GetShell();
+  while (new_shell->web_contents()->GetLastCommittedURL() != GURL(window_url)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  ASSERT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+  ASSERT_EQ(new_shell->web_contents()->GetLastCommittedURL(), window_url);
+  bool renderer_side_feature_state =
+      EvalJs(new_shell, kScriptCheckPolicy).ExtractBool();
+  bool browser_side_feature_state =
+      static_cast<RenderFrameHostImpl*>(
+          new_shell->web_contents()->GetMainFrame())
+          ->feature_policy()
+          ->IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSyncXHR);
+  ASSERT_EQ(expected_feature_state_in_auxiliary_browsing_context,
+            browser_side_feature_state);
+  ASSERT_EQ(expected_feature_state_in_auxiliary_browsing_context,
+            renderer_side_feature_state);
+  new_shell->Close();
+}
+
+INSTANTIATE_TEST_CASE_P(SitePerProcess,
+                        FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
+                        testing::Combine(
+                            /* iframe_type */
+                            testing::ValuesIn({"sandboxed", "notsandboxed",
+                                               "sandboxed-escaping"}),
+                            /* iframe_same_origin */
+                            testing::Bool(),
+                            /* window_same_origin */
+                            testing::Bool(),
+                            /* window feature */
+                            testing::ValuesIn({"", "noopener"})));
 }  // namespace content

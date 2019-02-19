@@ -86,8 +86,13 @@ class WebRemoteFrame : public WebFrame {
   // Set frame |name| replicated from another process.
   virtual void SetReplicatedName(const WebString&) = 0;
 
-  virtual void SetReplicatedFeaturePolicyHeader(
-      const ParsedFeaturePolicy& parsed_header) = 0;
+  // Sets the FeaturePolicy header and the FeatureState (from opener) for the
+  // main frame. Once a non-empty |opener_feature_state| is set, it can no
+  // longer be modified (due to the fact that the original opener which passed
+  // down the FeatureState cannot be modified either).
+  virtual void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      const ParsedFeaturePolicy& parsed_header,
+      const FeaturePolicy::FeatureState& opener_feature_state) = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void AddReplicatedContentSecurityPolicyHeader(

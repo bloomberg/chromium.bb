@@ -173,6 +173,10 @@ void WebRuntimeFeatures::EnableFastMobileScrolling(bool enable) {
   RuntimeEnabledFeatures::SetFastMobileScrollingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableFeaturePolicyForSandbox(bool enable) {
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableFileSystem(bool enable) {
   RuntimeEnabledFeatures::SetFileSystemEnabled(enable);
 }

@@ -178,6 +178,12 @@ Frame* EmptyLocalFrameClient::FindFrame(const AtomicString& name) const {
   return nullptr;
 }
 
+const FeaturePolicy::FeatureState&
+EmptyLocalFrameClient::GetOpenerFeatureState() const {
+  DEFINE_STATIC_LOCAL(FeaturePolicy::FeatureState, g_empty_feature_state, ());
+  return g_empty_feature_state;
+}
+
 std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {
   return nullptr;

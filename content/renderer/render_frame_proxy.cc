@@ -347,7 +347,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->SetReplicatedInsecureNavigationsSet(
       state.insecure_navigations_set);
-  web_frame_->SetReplicatedFeaturePolicyHeader(state.feature_policy_header);
+  web_frame_->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      state.feature_policy_header, state.opener_feature_state);
   if (state.has_received_user_gesture) {
     web_frame_->UpdateUserActivationState(
         blink::UserActivationUpdateType::kNotifyActivation);
@@ -392,7 +393,8 @@ void RenderFrameProxy::OnDidSetFramePolicyHeaders(
     blink::WebSandboxFlags active_sandbox_flags,
     blink::ParsedFeaturePolicy feature_policy_header) {
   web_frame_->SetReplicatedSandboxFlags(active_sandbox_flags);
-  web_frame_->SetReplicatedFeaturePolicyHeader(feature_policy_header);
+  web_frame_->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      feature_policy_header, blink::FeaturePolicy::FeatureState());
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {

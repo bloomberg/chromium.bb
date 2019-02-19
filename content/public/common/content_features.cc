@@ -153,6 +153,11 @@ const base::Feature kExpensiveBackgroundTimerThrottling{
 const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled Feature Policy propagation is similar to sandbox flags and,
+// sandbox flags are implemented on top of Feature Policy.
+const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a blink::FontCache optimization that reuses a font to serve different
 // size of font.
 const base::Feature kFontCacheScaling{"FontCacheScaling",

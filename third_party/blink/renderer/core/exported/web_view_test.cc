@@ -3461,6 +3461,7 @@ class ViewCreatingWebViewClient : public frame_test_helpers::TestWebViewClient {
                       WebNavigationPolicy,
                       bool,
                       WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
