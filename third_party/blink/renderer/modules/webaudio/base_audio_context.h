@@ -379,14 +379,6 @@ class MODULES_EXPORT BaseAudioContext
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
 
-  // Accessed by audio thread and main thread, coordinated using
-  // the associated mutex.
-  //
-  // These raw pointers are safe because AudioSourceNodes in
-  // active_source_nodes_ own them.
-  Mutex finished_source_handlers_mutex_;
-  Vector<AudioHandler*> finished_source_handlers_;
-
   // When the context is going away, reject any pending script promise
   // resolvers.
   virtual void RejectPendingResolvers();

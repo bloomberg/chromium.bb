@@ -641,11 +641,9 @@ void BaseAudioContext::NotifyStateChange() {
 
 void BaseAudioContext::NotifySourceNodeFinishedProcessing(
     AudioHandler* handler) {
-  // This can be called from either the main thread or the audio thread.  The
-  // mutex below protects access to |finished_source_handlers_| between the two
-  // threads.
-  MutexLocker lock(finished_source_handlers_mutex_);
-  finished_source_handlers_.push_back(handler);
+  DCHECK(IsAudioThread());
+
+  GetDeferredTaskHandler().GetFinishedSourceHandlers()->push_back(handler);
 }
 
 Document* BaseAudioContext::GetDocument() const {
@@ -656,8 +654,7 @@ void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
 
-  GetDeferredTaskHandler().GetActiveSourceHandlers()->push_back(
-      &node->Handler());
+  GetDeferredTaskHandler().GetActiveSourceHandlers()->insert(&node->Handler());
   node->Handler().MakeConnection();
 }
 
@@ -673,8 +670,19 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();
 
-  if (finished_source_handlers_.size())
-    ScheduleMainThreadCleanup();
+  HashSet<scoped_refptr<AudioHandler>>* active_source_handlers =
+      GetDeferredTaskHandler().GetActiveSourceHandlers();
+
+  if (active_source_handlers->size()) {
+    // Find AudioBufferSourceNodes to see if we can stop playing them.
+    for (auto handler : *active_source_handlers) {
+      if (handler->GetNodeType() == AudioHandler::kNodeTypeAudioBufferSource) {
+        AudioBufferSourceHandler* source_handler =
+            static_cast<AudioBufferSourceHandler*>(handler.get());
+        source_handler->HandleStoppableSourceNode();
+      }
+    }
+  }
 }
 
 void BaseAudioContext::PerformCleanupOnMainThread() {
@@ -694,56 +702,6 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     }
     resume_resolvers_.clear();
     is_resolving_resume_promises_ = false;
-  }
-
-  Vector<scoped_refptr<AudioHandler>>* active_source_handlers =
-      GetDeferredTaskHandler().GetActiveSourceHandlers();
-  if (active_source_handlers->size()) {
-    // Find AudioBufferSourceNodes to see if we can stop playing them.
-    for (auto handler : *active_source_handlers) {
-      if (handler->GetNodeType() == AudioHandler::kNodeTypeAudioBufferSource) {
-        AudioBufferSourceHandler* source_handler =
-            static_cast<AudioBufferSourceHandler*>(handler.get());
-        source_handler->HandleStoppableSourceNode();
-      }
-    }
-
-    Vector<AudioHandler*> finished_handlers;
-    {
-      MutexLocker lock(finished_source_handlers_mutex_);
-      finished_source_handlers_.swap(finished_handlers);
-    }
-    // Break the connection and release active nodes that have finished
-    // playing.
-    wtf_size_t remove_count = 0;
-    Vector<bool> removables;
-    removables.resize(active_source_handlers->size());
-    for (AudioHandler* handler : finished_handlers) {
-      for (wtf_size_t i = 0; i < active_source_handlers->size(); ++i) {
-        if (handler == active_source_handlers->at(i).get()) {
-          handler->BreakConnectionWithLock();
-          removables[i] = true;
-          remove_count++;
-          break;
-        }
-      }
-    }
-
-    // Copy over the surviving active nodes after removal.
-    if (remove_count > 0) {
-      Vector<scoped_refptr<AudioHandler>> actives;
-      DCHECK_GE(active_source_handlers->size(), remove_count);
-      wtf_size_t initial_capacity =
-          std::min(active_source_handlers->size() - remove_count,
-                   active_source_handlers->size());
-      actives.ReserveInitialCapacity(initial_capacity);
-      for (wtf_size_t i = 0; i < removables.size(); ++i) {
-        if (!removables[i]) {
-          actives.push_back(active_source_handlers->at(i));
-        }
-      }
-      active_source_handlers->swap(actives);
-    }
   }
 
   has_posted_cleanup_task_ = false;

@@ -609,7 +609,6 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
 
   // Record the minimum playback rate for use by HandleStoppableSourceNode.
   if (final_playback_rate < min_playback_rate_) {
-    MutexLocker locker(min_playback_rate_mutex_);
     min_playback_rate_ = final_playback_rate;
   }
 
@@ -617,8 +616,7 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
 }
 
 double AudioBufferSourceHandler::GetMinPlaybackRate() {
-  DCHECK(IsMainThread());
-  MutexLocker locker(min_playback_rate_mutex_);
+  DCHECK(Context()->IsAudioThread());
   return min_playback_rate_;
 }
 
@@ -627,6 +625,7 @@ bool AudioBufferSourceHandler::PropagatesSilence() const {
 }
 
 void AudioBufferSourceHandler::HandleStoppableSourceNode() {
+  DCHECK(Context()->IsAudioThread());
   // If the source node is not looping, and we have a buffer, we can determine
   // when the source would stop playing.  This is intended to handle the
   // (uncommon) scenario where start() has been called but is never connected to

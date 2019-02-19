@@ -190,14 +190,6 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // The minimum playbackRate value ever used for this source.
   double min_playback_rate_;
 
-  // |min_playback_rate_| may be updated by the audio thread
-  // while the main thread checks if the node is in a stoppable
-  // state, hence access needs to be atomic.
-  //
-  // TODO: when the codebase adopts std::atomic<>, use it for
-  // |min_playback_rate_|.
-  Mutex min_playback_rate_mutex_;
-
   // True if the |buffer| attribute has ever been set to a non-null
   // value.  Defaults to false.
   bool buffer_has_been_set_;
