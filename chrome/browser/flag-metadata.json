@@ -1940,8 +1940,10 @@
   },
   {
     "name": "enable-webgl-draft-extensions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "webgl-team@google.com" ],
+    // This flag is the only way for end users to test upcoming WebGL
+    // extensions on Android. It must not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-webnfc",
