@@ -117,7 +117,7 @@ void ChannelNacl::ReaderThreadRunner::Run() {
     if (success) {
       main_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(data_read_callback_, base::Passed(&msg_contents)));
+          base::BindOnce(data_read_callback_, std::move(msg_contents)));
     } else {
       main_task_runner_->PostTask(FROM_HERE, failure_callback_);
       // Because the read failed, we know we're going to quit. Don't bother
@@ -174,8 +174,8 @@ bool ChannelNacl::Connect() {
   // If there were any messages queued before connection, send them.
   ProcessOutgoingMessages();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ChannelNacl::CallOnChannelConnected,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ChannelNacl::CallOnChannelConnected,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
