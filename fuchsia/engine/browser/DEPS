@@ -11,6 +11,7 @@ include_rules = [
   "+ui/aura",
   "+ui/base/ime",
   "+ui/display",
+  "+ui/events",
   "+ui/ozone/public",
   "+ui/platform_window",
   "+ui/wm/core",

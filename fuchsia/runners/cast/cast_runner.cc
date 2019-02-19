@@ -77,6 +77,10 @@ void CastRunner::GetConfigCallback(
   GURL cast_app_url(app_config->web_url);
   auto component = std::make_unique<CastComponent>(
       this, std::move(startup_context), std::move(controller_request));
+
+  // Disable input for the Frame by default.
+  component->frame()->SetEnableInput(false);
+
   component->LoadUrl(std::move(cast_app_url));
   RegisterComponent(std::move(component));
 }

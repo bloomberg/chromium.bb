@@ -239,6 +239,8 @@ void FrameImpl::CreateView(fuchsia::ui::gfx::ExportToken view_token) {
       std::make_unique<ScenicWindowTreeHost>(std::move(properties));
   window_tree_host_->InitHost();
 
+  window_tree_host_->window()->GetHost()->AddEventRewriter(
+      &discarding_event_filter_);
   focus_controller_ =
       std::make_unique<wm::FocusController>(new FrameFocusRules);
 
@@ -594,4 +596,8 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
   }
 
   return true;
+}
+
+void FrameImpl::SetEnableInput(bool enable_input) {
+  discarding_event_filter_.set_discard_events(!enable_input);
 }

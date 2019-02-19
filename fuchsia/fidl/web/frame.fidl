@@ -96,6 +96,11 @@ protocol Frame {
   /// to the system logger using console.log(), console.info(), console.warn(),
   /// and console.error().
   SetJavaScriptLogLevel(LogLevel level);
+
+  /// Used at runtime to enables or disables user input processing
+  /// (e.g. keyboard, mouse, touch) on a Frame.
+  /// Input is enabled by default.
+  SetEnableInput(bool enable_input);
 };
 
 struct WebMessage {
