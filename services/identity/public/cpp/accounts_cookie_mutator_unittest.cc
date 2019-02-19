@@ -126,6 +126,10 @@ class AccountsCookieMutatorTest : public testing::Test {
     return identity_test_env_.identity_manager()->GetAccountsCookieMutator();
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -357,6 +361,24 @@ TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_OneListedAccounts) {
                 ->ErrorFromAccountsInCookieUpdatedCallback()
                 .state(),
             GoogleServiceAuthError::NONE);
+}
+
+// Test that trying to log out all sessions generates the right network request.
+TEST_F(AccountsCookieMutatorTest, LogOutAllAccounts) {
+  base::RunLoop run_loop;
+  test_url_loader_factory()->SetInterceptor(base::BindRepeating(
+      [](base::OnceClosure quit_closure,
+         const network::ResourceRequest& request) {
+        EXPECT_EQ(request.url.spec(),
+                  GaiaUrls::GetInstance()
+                      ->LogOutURLWithSource(GaiaConstants::kChromeSource)
+                      .spec());
+        std::move(quit_closure).Run();
+      },
+      run_loop.QuitClosure()));
+
+  accounts_cookie_mutator()->LogOutAllAccounts(gaia::GaiaSource::kChrome);
+  run_loop.Run();
 }
 
 }  // namespace identity
