@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Notification;
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -268,6 +269,22 @@ public abstract class AppHooks {
      */
     public void startForegroundService(Intent intent) {
         ContextCompat.startForegroundService(ContextUtils.getApplicationContext(), intent);
+    }
+
+    /**
+     * Upgrades a service from background to foreground after calling
+     * {@link #startForegroundService(Intent)}.
+     * @param service The service to be foreground.
+     * @param id The notification id.
+     * @param notification The notification attached to the foreground service.
+     * @param foregroundServiceType The type of foreground service. Must be a subset of the
+     *                              foreground service types defined in AndroidManifest.xml.
+     *                              Use 0 if no foregroundServiceType attribute is defined.
+     */
+    public void startForeground(
+            Service service, int id, Notification notification, int foregroundServiceType) {
+        // TODO(xingliu): Add appropriate foregroundServiceType to manifest when we have new sdk.
+        service.startForeground(id, notification);
     }
 
     /**

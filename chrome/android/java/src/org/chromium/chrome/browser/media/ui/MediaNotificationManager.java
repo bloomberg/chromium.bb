@@ -286,7 +286,8 @@ public class MediaNotificationManager {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
                         true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA);
-        s.startForeground(s.getNotificationId(), builder.build());
+        AppHooks.get().startForeground(
+                s, s.getNotificationId(), builder.build(), 0 /* foregroundServiceType */);
     }
 
     /**
