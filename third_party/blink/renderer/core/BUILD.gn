@@ -1630,6 +1630,7 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
   foreach(current, targets_generating_sources) {
     sources += get_target_outputs(current)
   }
+  deps = []
   public_deps = [
     ":all_generators",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_impl",
@@ -1680,6 +1681,10 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
       "/wd4701",
       "/wd4702",
     ]
+  }
+
+  if (is_debug) {
+    deps += [ "//components/crash/core/common:crash_key" ]
   }
 }
 

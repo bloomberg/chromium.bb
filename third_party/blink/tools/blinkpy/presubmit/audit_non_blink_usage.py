@@ -327,6 +327,10 @@ _CONFIG = [
 
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
+
+            # Permit using crash keys inside Blink without jumping through
+            # hoops.
+            'crash_reporter::.*CrashKey.*',
         ],
         'disallowed': [
             '.+',
