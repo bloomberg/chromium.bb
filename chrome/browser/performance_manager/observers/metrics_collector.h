@@ -37,22 +37,20 @@ class MetricsCollector : public GraphObserver {
 
   // GraphObserver implementation.
   bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnNodeCreated(const NodeBase* coordination_unit) override;
-  void OnBeforeNodeDestroyed(const NodeBase* coordination_unit) override;
+  void OnNodeCreated(NodeBase* coordination_unit) override;
+  void OnBeforeNodeDestroyed(NodeBase* coordination_unit) override;
   void OnPagePropertyChanged(
-      const PageNodeImpl* page_cu,
-      const resource_coordinator::mojom::PropertyType property_type,
+      PageNodeImpl* page_cu,
+      resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnProcessPropertyChanged(
-      const ProcessNodeImpl* process_cu,
-      const resource_coordinator::mojom::PropertyType property_type,
+      ProcessNodeImpl* process_cu,
+      resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
-  void OnFrameEventReceived(
-      const FrameNodeImpl* frame_cu,
-      const resource_coordinator::mojom::Event event) override;
-  void OnPageEventReceived(
-      const PageNodeImpl* page_cu,
-      const resource_coordinator::mojom::Event event) override;
+  void OnFrameEventReceived(FrameNodeImpl* frame_cu,
+                            resource_coordinator::mojom::Event event) override;
+  void OnPageEventReceived(PageNodeImpl* page_cu,
+                           resource_coordinator::mojom::Event event) override;
 
  private:
   struct MetricsReportRecord {

@@ -91,7 +91,7 @@ bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
   }
 }
 
-void PageSignalGeneratorImpl::OnNodeCreated(const NodeBase* cu) {
+void PageSignalGeneratorImpl::OnNodeCreated(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -106,7 +106,7 @@ void PageSignalGeneratorImpl::OnNodeCreated(const NodeBase* cu) {
                                        base::TimeTicks::Now());
 }
 
-void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(const NodeBase* cu) {
+void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -120,8 +120,8 @@ void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(const NodeBase* cu) {
 }
 
 void PageSignalGeneratorImpl::OnFramePropertyChanged(
-    const FrameNodeImpl* frame_cu,
-    const resource_coordinator::mojom::PropertyType property_type,
+    FrameNodeImpl* frame_cu,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
 
@@ -133,8 +133,8 @@ void PageSignalGeneratorImpl::OnFramePropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnPagePropertyChanged(
-    const PageNodeImpl* page_cu,
-    const resource_coordinator::mojom::PropertyType property_type,
+    PageNodeImpl* page_cu,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (resource_coordinator::IsPageAlmostIdleSignalEnabled() &&
       property_type == resource_coordinator::mojom::PropertyType::kIsLoading) {
@@ -148,8 +148,8 @@ void PageSignalGeneratorImpl::OnPagePropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnProcessPropertyChanged(
-    const ProcessNodeImpl* process_cu,
-    const resource_coordinator::mojom::PropertyType property_type,
+    ProcessNodeImpl* process_cu,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == resource_coordinator::mojom::PropertyType::
                            kExpectedTaskQueueingDuration) {
@@ -175,8 +175,8 @@ void PageSignalGeneratorImpl::OnProcessPropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnFrameEventReceived(
-    const FrameNodeImpl* frame_cu,
-    const resource_coordinator::mojom::Event event) {
+    FrameNodeImpl* frame_cu,
+    resource_coordinator::mojom::Event event) {
   if (event !=
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated)
     return;
@@ -190,8 +190,8 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnPageEventReceived(
-    const PageNodeImpl* page_cu,
-    const resource_coordinator::mojom::Event event) {
+    PageNodeImpl* page_cu,
+    resource_coordinator::mojom::Event event) {
   // We only care about the events if network idle signal is enabled.
   if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
     return;
@@ -208,8 +208,8 @@ void PageSignalGeneratorImpl::OnPageEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnProcessEventReceived(
-    const ProcessNodeImpl* process_cu,
-    const resource_coordinator::mojom::Event event) {
+    ProcessNodeImpl* process_cu,
+    resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kRendererIsBloated) {
     std::set<PageNodeImpl*> page_cus =
         process_cu->GetAssociatedPageCoordinationUnits();
@@ -230,8 +230,8 @@ void PageSignalGeneratorImpl::OnProcessEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnSystemEventReceived(
-    const SystemNodeImpl* system_cu,
-    const resource_coordinator::mojom::Event event) {
+    SystemNodeImpl* system_cu,
+    resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kProcessCPUUsageReady) {
     base::TimeTicks measurement_start =
         system_cu->last_measurement_start_time();

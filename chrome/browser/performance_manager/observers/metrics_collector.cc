@@ -63,7 +63,7 @@ bool MetricsCollector::ShouldObserve(const NodeBase* coordination_unit) {
              resource_coordinator::CoordinationUnitType::kProcess;
 }
 
-void MetricsCollector::OnNodeCreated(const NodeBase* coordination_unit) {
+void MetricsCollector::OnNodeCreated(NodeBase* coordination_unit) {
   if (coordination_unit->id().type ==
       resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.emplace(coordination_unit->id(),
@@ -71,8 +71,7 @@ void MetricsCollector::OnNodeCreated(const NodeBase* coordination_unit) {
   }
 }
 
-void MetricsCollector::OnBeforeNodeDestroyed(
-    const NodeBase* coordination_unit) {
+void MetricsCollector::OnBeforeNodeDestroyed(NodeBase* coordination_unit) {
   if (coordination_unit->id().type ==
       resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.erase(coordination_unit->id());
@@ -81,8 +80,8 @@ void MetricsCollector::OnBeforeNodeDestroyed(
 }
 
 void MetricsCollector::OnPagePropertyChanged(
-    const PageNodeImpl* page_cu,
-    const resource_coordinator::mojom::PropertyType property_type,
+    PageNodeImpl* page_cu,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   const auto page_cu_id = page_cu->id();
   if (property_type == resource_coordinator::mojom::PropertyType::kVisible) {
@@ -103,8 +102,8 @@ void MetricsCollector::OnPagePropertyChanged(
 }
 
 void MetricsCollector::OnProcessPropertyChanged(
-    const ProcessNodeImpl* process_cu,
-    const resource_coordinator::mojom::PropertyType property_type,
+    ProcessNodeImpl* process_cu,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == resource_coordinator::mojom::PropertyType::
                            kExpectedTaskQueueingDuration) {
@@ -121,8 +120,8 @@ void MetricsCollector::OnProcessPropertyChanged(
 }
 
 void MetricsCollector::OnFrameEventReceived(
-    const FrameNodeImpl* frame_cu,
-    const resource_coordinator::mojom::Event event) {
+    FrameNodeImpl* frame_cu,
+    resource_coordinator::mojom::Event event) {
   if (event ==
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
     auto* page_cu = frame_cu->GetPageNode();
@@ -139,8 +138,8 @@ void MetricsCollector::OnFrameEventReceived(
 }
 
 void MetricsCollector::OnPageEventReceived(
-    const PageNodeImpl* page_cu,
-    const resource_coordinator::mojom::Event event) {
+    PageNodeImpl* page_cu,
+    resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
     if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))

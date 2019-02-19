@@ -42,15 +42,15 @@ class TestGraphObserver : public GraphObserver {
     return coordination_unit->id().type ==
            resource_coordinator::CoordinationUnitType::kFrame;
   }
-  void OnNodeCreated(const NodeBase* coordination_unit) override {
+  void OnNodeCreated(NodeBase* coordination_unit) override {
     ++coordination_unit_created_count_;
   }
-  void OnBeforeNodeDestroyed(const NodeBase* coordination_unit) override {
+  void OnBeforeNodeDestroyed(NodeBase* coordination_unit) override {
     ++coordination_unit_destroyed_count_;
   }
   void OnFramePropertyChanged(
-      const FrameNodeImpl* frame_coordination_unit,
-      const resource_coordinator::mojom::PropertyType property_type,
+      FrameNodeImpl* frame_coordination_unit,
+      resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     ++property_changed_count_;
   }

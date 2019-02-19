@@ -29,15 +29,15 @@ class SystemAndProcessObserver : public GraphObserver {
   }
 
   void OnSystemEventReceived(
-      const SystemNodeImpl* system_cu,
-      const resource_coordinator::mojom::Event event) override {
+      SystemNodeImpl* system_cu,
+      resource_coordinator::mojom::Event event) override {
     EXPECT_EQ(resource_coordinator::mojom::Event::kProcessCPUUsageReady, event);
     ++system_event_seen_count_;
   }
 
   void OnProcessPropertyChanged(
-      const ProcessNodeImpl* process_cu,
-      const resource_coordinator::mojom::PropertyType property,
+      ProcessNodeImpl* process_cu,
+      resource_coordinator::mojom::PropertyType property,
       int64_t value) override {
     ++process_property_change_seen_count_;
   }

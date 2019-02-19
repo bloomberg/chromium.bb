@@ -25,7 +25,7 @@ class MockGraphObserver : public GraphObserver {
     return true;
   }
 
-  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNodeImpl*));
+  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(ProcessNodeImpl*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockGraphObserver);

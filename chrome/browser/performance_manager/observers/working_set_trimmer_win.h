@@ -33,7 +33,7 @@ class WorkingSetTrimmer : public GraphObserver {
 
   // GraphObserver:
   bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnAllFramesInProcessFrozen(const ProcessNodeImpl* process_cu) override;
+  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_cu) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmer);

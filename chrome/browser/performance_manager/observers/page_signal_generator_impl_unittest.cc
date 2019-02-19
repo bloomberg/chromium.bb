@@ -33,8 +33,8 @@ class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
   // Overridden from PageSignalGeneratorImpl.
   void OnProcessPropertyChanged(
-      const ProcessNodeImpl* process_cu,
-      const resource_coordinator::mojom::PropertyType property_type,
+      ProcessNodeImpl* process_cu,
+      resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     if (property_type == resource_coordinator::mojom::PropertyType::
                              kExpectedTaskQueueingDuration)
