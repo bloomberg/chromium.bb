@@ -271,7 +271,7 @@ const int kLocationAuthorizationStatusCount = 4;
   // in the NTP.  Remove this once crbug.com/899827 is fixed.
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IgnoreLoadRequests()) {
+  if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
     return;
   }
   [self.omniboxCoordinator setNextFocusSourceAsSearchButton];
@@ -283,6 +283,13 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)focusOmnibox {
+  // TODO(crbug.com/931284): Temporary workaround for intermediate broken state
+  // in the NTP.  Remove this once crbug.com/899827 is fixed.
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
+    return;
+  }
   // Dismiss the edit menu.
   [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
 
