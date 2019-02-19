@@ -8,7 +8,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/onboarding_welcome_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,6 +37,11 @@ void NtpBackgroundHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getBackgrounds",
       base::BindRepeating(&NtpBackgroundHandler::HandleGetBackgrounds,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setBackground",
+      base::BindRepeating(&NtpBackgroundHandler::HandleSetBackground,
                           base::Unretained(this)));
 }
 
@@ -98,6 +107,62 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   list_value.Append(std::move(element));
 
   ResolveJavascriptCallback(*callback_id, list_value);
+}
+
+void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  int backgroundIndex;
+  args->GetInteger(0, &backgroundIndex);
+
+  std::array<GURL, kOnboardingNtpBackgroundsCount> onboardingNtpBackgrounds =
+      GetOnboardingNtpBackgrounds();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+
+  switch (backgroundIndex) {
+    case static_cast<int>(NtpBackgrounds::kArt):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex], "Universe Cosmic Vacum",
+          "Philipp Rietz — Walli",
+          GURL("https://walli.shanga.co/image/view/?id=370"));
+      break;
+    case static_cast<int>(NtpBackgrounds::kCityscape):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("Ev Tchebotarev")),
+          "",
+          GURL("https://500px.com/photo/135751035/"
+               "soulseek-by-%E5%B0%A4%E9%87%91%E5%B0%BC-ev-tchebotarev"));
+      break;
+    case static_cast<int>(NtpBackgrounds::kGeometricShapes):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex], "Tessellation 15",
+          "Justin Prno — Walli",
+          GURL("https://walli.shanga.co/image/view/?id=1375"));
+      break;
+    case static_cast<int>(NtpBackgrounds::kLandscape):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("Giulio Rosso Chioso")),
+          "",
+          GURL("https://500px.com/photo/41149196/"
+               "le-piscine-sunset-by-giulio-rosso-chioso"));
+      break;
+    case static_cast<int>(NtpBackgrounds::kLife):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("Toa Heftiba on Unsplash")),
+          "",
+          GURL("https://unsplash.com/collections/1813652/"
+               "google-pixel-in-bloom-collection"));
+      break;
+  }
 }
 
 }  // namespace nux

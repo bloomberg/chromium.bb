@@ -15,6 +15,7 @@ js_library("nux_ntp_background") {
     ":ntp_background_proxy",
     "../:navigation_behavior",
     "../shared:nux_types",
+    "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:util",
   ]

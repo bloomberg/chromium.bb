@@ -73,6 +73,9 @@
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE" desc="Label for choosing a background/wallpaper from the 'Geometric Shapes' category">
     Geometric shapes
   </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL" desc="Label indicating who the background/wallpaper is created or photographed by">
+    Photo by <ph name="NAME">$1<ex>John Doe</ex></ph>
+  </message>
 
   <!-- NUX set default module -->
   <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER" desc="Header for the page that prompts user to set Chrome as their default browser.">

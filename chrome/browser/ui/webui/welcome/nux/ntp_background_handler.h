@@ -19,6 +19,7 @@ class NtpBackgroundHandler : public content::WebUIMessageHandler {
 
   // Callbacks for JS APIs.
   void HandleGetBackgrounds(const base::ListValue* args);
+  void HandleSetBackground(const base::ListValue* args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NtpBackgroundHandler);

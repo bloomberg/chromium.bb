@@ -7,6 +7,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getBackgrounds',
+      'setBackground',
     ]);
 
     /** @private {!Array<!nux.NtpBackgroundData} */
@@ -17,6 +18,11 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
   getBackgrounds() {
     this.methodCalled('getBackgrounds');
     return Promise.resolve(this.backgroundsList_);
+  }
+
+  /** @override */
+  setBackground(id) {
+    this.methodCalled('setBackground', id);
   }
 
   /** @param {!Array<!nux.NtpBackgroundData>} backgroundsList */

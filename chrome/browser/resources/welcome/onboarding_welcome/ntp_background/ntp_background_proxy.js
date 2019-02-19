@@ -17,6 +17,9 @@ cr.define('nux', function() {
   class NtpBackgroundProxy {
     /** @return {!Promise<!Array<!nux.NtpBackgroundData>>} */
     getBackgrounds() {}
+
+    /** @param {number} id */
+    setBackground(id) {}
   }
 
   /** @implements {nux.NtpBackgroundProxy} */
@@ -24,6 +27,11 @@ cr.define('nux', function() {
     /** @override */
     getBackgrounds() {
       return cr.sendWithPromise('getBackgrounds');
+    }
+
+    /** @override */
+    setBackground(id) {
+      chrome.send('setBackground', [id]);
     }
   }
 
