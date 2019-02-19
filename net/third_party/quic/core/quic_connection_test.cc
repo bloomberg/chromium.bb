@@ -107,8 +107,7 @@ class TaggingEncrypter : public QuicEncrypter {
 
   bool SetIV(QuicStringPiece iv) override { return true; }
 
-  bool EncryptPacket(QuicTransportVersion /*version*/,
-                     uint64_t packet_number,
+  bool EncryptPacket(uint64_t packet_number,
                      QuicStringPiece associated_data,
                      QuicStringPiece plaintext,
                      char* output,
@@ -172,8 +171,7 @@ class TaggingDecrypter : public QuicDecrypter {
     return true;
   }
 
-  bool DecryptPacket(QuicTransportVersion /*version*/,
-                     uint64_t packet_number,
+  bool DecryptPacket(uint64_t packet_number,
                      QuicStringPiece associated_data,
                      QuicStringPiece ciphertext,
                      char* output,
@@ -2180,7 +2178,7 @@ TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
-  EXPECT_QUIC_BUG(ProcessDataPacket(1), "");
+  EXPECT_QUIC_PEER_BUG(ProcessDataPacket(1), "");
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
   const std::vector<QuicConnectionCloseFrame>& connection_close_frames =
@@ -2313,33 +2311,7 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
   ProcessAckPacket(&frame2);
 }
 
-TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
-  if (connection_.version().transport_version != QUIC_VERSION_35) {
-    return;
-  }
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  SendStreamDataToPeer(1, "foo", 0, NO_FIN, nullptr);
-
-  QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
-  // But an ack with no missing packets will not send an ack.
-  QuicAckFrame frame = InitAckFrame(1);
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
-  for (int i = 0; i < 19; ++i) {
-    ProcessAckPacket(&frame);
-    EXPECT_FALSE(ack_alarm->IsSet());
-  }
-  EXPECT_EQ(1u, writer_->packets_write_attempts());
-  // The 20th ack packet will cause an ack to be sent.
-  ProcessAckPacket(&frame);
-  EXPECT_EQ(2u, writer_->packets_write_attempts());
-}
-
 TEST_P(QuicConnectionTest, AckSentEveryNthPacket) {
-  if (connection_.version().transport_version == QUIC_VERSION_35) {
-    return;
-  }
-
   connection_.set_ack_frequency_before_ack_decimation(3);
 
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -2383,10 +2355,6 @@ TEST_P(QuicConnectionTest, AckDecimationReducesAcks) {
 }
 
 TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
-  if (connection_.version().transport_version == QUIC_VERSION_35) {
-    return;
-  }
-
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(99);
 

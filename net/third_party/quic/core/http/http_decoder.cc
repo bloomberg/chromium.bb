@@ -42,7 +42,7 @@ HttpDecoder::~HttpDecoder() {}
 
 QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
   has_payload_ = false;
-  QuicDataReader reader(data, len, NETWORK_BYTE_ORDER);
+  QuicDataReader reader(data, len);
   while (error_ == QUIC_NO_ERROR && reader.BytesRemaining() != 0) {
     switch (state_) {
       case STATE_READING_FRAME_LENGTH:
@@ -75,7 +75,7 @@ void HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
     return;
   }
   QuicDataReader length_reader(length_buffer_.data(),
-                               current_length_field_size_, NETWORK_BYTE_ORDER);
+                               current_length_field_size_);
   if (!length_reader.ReadVarInt62(&current_frame_length_)) {
     RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame length");
     visitor_->OnError(this);
@@ -148,8 +148,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       BufferFramePayload(reader);
       if (remaining_frame_length_ == 0) {
         PriorityFrame frame;
-        QuicDataReader reader(buffer_.data(), current_frame_length_,
-                              NETWORK_BYTE_ORDER);
+        QuicDataReader reader(buffer_.data(), current_frame_length_);
         if (!ParsePriorityFrame(&reader, &frame)) {
           return;
         }
@@ -164,8 +163,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       BufferFramePayload(reader);
       if (remaining_frame_length_ == 0) {
         CancelPushFrame frame;
-        QuicDataReader reader(buffer_.data(), current_frame_length_,
-                              NETWORK_BYTE_ORDER);
+        QuicDataReader reader(buffer_.data(), current_frame_length_);
         if (!reader.ReadVarInt62(&frame.push_id)) {
           RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
           return;
@@ -184,8 +182,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       BufferFramePayload(reader);
       if (remaining_frame_length_ == 0) {
         SettingsFrame frame;
-        QuicDataReader reader(buffer_.data(), current_frame_length_,
-                              NETWORK_BYTE_ORDER);
+        QuicDataReader reader(buffer_.data(), current_frame_length_);
         if (!ParseSettingsFrame(&reader, &frame)) {
           return;
         }
@@ -230,8 +227,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       BufferFramePayload(reader);
       if (remaining_frame_length_ == 0) {
         GoAwayFrame frame;
-        QuicDataReader reader(buffer_.data(), current_frame_length_,
-                              NETWORK_BYTE_ORDER);
+        QuicDataReader reader(buffer_.data(), current_frame_length_);
         uint64_t stream_id;
         if (!reader.ReadVarInt62(&stream_id)) {
           RaiseError(QUIC_INTERNAL_ERROR, "Unable to read GOAWAY stream_id");
@@ -249,8 +245,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       // TODO(rch): Handle partial delivery.
       BufferFramePayload(reader);
       if (remaining_frame_length_ == 0) {
-        QuicDataReader reader(buffer_.data(), current_frame_length_,
-                              NETWORK_BYTE_ORDER);
+        QuicDataReader reader(buffer_.data(), current_frame_length_);
         MaxPushIdFrame frame;
         if (!reader.ReadVarInt62(&frame.push_id)) {
           RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
@@ -268,8 +263,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       if (remaining_frame_length_ != 0) {
         return;
       }
-      QuicDataReader reader(buffer_.data(), current_frame_length_,
-                            NETWORK_BYTE_ORDER);
+      QuicDataReader reader(buffer_.data(), current_frame_length_);
       DuplicatePushFrame frame;
       if (!reader.ReadVarInt62(&frame.push_id)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");

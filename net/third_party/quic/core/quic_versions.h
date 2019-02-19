@@ -76,9 +76,7 @@ enum QuicTransportVersion {
   //            private flag from packet header and changed the ACK format to
   //            specify ranges of packets acknowledged rather than missing
   //            ranges.
-
-  QUIC_VERSION_35 = 35,  // Allows endpoints to independently set stream limit.
-
+  // Version 35 allows endpoints to independently set stream limit.
   // Version 36 added support for forced head-of-line blocking experiments.
   // Version 37 added perspective into null encryption.
   // Version 38 switched to IETF padding frame format and support for NSTP (no
@@ -167,7 +165,8 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 // See go/new-quic-version for more details on how to roll out new versions.
 static const QuicTransportVersion kSupportedTransportVersions[] = {
     QUIC_VERSION_99, QUIC_VERSION_47, QUIC_VERSION_46, QUIC_VERSION_45,
-    QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_39, QUIC_VERSION_35};
+    QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_39,
+};
 
 // This vector contains all crypto handshake protocols that are supported.
 static const HandshakeProtocol kSupportedHandshakeProtocols[] = {
@@ -306,6 +305,18 @@ QUIC_EXPORT_PRIVATE inline QuicString ParsedQuicVersionVectorToString(
     const ParsedQuicVersionVector& versions) {
   return ParsedQuicVersionVectorToString(versions, ",",
                                          std::numeric_limits<size_t>::max());
+}
+
+// Returns true if QuicSpdySession instantiates a QPACK encoder and decoder.
+// TODO(123528590): Implement the following features and gate them on this
+// function as well, optionally renaming this function as appropriate.
+// Send HEADERS on the request/response stream instead of the headers stream.
+// Send PUSH_PROMISE on the request/response stream instead of headers stream.
+// Send PRIORITY on the request/response stream instead of the headers stream.
+// Do not instantiate the headers stream object.
+QUIC_EXPORT_PRIVATE inline bool VersionUsesQpack(
+    QuicTransportVersion transport_version) {
+  return transport_version == QUIC_VERSION_99;
 }
 
 }  // namespace quic

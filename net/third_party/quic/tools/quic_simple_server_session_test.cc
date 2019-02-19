@@ -121,7 +121,15 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
       : MockQuicConnection(helper,
                            alarm_factory,
                            perspective,
-                           supported_versions) {}
+                           supported_versions) {
+    auto consume_all_data = [](QuicStreamId id, size_t write_length,
+                               QuicStreamOffset offset,
+                               StreamSendingState state) {
+      return QuicConsumedData(write_length, state != NO_FIN);
+    };
+    ON_CALL(*this, SendStreamData(_, _, _, _))
+        .WillByDefault(Invoke(consume_all_data));
+  }
 
   MOCK_METHOD4(SendStreamData,
                QuicConsumedData(QuicStreamId id,
@@ -536,7 +544,7 @@ class QuicSimpleServerSessionServerPushTest
  protected:
   const size_t kStreamFlowControlWindowSize = 32 * 1024;  // 32KB.
 
-  QuicSimpleServerSessionServerPushTest() : QuicSimpleServerSessionTest() {
+  QuicSimpleServerSessionServerPushTest() {
     // Reset stream level flow control window to be 32KB.
     QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
         &config_, kStreamFlowControlWindowSize);
@@ -545,10 +553,6 @@ class QuicSimpleServerSessionServerPushTest
     // control blocks it.
     QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
         &config_, kInitialSessionFlowControlWindowForTest);
-    // Enable server push.
-    QuicTagVector copt;
-    copt.push_back(kSPSH);
-    QuicConfigPeer::SetReceivedConnectionOptions(&config_, copt);
 
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
@@ -638,8 +642,8 @@ class QuicSimpleServerSessionServerPushTest
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
         if (IsVersion99()) {
-          EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
-              .WillOnce(Return(QuicConsumedData(header_length, false)));
+          EXPECT_CALL(*connection_,
+                      SendStreamData(stream_id, header_length, 0, NO_FIN));
         }
         EXPECT_CALL(*connection_,
                     SendStreamData(stream_id, _, header_length, NO_FIN))
@@ -657,12 +661,8 @@ class QuicSimpleServerSessionServerPushTest
   void ConsumeHeadersStreamData() {
     QuicStreamId headers_stream_id =
         QuicUtils::GetHeadersStreamId(connection_->transport_version());
-    auto consume_data = [](QuicStreamId id, size_t write_length,
-                           QuicStreamOffset offset, StreamSendingState state) {
-      return QuicConsumedData(write_length, state != NO_FIN);
-    };
     EXPECT_CALL(*connection_, SendStreamData(headers_stream_id, _, _, _))
-        .WillRepeatedly(Invoke(consume_data));
+        .Times(AtLeast(1));
   }
 };
 
@@ -693,9 +693,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // After an open stream is marked draining, a new stream is expected to be
   // created and a response sent on the stream.
   if (IsVersion99()) {
-    EXPECT_CALL(*connection_,
-                SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
-        .WillOnce(Return(QuicConsumedData(header_length, false)));
+    EXPECT_CALL(*connection_, SendStreamData(next_out_going_stream_id,
+                                             header_length, 0, NO_FIN));
   }
   EXPECT_CALL(*connection_, SendStreamData(next_out_going_stream_id, _,
                                            header_length, NO_FIN))
@@ -757,8 +756,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
       GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
   InSequence s;
   if (IsVersion99()) {
-    EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
-        .WillOnce(Return(QuicConsumedData(header_length, false)));
+    EXPECT_CALL(*connection_,
+                SendStreamData(stream_not_reset, header_length, 0, NO_FIN));
   }
   EXPECT_CALL(*connection_,
               SendStreamData(stream_not_reset, _, header_length, NO_FIN))
@@ -807,8 +806,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
                 OnStreamReset(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT));
   }
   if (IsVersion99()) {
-    EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
-        .WillOnce(Return(QuicConsumedData(header_length, false)));
+    EXPECT_CALL(*connection_,
+                SendStreamData(stream_to_open, header_length, 0, NO_FIN));
   }
   EXPECT_CALL(*connection_,
               SendStreamData(stream_to_open, _, header_length, NO_FIN))

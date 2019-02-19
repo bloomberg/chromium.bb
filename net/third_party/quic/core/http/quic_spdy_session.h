@@ -17,6 +17,7 @@
 #include "net/third_party/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/quic/core/qpack/qpack_encoder_stream_sender.h"
 #include "net/third_party/quic/core/quic_session.h"
+#include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -137,8 +138,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Sends SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   size_t SendMaxHeaderListSize(size_t value);
 
-  QpackEncoder* qpack_encoder() { return qpack_encoder_.get(); }
-  QpackDecoder* qpack_decoder() { return qpack_decoder_.get(); }
+  QpackEncoder* qpack_encoder();
+  QpackDecoder* qpack_decoder();
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
   bool server_push_enabled() const { return server_push_enabled_; }
@@ -248,6 +249,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   std::unique_ptr<QpackEncoder> qpack_encoder_;
   std::unique_ptr<QpackDecoder> qpack_decoder_;
+
+  // TODO(123528590): Remove this member.
   std::unique_ptr<QuicHeadersStream> headers_stream_;
 
   // The maximum size of a header block that will be accepted from the peer,

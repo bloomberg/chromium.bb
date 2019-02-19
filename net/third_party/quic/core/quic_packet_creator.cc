@@ -394,8 +394,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
     encrypted_buffer = stack_buffer;
   }
 
-  QuicDataWriter writer(kMaxPacketSize, encrypted_buffer,
-                        framer_->endianness());
+  QuicDataWriter writer(kMaxPacketSize, encrypted_buffer);
   if (!framer_->AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";
     return;

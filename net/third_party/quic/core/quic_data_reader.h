@@ -32,6 +32,10 @@ namespace quic {
 // called after failure, as they will also fail immediately.
 class QUIC_EXPORT_PRIVATE QuicDataReader {
  public:
+  // Constructs a reader using NETWORK_BYTE_ORDER endianness.
+  // Caller must provide an underlying buffer to work on.
+  QuicDataReader(const char* data, const size_t len);
+  // Constructs a reader using the specified endianness.
   // Caller must provide an underlying buffer to work on.
   QuicDataReader(const char* data, const size_t len, Endianness endianness);
   QuicDataReader(const QuicDataReader&) = delete;

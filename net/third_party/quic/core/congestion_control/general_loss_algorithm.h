@@ -71,15 +71,9 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   int reordering_shift_;
   // The largest newly acked from the previous call to DetectLosses.
   QuicPacketNumber largest_previously_acked_;
-  // The largest lost packet.
-  // TODO(fayang): Remove this variable when deprecating
-  // quic_faster_detect_loss.
-  QuicPacketNumber largest_lost_;
   // The least in flight packet. Loss detection should start from this. Please
   // note, least_in_flight_ could be largest packet ever sent + 1.
   QuicPacketNumber least_in_flight_;
-  // Latched value of quic_faster_detect_loss flag.
-  const bool faster_detect_loss_;
 };
 
 }  // namespace quic

@@ -47,8 +47,6 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   bool enable_version_44_;
   // quic_enable_version_43 flag
   bool enable_version_43_;
-  // quic_disable_version_35 flag
-  bool disable_version_35_;
   // quic_disable_version_39 flag
   bool disable_version_39_;
   // The list of versions that may be supported.

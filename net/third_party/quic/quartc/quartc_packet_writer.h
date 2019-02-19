@@ -8,13 +8,12 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_types.h"
-#include "net/third_party/quic/platform/api/quic_export.h"
 
 namespace quic {
 
 // Send and receive packets, like a virtual UDP socket. For example, this
 // could be implemented by WebRTC's IceTransport.
-class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
+class QuartcPacketTransport {
  public:
   // Additional metadata provided for each packet written.
   struct PacketInfo {
@@ -51,7 +50,7 @@ class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
   virtual void SetDelegate(Delegate* delegate) = 0;
 };
 
-struct QUIC_EXPORT_PRIVATE QuartcPerPacketOptions : public PerPacketOptions {
+struct QuartcPerPacketOptions : public PerPacketOptions {
   std::unique_ptr<PerPacketOptions> Clone() const override;
 
   // The connection which is sending this packet.
@@ -60,7 +59,7 @@ struct QUIC_EXPORT_PRIVATE QuartcPerPacketOptions : public PerPacketOptions {
 
 // Implements a QuicPacketWriter using a QuartcPacketTransport, which allows a
 // QuicConnection to use (for example), a WebRTC IceTransport.
-class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
+class QuartcPacketWriter : public QuicPacketWriter {
  public:
   QuartcPacketWriter(QuartcPacketTransport* packet_transport,
                      QuicByteCount max_packet_size);

@@ -677,9 +677,8 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
-  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 8u,
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 7u,
                 "Supported versions out of sync");
-  SetQuicReloadableFlag(quic_disable_version_35, false);
   SetQuicReloadableFlag(quic_disable_version_39, false);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicReloadableFlag(quic_enable_version_44, true);
@@ -900,39 +899,6 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
               ShouldCreateOrBufferPacketForConnection(connection_id, _));
   ProcessPacket(client_address, connection_id, true,
                 ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
-
-  // Turn off version 35.
-  SetQuicReloadableFlag(quic_disable_version_35, true);
-  connection_id = TestConnectionId(++conn_id);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
-                                              QuicStringPiece("hq"), _))
-      .Times(0);
-  ProcessPacket(client_address, connection_id, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_35),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
-
-  // Turn on version 35.
-  SetQuicReloadableFlag(quic_disable_version_35, false);
-  connection_id = TestConnectionId(++conn_id);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
-                                              QuicStringPiece("hq"), _))
-      .WillOnce(testing::Return(CreateSession(
-          dispatcher_.get(), config_, connection_id, client_address,
-          &mock_helper_, &mock_alarm_factory_, &crypto_config_,
-          QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_)));
-  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
-              ProcessUdpPacket(_, _, _))
-      .WillOnce(WithArg<2>(
-          Invoke([this, connection_id](const QuicEncryptedPacket& packet) {
-            ValidatePacket(connection_id, packet);
-          })));
-  EXPECT_CALL(*dispatcher_,
-              ShouldCreateOrBufferPacketForConnection(connection_id, _));
-  ProcessPacket(client_address, connection_id, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_35),
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 
@@ -2749,17 +2715,17 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
   // different endianness which causes the client to close the connection
   // because of QUIC_INVALID_STREAM_DATA.
 
-  SetQuicReloadableFlag(quic_disable_version_35, false);
   SetQuicReloadableFlag(quic_disable_version_39, false);
-  ParsedQuicVersion chlo_version(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_39);
+  SetQuicReloadableFlag(quic_enable_version_43, true);
+  ParsedQuicVersion chlo_version(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43);
   chlo_.SetVersion(kVER, chlo_version);
-  // Send a CHLO with v39. Dispatcher framer's version is set to v39.
+  // Send a CHLO with v43. Dispatcher framer's version is set to v43.
   ProcessPacket(client_addr_, TestConnectionId(1), true, chlo_version,
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 
-  // Send another CHLO with v35. Dispatcher framer's version is set to v35.
-  chlo_version.transport_version = QUIC_VERSION_35;
+  // Send another CHLO with v39. Dispatcher framer's version is set to v39.
+  chlo_version.transport_version = QUIC_VERSION_39;
   chlo_.SetVersion(kVER, chlo_version);
   // Invalidate the cached serialized form.
   chlo_.MarkDirty();
@@ -2768,7 +2734,7 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
                 PACKET_4BYTE_PACKET_NUMBER, 1);
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
 
-  // Complete the ProofSource::GetProof call for v39. This would cause the
+  // Complete the ProofSource::GetProof call for v43. This would cause the
   // version mismatch between the CHLO packet and the dispatcher.
   GetFakeProofSource()->InvokePendingCallback(0);
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);

@@ -54,8 +54,6 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       return 0;
   }
   switch (parsed_version.transport_version) {
-    case QUIC_VERSION_35:
-      return MakeVersionLabel(proto, '0', '3', '5');
     case QUIC_VERSION_39:
       return MakeVersionLabel(proto, '0', '3', '9');
     case QUIC_VERSION_43:
@@ -202,10 +200,6 @@ ParsedQuicVersionVector FilterSupportedVersions(
       if (!GetQuicReloadableFlag(quic_disable_version_39)) {
         filtered_versions.push_back(version);
       }
-    } else if (version.transport_version == QUIC_VERSION_35) {
-      if (!GetQuicReloadableFlag(quic_disable_version_35)) {
-        filtered_versions.push_back(version);
-      }
     } else {
       filtered_versions.push_back(version);
     }
@@ -294,7 +288,6 @@ HandshakeProtocol QuicVersionLabelToHandshakeProtocol(
 
 QuicString QuicVersionToString(QuicTransportVersion transport_version) {
   switch (transport_version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_35);
     RETURN_STRING_LITERAL(QUIC_VERSION_39);
     RETURN_STRING_LITERAL(QUIC_VERSION_43);
     RETURN_STRING_LITERAL(QUIC_VERSION_44);

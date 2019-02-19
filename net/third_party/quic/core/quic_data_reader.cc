@@ -12,6 +12,9 @@
 
 namespace quic {
 
+QuicDataReader::QuicDataReader(const char* data, const size_t len)
+    : QuicDataReader(data, len, NETWORK_BYTE_ORDER) {}
+
 QuicDataReader::QuicDataReader(const char* data,
                                const size_t len,
                                Endianness endianness)

@@ -12,7 +12,6 @@
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_types.h"
-#include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_mem_slice_span.h"
 #include "net/third_party/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quic/platform/impl/quic_export_impl.h"
@@ -24,7 +23,7 @@ namespace quic {
 // in-order. To send/receive data out of order, use separate streams. To
 // send/receive unreliably, close a stream after reliability is no longer
 // needed.
-class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
+class QuartcStream : public QuicStream {
  public:
   QuartcStream(QuicStreamId id, QuicSession* session);
   explicit QuartcStream(PendingStream pending);

@@ -30,9 +30,7 @@ static const int kDefaultAdaptiveLossDelayShift = 4;
 GeneralLossAlgorithm::GeneralLossAlgorithm() : GeneralLossAlgorithm(kNack) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
-    : loss_detection_timeout_(QuicTime::Zero()),
-      least_in_flight_(1),
-      faster_detect_loss_(GetQuicReloadableFlag(quic_faster_detect_loss)) {
+    : loss_detection_timeout_(QuicTime::Zero()), least_in_flight_(1) {
   SetLossDetectionType(loss_type);
 }
 
@@ -64,16 +62,14 @@ void GeneralLossAlgorithm::DetectLosses(
     const AckedPacketVector& packets_acked,
     LostPacketVector* packets_lost) {
   loss_detection_timeout_ = QuicTime::Zero();
-  if (faster_detect_loss_ && !packets_acked.empty() &&
+  if (!packets_acked.empty() &&
       packets_acked.front().packet_number == least_in_flight_) {
     if (least_in_flight_ + packets_acked.size() - 1 == largest_newly_acked) {
       // Optimization for the case when no packet is missing.
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 1, 3);
       least_in_flight_ = largest_newly_acked + 1;
       largest_previously_acked_ = largest_newly_acked;
       return;
     }
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 2, 3);
     // There is hole in acked_packets, increment least_in_flight_ if possible.
     for (const auto& acked : packets_acked) {
       if (acked.packet_number != least_in_flight_) {
@@ -89,32 +85,18 @@ void GeneralLossAlgorithm::DetectLosses(
                max_rtt + (max_rtt >> reordering_shift_));
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
   auto it = unacked_packets.begin();
-  if (faster_detect_loss_) {
-    if (least_in_flight_.IsInitialized() && least_in_flight_ >= packet_number) {
-      if (least_in_flight_ > unacked_packets.largest_sent_packet() + 1) {
-        QUIC_BUG << "least_in_flight: " << least_in_flight_
-                 << " is greater than largest_sent_packet + 1: "
-                 << unacked_packets.largest_sent_packet() + 1;
-      } else {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 3, 3);
-        it += (least_in_flight_ - packet_number);
-        packet_number = least_in_flight_;
-      }
-    }
-    // Clear least_in_flight_.
-    least_in_flight_.Clear();
-  } else {
-    if (largest_lost_.IsInitialized() && largest_lost_ >= packet_number) {
-      if (largest_lost_ > unacked_packets.largest_sent_packet()) {
-        QUIC_BUG << "largest_lost: " << largest_lost_
-                 << " is greater than largest_sent_packet: "
-                 << unacked_packets.largest_sent_packet();
-      } else {
-        it += (largest_lost_ - packet_number + 1);
-        packet_number = largest_lost_ + 1;
-      }
+  if (least_in_flight_.IsInitialized() && least_in_flight_ >= packet_number) {
+    if (least_in_flight_ > unacked_packets.largest_sent_packet() + 1) {
+      QUIC_BUG << "least_in_flight: " << least_in_flight_
+               << " is greater than largest_sent_packet + 1: "
+               << unacked_packets.largest_sent_packet() + 1;
+    } else {
+      it += (least_in_flight_ - packet_number);
+      packet_number = least_in_flight_;
     }
   }
+  // Clear least_in_flight_.
+  least_in_flight_.Clear();
   for (; it != unacked_packets.end() && packet_number <= largest_newly_acked;
        ++it, ++packet_number) {
     if (!it->in_flight) {
@@ -176,11 +158,6 @@ void GeneralLossAlgorithm::DetectLosses(
     least_in_flight_ = largest_newly_acked + 1;
   }
   largest_previously_acked_ = largest_newly_acked;
-  if (!packets_lost->empty()) {
-    DCHECK(!largest_lost_.IsInitialized() ||
-           largest_lost_ < packets_lost->back().packet_number);
-    largest_lost_ = packets_lost->back().packet_number;
-  }
 }
 
 QuicTime GeneralLossAlgorithm::GetLossTimeout() const {

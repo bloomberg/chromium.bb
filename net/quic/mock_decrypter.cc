@@ -39,8 +39,7 @@ bool MockDecrypter::SetDiversificationNonce(const DiversificationNonce& nonce) {
   return true;
 }
 
-bool MockDecrypter::DecryptPacket(QuicTransportVersion version,
-                                  uint64_t /*packet_number*/,
+bool MockDecrypter::DecryptPacket(uint64_t /*packet_number*/,
                                   QuicStringPiece associated_data,
                                   QuicStringPiece ciphertext,
                                   char* output,
