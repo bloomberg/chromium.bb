@@ -56,6 +56,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  hasValidSelectedBackground_: function() {
+    return this.selectedBackground_.id > -1;
+  },
+
+  /**
    * @param {!nux.NtpBackgroundData} background
    * @private
    */
@@ -124,6 +132,9 @@ Polymer({
 
   /** @private */
   onNextClicked_: function() {
+    if (this.selectedBackground_ && this.selectedBackground_.id > -1) {
+      this.ntpBackgroundProxy_.setBackground(this.selectedBackground_.id);
+    }
     welcome.navigateToNextStep();
   },
 
