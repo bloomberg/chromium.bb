@@ -12,6 +12,7 @@
 #include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
@@ -19,6 +20,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -35,6 +37,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "extensions/common/constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -59,6 +62,12 @@ bool IsAssistantEnabled() {
          controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
 }
 
+// Close current Assistant UI.
+void CloseAssistantUi(AssistantExitPoint exit_point) {
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -75,14 +84,17 @@ AppListControllerImpl::AppListControllerImpl()
   // session state here to ensure that the app list is shown.
   OnSessionStateChanged(session_controller->GetSessionState());
 
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->wallpaper_controller()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
+  Shell* shell = Shell::Get();
+  shell->tablet_mode_controller()->AddObserver(this);
+  shell->wallpaper_controller()->AddObserver(this);
+  shell->AddShellObserver(this);
+  shell->overview_controller()->AddObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
-  Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  Shell::Get()->mru_window_tracker()->AddObserver(this);
+  shell->voice_interaction_controller()->AddLocalObserver(this);
+  shell->window_tree_host_manager()->AddObserver(this);
+  shell->mru_window_tracker()->AddObserver(this);
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    shell->assistant_controller()->ui_controller()->AddModelObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() = default;
@@ -415,6 +427,25 @@ void AppListControllerImpl::OnAppListItemUpdated(app_list::AppListItem* item) {
     client_->OnItemUpdated(item->CloneMetadata());
 }
 
+void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
+                                                  ash::AppListState old_state) {
+  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    return;
+
+  if (new_state == ash::AppListState::kStateEmbeddedAssistant) {
+    // ShowUi will be no-op if the AssistantUiModel is already visible.
+    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+        ash::AssistantEntryPoint::kUnspecified);
+    return;
+  }
+
+  if (old_state == ash::AppListState::kStateEmbeddedAssistant) {
+    // CloseUi will be no-op if the AssistantUiModel is already closed.
+    Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
+        ash::AssistantExitPoint::kBackInLauncher);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods used in Ash
 
@@ -431,7 +462,6 @@ void AppListControllerImpl::Show(int64_t display_id,
                                  base::TimeTicks event_time_stamp) {
   UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                             show_source);
-
   if (!presenter_.GetTargetVisibility() && IsVisible()) {
     // The launcher is running close animation, so close it immediately before
     // reshow the launcher in tablet mode.
@@ -502,15 +532,18 @@ void AppListControllerImpl::FlushForTesting() {
 // Stop observing at the beginning of ~Shell to avoid unnecessary work during
 // Shell shutdown.
 void AppListControllerImpl::OnShellDestroying() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell* shell = Shell::Get();
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
+  shell->mru_window_tracker()->RemoveObserver(this);
+  shell->window_tree_host_manager()->RemoveObserver(this);
+  shell->voice_interaction_controller()->RemoveLocalObserver(this);
   keyboard::KeyboardController::Get()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
-  Shell::Get()->mru_window_tracker()->RemoveObserver(this);
+  shell->overview_controller()->RemoveObserver(this);
+  shell->RemoveShellObserver(this);
+  shell->wallpaper_controller()->RemoveObserver(this);
+  shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
 }
 
@@ -627,6 +660,42 @@ void AppListControllerImpl::OnWindowUntracked(aura::Window* untracked_window) {
   UpdateExpandArrowVisibility();
 }
 
+void AppListControllerImpl::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  // TODO(wutao): Handle tablet mode.
+  switch (new_visibility) {
+    case AssistantVisibility::kVisible:
+      if (!assistant::util::IsEmbeddedUiEntryPoint(entry_point.value()))
+        break;
+
+      if (!IsVisible()) {
+        Show(GetDisplayIdToShowAppListOn(), app_list::kAssistantEntryPoint,
+             base::TimeTicks());
+      }
+
+      if (!IsShowingEmbeddedAssistantUI()) {
+        presenter_.GetView()->SetState(app_list::AppListViewState::HALF);
+        presenter_.ShowEmbeddedAssistantUI(true);
+      }
+      break;
+    case AssistantVisibility::kHidden:
+      NOTREACHED();
+      break;
+    case AssistantVisibility::kClosed:
+      if (!IsShowingEmbeddedAssistantUI())
+        break;
+
+      if (exit_point == AssistantExitPoint::kBackInLauncher)
+        presenter_.ShowEmbeddedAssistantUI(false);
+      else
+        DismissAppList();
+      break;
+  }
+}
+
 void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
@@ -715,7 +784,7 @@ app_list::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  if (!IsTabletMode())
+  if (!IsTabletMode() && !app_list_features::IsEmbeddedAssistantUIEnabled())
     DismissAppList();
 
   ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
@@ -758,7 +827,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   if (presenter_.IsVisible() && result->is_omnibox_search() &&
       IsAssistantEnabled() &&
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
-    presenter_.ShowEmbeddedAssistantUI(/*show=*/true);
+    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+        AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
         ash::assistant::util::CreateAssistantQueryDeepLink(
             base::UTF16ToUTF8(result->title())));
@@ -803,11 +873,13 @@ void AppListControllerImpl::SearchResultContextMenuItemSelected(
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
+  CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
   if (client_)
     client_->ViewShown(display_id);
 }
 
 void AppListControllerImpl::ViewClosing() {
+  CloseAssistantUi(AssistantExitPoint::kLauncherClose);
   if (client_)
     client_->ViewClosing();
 }

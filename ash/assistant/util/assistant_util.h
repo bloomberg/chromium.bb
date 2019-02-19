@@ -9,6 +9,7 @@
 
 namespace ash {
 
+enum class AssistantEntryPoint;
 enum class AssistantVisibility;
 
 namespace assistant {
@@ -22,6 +23,11 @@ bool IsStartingSession(AssistantVisibility new_visibility,
 // Returns true if Assistant is finishing a session, false otherwise.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsFinishingSession(AssistantVisibility new_visibility);
+
+// Returns true if the |entry_point| should show the embedded Assistant UI in
+// Launcher.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsEmbeddedUiEntryPoint(AssistantEntryPoint entry_point);
 
 }  // namespace util
 }  // namespace assistant

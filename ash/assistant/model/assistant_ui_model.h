@@ -26,8 +26,9 @@ enum class AssistantEntryPoint {
   kLongPressLauncher = 5,
   kSetup = 6,
   kStylus = 7,
+  kLauncherSearchResult = 8,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kStylus
+  kMaxValue = kLauncherSearchResult
 };
 
 // Enumeration of Assistant exit points. These values are persisted to logs.
@@ -44,8 +45,11 @@ enum class AssistantExitPoint {
   kOutsidePress = 5,
   kSetup = 6,
   kStylus = 7,
+  kBackInLauncher = 8,
+  kLauncherClose = 9,
+  kLauncherOpen = 10,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kStylus
+  kMaxValue = kLauncherOpen
 };
 
 // Enumeration of Assistant UI modes.
@@ -53,6 +57,7 @@ enum class AssistantUiMode {
   kMainUi,
   kMiniUi,
   kWebUi,
+  kLauncherEmbeddedUi,
 };
 
 // Enumeration of Assistant visibility states.

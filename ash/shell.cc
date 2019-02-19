@@ -1154,8 +1154,15 @@ void Shell::Init(
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
 
-  // |tablet_mode_controller_| and |mru_window_tracker_| are put before
-  // |app_list_controller_| as they are used in constructor.
+  // |assistant_controller_| needs to be created before |app_list_controller_|
+  // since it is used by the latter in constructor.
+  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
+                              ? std::make_unique<AssistantController>()
+                              : nullptr;
+
+  // |tablet_mode_controller_| |mru_window_tracker_|, and
+  // |assistant_controller_| are put before |app_list_controller_| as they are
+  // used in constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
@@ -1205,12 +1212,6 @@ void Shell::Init(
       std::move(keyboard_ui_factory));
 
   window_tree_host_manager_->InitHosts();
-
-  // |assistant_controller_| needs to be created after InitHosts() since its
-  // keyboard observer function result has dependency on workspace change.
-  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
-                              ? std::make_unique<AssistantController>()
-                              : nullptr;
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);

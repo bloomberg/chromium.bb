@@ -19,21 +19,18 @@ namespace app_list {
 
 namespace {
 
-constexpr int kHeight = 440;
-constexpr int kWidth = 640;
+constexpr int kHeightDip = 440;
+constexpr int kWidthDip = 640;
 
 // The height of the search box in |search_result_page_view_|. It is only for
 // animation.
-constexpr int kSearchBoxHeight = 56;
+constexpr int kSearchBoxHeightDip = 56;
 
 }  // namespace
 
 AssistantPageView::AssistantPageView(
-    ContentsView* contents_view,
     ash::AssistantViewDelegate* assistant_view_delegate)
-    : contents_view_(contents_view) {
-  assistant_main_view_ = new AssistantMainView(assistant_view_delegate);
-  AddChildView(assistant_main_view_);
+    : assistant_view_delegate_(assistant_view_delegate) {
   InitLayout();
 }
 
@@ -54,10 +51,9 @@ void AssistantPageView::InitLayout() {
   layer()->SetMaskLayer(mask_->layer());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
-}
 
-void AssistantPageView::Back() {
-  contents_view_->Back();
+  assistant_main_view_ = new AssistantMainView(assistant_view_delegate_);
+  AddChildView(assistant_main_view_);
 }
 
 const char* AssistantPageView::GetClassName() const {
@@ -65,7 +61,7 @@ const char* AssistantPageView::GetClassName() const {
 }
 
 gfx::Size AssistantPageView::CalculatePreferredSize() const {
-  return gfx::Size(kWidth, kHeight);
+  return gfx::Size(kWidthDip, kHeightDip);
 }
 
 void AssistantPageView::RequestFocus() {
@@ -112,7 +108,7 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
         AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   } else {
     onscreen_bounds = AppListPage::GetSearchBoxBounds();
-    onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
+    onscreen_bounds.Offset((onscreen_bounds.width() - kWidthDip) / 2, 0);
     onscreen_bounds.set_size(GetPreferredSize());
   }
 
@@ -122,8 +118,8 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
 gfx::Rect AssistantPageView::GetSearchBoxBounds() const {
   gfx::Rect rect(AppListPage::GetSearchBoxBounds());
 
-  rect.Offset((rect.width() - kWidth) / 2, 0);
-  rect.set_size(gfx::Size(kWidth, kSearchBoxHeight));
+  rect.Offset((rect.width() - kWidthDip) / 2, 0);
+  rect.set_size(gfx::Size(kWidthDip, kSearchBoxHeightDip));
 
   return rect;
 }

@@ -385,6 +385,9 @@ void AssistantContainerView::RequestFocus() {
       if (assistant_web_view_)
         assistant_web_view_->RequestFocus();
       break;
+    case AssistantUiMode::kLauncherEmbeddedUi:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -413,6 +416,9 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
       break;
     case AssistantUiMode::kWebUi:
       assistant_web_view_->SetVisible(true);
+      break;
+    case AssistantUiMode::kLauncherEmbeddedUi:
+      NOTREACHED();
       break;
   }
 
@@ -443,6 +449,9 @@ views::View* AssistantContainerView::FindFirstFocusableView() {
     case AssistantUiMode::kMiniUi:
     case AssistantUiMode::kWebUi:
       // Default views::FocusSearch behavior is acceptable.
+      return nullptr;
+    case AssistantUiMode::kLauncherEmbeddedUi:
+      NOTREACHED();
       return nullptr;
   }
 }
