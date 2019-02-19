@@ -243,9 +243,6 @@ class CONTENT_EXPORT RenderWidget
   blink::WebInputMethodController* GetInputMethodController() const;
 
   const gfx::Size& size() const { return size_; }
-  const gfx::Size& compositor_viewport_pixel_size() const {
-    return compositor_viewport_pixel_size_;
-  }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
@@ -376,6 +373,7 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
+  gfx::Size PhysicalPixelViewportSize() const final;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
   void SetShowPaintRects(bool) override;
@@ -792,7 +790,7 @@ class CONTENT_EXPORT RenderWidget
 
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
-      const gfx::Size& new_compositor_viewport_pixel_size,
+      const gfx::Size& compositor_viewport_pixel_size,
       const ScreenInfo& new_screen_info);
 
   // Used to force the size of a window when running web tests.
@@ -872,14 +870,12 @@ class CONTENT_EXPORT RenderWidget
   // with the real device scale factor. A value of 0.f means this is ignored.
   float device_scale_factor_for_testing_ = 0.f;
 
-  // The size of the RenderWidget in DIPs. This may differ from
-  // |compositor_viewport_pixel_size_| in the following (and possibly other)
-  // cases: * On Android, for top and bottom controls * On OOPIF, due to
-  // rounding
+  // The size of the RenderWidget in DIPs. This may differ from the viewport
+  // set in the compositor, as the viewport can be a subset of the RenderWidget
+  // in such cases as:
+  // - When (hiding-on-scroll) top and bottom controls are present.
+  // - Rounding issues with OOPIFs (??).
   gfx::Size size_;
-
-  // The size of the compositor's surface in pixels.
-  gfx::Size compositor_viewport_pixel_size_;
 
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;

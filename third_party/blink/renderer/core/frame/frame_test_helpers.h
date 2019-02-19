@@ -201,6 +201,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   // WebWidgetClient:
   void ScheduleAnimation() override { animation_scheduled_ = true; }
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
+  gfx::Size PhysicalPixelViewportSize() const override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::AnimationHost* animation_host() { return animation_host_; }

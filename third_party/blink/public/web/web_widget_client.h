@@ -68,6 +68,16 @@ class WebWidgetClient {
   // the root layer in which case nothing would be shown by the compositor.
   virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
 
+  // Viewport size of the compositor. Non-composited WebViews need not return a
+  // non-empty value. This may be a subset of the widget's full size, as the
+  // compositor not be showing web content in the entire space - even though
+  // blink would be preparing content for the widgets entire size. For example
+  // when browser controls are shown they don't change the size of the widget
+  // but do shrink the compositor viewport.
+  // TODO(danakj): Can devtools just use one of the other existing sizes from
+  // WindowRect() or ViewRect() instead of exposing this additional size?
+  virtual gfx::Size PhysicalPixelViewportSize() const { return {}; }
+
   // Called to request a BeginMainFrame from the compositor. For tests with
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.

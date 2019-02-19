@@ -447,9 +447,14 @@ WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
   return web_view_->Client()->GetScreenInfo();
 }
 
-base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()
-    const {
-  return web_view_->GetDevToolsEmulator()->VisibleContentRectForPainting();
+void ChromeClientImpl::OverrideVisibleRectForMainFrame(
+    LocalFrame& frame,
+    IntRect* visible_rect) const {
+  DCHECK(frame.IsMainFrame());
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->FrameWidgetImpl()->Client();
+  return web_view_->GetDevToolsEmulator()->OverrideVisibleRect(
+      IntSize(client->PhysicalPixelViewportSize()), visible_rect);
 }
 
 float ChromeClientImpl::InputEventsScaleForEmulation() const {
