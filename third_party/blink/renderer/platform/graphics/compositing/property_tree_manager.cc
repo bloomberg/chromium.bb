@@ -89,6 +89,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
   // cc.
   float device_scale_factor =
       root_layer_->layer_tree_host()->device_scale_factor();
+  transform_tree.set_device_scale_factor(device_scale_factor);
   gfx::Transform to_screen;
   to_screen.Scale(device_scale_factor, device_scale_factor);
   transform_tree.SetToScreen(kRealRootNodeId, to_screen);
