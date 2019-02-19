@@ -194,8 +194,8 @@ void ChannelMojo::OnPipeError() {
   if (task_runner_->RunsTasksInCurrentSequence()) {
     listener_->OnChannelError();
   } else {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&ChannelMojo::OnPipeError, weak_ptr_));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&ChannelMojo::OnPipeError, weak_ptr_));
   }
 }
 

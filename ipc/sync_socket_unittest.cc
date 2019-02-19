@@ -225,8 +225,8 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   char buf[0xff];
   size_t received = 1U;  // Initialize to an unexpected value.
   worker.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BlockingRead, &pair[0], &buf[0], base::size(buf), &received));
+      FROM_HERE, base::BindOnce(&BlockingRead, &pair[0], &buf[0],
+                                base::size(buf), &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};
@@ -255,9 +255,9 @@ TEST_F(SyncSocketTest, BlockingReceiveTest) {
   // Try to do a blocking read from one of the sockets on the worker thread.
   char buf[kHelloStringLength] = {0};
   size_t received = 1U;  // Initialize to an unexpected value.
-  worker.task_runner()->PostTask(FROM_HERE,
-                                 base::Bind(&BlockingRead, &pair[0], &buf[0],
-                                            kHelloStringLength, &received));
+  worker.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BlockingRead, &pair[0], &buf[0],
+                                kHelloStringLength, &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};

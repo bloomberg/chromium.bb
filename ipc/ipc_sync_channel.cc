@@ -172,8 +172,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
     dispatch_event_.Signal();
     if (!was_task_pending) {
       listener_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchMessagesTask,
-                                this, base::RetainedRef(context)));
+          FROM_HERE, base::BindOnce(&ReceivedSyncMsgQueue::DispatchMessagesTask,
+                                    this, base::RetainedRef(context)));
     }
   }
 
@@ -416,8 +416,8 @@ bool SyncChannel::SyncContext::Pop() {
   // Send() call.  So check if we have any queued replies available that
   // can now unblock the listener thread.
   ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchReplies,
-                            received_sync_msgs_));
+      FROM_HERE, base::BindOnce(&ReceivedSyncMsgQueue::DispatchReplies,
+                                received_sync_msgs_));
 
   return result;
 }
