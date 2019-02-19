@@ -18,6 +18,7 @@
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_connection_connector.h"
@@ -41,7 +42,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
-#include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #endif
 
 namespace ui {
