@@ -139,7 +139,7 @@ tests:
   # number does not cancel a block in capitals
   - - "ABC123ABC"
     - ",abc#abc;abc."
-    - {xfail: missing nocontractsign after number}
+    - {xfail: "missing nocontractsign after number (see issue #631)"}
   # capsmodechars should have no effect on begcaps and endcaps
   - - "ABC-abc"
     - ",abc-.abc"
