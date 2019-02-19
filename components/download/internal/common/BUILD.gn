@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("internal") {
   visibility = [
     ":for_tests",
@@ -70,8 +75,35 @@ source_set("internal") {
     "//services/network/public/cpp",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/download_collection_bridge.cc",
+      "android/download_collection_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [ "base_file_posix.cc" ]
+  }
+}
+
+if (is_android) {
+  android_library("internal_java") {
+    java_files = [ "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [ ":*" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java",
+    ]
+    jni_package = "components/download/internal/common"
   }
 }
 

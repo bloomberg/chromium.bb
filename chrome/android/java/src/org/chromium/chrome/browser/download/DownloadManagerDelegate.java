@@ -18,7 +18,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.UrlConstants;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -101,14 +100,7 @@ public class DownloadManagerDelegate {
                         String.class, long.class, boolean.class, Uri.class, Uri.class};
                 Method method = c.getMethod("addCompletedDownload", args);
                 // OriginalUri has to be null or non-empty http(s) scheme.
-                Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
-                if (originalUri != null) {
-                    String scheme = originalUri.normalizeScheme().getScheme();
-                    if (scheme == null || (!scheme.equals(UrlConstants.HTTPS_SCHEME)
-                            && !scheme.equals(UrlConstants.HTTP_SCHEME))) {
-                        originalUri = null;
-                    }
-                }
+                Uri originalUri = DownloadUtils.parseOriginalUrl(originalUrl);
                 Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
                 downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
                         path, length, useSystemNotification, originalUri, refererUri);
