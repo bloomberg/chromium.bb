@@ -883,11 +883,8 @@ LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
   TextControlElement::AttachLayoutTree(context);
-  if (GetLayoutObject()) {
+  if (GetLayoutObject())
     input_type_->OnAttachWithLayoutObject();
-  }
-
-  input_type_view_->StartResourceLoading();
   input_type_->CountUsage();
 }
 
