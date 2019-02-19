@@ -261,6 +261,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
+  wm::MakeGestureDraggableInImmersiveMode(frame_window);
 }
 
 NonClientFrameViewAsh::~NonClientFrameViewAsh() {

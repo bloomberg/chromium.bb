@@ -44,26 +44,13 @@ aura::Window* GetTargetForClientAreaGesture(ui::GestureEvent* event,
   if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN)
     return nullptr;
 
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
-    return nullptr;
-  }
-
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
   if (!widget)
     return nullptr;
 
   aura::Window* toplevel = widget->GetNativeWindow();
-  wm::WindowState* window_state = wm::GetWindowState(toplevel);
-  if (!window_state ||
-      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
-       !window_state->IsSnapped())) {
-    return nullptr;
-  }
-
-  if (toplevel->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(AppType::BROWSER)) {
+  if (!toplevel->GetProperty(
+          aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
     return nullptr;
   }
 

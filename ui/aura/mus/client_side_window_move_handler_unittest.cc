@@ -34,8 +34,8 @@ class WindowMoveTestDelegate : public test::TestWindowDelegate {
   // and the flag to enable drags from the top of the screen/window is enabled.
   void Fullscreen() {
     fullscreen_ = true;
-    window_->SetProperty(aura::client::kGestureDragFromClientAreaTopMovesWindow,
-                         true);
+    window_->GetRootWindow()->SetProperty(
+        aura::client::kGestureDragFromClientAreaTopMovesWindow, true);
   }
 
   void set_window(Window* window) { window_ = window; }

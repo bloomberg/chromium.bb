@@ -246,6 +246,7 @@ NonClientFrameController::NonClientFrameController(
   // MusClient.
   views::Widget::InitParams params(
       static_cast<views::Widget::InitParams::Type>(window_type));
+  DCHECK_EQ(ws::mojom::WindowType::WINDOW, window_type);
   DCHECK((parent && !context) || (!parent && context));
   params.parent = parent;
   params.context = context;
@@ -282,6 +283,8 @@ NonClientFrameController::NonClientFrameController(
   ui::Layer* layer = widget_->GetNativeWindow()->layer();
   layer->SetColor(SK_ColorTRANSPARENT);
   layer->SetFillsBoundsOpaquely(true);
+
+  wm::MakeGestureDraggableInImmersiveMode(window_);
 }
 
 // static

@@ -63,8 +63,7 @@ int TabletModeWindowManager::GetNumberOfManagedWindows() {
 void TabletModeWindowManager::AddWindow(aura::Window* window) {
   // Only add the window if it is a direct dependent of a container window
   // and not yet tracked.
-  if (!ShouldHandleWindow(window) ||
-      base::ContainsKey(window_state_map_, window) ||
+  if (base::ContainsKey(window_state_map_, window) ||
       !IsContainerWindow(window->parent())) {
     return;
   }
