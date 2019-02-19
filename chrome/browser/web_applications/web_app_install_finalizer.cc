@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -57,7 +58,9 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
   if (registrar_->GetAppById(app_id)) {
-    std::move(callback).Run(app_id, InstallResultCode::kAlreadyInstalled);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), app_id,
+                                  InstallResultCode::kAlreadyInstalled));
     return;
   }
 

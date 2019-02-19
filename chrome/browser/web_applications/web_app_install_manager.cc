@@ -43,6 +43,7 @@ bool WebAppInstallManager::CanInstallWebApp(
 void WebAppInstallManager::InstallWebApp(
     content::WebContents* contents,
     bool force_shortcut_app,
+    WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback install_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -55,6 +56,7 @@ void WebAppInstallManager::InstallWebApp(
   Observe(contents);
   dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
+  install_source_ = install_source;
 
   data_retriever_->GetWebApplicationInfo(
       web_contents(),
@@ -79,6 +81,10 @@ void WebAppInstallManager::SetInstallFinalizerForTesting(
 void WebAppInstallManager::CallInstallCallback(const AppId& app_id,
                                                InstallResultCode code) {
   Observe(nullptr);
+  dialog_callback_.Reset();
+
+  DCHECK(install_source_ != kNoInstallSource);
+  install_source_ = kNoInstallSource;
 
   DCHECK(install_callback_);
   std::move(install_callback_).Run(app_id, code);
@@ -168,12 +174,14 @@ void WebAppInstallManager::OnIconsRetrieved(
                                        web_app_info.get());
 
   std::move(dialog_callback_)
-      .Run(web_contents(), std::move(web_app_info), for_installable_site,
-           base::BindOnce(&WebAppInstallManager::OnDialogCompleted,
-                          weak_ptr_factory_.GetWeakPtr()));
+      .Run(
+          web_contents(), std::move(web_app_info), for_installable_site,
+          base::BindOnce(&WebAppInstallManager::OnDialogCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), for_installable_site));
 }
 
 void WebAppInstallManager::OnDialogCompleted(
+    ForInstallableSite for_installable_site,
     bool user_accepted,
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   // If interrupted, install_callback_ is already invoked or may invoke later.
@@ -186,11 +194,23 @@ void WebAppInstallManager::OnDialogCompleted(
   install_finalizer_->FinalizeInstall(
       std::move(web_app_info),
       base::BindOnce(&WebAppInstallManager::OnInstallFinalized,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), for_installable_site));
+
+  // Check that the finalizer hasn't called OnInstallFinalized synchronously:
+  DCHECK(install_callback_);
 }
 
-void WebAppInstallManager::OnInstallFinalized(const AppId& app_id,
-                                              InstallResultCode code) {
+void WebAppInstallManager::OnInstallFinalized(
+    ForInstallableSite for_installable_site,
+    const AppId& app_id,
+    InstallResultCode code) {
+  DCHECK(install_source_ != kNoInstallSource);
+
+  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
+      for_installable_site == web_app::ForInstallableSite::kYes) {
+    InstallableMetrics::TrackInstallEvent(install_source_);
+  }
+
   CallInstallCallback(app_id, code);
 }
 

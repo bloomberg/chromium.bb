@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+enum class WebappInstallSource;
 struct WebApplicationInfo;
 
 namespace content {
@@ -48,6 +49,7 @@ class InstallManager {
   // even if installation is available.
   virtual void InstallWebApp(content::WebContents* web_contents,
                              bool force_shortcut_app,
+                             WebappInstallSource install_source,
                              WebAppInstallDialogCallback dialog_callback,
                              OnceInstallCallback callback) = 0;
 

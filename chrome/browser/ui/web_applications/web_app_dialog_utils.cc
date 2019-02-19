@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
@@ -88,6 +89,7 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 
   provider->install_manager().InstallWebApp(
       web_contents, force_shortcut_app,
+      InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU),
       base::BindOnce(WebAppInstallDialogCallback),
       base::BindOnce(OnWebAppInstalled));
 }

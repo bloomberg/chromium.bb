@@ -27,11 +27,14 @@ bool BookmarkAppInstallManager::CanInstallWebApp(
 void BookmarkAppInstallManager::InstallWebApp(
     content::WebContents* web_contents,
     bool force_shortcut_app,
+    WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
   // Ignore dialog_callback for legacy installations.
   // BookmarkAppHelper directly uses chrome::ShowPWAInstallDialog from UI
-  // (which is a layering violation). TODO(loyso): Unify it. crbug.com/915043.
+  // (which is a layering violation).
+  // Ignore install_source: extensions::TabHelper specifies it.
+  // TODO(loyso): Unify it. crbug.com/915043.
   extensions::TabHelper::FromWebContents(web_contents)
       ->CreateHostedAppFromWebContents(
           force_shortcut_app,
