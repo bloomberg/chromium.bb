@@ -542,10 +542,9 @@ bool HttpUtil::IsParmName(std::string::const_iterator begin,
 }
 
 namespace {
+
 bool IsQuote(char c) {
-  // Single quote mark isn't actually part of quoted-text production,
-  // but apparently some servers rely on this.
-  return c == '"' || c == '\'';
+  return c == '"';
 }
 
 bool UnquoteImpl(std::string::const_iterator begin,
@@ -560,15 +559,9 @@ bool UnquoteImpl(std::string::const_iterator begin,
   if (!IsQuote(*begin))
     return false;
 
-  // Anything other than double quotes in strict mode.
-  if (strict_quotes && *begin != '"')
-    return false;
-
   // No terminal quote mark.
   if (end - begin < 2 || *begin != *(end - 1))
     return false;
-
-  char quote = *begin;
 
   // Strip quotemarks
   ++begin;
@@ -583,7 +576,7 @@ bool UnquoteImpl(std::string::const_iterator begin,
       prev_escape = true;
       continue;
     }
-    if (strict_quotes && !prev_escape && c == quote)
+    if (strict_quotes && !prev_escape && IsQuote(c))
       return false;
     prev_escape = false;
     unescaped.push_back(c);
@@ -596,6 +589,7 @@ bool UnquoteImpl(std::string::const_iterator begin,
   *out = std::move(unescaped);
   return true;
 }
+
 }  // anonymous namespace
 
 std::string HttpUtil::Unquote(std::string::const_iterator begin,
@@ -1025,7 +1019,7 @@ HttpUtil::ValuesIterator::ValuesIterator(
     bool ignore_empty_values)
     : values_(values_begin, values_end, std::string(1, delimiter)),
       ignore_empty_values_(ignore_empty_values) {
-  values_.set_quote_chars("\'\"");
+  values_.set_quote_chars("\"");
   // Could set this unconditionally, since code below has to check for empty
   // values after trimming, anyways, but may provide a minor performance
   // improvement.
@@ -1063,10 +1057,7 @@ HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
       value_end_(end),
       value_is_quoted_(false),
       values_optional_(optional_values == Values::NOT_REQUIRED),
-      strict_quotes_(strict_quotes == Quotes::STRICT_QUOTES) {
-  if (strict_quotes_)
-    props_.set_quote_chars("\"");
-}
+      strict_quotes_(strict_quotes == Quotes::STRICT_QUOTES) {}
 
 HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
     std::string::const_iterator begin,
@@ -1156,15 +1147,6 @@ bool HttpUtil::NameValuePairsIterator::GetNext() {
   }
 
   return true;
-}
-
-bool HttpUtil::NameValuePairsIterator::IsQuote(char c) const {
-  if (strict_quotes_)
-    return c == '"';
-
-  // The call to the file-scoped IsQuote must be qualified to avoid re-entrantly
-  // calling NameValuePairsIterator::IsQuote again.
-  return net::IsQuote(c);
 }
 
 bool HttpUtil::ParseAcceptEncoding(const std::string& accept_encoding,

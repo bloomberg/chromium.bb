@@ -274,10 +274,8 @@ TEST(HttpContentDispositionTest, tc2231) {
       {"attachment; filename=foo bar.html", HttpContentDisposition::ATTACHMENT,
        L"foo bar.html"},
       // http://greenbytes.de/tech/tc2231/#attwithfntokensq
-      {
-          "attachment; filename='foo.bar'", HttpContentDisposition::ATTACHMENT,
-          L"foo.bar"  // Should be L"'foo.bar'"
-      },
+      {"attachment; filename='foo.bar'", HttpContentDisposition::ATTACHMENT,
+       L"'foo.bar'"},
 #ifdef ICU_SHOULD_FAIL_CONVERSION_ON_INVALID_CHARACTER
       // http://greenbytes.de/tech/tc2231/#attwithisofnplain
       {
@@ -446,6 +444,10 @@ TEST(HttpContentDispositionTest, ParseResult) {
            HttpContentDisposition::HAS_FILENAME},
       {"attachment; filename=x", HttpContentDisposition::HAS_DISPOSITION_TYPE |
                                      HttpContentDisposition::HAS_FILENAME},
+      {"attachment; filename='x'",
+       HttpContentDisposition::HAS_DISPOSITION_TYPE |
+           HttpContentDisposition::HAS_FILENAME |
+           HttpContentDisposition::HAS_SINGLE_QUOTED_FILENAME},
       {"attachment; filename=x; name=y",
        HttpContentDisposition::HAS_DISPOSITION_TYPE |
            HttpContentDisposition::HAS_FILENAME},
