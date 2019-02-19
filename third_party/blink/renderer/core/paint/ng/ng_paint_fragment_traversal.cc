@@ -20,18 +20,14 @@ namespace {
 
 template <typename Filter>
 void CollectPaintFragments(const NGPaintFragment& container,
-                           NGPhysicalOffset offset_to_container_box,
                            Filter& filter,
-                           Vector<NGPaintFragmentWithContainerOffset>* result) {
+                           Vector<NGPaintFragment*>* result) {
   for (NGPaintFragment* child : container.Children()) {
-    NGPaintFragmentWithContainerOffset fragment_with_offset{
-        child, child->Offset() + offset_to_container_box};
     if (filter.IsCollectible(child)) {
-      result->push_back(fragment_with_offset);
+      result->push_back(child);
     }
     if (filter.IsTraverse(child)) {
-      CollectPaintFragments(*child, fragment_with_offset.container_offset,
-                            filter, result);
+      CollectPaintFragments(*child, filter, result);
     }
   }
 }
@@ -235,12 +231,11 @@ NGPaintFragmentTraversal::InclusiveAncestorsOf(const NGPaintFragment& start) {
   return AncestorRange(start);
 }
 
-Vector<NGPaintFragmentWithContainerOffset>
-NGPaintFragmentTraversal::InlineDescendantsOf(
+Vector<NGPaintFragment*> NGPaintFragmentTraversal::InlineDescendantsOf(
     const NGPaintFragment& container) {
-  Vector<NGPaintFragmentWithContainerOffset> result;
+  Vector<NGPaintFragment*> result;
   InlineFilter filter;
-  CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
+  CollectPaintFragments(container, filter, &result);
   return result;
 }
 
