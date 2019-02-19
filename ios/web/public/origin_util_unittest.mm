@@ -32,6 +32,19 @@ namespace web {
 
 using OriginUtilTest = PlatformTest;
 
+// Tests calling IsSecureOrigin with secure origins.
+TEST_F(OriginUtilTest, IsSecureOriginSecure) {
+  EXPECT_TRUE(IsOriginSecure(GURL("http://localhost")));
+  EXPECT_TRUE(IsOriginSecure(GURL("https://chromium.org")));
+  EXPECT_TRUE(IsOriginSecure(GURL("file://file")));
+}
+
+// Tests calling IsSecureOrigin with insecure origins.
+TEST_F(OriginUtilTest, IsInsecureOriginSecure) {
+  EXPECT_FALSE(IsOriginSecure(GURL("http://chromium.org")));
+  EXPECT_FALSE(IsOriginSecure(GURL("bogus://bogus")));
+}
+
 // Tests calling GURLOriginWithWKSecurityOrigin with nil.
 TEST_F(OriginUtilTest, GURLOriginWithNilWKSecurityOrigin) {
   GURL url(GURLOriginWithWKSecurityOrigin(nil));
