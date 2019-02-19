@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -21,7 +22,6 @@ class SerializedScriptValue;
 class MODULES_EXPORT AudioWorklet final : public Worklet {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(AudioWorklet);
-  WTF_MAKE_NONCOPYABLE(AudioWorklet);
 
  public:
   static AudioWorklet* Create(BaseAudioContext*);
@@ -64,6 +64,8 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   bool worklet_started_ = false;
 
   Member<BaseAudioContext> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioWorklet);
 };
 
 }  // namespace blink

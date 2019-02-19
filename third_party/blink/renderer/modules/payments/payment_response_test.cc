@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -26,7 +28,6 @@ class MockPaymentStateResolver final
     : public GarbageCollectedFinalized<MockPaymentStateResolver>,
       public PaymentStateResolver {
   USING_GARBAGE_COLLECTED_MIXIN(MockPaymentStateResolver);
-  WTF_MAKE_NONCOPYABLE(MockPaymentStateResolver);
 
  public:
   MockPaymentStateResolver() {
@@ -45,6 +46,8 @@ class MockPaymentStateResolver final
 
  private:
   ScriptPromise dummy_promise_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPaymentStateResolver);
 };
 
 TEST(PaymentResponseTest, DataCopiedOver) {

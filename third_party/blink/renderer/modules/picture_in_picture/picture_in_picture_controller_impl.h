@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
@@ -32,7 +33,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
       public DocumentShutdownObserver,
       public blink::mojom::blink::PictureInPictureDelegate {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
-  WTF_MAKE_NONCOPYABLE(PictureInPictureControllerImpl);
 
  public:
   explicit PictureInPictureControllerImpl(Document&);
@@ -113,6 +113,8 @@ class MODULES_EXPORT PictureInPictureControllerImpl
 
   // Picture-in-Picture service living in the browser process.
   mojom::blink::PictureInPictureServicePtr picture_in_picture_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerImpl);
 };
 
 }  // namespace blink

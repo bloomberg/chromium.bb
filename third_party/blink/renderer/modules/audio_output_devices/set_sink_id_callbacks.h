@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_SET_SINK_ID_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_SET_SINK_ID_CALLBACKS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -22,7 +22,6 @@ class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
   // the following macro should be moved to WebCallbacks defined in
   // public/platform/WebCallbacks.h.
   USING_FAST_MALLOC(SetSinkIdCallbacks);
-  WTF_MAKE_NONCOPYABLE(SetSinkIdCallbacks);
 
  public:
   SetSinkIdCallbacks(ScriptPromiseResolver*,
@@ -37,6 +36,8 @@ class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
   Persistent<ScriptPromiseResolver> resolver_;
   Persistent<HTMLMediaElement> element_;
   String sink_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetSinkIdCallbacks);
 };
 
 }  // namespace blink

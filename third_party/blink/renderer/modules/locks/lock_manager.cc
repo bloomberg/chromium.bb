@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
 
 #include <algorithm>
+
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -55,7 +56,6 @@ class LockManager::LockRequestImpl final
     : public GarbageCollectedFinalized<LockRequestImpl>,
       public NameClient,
       public mojom::blink::LockRequest {
-  WTF_MAKE_NONCOPYABLE(LockRequestImpl);
   EAGERLY_FINALIZE();
 
  public:
@@ -187,6 +187,8 @@ class LockManager::LockRequestImpl final
   // registered. If the context is destroyed then |manager_| will dispose of
   // |this| which terminates the request on the service side.
   Member<LockManager> manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockRequestImpl);
 };
 
 LockManager::LockManager(ExecutionContext* context)

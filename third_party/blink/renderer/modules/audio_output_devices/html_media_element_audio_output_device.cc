@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -22,8 +23,6 @@ namespace blink {
 namespace {
 
 class SetSinkIdResolver : public ScriptPromiseResolver {
-  WTF_MAKE_NONCOPYABLE(SetSinkIdResolver);
-
  public:
   static SetSinkIdResolver* Create(ScriptState*,
                                    HTMLMediaElement&,
@@ -40,6 +39,8 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   Member<HTMLMediaElement> element_;
   String sink_id_;
   TaskRunnerTimer<SetSinkIdResolver> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetSinkIdResolver);
 };
 
 SetSinkIdResolver* SetSinkIdResolver::Create(ScriptState* script_state,

@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_INSTALLED_APP_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_INSTALLED_APP_CONTROLLER_H_
 
+#include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/installedapp/related_application.mojom-blink.h"
@@ -17,8 +20,6 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-#include <memory>
-
 namespace blink {
 
 class MODULES_EXPORT InstalledAppController final
@@ -26,7 +27,6 @@ class MODULES_EXPORT InstalledAppController final
       public Supplement<LocalFrame>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
-  WTF_MAKE_NONCOPYABLE(InstalledAppController);
 
  public:
   static const char kSupplementName[];
@@ -63,6 +63,8 @@ class MODULES_EXPORT InstalledAppController final
   mojom::blink::InstalledAppProviderPtr provider_;
 
   WebRelatedAppsFetcher* related_apps_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstalledAppController);
 };
 
 }  // namespace blink

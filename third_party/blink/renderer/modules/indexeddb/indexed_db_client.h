@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_CLIENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -47,7 +48,6 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
                         public Supplement<WorkerClients>,
                         public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(IndexedDBClient);
-  WTF_MAKE_NONCOPYABLE(IndexedDBClient);
 
  public:
   static const char kSupplementName[];
@@ -64,6 +64,9 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   bool AllowIndexedDB(ExecutionContext*);
 
   static IndexedDBClient* From(ExecutionContext*);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBClient);
 };
 
 void ProvideIndexedDBClientTo(LocalFrame&, IndexedDBClient*);

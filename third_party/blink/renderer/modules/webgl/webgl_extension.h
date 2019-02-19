@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_EXTENSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_EXTENSION_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
@@ -36,7 +37,6 @@ namespace blink {
 
 class WebGLExtensionScopedContext final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(WebGLExtensionScopedContext);
 
  public:
   explicit WebGLExtensionScopedContext(WebGLExtension*);
@@ -47,11 +47,11 @@ class WebGLExtensionScopedContext final {
 
  private:
   Member<WebGLRenderingContextBase> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGLExtensionScopedContext);
 };
 
 class WebGLExtension : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(WebGLExtension);
-
  public:
   virtual WebGLExtensionName GetName() const = 0;
 
@@ -71,6 +71,8 @@ class WebGLExtension : public ScriptWrappable {
   friend WebGLExtensionScopedContext;
 
   WeakMember<WebGLRenderingContextBase> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGLExtension);
 };
 
 }  // namespace blink

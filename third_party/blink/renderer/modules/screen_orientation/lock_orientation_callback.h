@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_LOCK_ORIENTATION_CALLBACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_LOCK_ORIENTATION_CALLBACK_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -20,7 +20,6 @@ class ScriptPromiseResolver;
 // the callback.
 class LockOrientationCallback final : public WebLockOrientationCallback {
   USING_FAST_MALLOC(LockOrientationCallback);
-  WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 
  public:
   explicit LockOrientationCallback(ScriptPromiseResolver*);
@@ -31,6 +30,8 @@ class LockOrientationCallback final : public WebLockOrientationCallback {
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockOrientationCallback);
 };
 
 }  // namespace blink

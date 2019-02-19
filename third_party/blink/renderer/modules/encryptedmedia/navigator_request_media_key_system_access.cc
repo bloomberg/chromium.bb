@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -111,8 +112,6 @@ static WebVector<WebEncryptedMediaSessionType> ConvertSessionTypes(
 // This class allows capabilities to be checked and a MediaKeySystemAccess
 // object to be created asynchronously.
 class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
-  WTF_MAKE_NONCOPYABLE(MediaKeySystemAccessInitializer);
-
  public:
   MediaKeySystemAccessInitializer(
       ScriptState*,
@@ -150,6 +149,8 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   Member<ScriptPromiseResolver> resolver_;
   const String key_system_;
   WebVector<WebMediaKeySystemConfiguration> supported_configurations_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaKeySystemAccessInitializer);
 };
 
 MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(

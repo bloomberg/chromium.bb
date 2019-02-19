@@ -33,6 +33,7 @@
 
 #include <type_traits>
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -103,8 +104,6 @@ bool RequestUsesDiscreteConstraint(
 }
 
 class FeatureCounter {
-  WTF_MAKE_NONCOPYABLE(FeatureCounter);
-
  public:
   explicit FeatureCounter(ExecutionContext* context)
       : context_(context), is_unconstrained_(true) {}
@@ -117,6 +116,8 @@ class FeatureCounter {
  private:
   Persistent<ExecutionContext> context_;
   bool is_unconstrained_;
+
+  DISALLOW_COPY_AND_ASSIGN(FeatureCounter);
 };
 
 void CountAudioConstraintUses(ExecutionContext* context,

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
@@ -14,15 +15,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class LocalFrame;
 
 class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
-  WTF_MAKE_NONCOPYABLE(GamepadSharedMemoryReader);
-
  public:
   explicit GamepadSharedMemoryReader(LocalFrame& frame);
   ~GamepadSharedMemoryReader() override;
@@ -53,6 +51,8 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
   mojo::Binding<device::mojom::blink::GamepadObserver> binding_;
   device::mojom::blink::GamepadMonitorPtr gamepad_monitor_;
   blink::WebGamepadListener* listener_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };
 
 }  // namespace blink

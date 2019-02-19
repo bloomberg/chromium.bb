@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
@@ -125,7 +126,6 @@ bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
 class FetchLoaderClient final
     : public GarbageCollectedFinalized<FetchLoaderClient>,
       public FetchDataLoader::Client {
-  WTF_MAKE_NONCOPYABLE(FetchLoaderClient);
   USING_GARBAGE_COLLECTED_MIXIN(FetchLoaderClient);
 
  public:
@@ -190,6 +190,8 @@ class FetchLoaderClient final
   bool started_ = false;
   bool pending_complete_ = false;
   bool pending_failure_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FetchLoaderClient);
 };
 
 }  // namespace

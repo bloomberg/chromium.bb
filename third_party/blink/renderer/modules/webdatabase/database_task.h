@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
@@ -45,7 +46,6 @@
 namespace blink {
 
 class DatabaseTask {
-  WTF_MAKE_NONCOPYABLE(DatabaseTask);
   USING_FAST_MALLOC(DatabaseTask);
 
  public:
@@ -69,6 +69,8 @@ class DatabaseTask {
   virtual const char* DebugTaskName() const = 0;
   bool complete_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(DatabaseTask);
 };
 
 class Database::DatabaseOpenTask final : public DatabaseTask {

@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_BRIDGE_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -25,7 +27,6 @@ class BackgroundFetchBridge final
     : public GarbageCollectedFinalized<BackgroundFetchBridge>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchBridge);
-  WTF_MAKE_NONCOPYABLE(BackgroundFetchBridge);
 
  public:
   static const char kSupplementName[];
@@ -119,6 +120,8 @@ class BackgroundFetchBridge final
       mojom::blink::BackgroundFetchRegistrationPtr registration_ptr);
 
   mojom::blink::BackgroundFetchServicePtr background_fetch_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBridge);
 };
 
 }  // namespace blink

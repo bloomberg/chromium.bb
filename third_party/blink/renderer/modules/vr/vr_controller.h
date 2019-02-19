@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_CONTROLLER_H_
 
+#include <memory>
+
+#include "base/macros.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -12,8 +15,6 @@
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -24,7 +25,6 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
                            public device::mojom::blink::VRServiceClient,
                            public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VRController);
-  WTF_MAKE_NONCOPYABLE(VRController);
   USING_PRE_FINALIZER(VRController, Dispose);
 
  public:
@@ -72,6 +72,8 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
   device::mojom::blink::VRServicePtr service_;
   mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(VRController);
 };
 
 }  // namespace blink

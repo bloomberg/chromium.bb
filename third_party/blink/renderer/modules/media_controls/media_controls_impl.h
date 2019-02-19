@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_IMPL_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
@@ -74,7 +75,6 @@ class TextTrack;
 class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
                                                public MediaControls {
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlsImpl);
-  WTF_MAKE_NONCOPYABLE(MediaControlsImpl);
 
  public:
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
@@ -424,6 +424,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   TaskRunnerTimer<MediaControlsImpl> volume_slider_wanted_timer_;
 
   bool is_test_mode_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaControlsImpl);
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());

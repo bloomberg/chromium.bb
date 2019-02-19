@@ -236,7 +236,6 @@ TimeDelta GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
 }  // namespace
 
 class MediaControlsImpl::BatchedControlUpdate {
-  WTF_MAKE_NONCOPYABLE(BatchedControlUpdate);
   STACK_ALLOCATED();
 
  public:
@@ -256,6 +255,8 @@ class MediaControlsImpl::BatchedControlUpdate {
  private:
   Member<MediaControlsImpl> controls_;
   static int batch_depth_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatchedControlUpdate);
 };
 
 // Count of number open batches for controls visibility.

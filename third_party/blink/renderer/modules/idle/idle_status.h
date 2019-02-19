@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IDLE_IDLE_STATUS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IDLE_IDLE_STATUS_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -24,7 +25,6 @@ class IdleStatus final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(IdleStatus);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(IdleStatus, Dispose);
-  WTF_MAKE_NONCOPYABLE(IdleStatus);
 
   using IdleState = mojom::blink::IdleState;
 
@@ -82,6 +82,8 @@ class IdleStatus final : public EventTargetWithInlineData,
   // Holds a pipe which the service uses to notify this object
   // when the idle state has changed.
   mojo::Binding<mojom::blink::IdleMonitor> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(IdleStatus);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_CAN_MAKE_PAYMENT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_CAN_MAKE_PAYMENT_EVENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
@@ -24,7 +25,6 @@ class ScriptState;
 
 class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(CanMakePaymentEvent);
 
  public:
   static CanMakePaymentEvent* Create(const AtomicString& type,
@@ -58,6 +58,8 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
   HeapVector<Member<PaymentDetailsModifier>> modifiers_;
 
   Member<RespondWithObserver> observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(CanMakePaymentEvent);
 };
 
 }  // namespace blink
