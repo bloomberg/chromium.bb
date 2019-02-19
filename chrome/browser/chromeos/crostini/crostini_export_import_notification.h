@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
@@ -20,6 +21,8 @@ class Notification;
 
 namespace crostini {
 
+class CrostiniExportImport;
+
 enum class ExportImportType;
 
 // Notification for Crostini export and import.
@@ -29,6 +32,7 @@ class CrostiniExportImportNotification
   enum class Status { RUNNING, DONE, FAILED };
 
   CrostiniExportImportNotification(Profile* profile,
+                                   CrostiniExportImport* service,
                                    ExportImportType type,
                                    const std::string& notification_id,
                                    const base::FilePath& path);
@@ -49,13 +53,17 @@ class CrostiniExportImportNotification
 
  private:
   Profile* profile_;
+  // These notifications are owned by the export service.
+  CrostiniExportImport* service_;
   ExportImportType type_;
   base::FilePath path_;
-  // These notifications are owned by the export service.
   Status status_ = Status::RUNNING;
-  int message_title_;
-  int message_running_;
+  // Time when the operation started.  Used for estimating time remaining.
+  base::Time started_ = base::Time::Now();
+  int title_running_;
+  int title_done_;
   int message_done_;
+  int title_failed_;
   int message_failed_;
   std::unique_ptr<message_center::Notification> notification_;
   bool closed_ = false;

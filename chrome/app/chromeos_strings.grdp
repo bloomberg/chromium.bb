@@ -3542,33 +3542,42 @@
     No description is available.
   </message>
 
-  <!-- Crostini export and import -->
+  <!-- Crostini export and import notification -->
   <message name="IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING" desc="Message to display in a notification when the operation is starting and we don't yet have an estimate for how long it will take">
     Starting...
   </message>
-  <message name="IDS_CROSTINI_EXPORT_TITLE" desc="Title for exporting (backing up) the crostini container.">
-    Backup
+  <message name="IDS_CROSTINI_EXPORT_IMPORT_NOTIFICATION_DISPLAY_SOURCE" desc="The name of the notification source, which is 'Linux'.  Shown in the notification header">
+    Linux
   </message>
-  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_IN_PROGRESS" desc="Message displayed while export is in progress in the notification for exporting (backing up) the crostini container.">
-    Backup up...
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while export (backup) of the Linux container is in progress.">
+    Backing up Linux apps &amp; files
   </message>
-  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_DONE" desc="Message displayed when done in the notification for exporting (backing up) the crostini container.">
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when export (backup) of the Linux container is complete.">
     Backup complete
   </message>
-  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_FAILED" desc="Message displayed when there is a failure in the notification for exporting (backing up) the crostini container.">
-    Backup failed
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when export (backup) of the Linux container is complete.">
+    Linux apps &amp; files have been successfully backed up
   </message>
-  <message name="IDS_CROSTINI_IMPORT_TITLE" desc="Title for importing (restoring) the crostini container.">
-    Restore
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_FAILED" desc="Title displayed in the notification when export (backup) of the Linux container fails.">
+    Error while backing up Linux
   </message>
-  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_IN_PROGRESS" desc="Message displayed while import is in progress in the notification for importing (restoring) the crostini container.">
-    Restoring...
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED" desc="Message displayed in the notification when export (backup) of the Linux container fails.">
+    Backup couldn't be completed due to an error
   </message>
-  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_DONE" desc="Message displayed when done in the notification for importing (restoring) the crostini container.">
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while import (restore) of the Linux container is in progress.">
+    Restoring Linux apps &amp; files
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when import (restore) of the Linux container is complete.">
     Restore complete
   </message>
-  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_FAILED" desc="Message displayed when there is a failure in the notification for importing (restoring) the crostini container.">
-    Restore failed
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when import (restore) of the Linux container is complete.">
+    Linux apps &amp; files have been successfully replaced
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_FAILED" desc="Title displayed in the notification when import (restore) of the Linux container fails.">
+    Error while restoring Linux
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED" desc="Message displayed in the notification when import (restore) of the Linux container fails.">
+    Restoring couldn't be completed due to an error
   </message>
 
   <!-- Time limit notification -->
