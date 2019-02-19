@@ -18,6 +18,7 @@
 #include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/browser/render_widget_host.h"
@@ -144,7 +145,6 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       float force = 1.f);
 
   void SynthesizeRepeatingScroll(
-      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
@@ -153,7 +153,6 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       std::unique_ptr<SynthesizeScrollGestureCallback> callback);
 
   void OnScrollFinished(
-      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
@@ -167,6 +166,8 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   InputInjector* EnsureInjector(RenderWidgetHostImpl* widget_host);
   RenderWidgetHostImpl* FindTargetWidgetHost(const gfx::PointF& point,
                                              gfx::PointF* transformed);
+
+  RenderWidgetHostViewBase* GetRootView();
 
   RenderFrameHostImpl* host_;
   base::flat_set<std::unique_ptr<InputInjector>, base::UniquePtrComparator>

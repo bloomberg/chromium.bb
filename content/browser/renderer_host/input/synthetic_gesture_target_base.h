@@ -31,33 +31,26 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
-      const ui::LatencyInfo& latency_info);
+      const ui::LatencyInfo& latency_info) = 0;
 
   virtual void DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
-      const ui::LatencyInfo& latency_info);
+      const ui::LatencyInfo& latency_info) = 0;
 
   virtual void DispatchWebGestureEventToPlatform(
       const blink::WebGestureEvent& web_gesture,
-      const ui::LatencyInfo& latency_info);
+      const ui::LatencyInfo& latency_info) = 0;
 
   virtual void DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
-      const ui::LatencyInfo& latency_info);
+      const ui::LatencyInfo& latency_info) = 0;
 
   // SyntheticGestureTarget:
   void DispatchInputEventToPlatform(const blink::WebInputEvent& event) override;
 
-  SyntheticGestureParams::GestureSourceType
-  GetDefaultSyntheticGestureSourceType() const override;
-
   base::TimeDelta PointerAssumedStoppedTime() const override;
 
-  float GetTouchSlopInDips() const override;
-
   float GetSpanSlopInDips() const override;
-
-  float GetMinScalingSpanInDips() const override;
 
   int GetMouseWheelMinimumGranularity() const override;
 

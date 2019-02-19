@@ -30,7 +30,6 @@
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
-#include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -201,9 +200,9 @@ void RenderWidgetHostViewChildFrame::UpdateIntrinsicSizingInfo(
 
 std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewChildFrame::CreateSyntheticGestureTarget() {
-  // TODO(mcnee): This should be NOTREACHED. Sythetic gestures should be sent
-  // to the root view. See https://crbug.com/923497
-  return std::make_unique<SyntheticGestureTargetBase>(host());
+  // Sythetic gestures should be sent to the root view.
+  NOTREACHED();
+  return nullptr;
 }
 
 void RenderWidgetHostViewChildFrame::OnManagerWillDestroy(
