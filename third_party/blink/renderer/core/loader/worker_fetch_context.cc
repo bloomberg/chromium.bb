@@ -34,10 +34,12 @@ WorkerFetchContext::~WorkerFetchContext() = default;
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
-    SubresourceFilter* subresource_filter)
+    SubresourceFilter* subresource_filter,
+    ContentSecurityPolicy& content_security_policy)
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
+      content_security_policy_(&content_security_policy),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
@@ -175,7 +177,7 @@ const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
 
 const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()
     const {
-  return global_scope_->GetContentSecurityPolicy();
+  return content_security_policy_;
 }
 
 void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
@@ -321,6 +323,7 @@ WorkerFetchContext::GetWorkerContentSettingsClient() const {
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
+  visitor->Trace(content_security_policy_);
   BaseFetchContext::Trace(visitor);
 }
 
