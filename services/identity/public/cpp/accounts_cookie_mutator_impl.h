@@ -42,6 +42,8 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
 
   void TriggerCookieJarUpdate() override;
 
+  void LogOutAllAccounts(gaia::GaiaSource source) override;
+
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
 

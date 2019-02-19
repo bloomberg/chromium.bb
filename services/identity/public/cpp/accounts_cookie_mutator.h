@@ -51,6 +51,9 @@ class AccountsCookieMutator {
   // know that the contents of the Gaia cookie might have changed.
   virtual void TriggerCookieJarUpdate() = 0;
 
+  // Remove all accounts from the Gaia cookie.
+  virtual void LogOutAllAccounts(gaia::GaiaSource source) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutator);
 };

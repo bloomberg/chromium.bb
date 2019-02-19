@@ -46,4 +46,8 @@ void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
   gaia_cookie_manager_service_->TriggerListAccounts();
 }
 
+void AccountsCookieMutatorImpl::LogOutAllAccounts(gaia::GaiaSource source) {
+  gaia_cookie_manager_service_->LogOutAllAccounts(source);
+}
+
 }  // namespace identity
