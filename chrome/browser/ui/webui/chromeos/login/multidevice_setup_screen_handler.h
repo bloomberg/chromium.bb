@@ -17,7 +17,7 @@ class MultiDeviceSetupScreen;
 class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
                                       public MultiDeviceSetupScreenView {
  public:
-  MultiDeviceSetupScreenHandler();
+  explicit MultiDeviceSetupScreenHandler(JSCallsContainer* js_calls_container);
   ~MultiDeviceSetupScreenHandler() override;
 
   // BaseScreenHandler:

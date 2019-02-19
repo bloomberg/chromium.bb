@@ -9,8 +9,9 @@
 
 namespace chromeos {
 
-UserBoardScreenHandler::UserBoardScreenHandler()
-    : BaseScreenHandler(kScreenId), weak_factory_(this) {}
+UserBoardScreenHandler::UserBoardScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container), weak_factory_(this) {}
 
 UserBoardScreenHandler::~UserBoardScreenHandler() {
 }

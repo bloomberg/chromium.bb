@@ -15,7 +15,7 @@ namespace chromeos {
 // A class that handles the WebUI hooks in error screen.
 class ErrorScreenHandler : public BaseScreenHandler, public NetworkErrorView {
  public:
-  ErrorScreenHandler();
+  explicit ErrorScreenHandler(JSCallsContainer* js_calls_container);
   ~ErrorScreenHandler() override;
 
  private:

@@ -73,8 +73,9 @@ void RecordUmaScreenAction(RecommendAppsScreenAction action) {
 
 namespace chromeos {
 
-RecommendAppsScreenHandler::RecommendAppsScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+RecommendAppsScreenHandler::RecommendAppsScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

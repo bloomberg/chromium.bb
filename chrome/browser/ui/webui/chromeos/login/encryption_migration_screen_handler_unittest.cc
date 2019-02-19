@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
@@ -29,11 +30,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::WithArgs;
-using ::testing::_;
 
 namespace chromeos {
 namespace {
@@ -66,7 +67,9 @@ class FakeWakeLock : public device::mojom::WakeLock {
 class TestEncryptionMigrationScreenHandler
     : public EncryptionMigrationScreenHandler {
  public:
-  TestEncryptionMigrationScreenHandler() {
+  explicit TestEncryptionMigrationScreenHandler(
+      JSCallsContainer* js_calls_container)
+      : EncryptionMigrationScreenHandler(js_calls_container) {
     SetFreeDiskSpaceFetcherForTesting(base::BindRepeating(
         &TestEncryptionMigrationScreenHandler::FreeDiskSpaceFetcher,
         base::Unretained(this)));
@@ -144,8 +147,11 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     user_context_.SetKey(
         Key(Key::KeyType::KEY_TYPE_SALTED_SHA256, "salt", "secret"));
 
+    JSCallsContainer js_calls_container;
+    js_calls_container.ExecuteDeferredJSCalls();
     encryption_migration_screen_handler_ =
-        std::make_unique<TestEncryptionMigrationScreenHandler>();
+        std::make_unique<TestEncryptionMigrationScreenHandler>(
+            &js_calls_container);
     encryption_migration_screen_handler_->set_test_web_ui(&test_web_ui_);
     encryption_migration_screen_handler_->SetContinueLoginCallback(
         base::BindOnce(&EncryptionMigrationScreenHandlerTest::OnContinueLogin,

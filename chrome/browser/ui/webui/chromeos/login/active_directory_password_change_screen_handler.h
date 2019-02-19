@@ -23,7 +23,8 @@ class Key;
 // A class that handles WebUI hooks in Active Directory password change  screen.
 class ActiveDirectoryPasswordChangeScreenHandler : public BaseScreenHandler {
  public:
-  explicit ActiveDirectoryPasswordChangeScreenHandler(
+  ActiveDirectoryPasswordChangeScreenHandler(
+      JSCallsContainer* js_calls_container,
       CoreOobeView* core_oobe_view);
   ~ActiveDirectoryPasswordChangeScreenHandler() override;
 

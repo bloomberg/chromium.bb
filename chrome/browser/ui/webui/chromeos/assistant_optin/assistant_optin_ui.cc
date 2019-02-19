@@ -53,14 +53,17 @@ void DisablePolymer2(content::URLDataSource* shared_source) {
 }  // namespace
 
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui), weak_factory_(this) {
+    : ui::WebDialogUI(web_ui) {
   // Set up the chrome://assistant-optin source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
 
-  auto assistant_handler = std::make_unique<AssistantOptInFlowScreenHandler>();
+  auto assistant_handler =
+      std::make_unique<AssistantOptInFlowScreenHandler>(&js_calls_container_);
   auto* assistant_handler_ptr = assistant_handler.get();
   web_ui->AddMessageHandler(std::move(assistant_handler));
+  assistant_handler_ptr->set_on_initialized(base::BindOnce(
+      &AssistantOptInUI::Initialize, weak_factory_.GetWeakPtr()));
   assistant_handler_ptr->SetupAssistantConnection();
 
   base::DictionaryValue localized_strings;
@@ -91,6 +94,10 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;
+
+void AssistantOptInUI::Initialize() {
+  js_calls_container_.ExecuteDeferredJSCalls();
+}
 
 // AssistantOptInDialog
 

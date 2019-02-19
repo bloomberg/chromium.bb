@@ -38,8 +38,11 @@ constexpr char kVoiceMatchDone[] = "voice-match-done";
 
 }  // namespace
 
-AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler()
-    : BaseScreenHandler(kScreenId), client_binding_(this), weak_factory_(this) {
+AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container),
+      client_binding_(this),
+      weak_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -501,6 +504,9 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
     const int flow_type) {
   initialized_ = true;
+
+  if (on_initialized_)
+    std::move(on_initialized_).Run();
 
   if (settings_manager_.is_bound() &&
       flow_type == static_cast<int>(ash::mojom::FlowType::CONSENT_FLOW)) {

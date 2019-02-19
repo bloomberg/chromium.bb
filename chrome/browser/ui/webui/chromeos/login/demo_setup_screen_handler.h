@@ -18,7 +18,7 @@ class DemoSetupScreen;
 class DemoSetupScreenHandler : public BaseScreenHandler,
                                public DemoSetupScreenView {
  public:
-  DemoSetupScreenHandler();
+  explicit DemoSetupScreenHandler(JSCallsContainer* js_calls_container);
   ~DemoSetupScreenHandler() override;
 
   // DemoSetupScreenView:

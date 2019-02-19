@@ -221,11 +221,11 @@ LoginScreenContext::LoginScreenContext() = default;
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler(
+    JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen,
     CoreOobeView* core_oobe_view,
-    GaiaScreenHandler* gaia_screen_handler,
-    JSCallsContainer* js_calls_container)
+    GaiaScreenHandler* gaia_screen_handler)
     : BaseWebUIHandler(js_calls_container),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen),

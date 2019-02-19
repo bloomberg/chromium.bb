@@ -28,8 +28,9 @@ constexpr base::TimeDelta kWaitingTimeout = base::TimeDelta::FromMinutes(2);
 
 namespace chromeos {
 
-SupervisionTransitionScreenHandler::SupervisionTransitionScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+SupervisionTransitionScreenHandler::SupervisionTransitionScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

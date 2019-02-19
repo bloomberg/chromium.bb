@@ -13,6 +13,7 @@
 namespace chromeos {
 
 class DiscoverHandler;
+class JSCallsContainer;
 
 class DiscoverModule {
  public:
@@ -24,7 +25,8 @@ class DiscoverModule {
   virtual bool IsCompleted() const = 0;
 
   // Creates and returns WebUI handler for the module.
-  virtual std::unique_ptr<DiscoverHandler> CreateWebUIHandler() = 0;
+  virtual std::unique_ptr<DiscoverHandler> CreateWebUIHandler(
+      JSCallsContainer* js_calls_container) = 0;
 
   // Module is also expected to provide static method:
   // static const char* kModuleName;

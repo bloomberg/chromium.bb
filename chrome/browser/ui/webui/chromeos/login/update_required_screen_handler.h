@@ -18,7 +18,7 @@ namespace chromeos {
 class UpdateRequiredScreenHandler : public UpdateRequiredView,
                                     public BaseScreenHandler {
  public:
-  UpdateRequiredScreenHandler();
+  explicit UpdateRequiredScreenHandler(JSCallsContainer* js_calls_container);
   ~UpdateRequiredScreenHandler() override;
 
  private:

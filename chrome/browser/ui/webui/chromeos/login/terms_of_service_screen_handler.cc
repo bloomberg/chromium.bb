@@ -39,8 +39,10 @@ const char kJsScreenPath[] = "login.TermsOfServiceScreen";
 namespace chromeos {
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
+    JSCallsContainer* js_calls_container,
     CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
+    : BaseScreenHandler(kScreenId, js_calls_container),
+      core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
 }
 

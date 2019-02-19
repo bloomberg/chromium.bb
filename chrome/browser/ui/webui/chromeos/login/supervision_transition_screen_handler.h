@@ -22,7 +22,8 @@ class SupervisionTransitionScreenHandler
     : public BaseScreenHandler,
       public SupervisionTransitionScreenView {
  public:
-  SupervisionTransitionScreenHandler();
+  explicit SupervisionTransitionScreenHandler(
+      JSCallsContainer* js_calls_container);
   ~SupervisionTransitionScreenHandler() override;
 
   // BaseScreenHandler:

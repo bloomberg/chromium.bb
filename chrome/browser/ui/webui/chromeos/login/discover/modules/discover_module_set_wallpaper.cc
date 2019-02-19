@@ -16,7 +16,8 @@ namespace {
 
 class DiscoverModuleSetWallpaperHandler : public DiscoverHandler {
  public:
-  DiscoverModuleSetWallpaperHandler();
+  explicit DiscoverModuleSetWallpaperHandler(
+      JSCallsContainer* js_calls_container);
   ~DiscoverModuleSetWallpaperHandler() override = default;
 
   // BaseWebUIHandler implementation:
@@ -32,8 +33,10 @@ class DiscoverModuleSetWallpaperHandler : public DiscoverHandler {
   DISALLOW_COPY_AND_ASSIGN(DiscoverModuleSetWallpaperHandler);
 };
 
-DiscoverModuleSetWallpaperHandler::DiscoverModuleSetWallpaperHandler()
-    : DiscoverHandler(DiscoverModuleSetWallpaper::kModuleName) {}
+DiscoverModuleSetWallpaperHandler::DiscoverModuleSetWallpaperHandler(
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(DiscoverModuleSetWallpaper::kModuleName,
+                      js_calls_container) {}
 
 void DiscoverModuleSetWallpaperHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -69,9 +72,10 @@ bool DiscoverModuleSetWallpaper::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler>
-DiscoverModuleSetWallpaper::CreateWebUIHandler() {
-  return std::make_unique<DiscoverModuleSetWallpaperHandler>();
+std::unique_ptr<DiscoverHandler> DiscoverModuleSetWallpaper::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
+  return std::make_unique<DiscoverModuleSetWallpaperHandler>(
+      js_calls_container);
 }
 
 }  // namespace chromeos

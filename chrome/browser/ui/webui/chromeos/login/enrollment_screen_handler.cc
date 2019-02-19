@@ -173,9 +173,10 @@ authpolicy::KerberosEncryptionTypes TranslateEncryptionTypesString(
 // EnrollmentScreenHandler, public ------------------------------
 
 EnrollmentScreenHandler::EnrollmentScreenHandler(
+    JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : BaseScreenHandler(kScreenId),
+    : BaseScreenHandler(kScreenId, js_calls_container),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),

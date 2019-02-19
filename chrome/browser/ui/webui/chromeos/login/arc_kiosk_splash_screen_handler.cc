@@ -23,8 +23,9 @@ constexpr char kJsScreenPath[] = "login.ArcKioskSplashScreen";
 
 namespace chromeos {
 
-ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 

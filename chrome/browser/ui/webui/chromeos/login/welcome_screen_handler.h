@@ -23,7 +23,8 @@ class CoreOobeView;
 // the welcome screen (part of the page) of the OOBE.
 class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
  public:
-  explicit WelcomeScreenHandler(CoreOobeView* core_oobe_view);
+  WelcomeScreenHandler(JSCallsContainer* js_calls_container,
+                       CoreOobeView* core_oobe_view);
   ~WelcomeScreenHandler() override;
 
  private:

@@ -44,8 +44,10 @@ namespace chromeos {
 
 // WelcomeScreenHandler, public: -----------------------------------------------
 
-WelcomeScreenHandler::WelcomeScreenHandler(CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
+WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
+                                           CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId, js_calls_container),
+      core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
   DCHECK(core_oobe_view_);
 }

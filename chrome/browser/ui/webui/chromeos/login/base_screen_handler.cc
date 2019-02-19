@@ -6,8 +6,9 @@
 
 namespace chromeos {
 
-BaseScreenHandler::BaseScreenHandler(OobeScreen oobe_screen)
-    : oobe_screen_(oobe_screen) {}
+BaseScreenHandler::BaseScreenHandler(OobeScreen oobe_screen,
+                                     JSCallsContainer* js_calls_container)
+    : BaseWebUIHandler(js_calls_container), oobe_screen_(oobe_screen) {}
 
 BaseScreenHandler::~BaseScreenHandler() {}
 

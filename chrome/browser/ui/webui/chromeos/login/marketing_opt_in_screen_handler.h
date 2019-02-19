@@ -17,7 +17,7 @@ class MarketingOptInScreen;
 class MarketingOptInScreenHandler : public BaseScreenHandler,
                                     public MarketingOptInScreenView {
  public:
-  MarketingOptInScreenHandler();
+  explicit MarketingOptInScreenHandler(JSCallsContainer* js_calls_container);
   ~MarketingOptInScreenHandler() override;
 
   // BaseScreenHandler:

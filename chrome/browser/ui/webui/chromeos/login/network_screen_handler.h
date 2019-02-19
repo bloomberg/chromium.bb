@@ -19,7 +19,8 @@ class CoreOobeView;
 class NetworkScreenHandler : public NetworkScreenView,
                              public BaseScreenHandler {
  public:
-  explicit NetworkScreenHandler(CoreOobeView* core_oobe_view);
+  NetworkScreenHandler(JSCallsContainer* js_calls_container,
+                       CoreOobeView* core_oobe_view);
   ~NetworkScreenHandler() override;
 
  private:

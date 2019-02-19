@@ -21,7 +21,7 @@ namespace chromeos {
 // page allowing user to select an avatar.
 class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
  public:
-  UserImageScreenHandler();
+  explicit UserImageScreenHandler(JSCallsContainer* js_calls_container);
   ~UserImageScreenHandler() override;
 
  private:

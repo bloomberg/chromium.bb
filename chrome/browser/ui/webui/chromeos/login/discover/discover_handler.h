@@ -15,7 +15,8 @@ namespace chromeos {
 // Base class for Discover modules WebUI message handler.
 class DiscoverHandler : public BaseWebUIHandler {
  public:
-  explicit DiscoverHandler(const std::string& module_name);
+  DiscoverHandler(const std::string& module_name,
+                  JSCallsContainer* js_calls_container);
   ~DiscoverHandler() override = default;
 
  private:

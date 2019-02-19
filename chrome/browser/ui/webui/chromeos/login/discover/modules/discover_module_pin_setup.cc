@@ -23,11 +23,11 @@ namespace {
 
 class DiscoverModulePinSetupHandler : public DiscoverHandler {
  public:
-  explicit DiscoverModulePinSetupHandler(
-      base::WeakPtr<DiscoverModulePinSetup> module);
+  DiscoverModulePinSetupHandler(base::WeakPtr<DiscoverModulePinSetup> module,
+                                JSCallsContainer* js_calls_container);
   ~DiscoverModulePinSetupHandler() override = default;
 
-  // BaseWebUIHandler
+  // BaseWebUIHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
@@ -48,8 +48,9 @@ class DiscoverModulePinSetupHandler : public DiscoverHandler {
 };
 
 DiscoverModulePinSetupHandler::DiscoverModulePinSetupHandler(
-    base::WeakPtr<DiscoverModulePinSetup> module)
-    : DiscoverHandler(DiscoverModulePinSetup::kModuleName),
+    base::WeakPtr<DiscoverModulePinSetup> module,
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(DiscoverModulePinSetup::kModuleName, js_calls_container),
       module_(module),
       weak_factory_(this) {}
 
@@ -147,9 +148,10 @@ bool DiscoverModulePinSetup::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler> DiscoverModulePinSetup::CreateWebUIHandler() {
+std::unique_ptr<DiscoverHandler> DiscoverModulePinSetup::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
   return std::make_unique<DiscoverModulePinSetupHandler>(
-      weak_ptr_factory_.GetWeakPtr());
+      weak_ptr_factory_.GetWeakPtr(), js_calls_container);
 }
 
 std::string DiscoverModulePinSetup::ConsumePrimaryUserPassword() {

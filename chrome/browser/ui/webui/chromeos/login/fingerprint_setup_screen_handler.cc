@@ -49,8 +49,9 @@ std::string GetDefaultFingerprintName(int enrolled_finger_count) {
 
 namespace chromeos {
 
-FingerprintSetupScreenHandler::FingerprintSetupScreenHandler()
-    : BaseScreenHandler(kScreenId) {
+FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 
   service_manager::Connector* connector =

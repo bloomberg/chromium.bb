@@ -27,7 +27,11 @@ class AssistantOptInUI : public ui::WebDialogUI {
   ~AssistantOptInUI() override;
 
  private:
-  base::WeakPtrFactory<AssistantOptInUI> weak_factory_;
+  // Called when the webui has been initialized.
+  void Initialize();
+
+  JSCallsContainer js_calls_container_;
+  base::WeakPtrFactory<AssistantOptInUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInUI);
 };

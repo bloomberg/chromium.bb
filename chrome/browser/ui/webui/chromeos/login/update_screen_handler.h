@@ -16,7 +16,7 @@ namespace chromeos {
 
 class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
  public:
-  UpdateScreenHandler();
+  explicit UpdateScreenHandler(JSCallsContainer* js_calls_container);
   ~UpdateScreenHandler() override;
 
  private:

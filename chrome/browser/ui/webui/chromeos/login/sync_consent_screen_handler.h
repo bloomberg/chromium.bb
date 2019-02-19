@@ -19,7 +19,7 @@ class SyncConsentScreen;
 class SyncConsentScreenHandler : public BaseScreenHandler,
                                  public SyncConsentScreenView {
  public:
-  SyncConsentScreenHandler();
+  explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
   ~SyncConsentScreenHandler() override;
 
   // BaseScreenHandler:
