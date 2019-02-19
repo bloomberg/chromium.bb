@@ -181,6 +181,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -5747,7 +5748,19 @@ void RenderFrameHostImpl::GetInterface(
 
 // This is a test-only interface, not exposed in production.
 void RenderFrameHostImpl::GetFrameHostTestInterface(
-    blink::mojom::FrameHostTestInterfaceRequest request) {}
+    blink::mojom::FrameHostTestInterfaceRequest request) {
+  class FrameHostTestInterfaceImpl
+      : public blink::mojom::FrameHostTestInterface {
+   public:
+    void Ping(const GURL& url, const std::string& event) override {}
+    void GetName(GetNameCallback callback) override {
+      std::move(callback).Run("RenderFrameHostImpl");
+    }
+  };
+
+  mojo::MakeStrongBinding(std::make_unique<FrameHostTestInterfaceImpl>(),
+                          std::move(request));
+}
 
 std::unique_ptr<NavigationRequest>
 RenderFrameHostImpl::TakeNavigationRequestForSameDocumentCommit(
