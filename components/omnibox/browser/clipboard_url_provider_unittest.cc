@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -129,12 +130,14 @@ TEST_F(ClipboardURLProviderTest, MatchesImage) {
   feature_list.InitAndEnableFeature(imageFeature);
   TemplateURLService template_url_service(/*initializers=*/nullptr,
                                           /*count=*/0);
+  base::TimeDelta clipboard_age = base::TimeDelta::FromSeconds(5);
 
   gfx::Image test_image = gfx::test::CreateImage(/*height=*/10, /*width=*/10);
   scoped_refptr<base::RefCountedMemory> image_bytes =
       provider_->EncodeClipboardImage(test_image);
   ASSERT_TRUE(image_bytes);
   provider_->ConstructImageMatchCallback(CreateAutocompleteInput(true),
-                                         &template_url_service, image_bytes);
+                                         &template_url_service, clipboard_age,
+                                         image_bytes);
   ASSERT_GE(provider_->matches().size(), 1U);
 }

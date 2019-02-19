@@ -34,8 +34,10 @@ class ClipboardURLProvider : public AutocompleteProvider {
 
   // Handle the match created from one of the match creation methods and do
   // extra tracking and match adding.
-  void AddCreatedMatchWithTracking(const AutocompleteInput& input,
-                                   const AutocompleteMatch& match);
+  void AddCreatedMatchWithTracking(
+      const AutocompleteInput& input,
+      const AutocompleteMatch& match,
+      const base::TimeDelta clipboard_contents_age);
 
   // If there is a url copied to the clipboard, use it to create a match.
   base::Optional<AutocompleteMatch> CreateURLMatch(
@@ -59,6 +61,7 @@ class ClipboardURLProvider : public AutocompleteProvider {
   void ConstructImageMatchCallback(
       const AutocompleteInput& input,
       TemplateURLService* url_service,
+      base::TimeDelta clipboard_contents_age,
       scoped_refptr<base::RefCountedMemory> image_bytes);
 
   AutocompleteProviderClient* client_;
