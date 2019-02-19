@@ -83,6 +83,7 @@ class PDFWebContentsHelper
                         int32_t left_height,
                         const gfx::PointF& right,
                         int32_t right_height) override;
+  void SetPluginCanSave(bool can_save) override;
 
   content::WebContentsFrameBindingSet<mojom::PdfService> pdf_service_bindings_;
   std::unique_ptr<PDFWebContentsHelperClient> const client_;

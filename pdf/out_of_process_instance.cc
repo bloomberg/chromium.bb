@@ -1928,6 +1928,7 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
 
 void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
   edit_mode_ = is_edit_mode;
+  pp::PDF::SetPluginCanSave(this, ShouldSaveEdits());
 }
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {

@@ -688,6 +688,7 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
+  bool GuestSaveFrame(content::WebContents* guest_web_contents) override;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

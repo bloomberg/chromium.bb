@@ -240,5 +240,9 @@ void PDFResource::SelectionChanged(const PP_FloatPoint& left,
                                                    right_height));
 }
 
+void PDFResource::SetPluginCanSave(bool can_save) {
+  Post(RENDERER, PpapiHostMsg_PDF_SetPluginCanSave(can_save));
+}
+
 }  // namespace proxy
 }  // namespace ppapi

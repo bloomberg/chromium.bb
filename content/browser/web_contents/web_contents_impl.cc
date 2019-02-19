@@ -3814,6 +3814,21 @@ void WebContentsImpl::SaveFrameWithHeaders(
     const Referrer& referrer,
     const std::string& headers,
     const base::string16& suggested_filename) {
+  // Check and see if the guest can handle this.
+  if (delegate_) {
+    WebContents* guest_web_contents = nullptr;
+    if (browser_plugin_embedder_) {
+      BrowserPluginGuest* guest = browser_plugin_embedder_->GetFullPageGuest();
+      if (guest)
+        guest_web_contents = guest->GetWebContents();
+    } else if (browser_plugin_guest_) {
+      guest_web_contents = this;
+    }
+
+    if (guest_web_contents && delegate_->GuestSaveFrame(guest_web_contents))
+      return;
+  }
+
   if (!GetLastCommittedURL().is_valid())
     return;
   if (delegate_ && delegate_->SaveFrame(url, referrer))

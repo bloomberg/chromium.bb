@@ -233,4 +233,12 @@ void PDF::SelectionChanged(const InstanceHandle& instance,
   }
 }
 
+// static
+void PDF::SetPluginCanSave(const InstanceHandle& instance, bool can_save) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetPluginCanSave(instance.pp_instance(),
+                                               can_save);
+  }
+}
+
 }  // namespace pp

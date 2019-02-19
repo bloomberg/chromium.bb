@@ -2376,6 +2376,11 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,
                      PP_FloatPoint /* right */,
                      int32_t /* right_height */)
 
+// Lets the renderer know that the PDF plugin can handle save commands
+// internally. i.e. It will provide the data to save and trigger the download
+// dialog.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetPluginCanSave, bool /* can_save */)
+
 // VideoCapture ----------------------------------------------------------------
 
 // VideoCapture_Dev, plugin -> host

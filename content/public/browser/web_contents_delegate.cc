@@ -246,6 +246,10 @@ bool WebContentsDelegate::IsNeverVisible(WebContents* web_contents) {
   return false;
 }
 
+bool WebContentsDelegate::GuestSaveFrame(WebContents* guest_web_contents) {
+  return false;
+}
+
 bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
