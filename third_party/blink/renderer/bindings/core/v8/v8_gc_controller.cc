@@ -123,6 +123,8 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
     case v8::kGCTypeScavenge:
       TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC",
                          "usedHeapSizeBefore", UsedHeapSize(isolate));
+      if (ThreadState::Current())
+        ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MinorGC);
       break;
     case v8::kGCTypeMarkSweepCompact:
       if (ThreadState::Current())
