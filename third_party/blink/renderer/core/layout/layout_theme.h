@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -51,6 +52,8 @@ class Theme;
 class ThemePainter;
 
 class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
+  USING_FAST_MALLOC(LayoutTheme);
+
  protected:
   explicit LayoutTheme(Theme*);
 

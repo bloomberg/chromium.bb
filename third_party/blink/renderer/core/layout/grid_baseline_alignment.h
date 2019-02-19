@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -31,6 +32,8 @@ namespace blink {
 // present) and update the max_ascent and max_descent associated to
 // this baseline-sharing group.
 class BaselineGroup {
+  DISALLOW_NEW();
+
  public:
   void Update(const LayoutBox&, LayoutUnit ascent, LayoutUnit descent);
   LayoutUnit MaxAscent() const { return max_ascent_; }
@@ -83,6 +86,8 @@ class BaselineGroup {
 // is compatible with such item. Otherwise, a new baseline-sharing
 // group is created, compatible with the new item.
 class BaselineContext {
+  USING_FAST_MALLOC(BaselineContext);
+
  public:
   BaselineContext(const LayoutBox& child,
                   ItemPosition preference,
@@ -134,6 +139,8 @@ static inline bool IsBaselinePosition(ItemPosition position) {
 // the baseline offset for a particular item, based on the max-ascent
 // for its associated baseline-sharing group.
 class GridBaselineAlignment {
+  DISALLOW_NEW();
+
  public:
   // Collects the items participating in baseline alignment and
   // updates the corresponding baseline-sharing group of the Baseline
