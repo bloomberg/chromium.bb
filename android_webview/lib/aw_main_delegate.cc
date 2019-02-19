@@ -261,7 +261,7 @@ void AwMainDelegate::PreSandboxStartup() {
     }
   }
 
-  crash_reporter::EnableCrashReporter(process_type);
+  EnableCrashReporter(process_type);
 
   base::android::BuildInfo* android_build_info =
       base::android::BuildInfo::GetInstance();

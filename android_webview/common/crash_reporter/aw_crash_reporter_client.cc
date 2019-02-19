@@ -25,11 +25,10 @@
 #include "components/version_info/version_info_values.h"
 
 namespace android_webview {
-namespace crash_reporter {
 
 namespace {
 
-class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
+class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   AwCrashReporterClient() {}
 
@@ -162,13 +161,8 @@ void EnableCrashReporter(const std::string& process_type) {
 #endif
 
   AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
-  ::crash_reporter::SetCrashReporterClient(client);
-  ::crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+  crash_reporter::SetCrashReporterClient(client);
+  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 }
 
-bool GetCrashDumpLocation(base::FilePath* crash_dir) {
-  return g_crash_reporter_client.Get().GetCrashDumpLocation(crash_dir);
-}
-
-}  // namespace crash_reporter
 }  // namespace android_webview
