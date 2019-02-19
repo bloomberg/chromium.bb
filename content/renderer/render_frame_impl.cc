@@ -5922,38 +5922,15 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   DCHECK(!(was_within_same_document && interface_params));
   UpdateStateForCommit(item, commit_type, transition);
 
-  auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
-
-  // If this is a regular commit, not an error page, the URL that was just
-  // committed must match the process lock, if there is one. Verify it here, to
-  // get a stack trace for a bug where this seems to be occurring.
-  // TODO(nasko): Remove this check after we've gathered enough information to
-  // debug issues with browser-side security checks. https://crbug.com/931895.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  const GURL* lock_url =
-      render_thread ? render_thread->site_lock_url() : nullptr;
-  if (!params->url_is_unreachable && lock_url &&
-      lock_url->scheme() == params->url.scheme() &&
-      lock_url->SchemeIsHTTPOrHTTPS() && !params->url.HostIsIPAddress() &&
-      !lock_url->HostIsIPAddress()) {
-    std::string lock_domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            lock_url->host(),
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    std::string commit_domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            params->url.host(),
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    CHECK_EQ(lock_domain, commit_domain);
-  }
-
   // This invocation must precede any calls to allowScripts(), allowImages(), or
   // allowPlugins() for the new page. This ensures that when these functions
   // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
   // process has already been informed of the provisional load committing.
   if (was_within_same_document) {
-    GetFrameHost()->DidCommitSameDocumentNavigation(std::move(params));
+    GetFrameHost()->DidCommitSameDocumentNavigation(
+        MakeDidCommitProvisionalLoadParams(commit_type, transition));
   } else {
+    auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
     NavigationState* navigation_state =
         NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
     if (navigation_state->uses_per_navigation_mojo_interface()) {

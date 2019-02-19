@@ -508,10 +508,6 @@ class CONTENT_EXPORT RenderThreadImpl
     video_frame_compositor_task_runner_ = task_runner;
   }
 
-  // TODO(nasko): Remove after we've gathered enough information to debug issues
-  // with browser-side security checks. https://crbug.com/931895.
-  const GURL* site_lock_url() { return site_lock_url_.get(); }
-
  private:
   void OnProcessFinalRelease() override;
   // IPC::Listener
@@ -567,7 +563,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetProcessBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   void ProcessPurgeAndSuspend() override;
-  void SetIsLockedToSite(const GURL& lock_url) override;
+  void SetIsLockedToSite() override;
   void EnableV8LowMemoryMode() override;
 
   void OnMemoryPressure(
@@ -768,11 +764,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // this member.
   mojo::Binding<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_binding_;
-
-  // TODO(nasko): Temporary diagnostic member, holding the site URL this process
-  // is locked to. Remove after we've gathered enough information to
-  // debug issues with browser-side security checks. https://crbug.com/931895.
-  std::unique_ptr<GURL> site_lock_url_;
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_;
 
