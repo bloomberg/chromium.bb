@@ -16,13 +16,12 @@ std::string S2LangQuadTreeNode::Get(const S2CellId& cell,
                                     int* level_ptr) const {
   const S2LangQuadTreeNode* node = this;
   for (int current_level = 0; current_level <= cell.level(); current_level++) {
-    if (node == nullptr || !node->language_.empty()) {
+    if (node->IsLeaf()) {
       *level_ptr = current_level;
-      return node == nullptr ? "" : node->language_;
+      return node->language_;
     }
-
     if (current_level < cell.level())
-      node = node->GetChild(cell.child_position(current_level + 1));
+      node = &(node->GetChild(cell.child_position(current_level + 1)));
   }
   *level_ptr = -1;
   return "";
@@ -52,28 +51,24 @@ size_t S2LangQuadTreeNode::DeserializeSubtree(
     return bits_per_lang_index + 1;
   } else {
     size_t subtree_size = 1;
+    root->children_.reserve(4);
     for (int child_index = 0; child_index < 4; child_index++) {
       S2LangQuadTreeNode child;
       subtree_size +=
           DeserializeSubtree(serialized_langtree, bits_per_lang_index,
                              bit_offset + subtree_size, &child);
-      if (!child.IsNullLeaf())
-        root->children_[child_index] = child;
+      root->children_.push_back(child);
     }
     return subtree_size;
   }
 }
 
-const S2LangQuadTreeNode* S2LangQuadTreeNode::GetChild(
+const S2LangQuadTreeNode& S2LangQuadTreeNode::GetChild(
     const int child_index) const {
-  auto it = children_.find(child_index);
-  return it == children_.end() ? nullptr : &it->second;
+  DCHECK(!children_.empty());
+  return children_[child_index];
 }
 
 bool S2LangQuadTreeNode::IsLeaf() const {
   return children_.empty();
-}
-
-bool S2LangQuadTreeNode::IsNullLeaf() const {
-  return IsLeaf() && language_.empty();
 }
