@@ -629,7 +629,8 @@ void LoginHandler::LoginDialogCallback(
   auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                                      request_url, base::RetainedRef(auth_info),
                                      base::RetainedRef(handler), is_main_frame);
-  if (api->MaybeProxyAuthRequest(auth_info, std::move(response_headers),
+  if (api->MaybeProxyAuthRequest(parent_contents->GetBrowserContext(),
+                                 auth_info, std::move(response_headers),
                                  request_id, is_main_frame,
                                  std::move(continuation))) {
     return;

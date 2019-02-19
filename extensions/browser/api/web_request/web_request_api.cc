@@ -704,6 +704,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
 }
 
 bool WebRequestAPI::MaybeProxyAuthRequest(
+    content::BrowserContext* browser_context,
     net::AuthChallengeInfo* auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const content::GlobalRequestID& request_id,
@@ -715,10 +716,18 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
   content::GlobalRequestID proxied_request_id = request_id;
   if (is_main_frame)
     proxied_request_id.child_id = -1;
+
+  // NOTE: This request may be proxied on behalf of an incognito frame, but
+  // |this| will always be bound to a regular profile (see
+  // |BrowserContextKeyedAPI::kServiceRedirectedInIncognito|).
+  DCHECK(browser_context == browser_context_ ||
+         (browser_context->IsOffTheRecord() &&
+          ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
+              browser_context_));
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeProxyAuthRequestOnIO,
-                     browser_context_->GetResourceContext(),
+                     browser_context->GetResourceContext(),
                      base::RetainedRef(auth_info), std::move(response_headers),
                      proxied_request_id, std::move(callback)));
   return true;

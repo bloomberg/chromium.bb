@@ -518,6 +518,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestAuthRequiredIncognito) {
+  CancelLoginDialog login_dialog_helper;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "webrequest", "test_auth_required.html", nullptr,
+      kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess))
+      << message_;
+}
+
 // This test times out regularly on win_rel trybots. See http://crbug.com/122178
 // Also on Linux/ChromiumOS debug, ASAN and MSAN builds.
 // https://crbug.com/670415
