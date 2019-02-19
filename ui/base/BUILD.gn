@@ -239,8 +239,6 @@ jumbo_component("base") {
     "theme_provider.h",
     "ui_base_export.h",
     "ui_base_exports.cc",
-    "ui_base_features.cc",
-    "ui_base_features.h",
     "ui_base_paths.cc",
     "ui_base_paths.h",
     "ui_base_switches.cc",
@@ -375,6 +373,7 @@ jumbo_component("base") {
 
   public_deps = [
     ":buildflags",
+    ":features",
     ":ui_data_pack",
     "//base",
     "//skia",
@@ -591,6 +590,22 @@ jumbo_component("base") {
   if (is_android || is_ios) {
     sources -= [ "device_form_factor_desktop.cc" ]
   }
+}
+
+component("features") {
+  output_name = "ui_base_features"
+
+  defines = [ "IS_UI_BASE_FEATURES_IMPL" ]
+
+  sources = [
+    "ui_base_features.cc",
+    "ui_base_features.h",
+  ]
+
+  deps = [
+    ":buildflags",
+    "//base",
+  ]
 }
 
 jumbo_static_library("test_support") {
