@@ -14,6 +14,50 @@
 
 class S2CellId;
 
+// A serialized language tree. The bits given by GetBitAt represent a
+// depth-first traversal of the tree with (1) internal nodes represented by a
+// single bit 0, and (2) leaf nodes represented by a bit 1 followed by the
+// binary form of the index of the language at that leaf into the tree's
+// languages, accessible through GetLanguageAt. We assume those indexes have the
+// smallest number of bits necessary. Indices are 1-based; index 0 represents
+// absent language.
+class SerializedLanguageTree {
+ public:
+  virtual ~SerializedLanguageTree(){};
+
+  virtual std::string GetLanguageAt(const size_t pos) const = 0;
+  virtual size_t GetNumLanguages() const = 0;
+  virtual bool GetBitAt(const size_t pos) const = 0;
+
+  int GetBitsPerLanguageIndex() const {
+    return base::bits::Log2Ceiling(GetNumLanguages() + 1);
+  }
+};
+
+// An implementation of SerializedLanguageTree that backs the tree's structure
+// by a bitset.
+template <size_t numbits>
+class BitsetSerializedLanguageTree : public SerializedLanguageTree {
+ public:
+  BitsetSerializedLanguageTree(std::vector<std::string> languages,
+                               std::bitset<numbits> bits)
+      : languages_(languages), bits_(bits) {}
+  ~BitsetSerializedLanguageTree() override{};
+
+  // SerializedTree implementation
+  std::string GetLanguageAt(const size_t pos) const override {
+    return languages_[pos];
+  }
+
+  size_t GetNumLanguages() const override { return languages_.size(); }
+
+  bool GetBitAt(const size_t pos) const override { return bits_[pos]; }
+
+ private:
+  std::vector<std::string> languages_;
+  std::bitset<numbits> bits_;
+};
+
 // The node of a S2Cell-based quadtree holding string languages in its leaves.
 class S2LangQuadTreeNode {
  public:
@@ -31,57 +75,19 @@ class S2LangQuadTreeNode {
     return Get(cell, &level);
   }
 
-  // Reconstruct a S2LangQuadTree with structure given by |tree| and with
-  // languages given by |languages|. |tree| represents a depth-first traversal
-  // of the tree with (1) internal nodes represented by a single bit 0, and (2)
-  // leaf nodes represented by a bit 1 followed by the binary form of the index
-  // of the language at that leaf into |languages|. We assume those indexes have
-  // the smallest number of bits necessary. Indices are 1-based; index 0
-  // represents absent language.
-  // The bitset size is templated to allow this method to be re-used for the
-  // small number of different-sized serialized trees we have.
-  template <size_t numbits>
+  // Reconstruct a S2LangQuadTree with structure and languages given by
+  // |serialized_langtree|. The bitset size is templated to allow this method to
+  // be re-used for the small number of different-sized serialized trees we
+  // have.
   static S2LangQuadTreeNode Deserialize(
-      const std::vector<std::string>& languages,
-      const std::bitset<numbits>& tree) {
-    S2LangQuadTreeNode root;
-    DeserializeSubtree(tree, 0, languages,
-                       GetBitsPerLanguageIndex(languages.size()), &root);
-    return root;
-  }
+      const SerializedLanguageTree* serialized_langtree);
 
  private:
-  // Recursively deserialize the subtree at |bit_offset| in |serialized| into
-  // the node |root|. |languages| and |bits_per_lang_index| dictacte
-  // how languages in leaves are serialized.
-  template <size_t numbits>
-  static size_t DeserializeSubtree(const std::bitset<numbits>& serialized,
-                                   size_t bit_offset,
-                                   const std::vector<std::string>& languages,
-                                   const int bits_per_lang_index,
-                                   S2LangQuadTreeNode* root) {
-    if (serialized[bit_offset]) {
-      int index = 0;
-      for (int bit = 1; bit <= bits_per_lang_index; bit++) {
-        index <<= 1;
-        index += serialized[bit_offset + bit];
-      }
-      if (index != 0)
-        root->language_ = languages[index - 1];
-      return bits_per_lang_index + 1;
-    } else {
-      size_t subtree_size = 1;
-      for (int child_index = 0; child_index < 4; child_index++) {
-        S2LangQuadTreeNode child;
-        subtree_size +=
-            DeserializeSubtree(serialized, bit_offset + subtree_size, languages,
-                               bits_per_lang_index, &child);
-        if (!child.IsNullLeaf())
-          root->children_[child_index] = child;
-      }
-      return subtree_size;
-    }
-  }
+  static size_t DeserializeSubtree(
+      const SerializedLanguageTree* serialized_langtree,
+      int bits_per_lang_index,
+      size_t bit_offset,
+      S2LangQuadTreeNode* root);
 
   const S2LangQuadTreeNode* GetChild(const int child_index) const;
 
@@ -90,11 +96,6 @@ class S2LangQuadTreeNode {
 
   // Return true iff the node is a leaf with no language.
   bool IsNullLeaf() const;
-
-  static int GetBitsPerLanguageIndex(const size_t num_languages) {
-    DCHECK(num_languages > 0);
-    return base::bits::Log2Ceiling(num_languages + 1);
-  }
 
   std::map<int, S2LangQuadTreeNode> children_;
   std::string language_;

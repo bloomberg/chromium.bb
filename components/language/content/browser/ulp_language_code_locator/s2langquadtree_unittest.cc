@@ -16,7 +16,9 @@ namespace {
 template <size_t numbits>
 S2LangQuadTreeNode GetTree(const std::vector<std::string>& languages,
                            std::bitset<numbits> tree) {
-  return S2LangQuadTreeNode::Deserialize(languages, tree);
+  const BitsetSerializedLanguageTree<numbits> serialized_langtree(languages,
+                                                                  tree);
+  return S2LangQuadTreeNode::Deserialize(&serialized_langtree);
 }
 
 }  // namespace

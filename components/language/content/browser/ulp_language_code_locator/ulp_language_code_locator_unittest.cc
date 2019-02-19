@@ -18,7 +18,7 @@
 
 namespace language {
 
-std::vector<std::unique_ptr<S2LangQuadTreeNode>> GetTestTrees() {
+std::vector<std::unique_ptr<SerializedLanguageTree>> GetSerializedTrees() {
   const std::vector<std::string> languages_rank0{"fr", "en"};
   // |tree_rank0| is a two level quadtree with the second level being all leaves
   // with language indices 0, 0, 0, 1.
@@ -31,13 +31,15 @@ std::vector<std::unique_ptr<S2LangQuadTreeNode>> GetTestTrees() {
   const std::bitset<13> tree_rank1(
       "1011011010110");  // String is in reverse order.
 
-  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots;
-  roots.reserve(2);
-  roots.push_back(std::make_unique<S2LangQuadTreeNode>(
-      S2LangQuadTreeNode::Deserialize(languages_rank0, tree_rank0)));
-  roots.push_back(std::make_unique<S2LangQuadTreeNode>(
-      S2LangQuadTreeNode::Deserialize(languages_rank1, tree_rank1)));
-  return roots;
+  std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees;
+  serialized_langtrees.reserve(2);
+  serialized_langtrees.push_back(
+      std::make_unique<BitsetSerializedLanguageTree<13>>(languages_rank0,
+                                                         tree_rank0));
+  serialized_langtrees.push_back(
+      std::make_unique<BitsetSerializedLanguageTree<13>>(languages_rank1,
+                                                         tree_rank1));
+  return serialized_langtrees;
 }
 
 void ExpectLatLngHasLanguages(const UlpLanguageCodeLocator& locator,
@@ -50,8 +52,9 @@ void ExpectLatLngHasLanguages(const UlpLanguageCodeLocator& locator,
 }
 
 TEST(UlpLanguageCodeLocatorTest, TreeLeaves) {
-  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
-  const UlpLanguageCodeLocator locator(std::move(roots));
+  std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
+      GetSerializedTrees();
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
   const S2CellId face = S2CellId::FromFace(0);
 
   ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
@@ -61,8 +64,9 @@ TEST(UlpLanguageCodeLocatorTest, TreeLeaves) {
 }
 
 TEST(UlpLanguageCodeLocatorTest, Idempotence) {
-  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
-  const UlpLanguageCodeLocator locator(std::move(roots));
+  std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
+      GetSerializedTrees();
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
   const S2CellId face = S2CellId::FromFace(0);
 
   ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
@@ -73,8 +77,9 @@ TEST(UlpLanguageCodeLocatorTest, Idempotence) {
 }
 
 TEST(UlpLanguageCodeLocatorTest, TreeLeafDescendants) {
-  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
-  const UlpLanguageCodeLocator locator(std::move(roots));
+  std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
+      GetSerializedTrees();
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
   const S2CellId cell = S2CellId::FromFace(0).child(0);
 
   ExpectLatLngHasLanguages(locator, cell, {"fr", "de"});
