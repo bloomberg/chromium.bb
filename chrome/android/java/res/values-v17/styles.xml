@@ -122,7 +122,6 @@
     </style>
 
     <style name="Base.Theme.Chromium.Preferences" parent="Theme.Chromium.WithActionBar">
-        <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
