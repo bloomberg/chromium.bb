@@ -127,7 +127,6 @@ views::View* AccessibilityPanel::GetContentsView() {
 }
 
 bool AccessibilityPanel::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Eat all requests as context menus are disallowed.
   return true;

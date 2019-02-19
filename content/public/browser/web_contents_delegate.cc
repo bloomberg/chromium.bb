@@ -83,8 +83,7 @@ void WebContentsDelegate::CanDownload(
   callback.Run(true);
 }
 
-bool WebContentsDelegate::HandleContextMenu(RenderFrameHost* render_frame_host,
-                                            const ContextMenuParams& params) {
+bool WebContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
   return false;
 }
 

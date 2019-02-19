@@ -38,8 +38,7 @@ class FirstRunView : public views::View,
 
  private:
   // Overriden from content::WebContentsDelegate.
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
-                         const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

@@ -420,7 +420,6 @@ void WebUILoginView::OnKeyboardVisibilityChanged(bool visible) {
 // WebUILoginView private: -----------------------------------------------------
 
 bool WebUILoginView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
 #ifndef NDEBUG
   // Do not show the context menu.
