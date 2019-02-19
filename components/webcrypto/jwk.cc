@@ -135,7 +135,7 @@ Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
 Status VerifyUsages(const JwkReader& jwk,
                     blink::WebCryptoKeyUsageMask expected_usages) {
   // JWK "key_ops" (optional) --> usages parameter
-  base::ListValue* jwk_key_ops_value = nullptr;
+  const base::ListValue* jwk_key_ops_value = nullptr;
   bool has_jwk_key_ops;
   Status status =
       jwk.GetOptionalList("key_ops", &jwk_key_ops_value, &has_jwk_key_ops);
@@ -196,17 +196,17 @@ Status JwkReader::Init(const CryptoData& bytes,
   base::StringPiece json_string(reinterpret_cast<const char*>(bytes.bytes()),
                                 bytes.byte_length());
 
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(json_string);
-  base::DictionaryValue* dict_value = nullptr;
+  {
+    // Limit the visibility for |value| as it is moved to |dict_| (via
+    // |dict_value|) once it has been loaded successfully.
+    base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+    base::DictionaryValue* dict_value = nullptr;
 
-  if (!value || !value->GetAsDictionary(&dict_value) || !dict_value)
-    return Status::ErrorJwkNotDictionary();
+    if (!value.has_value() || !value.value().GetAsDictionary(&dict_value))
+      return Status::ErrorJwkNotDictionary();
 
-  // Release |value|, as ownership will be transferred to |dict| via
-  // |dict_value|, which points to the same object as |value|.
-  ignore_result(value.release());
-  dict_.reset(dict_value);
+    dict_ = std::move(*dict_value);
+  }
 
   // JWK "kty". Exit early if this required JWK parameter is missing.
   std::string kty;
@@ -236,13 +236,13 @@ Status JwkReader::Init(const CryptoData& bytes,
 }
 
 bool JwkReader::HasMember(const std::string& member_name) const {
-  return dict_->HasKey(member_name);
+  return dict_.HasKey(member_name);
 }
 
 Status JwkReader::GetString(const std::string& member_name,
                             std::string* result) const {
-  base::Value* value = nullptr;
-  if (!dict_->Get(member_name, &value))
+  const base::Value* value = nullptr;
+  if (!dict_.Get(member_name, &value))
     return Status::ErrorJwkMemberMissing(member_name);
   if (!value->GetAsString(result))
     return Status::ErrorJwkMemberWrongType(member_name, "string");
@@ -253,8 +253,8 @@ Status JwkReader::GetOptionalString(const std::string& member_name,
                                     std::string* result,
                                     bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = nullptr;
-  if (!dict_->Get(member_name, &value))
+  const base::Value* value = nullptr;
+  if (!dict_.Get(member_name, &value))
     return Status::Success();
 
   if (!value->GetAsString(result))
@@ -265,11 +265,11 @@ Status JwkReader::GetOptionalString(const std::string& member_name,
 }
 
 Status JwkReader::GetOptionalList(const std::string& member_name,
-                                  base::ListValue** result,
+                                  const base::ListValue** result,
                                   bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = nullptr;
-  if (!dict_->Get(member_name, &value))
+  const base::Value* value = nullptr;
+  if (!dict_.Get(member_name, &value))
     return Status::Success();
 
   if (!value->GetAsList(result))
@@ -319,8 +319,8 @@ Status JwkReader::GetOptionalBool(const std::string& member_name,
                                   bool* result,
                                   bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = nullptr;
-  if (!dict_->Get(member_name, &value))
+  const base::Value* value = nullptr;
+  if (!dict_.Get(member_name, &value))
     return Status::Success();
 
   if (!value->GetAsBoolean(result))

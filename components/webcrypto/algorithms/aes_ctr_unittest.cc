@@ -30,13 +30,13 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
 class WebCryptoAesCtrTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
-  std::unique_ptr<base::ListValue> tests;
+  base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_ctr.json", &tests));
 
-  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
-    ASSERT_TRUE(tests->GetDictionary(test_index, &test));
+    ASSERT_TRUE(tests.GetDictionary(test_index, &test));
 
     std::vector<uint8_t> test_key = GetBytesFromHexString(test, "key");
     std::vector<uint8_t> test_counter = GetBytesFromHexString(test, "counter");
