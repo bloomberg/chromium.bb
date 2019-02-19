@@ -33,6 +33,8 @@ class UtilWinImpl : public chrome::mojom::UtilWin {
                              CallExecuteSelectFileCallback callback) override;
   void InspectModule(const base::FilePath& module_path,
                      InspectModuleCallback callback) override;
+  void GetAntiVirusProducts(bool report_full_names,
+                            GetAntiVirusProductsCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 

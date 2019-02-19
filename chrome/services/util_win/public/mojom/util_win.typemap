@@ -9,6 +9,7 @@ public_headers = [
   "//base/strings/string16.h",
   "//chrome/browser/conflicts/module_info_util_win.h",
   "//chrome/browser/conflicts/module_info_win.h",
+  "//third_party/metrics_proto/system_profile.pb.h",
   "//ui/shell_dialogs/execute_select_file_win.h",
   "//ui/shell_dialogs/select_file_dialog.h",
 ]
@@ -23,10 +24,12 @@ sources = [
 deps = [
   "//base",
   "//chrome/browser/conflicts:module_info",
+  "//third_party/metrics_proto",
   "//ui/shell_dialogs",
 ]
 
 type_mappings = [
+  "chrome.mojom.AntiVirusProduct=metrics::SystemProfileProto_AntiVirusProduct",
   "chrome.mojom.CertificateType=CertificateInfo::Type",
   "chrome.mojom.FileFilterSpec=ui::FileFilterSpec",
   "chrome.mojom.InspectionResult=ModuleInspectionResult[move_only]",

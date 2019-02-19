@@ -7,33 +7,29 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "chrome/services/util_win/util_win_service.h"
 #include "components/variations/hashing.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-struct Testcase {
-  const char* input;
-  const char* output;
-};
 
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
                              bool expect_unhashed_value) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  // The name of Windows Defender changed sometime in Windows 10, so any of the following is
-  // possible.
+  // The name of Windows Defender changed sometime in Windows 10, so any of the
+  // following is possible.
   constexpr char kWindowsDefender[] = "Windows Defender";
   constexpr char kWindowsDefenderAntivirus[] = "Windows Defender Antivirus";
 
@@ -61,15 +57,14 @@ void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
 
 }  // namespace
 
-class AntiVirusMetricsProviderSimpleTest : public ::testing::Test {};
-
 class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
  public:
   AntiVirusMetricsProviderTest()
       : got_results_(false),
         expect_unhashed_value_(GetParam()),
-        provider_(std::make_unique<AntiVirusMetricsProvider>()),
-        weak_ptr_factory_(this) {}
+        util_win_service_(connector_factory_.RegisterInstance(
+            chrome::mojom::kUtilWinServiceName)),
+        provider_(connector_factory_.GetDefaultConnector()) {}
 
   void GetMetricsCallback() {
     // Check that the callback runs on the main loop.
@@ -78,14 +73,14 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
     got_results_ = true;
 
     metrics::SystemProfileProto system_profile;
-    provider_->ProvideSystemProfileMetrics(&system_profile);
+    provider_.ProvideSystemProfileMetrics(&system_profile);
 
     VerifySystemProfileData(system_profile, expect_unhashed_value_);
     // This looks weird, but it's to make sure that reading the data out of the
     // AntiVirusMetricsProvider does not invalidate it, as the class should be
     // resilient to this.
     system_profile.Clear();
-    provider_->ProvideSystemProfileMetrics(&system_profile);
+    provider_.ProvideSystemProfileMetrics(&system_profile);
     VerifySystemProfileData(system_profile, expect_unhashed_value_);
   }
 
@@ -104,59 +99,27 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   bool got_results_;
   bool expect_unhashed_value_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<AntiVirusMetricsProvider> provider_;
+  service_manager::TestConnectorFactory connector_factory_;
+  UtilWinService util_win_service_;
+  AntiVirusMetricsProvider provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<AntiVirusMetricsProviderTest> weak_ptr_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AntiVirusMetricsProviderTest);
 };
 
 TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking_;
+
   ASSERT_TRUE(thread_checker_.CalledOnValidThread());
-  base::HistogramTester histograms;
   SetFullNamesFeatureEnabled(expect_unhashed_value_);
-  // Make sure the I/O is happening on a valid thread by disallowing it on the
-  // main thread.
-  bool previous_value = base::ThreadRestrictions::SetIOAllowed(false);
-  provider_->AsyncInit(
+
+  // The usage of base::Unretained(this) is safe here because |provider_|, who
+  // owns the callback, will go away before |this|.
+  provider_.AsyncInit(
       base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(got_results_);
-  base::ThreadRestrictions::SetIOAllowed(previous_value);
-
-  AntiVirusMetricsProvider::ResultCode expected_result =
-      AntiVirusMetricsProvider::RESULT_SUCCESS;
-  if (base::win::OSInfo::GetInstance()->version_type() ==
-      base::win::SUITE_SERVER)
-    expected_result = AntiVirusMetricsProvider::RESULT_WSC_NOT_AVAILABLE;
-  histograms.ExpectUniqueSample("UMA.AntiVirusMetricsProvider.Result",
-                                expected_result, 1);
-}
-
-INSTANTIATE_TEST_SUITE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());
-
-TEST_F(AntiVirusMetricsProviderSimpleTest, StripProductVersion) {
-  Testcase testcases[] = {
-      {"", ""},
-      {" ", ""},
-      {"1.0 AV 2.0", "1.0 AV"},
-      {"Anti  Virus", "Anti Virus"},
-      {"Windows Defender", "Windows Defender"},
-      {"McAfee AntiVirus has a space at the end ",
-       "McAfee AntiVirus has a space at the end"},
-      {"ESET NOD32 Antivirus 8.0", "ESET NOD32 Antivirus"},
-      {"Norton 360", "Norton 360"},
-      {"ESET Smart Security 9.0.381.1", "ESET Smart Security"},
-      {"Trustwave AV 3_0_2547", "Trustwave AV"},
-      {"nProtect Anti-Virus/Spyware V4.0", "nProtect Anti-Virus/Spyware"},
-      {"ESET NOD32 Antivirus 9.0.349.15P", "ESET NOD32 Antivirus"}};
-
-  for (const auto testcase : testcases) {
-    auto output =
-        AntiVirusMetricsProvider::TrimVersionOfAvProductName(testcase.input);
-    EXPECT_STREQ(testcase.output, output.c_str());
-  }
 }
