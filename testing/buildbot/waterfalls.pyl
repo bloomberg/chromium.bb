@@ -660,6 +660,26 @@
           'chromiumos_preflight',
         ],
       },
+      'chromeos-kevin-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              # Special pool is needed for the devices since they also run
+              # swarmbucket builds.
+              'pool': 'chrome-cros-dut',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_kevin_tests',
+        },
+        'os_type': 'chromeos',
+      },
       'linux-chromeos-dbg': {
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -1369,9 +1389,6 @@
           'dimension_sets': [
             {
               'os': 'ChromeOS',
-              # TODO(crbug.com/866062): Ensure these tests prefer to run on
-              # devices running an OS version at or above the LKGM. For now,
-              # just accept any OS version.
               'device_type': 'kevin',
               # Special pool is needed for the devices since they also run
               # swarmbucket builds.
@@ -1380,7 +1397,6 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromeos_device_kevin_tests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',

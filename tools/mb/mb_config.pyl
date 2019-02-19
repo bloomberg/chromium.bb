@@ -111,6 +111,7 @@
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
+      'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },

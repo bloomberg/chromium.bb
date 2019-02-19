@@ -462,13 +462,20 @@
     },
 
     'chromeos_device_kevin_tests': {
+      # TODO(crbug.com/866062): Bump these out of experimental once the bot's
+      # got a few green builds.
       'base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
         ],
+        'experiment_percentage': 100,
       },
-      'chrome_kevin_tast_tests': {},
-      'cros_vm_sanity_test': {},
+      'chrome_kevin_tast_tests': {
+        'experiment_percentage': 100,
+      },
+      'cros_vm_sanity_test': {
+        'experiment_percentage': 100,
+      },
     },
 
     'chromeos_isolated_scripts': {
