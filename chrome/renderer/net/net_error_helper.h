@@ -122,7 +122,6 @@ class NetErrorHelper
       bool can_use_local_diagnostics_service,
       std::unique_ptr<error_page::ErrorPageParams> params,
       bool* reload_button_shown,
-      bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
       bool* download_button_shown,
       error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
@@ -143,7 +142,6 @@ class NetErrorHelper
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override;
   void ReloadPage(bool bypass_cache) override;
-  void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;

@@ -13,16 +13,6 @@
   <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY" desc="Label for the button on an error page to show a saved entry from the cache">
     Show saved copy
   </message>
-  <if expr="not is_android">
-    <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP" desc="Explanation for the BUTTON_SHOW_SAVED button">
-      Show a saved (i.e. known to be out of date) copy of this page.
-    </message>
-  </if>
-  <if expr="is_android">
-    <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP" desc="Mobile: Explanation for the BUTTON_SHOW_SAVED button">
-      Show saved copy
-    </message>
-  </if>
   <message name="IDS_ERRORPAGE_FUN_DISABLED" desc="Explanation for when easter egg has been disabled by administrator">
     The owner of this device turned off the dinosaur game.
   </message>

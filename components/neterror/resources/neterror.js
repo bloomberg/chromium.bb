@@ -119,12 +119,6 @@ function reloadButtonClick(url) {
   }
 }
 
-function showSavedCopyButtonClick() {
-  if (window.errorPageController) {
-    errorPageController.showSavedCopyButtonClick();
-  }
-}
-
 function downloadButtonClick() {
   if (window.errorPageController) {
     errorPageController.downloadButtonClick();
@@ -329,14 +323,10 @@ function onDocumentLoad() {
   var controlButtonDiv = document.getElementById('control-buttons');
   var reloadButton = document.getElementById('reload-button');
   var detailsButton = document.getElementById('details-button');
-  var showSavedCopyButton = document.getElementById('show-saved-copy-button');
   var downloadButton = document.getElementById('download-button');
 
   var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
       loadTimeData.getValue('reloadButton').msg;
-  var showSavedCopyButtonVisible =
-      loadTimeData.valueExists('showSavedCopyButton') &&
-      loadTimeData.getValue('showSavedCopyButton').msg;
   var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
 
@@ -361,22 +351,11 @@ function onDocumentLoad() {
     return;
   }
 
-  var primaryButton, secondaryButton;
-  if (showSavedCopyButton.primary) {
-    primaryButton = showSavedCopyButton;
-    secondaryButton = reloadButton;
-  } else {
-    primaryButton = reloadButton;
-    secondaryButton = showSavedCopyButton;
-  }
-
   // Sets up the proper button layout for the current platform.
   if (primaryControlOnLeft) {
     buttons.classList.add('suggested-left');
-    controlButtonDiv.insertBefore(secondaryButton, primaryButton);
   } else {
     buttons.classList.add('suggested-right');
-    controlButtonDiv.insertBefore(primaryButton, secondaryButton);
   }
 
   // Check for Google cached copy suggestion.
@@ -385,7 +364,6 @@ function onDocumentLoad() {
   }
 
   if (reloadButton.style.display == 'none' &&
-      showSavedCopyButton.style.display == 'none' &&
       downloadButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
@@ -394,16 +372,8 @@ function onDocumentLoad() {
       loadTimeData.getValue('attemptAutoFetch');
 
   // Show control buttons.
-  if (reloadButtonVisible || showSavedCopyButtonVisible ||
-      downloadButtonVisible || attemptAutoFetch) {
+  if (reloadButtonVisible || downloadButtonVisible || attemptAutoFetch)
     controlButtonDiv.hidden = false;
-
-    // Set the secondary button state in the cases of two call to actions.
-    if ((reloadButtonVisible || downloadButtonVisible) &&
-        showSavedCopyButtonVisible) {
-      secondaryButton.classList.add('secondary-button');
-    }
-  }
 }
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);

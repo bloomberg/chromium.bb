@@ -49,7 +49,6 @@ class NetErrorHelperCore {
   enum Button {
     NO_BUTTON,
     RELOAD_BUTTON,
-    SHOW_SAVED_COPY_BUTTON,
     MORE_BUTTON,
     EASTER_EGG,
     SHOW_CACHED_COPY_BUTTON,  // "Google cached copy" button label experiment.
@@ -68,7 +67,6 @@ class NetErrorHelperCore {
         bool can_show_network_diagnostics_dialog,
         std::unique_ptr<error_page::ErrorPageParams> params,
         bool* reload_button_shown,
-        bool* show_saved_copy_button_shown,
         bool* show_cached_copy_button_shown,
         bool* download_button_shown,
         error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
@@ -121,9 +119,6 @@ class NetErrorHelperCore {
 
     // Starts a reload of the page in the observed frame.
     virtual void ReloadPage(bool bypass_cache) = 0;
-
-    // Load the original page from cache.
-    virtual void LoadPageFromCache(const GURL& page_url) = 0;
 
     // Run the platform diagnostics too for the specified URL.
     virtual void DiagnoseError(const GURL& page_url) = 0;
