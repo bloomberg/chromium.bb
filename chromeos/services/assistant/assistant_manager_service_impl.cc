@@ -109,7 +109,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(std::move(url_loader_factory_info)),
-      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
+      display_connection_(std::make_unique<CrosDisplayConnection>(
+          this,
+          assistant::features::IsFeedbackUiEnabled())),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
       service_(service),
