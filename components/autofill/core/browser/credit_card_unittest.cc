@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -517,9 +518,6 @@ INSTANTIATE_TEST_SUITE_P(
             LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
             "John Dillinger", "9012", "01", "2010", "1", kVisaCard, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
-            "John Dillinger", "9012", "01", "2010", "1", kMasterCard, false},
-        IsLocalDuplicateOfServerCardTestCase{
             LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010", "1",
             FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
             "1", nullptr, true},
@@ -536,31 +534,119 @@ TEST(CreditCardTest, HasSameNumberAs) {
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
 
-  // Same number.
+  // Cards with the same number are the same.
   a.set_record_type(CreditCard::LOCAL_CARD);
   a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::LOCAL_CARD);
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
 
-  // Local cards shouldn't match even if the last 4 are the same.
+  // Local cards with different overall numbers shouldn't match even if the last
+  // four digits are the same.
   a.set_record_type(CreditCard::LOCAL_CARD);
   a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::LOCAL_CARD);
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111222222221111"));
   EXPECT_FALSE(a.HasSameNumberAs(b));
   EXPECT_FALSE(b.HasSameNumberAs(a));
 
-  // Likewise if one is an unmasked server card.
+  // When one card is a full server card, the other is a local card, and the
+  // cards have different overall numbers but the same last four digits, they
+  // should not match.
   a.set_record_type(CreditCard::FULL_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111222222221111"));
   EXPECT_FALSE(a.HasSameNumberAs(b));
   EXPECT_FALSE(b.HasSameNumberAs(a));
 
-  // But if one is a masked card, then they should.
-  b.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  // When one card is a masked server card, the other is a local card, and the
+  // cards have the same last four digits, they should match.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4331111111111111"));
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // When one card is a masked server card, the other is a full server card, and
+  // the cards have the same last four digits, they should match.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::FULL_SERVER_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4331111111111111"));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then partial or missing expiration date information
+  // should not prevent the function from returning true.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2025"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then non-matching expiration months should cause the
+  // function to return false.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("03"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_FALSE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then non-matching expiration years should cause the
+  // function to return false.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2025"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2026"));
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_FALSE(b.HasSameNumberAs(a));
+}
+
+TEST(CreditCardTest, HasSameNumberAs_LogMaskedCardComparisonNetworksMatch) {
+  CreditCard a(base::GenerateGUID(), std::string());
+  CreditCard b(base::GenerateGUID(), std::string());
+
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetNetworkForMaskedCard(kVisaCard);
+  // CreditCard b's network is set to kVisaCard because it starts with 4, so the
+  // two cards have the same network.
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.MaskedCardComparisonNetworksMatch", true, 1);
+}
+
+TEST(CreditCardTest,
+     HasSameNumberAs_LogMaskedCardComparisonNetworksDoNotMatch) {
+  CreditCard a(base::GenerateGUID(), std::string());
+  CreditCard b(base::GenerateGUID(), std::string());
+
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetNetworkForMaskedCard(kDiscoverCard);
+  // CreditCard b's network is set to kVisaCard because it starts with 4.
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.MaskedCardComparisonNetworksMatch", false, 1);
 }
 
 TEST(CreditCardTest, Compare) {

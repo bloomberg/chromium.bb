@@ -3227,16 +3227,6 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
                                    base::TimeDelta::FromDays(15));
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
-  // This server card is identical to a local card, but has a different
-  // card type. Not a dupe and therefore both should appear in the suggestions.
-  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
-  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker", "5100", "12",
-                          "2999", "1");
-  server_cards.back().set_use_count(3);
-  server_cards.back().set_use_date(AutofillClock::Now() -
-                                   base::TimeDelta::FromDays(15));
-  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
-
   // This unmasked server card is an exact dupe of a local card. Therefore only
   // this card should appear in the suggestions as full server cards have
   // precedence over local cards.
@@ -3253,23 +3243,22 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(6U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16(),
           /*include_server_cards=*/true);
-  ASSERT_EQ(4U, suggestions.size());
+  ASSERT_EQ(3U, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
   EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
   EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16(),
       /*include_server_cards=*/true);
-  ASSERT_EQ(4U, suggestions.size());
+  ASSERT_EQ(3U, suggestions.size());
   EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
                               test::ObfuscatedCardDigitsAsUTF8("3456")),
             suggestions[0].value);
@@ -3279,9 +3268,6 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   EXPECT_EQ(base::UTF8ToUTF16(std::string("Mastercard  ") +
                               test::ObfuscatedCardDigitsAsUTF8("5100")),
             suggestions[2].value);
-  EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
-                              test::ObfuscatedCardDigitsAsUTF8("5100")),
-            suggestions[3].value);
 }
 
 // Tests that a full server card can be a dupe of more than one local card.
@@ -3481,40 +3467,39 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   EXPECT_EQ(2U, credit_cards.size());
 }
 
-// Tests that slightly different local, full server, and masked credit cards are
-// not deduped.
+// Tests that different local, masked, and full server credit cards are not
+// deduped.
 TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   std::list<CreditCard*> credit_cards;
 
-  CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
-                          test::kEmptyOrigin);
-  credit_card2.set_use_count(1);
-  credit_card2.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(1));
-  test::SetCreditCardInfo(&credit_card2, "Homer Simpson",
+  CreditCard local_card("002149C1-EE28-4213-A3B9-DA243FFF021B",
+                        test::kEmptyOrigin);
+  local_card.set_use_count(1);
+  local_card.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(1));
+  test::SetCreditCardInfo(&local_card, "Homer Simpson",
                           "5105105105105100" /* Mastercard */, "", "", "");
-  credit_cards.push_back(&credit_card2);
+  credit_cards.push_back(&local_card);
 
-  // Create a masked server card that is slightly different of the local card.
-  CreditCard credit_card4(CreditCard::MASKED_SERVER_CARD, "b456");
-  test::SetCreditCardInfo(&credit_card4, "Homer Simpson", "5100", "12", "2999",
+  // Create a masked server card that is different from the local card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "0005", "12", "2999",
                           "1");
-  credit_card4.set_use_count(3);
-  credit_card4.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(15));
-  credit_card4.SetNetworkForMaskedCard(kVisaCard);
-  credit_cards.push_back(&credit_card4);
+  masked_card.set_use_count(3);
+  masked_card.set_use_date(AutofillClock::Now() -
+                           base::TimeDelta::FromDays(15));
+  // credit_card4.SetNetworkForMaskedCard(kVisaCard);
+  credit_cards.push_back(&masked_card);
 
   // Create a full server card that is slightly different of the two other
   // cards.
-  CreditCard credit_card5(CreditCard::FULL_SERVER_CARD, "c789");
-  test::SetCreditCardInfo(&credit_card5, "Homer Simpson",
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
-  credit_card5.set_use_count(1);
-  credit_card5.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(15));
-  credit_cards.push_back(&credit_card5);
+  full_server_card.set_use_count(1);
+  full_server_card.set_use_date(AutofillClock::Now() -
+                                base::TimeDelta::FromDays(15));
+  credit_cards.push_back(&full_server_card);
 
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   EXPECT_EQ(3U, credit_cards.size());

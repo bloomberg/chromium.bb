@@ -165,7 +165,7 @@ class CreditCard : public AutofillDataModel {
   bool IsLocalDuplicateOfServerCard(const CreditCard& other) const;
 
   // Determines if |this| has the same number as |other|. If either is a masked
-  // server card, compares the last four digits only.
+  // server card, compares their last four digits and expiration dates.
   bool HasSameNumberAs(const CreditCard& other) const;
 
   // Equality operators compare GUIDs, origins, and the contents.
