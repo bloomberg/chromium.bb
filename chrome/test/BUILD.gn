@@ -1330,6 +1330,7 @@ test("browser_tests") {
         "../browser/extensions/api/braille_display_private/mock_braille_controller.h",
         "../browser/extensions/api/browsing_data/browsing_data_test.cc",
         "../browser/extensions/api/cast_streaming/cast_streaming_apitest.cc",
+        "../browser/extensions/api/cast_streaming/performance_test.cc",
         "../browser/extensions/api/command_line_private/command_line_private_apitest.cc",
         "../browser/extensions/api/commands/command_service_browsertest.cc",
         "../browser/extensions/api/content_settings/content_settings_apitest.cc",
@@ -1397,6 +1398,9 @@ test("browser_tests") {
         "../browser/extensions/api/system_indicator/system_indicator_apitest.cc",
         "../browser/extensions/api/system_private/system_private_apitest.cc",
         "../browser/extensions/api/tab_capture/tab_capture_apitest.cc",
+        "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.cc",
+        "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.h",
+        "../browser/extensions/api/tab_capture/tab_capture_performancetest.cc",
         "../browser/extensions/api/tabs/tabs_test.cc",
         "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         "../browser/extensions/api/test/apitest_apitest.cc",
@@ -5297,81 +5301,14 @@ test("chrome_app_unittests") {
   }
 }
 
-if (!is_android && !is_chromecast) {
-  test("performance_browser_tests") {
-    sources = [
-      "../app/chrome_version.rc.version",
-      "../browser/extensions/api/cast_streaming/performance_test.cc",
-      "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.cc",
-      "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.h",
-      "../browser/extensions/api/tab_capture/tab_capture_performancetest.cc",
-      "../browser/extensions/chrome_extension_test_notification_observer.cc",
-      "../browser/extensions/chrome_extension_test_notification_observer.h",
-      "../browser/extensions/extension_apitest.cc",
-      "../browser/extensions/extension_browsertest.cc",
-      "../browser/extensions/updater/extension_cache_fake.cc",
-      "../browser/extensions/updater/extension_cache_fake.h",
-      "base/browser_perf_tests_main.cc",
-    ]
-
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-    deps = [
-      ":test_support",
-      ":test_support_ui",
-      "//base",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//chrome:browser_tests_pak",
-      "//chrome:packed_resources",
-      "//chrome:resources",
-      "//chrome/app:chrome_dll_resources",
-      "//chrome/browser",
-      "//chrome/renderer",
-      "//components/about_handler",
-      "//components/autofill/content/renderer:test_support",
-      "//components/spellcheck:buildflags",
-      "//content/test:test_support",
-      "//extensions/buildflags",
-      "//media/cast:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//testing/perf",
-    ]
-
-    data = [
-      "//chrome/test/data/extensions/api_test/",
-    ]
-
-    data_deps = [
-      "//testing:run_perf_test",
-    ]
-
-    if (is_win) {
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
-      deps += [ "//chrome/app:command_ids" ]
-    } else {
-      sources -= [ "../app/chrome_version.rc.version" ]
-    }
-
-    if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/locales/fr.pak",
-        "$root_out_dir/resources.pak",
-      ]
-    }
-    if (is_mac) {
-      deps += [ "//chrome:chrome_app" ]
-    }
-
-    # This target should not require the Chrome executable to run.
-    assert_no_deps = [ "//chrome" ]
-  }
+# Everything needed to build/copy to run the performance_browser_tests isolate.
+# See: //testing/buildbot/gn_isolate_map.pyl
+group("performance_browser_tests") {
+  testonly = true
+  data_deps = [
+    ":browser_tests",
+    "//testing:run_perf_test",
+  ]
 }
 
 if (!is_android && !is_fuchsia) {

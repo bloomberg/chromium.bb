@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "base/base64.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -34,6 +35,10 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/gl/gl_switches.h"
 
+namespace {
+constexpr base::StringPiece kFullPerformanceRunSwitch = "full-performance-run";
+}  // namespace
+
 TabCapturePerformanceTestBase::TabCapturePerformanceTestBase() = default;
 
 TabCapturePerformanceTestBase::~TabCapturePerformanceTestBase() = default;
@@ -57,6 +62,14 @@ void TabCapturePerformanceTestBase::SetUpOnMainThread() {
 
 void TabCapturePerformanceTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
+  is_full_performance_run_ = command_line->HasSwitch(kFullPerformanceRunSwitch);
+
+  // In the spirit of the NoBestEffortTasksTests, it's important to add this
+  // flag to make sure best-effort tasks are not required for the success of
+  // these tests. In a performance test run, this also removes sources of
+  // variance.
+  command_line->AppendSwitch(switches::kDisableBestEffortTasks);
+
   // Note: The naming "kUseGpuInTests" is very misleading. It actually means
   // "don't use a software OpenGL implementation." Subclasses will either call
   // UseSoftwareCompositing() to use Chrome's software compositor, or else they
@@ -130,18 +143,54 @@ base::Value TabCapturePerformanceTestBase::SendMessageToExtension(
   return base::Value();
 }
 
-std::string TabCapturePerformanceTestBase::TraceAndObserve(
-    const std::string& category_patterns) {
-  LOG(INFO) << "Starting tracing and running for "
-            << kObservationPeriod.InSecondsF() << " sec...";
-  std::string json_events;
-  bool success = tracing::BeginTracing(category_patterns);
-  CHECK(success);
-  ContinueBrowserFor(kObservationPeriod);
-  success = tracing::EndTracing(&json_events);
-  CHECK(success);
+TabCapturePerformanceTestBase::TraceAnalyzerUniquePtr
+TabCapturePerformanceTestBase::TraceAndObserve(
+    const std::string& category_patterns,
+    const std::vector<base::StringPiece>& event_names,
+    int required_event_count) {
+  const base::TimeDelta observation_period = is_full_performance_run_
+                                                 ? kFullRunObservationPeriod
+                                                 : kQuickRunObservationPeriod;
+
+  LOG(INFO) << "Starting tracing...";
+  {
+    // Wait until all child processes have ACK'ed that they are now tracing.
+    base::trace_event::TraceConfig trace_config(
+        category_patterns, base::trace_event::RECORD_CONTINUOUSLY);
+    base::RunLoop run_loop;
+    const bool did_begin_tracing = tracing::BeginTracingWithTraceConfig(
+        trace_config, run_loop.QuitClosure());
+    CHECK(did_begin_tracing);
+    run_loop.Run();
+  }
+
+  LOG(INFO) << "Running browser for " << observation_period.InSecondsF()
+            << " sec...";
+  ContinueBrowserFor(observation_period);
+
   LOG(INFO) << "Observation period has completed. Ending tracing...";
-  return json_events;
+  std::string json_events;
+  const bool success = tracing::EndTracing(&json_events);
+  CHECK(success);
+
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> result(
+      trace_analyzer::TraceAnalyzer::Create(json_events));
+  result->AssociateAsyncBeginEndEvents();
+  bool have_enough_events = true;
+  for (const auto& event_name : event_names) {
+    trace_analyzer::TraceEventVector events;
+    QueryTraceEvents(result.get(), event_name, &events);
+    LOG(INFO) << "Collected " << events.size() << " events ("
+              << required_event_count << " required) for: " << event_name;
+    if (static_cast<int>(events.size()) < required_event_count) {
+      have_enough_events = false;
+    }
+  }
+  LOG_IF(WARNING, !have_enough_events) << "Insufficient data collected.";
+
+  VLOG_IF(2, result) << "Dump of trace events (trace_events.json.gz.b64):\n"
+                     << MakeBase64EncodedGZippedString(json_events);
+  return result;
 }
 
 // static
@@ -182,6 +231,21 @@ void TabCapturePerformanceTestBase::ContinueBrowserFor(
   run_loop.Run();
 }
 
+// static
+void TabCapturePerformanceTestBase::QueryTraceEvents(
+    trace_analyzer::TraceAnalyzer* analyzer,
+    base::StringPiece event_name,
+    trace_analyzer::TraceEventVector* events) {
+  const trace_analyzer::Query kQuery =
+      trace_analyzer::Query::EventNameIs(event_name.as_string()) &&
+      (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
+       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
+       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
+       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT) ||
+       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_COMPLETE));
+  analyzer->FindEvents(kQuery, events);
+}
+
 std::unique_ptr<net::test_server::HttpResponse>
 TabCapturePerformanceTestBase::HandleRequest(
     const net::test_server::HttpRequest& request) {
@@ -199,7 +263,12 @@ TabCapturePerformanceTestBase::HandleRequest(
 }
 
 // static
-constexpr base::TimeDelta TabCapturePerformanceTestBase::kObservationPeriod;
+constexpr base::TimeDelta
+    TabCapturePerformanceTestBase::kFullRunObservationPeriod;
+
+// static
+constexpr base::TimeDelta
+    TabCapturePerformanceTestBase::kQuickRunObservationPeriod;
 
 // static
 constexpr base::TimeDelta

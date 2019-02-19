@@ -2063,16 +2063,18 @@
   },
   "performance_browser_tests": {
     "args": [
-      "performance_browser_tests",
+      "browser_tests",
       "--non-telemetry=true",
-      "--test-launcher-print-test-stdio=always",
-      # TODO(crbug.com/759866): Figure out why CastV2PerformanceTest/0 sometimes
-      # takes 15-30 seconds to start up and, once fixed, remove this workaround
-      # (extends the watchdog timeout to 2 minutes, normally 30 seconds).
-      "--test-launcher-timeout=120000",
-      "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+      "--full-performance-run",
       "--test-launcher-jobs=1",
-      "--enable-gpu",
+      "--test-launcher-retry-limit=0",
+      "--test-launcher-print-test-stdio=always",
+      # Allow the full performance runs to take up to 60 seconds (rather than
+      # the default of 30 for normal CQ browser test runs).
+      "--ui-test-action-timeout=60000",
+      "--ui-test-action-max-timeout=60000",
+      "--test-launcher-timeout=60000",
+      "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
     ],
     "label": "//chrome/test:performance_browser_tests",
     "script": "//testing/scripts/run_performance_tests.py",
