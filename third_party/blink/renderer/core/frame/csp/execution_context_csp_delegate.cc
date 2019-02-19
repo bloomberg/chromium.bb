@@ -139,7 +139,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
                 ContentSecurityPolicy::GetDirectiveType(
                     violation_data.effectiveDirective()));
 
-  // TODO(mkwst): Support POSTing violation reports from a Worker.
+  // TODO(crbug/929370): Support POSTing violation reports from a Worker.
   Document* document = GetDocument();
   if (!document)
     return;

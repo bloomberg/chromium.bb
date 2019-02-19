@@ -26,11 +26,16 @@ enum class ResourceType : uint8_t;
 
 // The WorkerFetchContext is a FetchContext for workers (dedicated, shared and
 // service workers) and threaded worklets (animation and audio worklets).
+//
+// Separate WorkerFetchContext objects (and separate ResourceFetcher objects)
+// are used for each of insideSettings fetch and outsideSettings fetches.
+// For more details, see core/workers/README.md.
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
-                     SubresourceFilter*);
+                     SubresourceFilter*,
+                     ContentSecurityPolicy&);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -122,6 +127,14 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   const scoped_refptr<WebWorkerFetchContext> web_context_;
   Member<SubresourceFilter> subresource_filter_;
+
+  // In case of insideSettings fetch (=subresource fetch), this is
+  // WorkerGlobalScope::GetContentSecurityPolicy().
+  // In case of outsideSettings fetch (=off-the-main-thread top-level script
+  // fetch), this is a ContentSecurityPolicy different from
+  // WorkerGlobalScope::GetContentSecurityPolicy(), not bound to
+  // WorkerGlobalScope and owned by this WorkerFetchContext.
+  const Member<ContentSecurityPolicy> content_security_policy_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally

@@ -28,6 +28,138 @@
 
 namespace blink {
 
+namespace {
+
+// This is the implementation of ContentSecurityPolicyDelegate for the
+// outsideSettings fetch.
+// This lives on the worker thread.
+//
+// Unlike the ContentSecurityPolicy bound to ExecutionContext (which is
+// used for insideSettings fetch), OutsideSettingsCSPDelegate shouldn't
+// access WorkerOrWorkletGlobalScope (except for logging).
+//
+// For details of outsideSettings/insideSettings fetch, see README.md.
+class OutsideSettingsCSPDelegate final
+    : public GarbageCollected<OutsideSettingsCSPDelegate>,
+      public ContentSecurityPolicyDelegate {
+  USING_GARBAGE_COLLECTED_MIXIN(OutsideSettingsCSPDelegate);
+
+ public:
+  OutsideSettingsCSPDelegate(
+      const FetchClientSettingsObject& outside_settings_object,
+      WorkerOrWorkletGlobalScope& global_scope_for_logging)
+      : outside_settings_object_(&outside_settings_object),
+        global_scope_for_logging_(&global_scope_for_logging) {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(global_scope_for_logging_);
+    visitor->Trace(outside_settings_object_);
+  }
+
+  const KURL& Url() const override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    return outside_settings_object_->GlobalObjectUrl();
+  }
+
+  const SecurityOrigin* GetSecurityOrigin() override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    return outside_settings_object_->GetSecurityOrigin();
+  }
+
+  // We don't have to do anything here, as we don't want to update
+  // SecurityContext of either parent context or WorkerOrWorkletGlobalScope.
+  // TODO(hiroshige): Revisit the relationship of ContentSecurityPolicy,
+  // SecurityContext and FetchClientSettingsObject, e.g. when doing
+  // off-the-main-thread shared worker/service worker top-level script fetch.
+  // https://crbug.com/924041 https://crbug.com/924043
+  void SetSandboxFlags(SandboxFlags) override {}
+  void SetAddressSpace(mojom::IPAddressSpace) override {}
+  void SetRequireTrustedTypes() override {}
+  void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
+  void DisableEval(const String& error_message) override {}
+
+  std::unique_ptr<SourceLocation> GetSourceLocation() override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // https://w3c.github.io/webappsec-csp/#create-violation-for-global
+    // Step 2. If the user agent is currently executing script, and can extract
+    // a source file's URL, line number, and column number from the global, set
+    // violation's source file, line number, and column number accordingly.
+    // [spec text]
+    //
+    // We can assume the user agent is not executing script during fetching the
+    // top-level worker script, so return nullptr.
+    return nullptr;
+  }
+
+  base::Optional<uint16_t> GetStatusCode() override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // TODO(crbug/928965): Plumb the status code of the parent Document if any.
+    return base::nullopt;
+  }
+
+  String GetDocumentReferrer() override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // TODO(crbug/928965): Plumb the referrer from the parent context.
+    return String();
+  }
+
+  void DispatchViolationEvent(const SecurityPolicyViolationEventInit&,
+                              Element*) override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // TODO(crbug/928964): Fire an event on the parent context.
+    // Before OutsideSettingsCSPDelegate was introduced, the event had been
+    // fired on WorkerGlobalScope, which had been virtually no-op because
+    // there can't be no event handlers yet.
+    // Currently, no events are fired.
+  }
+
+  void PostViolationReport(const SecurityPolicyViolationEventInit&,
+                           const String& stringified_report,
+                           bool is_frame_ancestors_violation,
+                           const Vector<String>& report_endpoints,
+                           bool use_reporting_api) override {
+    // TODO(crbug/929370): Support POSTing violation reports from a Worker.
+    DCHECK(global_scope_for_logging_->IsContextThread());
+  }
+
+  void Count(WebFeature feature) override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    global_scope_for_logging_->CountFeature(feature);
+  }
+
+  void AddConsoleMessage(ConsoleMessage* message) override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    global_scope_for_logging_->AddConsoleMessage(message);
+  }
+
+  void ReportBlockedScriptExecutionToInspector(
+      const String& directive_text) override {
+    // This shouldn't be called during top-level worker script fetch.
+    NOTREACHED();
+  }
+
+  void DidAddContentSecurityPolicies(
+      const blink::WebVector<WebContentSecurityPolicy>&) override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // We do nothing here, because if the added policies should be reported to
+    // LocalFrameClient, then they are already reported on the parent
+    // Document.
+    // ExecutionContextCSPDelegate::DidAddContentSecurityPolicies() does
+    // nothing for workers/worklets.
+  }
+
+ private:
+  const Member<const FetchClientSettingsObject> outside_settings_object_;
+
+  // |global_scope_for_logging_| should be used only for CountFeature and
+  // console messages.
+  const Member<WorkerOrWorkletGlobalScope> global_scope_for_logging_;
+};
+
+};  // namespace
+
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     V8CacheOptions v8_cache_options,
@@ -128,13 +260,21 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
   if (inside_settings_resource_fetcher_)
     return inside_settings_resource_fetcher_;
+
+  // Because CSP is initialized inside the WorkerGlobalScope or
+  // WorkletGlobalScope constructor, GetContentSecurityPolicy() should be
+  // non-null here.
+  DCHECK(GetContentSecurityPolicy());
+
   inside_settings_resource_fetcher_ = CreateFetcherInternal(
-      *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this));
+      *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this),
+      *GetContentSecurityPolicy());
   return inside_settings_resource_fetcher_;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
-    const FetchClientSettingsObject& fetch_client_settings_object) {
+    const FetchClientSettingsObject& fetch_client_settings_object,
+    ContentSecurityPolicy& content_security_policy) {
   DCHECK(IsContextThread());
   InitializeWebFetchContextIfNeeded();
   ResourceFetcherProperties* properties = nullptr;
@@ -144,7 +284,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
         *this, fetch_client_settings_object, web_worker_fetch_context_);
     context = MakeGarbageCollected<WorkerFetchContext>(
-        *this, web_worker_fetch_context_, subresource_filter_);
+        *this, web_worker_fetch_context_, subresource_filter_,
+        content_security_policy);
     loader_factory = MakeGarbageCollected<LoaderFactoryForWorker>(
         *this, web_worker_fetch_context_);
   } else {
@@ -169,9 +310,25 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
-    const FetchClientSettingsObject& fetch_client_settings_object) {
+    const FetchClientSettingsObject& outside_settings_object) {
   DCHECK(IsContextThread());
-  return CreateFetcherInternal(fetch_client_settings_object);
+
+  ContentSecurityPolicy* content_security_policy =
+      ContentSecurityPolicy::Create();
+  for (const auto& policy_and_type :
+       outside_content_security_policy_parsed_headers_) {
+    content_security_policy->DidReceiveHeader(
+        policy_and_type.first, policy_and_type.second,
+        kContentSecurityPolicyHeaderSourceHTTP);
+  }
+
+  OutsideSettingsCSPDelegate* csp_delegate =
+      MakeGarbageCollected<OutsideSettingsCSPDelegate>(outside_settings_object,
+                                                       *this);
+  content_security_policy->BindToDelegate(*csp_delegate);
+
+  return CreateFetcherInternal(outside_settings_object,
+                               *content_security_policy);
 }
 
 bool WorkerOrWorkletGlobalScope::IsJSExecutionForbidden() const {
@@ -218,6 +375,7 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
 
 void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
+  outside_content_security_policy_parsed_headers_ = headers;
   if (!GetContentSecurityPolicy()) {
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
     SetContentSecurityPolicy(csp);

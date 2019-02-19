@@ -144,7 +144,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
  private:
   void InitializeWebFetchContextIfNeeded();
-  ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&);
+  ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
+                                         ContentSecurityPolicy&);
 
   bool web_fetch_context_initialized_ = false;
 
@@ -173,6 +174,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   Member<WorkerOrWorkletScriptController> script_controller_;
   const V8CacheOptions v8_cache_options_;
+
+  // TODO(hiroshige): Pass outsideSettings-CSP via
+  // outsideSettings-FetchClientSettingsObject.
+  Vector<CSPHeaderAndType> outside_content_security_policy_parsed_headers_;
 
   WorkerReportingProxy& reporting_proxy_;
 
