@@ -2156,41 +2156,6 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   render_thread_->sink().ClearMessages();
 }
 
-TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
-  // Service workers require https.
-  GURL example_url("https://example.com");
-
-  ServiceWorkerNetworkProviderForFrame* provider = nullptr;
-  RequestExtraData* extra_data = nullptr;
-
-  // Make sure each new document has a new provider and
-  // that the main request is tagged with the provider's id.
-  LoadHTMLWithUrlOverride("<b>A Document</b>", example_url.spec().c_str());
-  ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
-  provider = static_cast<ServiceWorkerNetworkProviderForFrame*>(
-      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
-  ASSERT_TRUE(provider);
-  int provider1_id = provider->provider_id();
-
-  LoadHTMLWithUrlOverride("<b>New Document B Goes Here</b>",
-                          example_url.spec().c_str());
-  ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
-  provider = static_cast<ServiceWorkerNetworkProviderForFrame*>(
-      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
-  ASSERT_TRUE(provider);
-  EXPECT_NE(provider1_id, provider->provider_id());
-
-  // See that subresource requests are also tagged with the provider's id.
-  EXPECT_EQ(frame(), RenderFrameImpl::FromWebFrame(GetMainFrame()));
-  blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetRequestContext(blink::mojom::RequestContextType::SUBRESOURCE);
-  blink::WebURLResponse redirect_response;
-  provider->WillSendRequest(request);
-  extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-  ASSERT_TRUE(extra_data);
-  EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());
-}
-
 TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
   ASSERT_FALSE(frame()->render_accessibility());
