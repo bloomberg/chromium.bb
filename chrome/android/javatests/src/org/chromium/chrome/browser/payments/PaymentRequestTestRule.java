@@ -293,17 +293,6 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         helper.waitForCallback(callCount);
     }
 
-    /** Clicks on an element in the "Order summary" section of the payments UI. */
-    protected void clickInOrderSummaryAndWait(CallbackHelper helper)
-            throws InterruptedException, TimeoutException {
-        int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking((Runnable) ()
-                                                  -> mUI.getOrderSummarySectionForTest()
-                                                             .findViewById(R.id.payments_section)
-                                                             .performClick());
-        helper.waitForCallback(callCount);
-    }
-
     /** Clicks on an element in the "Shipping address" section of the payments UI. */
     protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
@@ -414,15 +403,6 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     protected String getOrderSummaryTotal() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(
                 () -> mUI.getOrderSummaryTotalTextViewForTest().getText().toString());
-    }
-
-    /** Returns the amount text corresponding to the line item at the specified |index|. */
-    protected String getLineItemAmount(int index) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getOrderSummarySectionForTest()
-                .getLineItemAmountForTest(index)
-                .getText()
-                .toString()
-                .trim());
     }
 
     /**
