@@ -112,6 +112,14 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
         ViewCompat.setPaddingRelative(mBarItemsView, pad, 0, 0, 0);
     }
 
+    @Override
+    void setVisible(boolean visible) {
+        super.setVisible(visible);
+        // Make sure view doesn't assume that recycler view width is constant when it's brought up
+        // again. This doesn't hold for device orientation changes.
+        if (visible) mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
+    }
+
     void setKeyboardToggleVisibility(boolean hasActiveTab) {
         mKeyboardToggle.setVisibility(hasActiveTab ? VISIBLE : GONE);
         mSheetTitle.setVisibility(hasActiveTab ? VISIBLE : GONE);
