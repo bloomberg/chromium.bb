@@ -1116,7 +1116,8 @@ error::Error DoUnlockDiscardableTextureCHROMIUM(GLuint texture_id);
 error::Error DoLockDiscardableTextureCHROMIUM(GLuint texture_id);
 error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
-    const volatile GLbyte* mailbox);
+    const volatile GLbyte* mailbox,
+    GLenum internalformat);
 error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
                                                     GLenum mode);
 error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);

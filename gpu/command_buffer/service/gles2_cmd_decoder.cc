@@ -1180,7 +1180,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
   void DoCreateAndTexStorage2DSharedImageINTERNAL(GLuint client_id,
-                                                  const volatile GLbyte* data);
+                                                  const volatile GLbyte* data,
+                                                  GLenum internal_format);
   void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
   void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
@@ -18430,7 +18431,9 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
 
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
-    const volatile GLbyte* data) {
+    const volatile GLbyte* data,
+    GLenum internal_format) {
+  // TODO(https://crbug.com/924198): Implement support for internal format.
   TRACE_EVENT2("gpu",
                "GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageCHROMIUM",
                "context", logger_.GetLogPrefix(), "mailbox[0]",

@@ -5141,7 +5141,13 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
-    const volatile GLbyte* mailbox) {
+    const volatile GLbyte* mailbox,
+    GLenum internalformat) {
+  if (internalformat != GL_NONE) {
+    InsertError(GL_INVALID_OPERATION, "internal format not supported.");
+    return error::kNoError;
+  }
+
   if (!texture_client_id ||
       resources_->texture_id_map.HasClientID(texture_client_id)) {
     InsertError(GL_INVALID_OPERATION, "invalid client ID");

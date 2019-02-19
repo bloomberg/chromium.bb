@@ -989,6 +989,9 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                              GLsizei numViews) override;
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) override;
+GLuint CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
+    const GLbyte* mailbox,
+    GLenum internalformat) override;
 void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) override;
 void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_

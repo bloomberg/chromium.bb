@@ -4304,6 +4304,11 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_shared_image",
     'trace_level': 2,
   },
+  'CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_shared_image",
+    'trace_level': 2,
+  },
   'CreateAndTexStorage2DSharedImageINTERNAL': {
     'decoder_func': 'DoCreateAndTexStorage2DSharedImageINTERNAL',
     'internal': True,

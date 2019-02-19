@@ -5624,10 +5624,11 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, mailbox_size, immediate_data_size);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox);
+  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox, internalformat);
   return error::kNoError;
 }
 

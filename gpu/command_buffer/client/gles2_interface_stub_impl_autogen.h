@@ -1317,6 +1317,12 @@ GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* /* mailbox */) {
   return 0;
 }
+GLuint
+GLES2InterfaceStub::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
+    const GLbyte* /* mailbox */,
+    GLenum /* internalformat */) {
+  return 0;
+}
 void GLES2InterfaceStub::BeginSharedImageAccessDirectCHROMIUM(
     GLuint /* texture */,
     GLenum /* mode */) {}

@@ -4899,11 +4899,12 @@ error::Error GLES2DecoderPassthroughImpl::
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, mailbox_size, immediate_data_size);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  error::Error error =
-      DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox);
+  error::Error error = DoCreateAndTexStorage2DSharedImageINTERNAL(
+      texture, mailbox, internalformat);
   if (error != error::kNoError) {
     return error;
   }
