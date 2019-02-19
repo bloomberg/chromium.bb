@@ -6055,3 +6055,6 @@ crbug.com/930934 [ Android ] virtual/gpu-rasterization/images/drag-image-descend
 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
+
+# Sheriff 2019-02-19
+crbug.com/933346 [ Debug ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Failure Timeout Pass ]
