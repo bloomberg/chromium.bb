@@ -37,10 +37,6 @@ class RasterDecoderOOMTest : public RasterDecoderManualInitTest {
       EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
           .WillOnce(Return(reset_status));
     }
-    // Other contexts in the group should be lost also.
-    EXPECT_CALL(*mock_decoder_, MarkContextLost(expected_other_reason))
-        .Times(1)
-        .RetiresOnSaturation();
 
     // glGetError merges driver error state with decoder error state.  Return
     // GL_NO_ERROR from mock driver and GL_OUT_OF_MEMORY from decoder.
@@ -143,8 +139,6 @@ class RasterDecoderLostContextTest : public RasterDecoderManualInitTest {
 TEST_P(RasterDecoderLostContextTest, LostFromMakeCurrent) {
   Init(/*has_robustness=*/false);
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
-  // Expect the group to be lost.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   EXPECT_FALSE(decoder_->WasContextLost());
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
@@ -161,8 +155,6 @@ TEST_P(RasterDecoderLostContextTest, LostFromMakeCurrentWithRobustness) {
   // extension.
   EXPECT_CALL(*gl_, GetGraphicsResetStatusARB()).Times(0);
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
-  // Expect the group to be lost.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_FALSE(decoder_->WasContextLostByRobustnessExtension());
@@ -213,8 +205,6 @@ TEST_P(RasterDecoderLostContextTest, QueryDestroyAfterLostFromMakeCurrent) {
 
   // Force context lost for MakeCurrent().
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
-  // Expect the group to be lost.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
 
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
@@ -229,8 +219,6 @@ TEST_P(RasterDecoderLostContextTest, LostFromResetAfterMakeCurrent) {
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
       .WillOnce(Return(GL_GUILTY_CONTEXT_RESET_KHR));
-  // Expect the group to be lost.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
@@ -243,9 +231,6 @@ TEST_P(RasterDecoderLostContextTest, LostFromResetAfterMakeCurrent) {
 
 TEST_P(RasterDecoderLostContextTest, LoseGuiltyFromGLError) {
   Init(/*has_robustness=*/true);
-  // Always expect other contexts to be signaled as 'kUnknown' since we can't
-  // query their status without making them current.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   DoGetErrorWithContextLost(GL_GUILTY_CONTEXT_RESET_KHR);
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
@@ -254,29 +239,10 @@ TEST_P(RasterDecoderLostContextTest, LoseGuiltyFromGLError) {
 
 TEST_P(RasterDecoderLostContextTest, LoseInnocentFromGLError) {
   Init(/*has_robustness=*/true);
-  // Always expect other contexts to be signaled as 'kUnknown' since we can't
-  // query their status without making them current.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
   DoGetErrorWithContextLost(GL_INNOCENT_CONTEXT_RESET_KHR);
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
   EXPECT_EQ(error::kInnocent, GetContextLostReason());
-}
-
-TEST_P(RasterDecoderLostContextTest, LoseGroupFromRobustness) {
-  // If one context in a group is lost through robustness,
-  // the other ones should also get lost and query the reset status.
-  Init(true);
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
-  // There should be no GL calls, since we might not have a current context.
-  EXPECT_CALL(*gl_, GetGraphicsResetStatusARB()).Times(0);
-  LoseContexts(error::kUnknown);
-  EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kUnknown, GetContextLostReason());
-
-  // We didn't process commands, so we need to clear the decoder error,
-  // so that we can shut down cleanly.
-  ClearCurrentDecoderError();
 }
 
 INSTANTIATE_TEST_SUITE_P(Service,

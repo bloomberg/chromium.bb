@@ -999,6 +999,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
     return &passthrough_discardable_manager_;
   }
   ContextGroup* group() { return group_.get(); }
+  FeatureInfo* feature_info() { return group_->feature_info(); }
 
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;

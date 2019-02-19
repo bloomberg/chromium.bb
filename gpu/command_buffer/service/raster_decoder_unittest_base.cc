@@ -63,7 +63,6 @@ RasterDecoderTestBase::RasterDecoderTestBase()
       shared_memory_address_(nullptr),
       shared_memory_base_(nullptr),
       ignore_cached_state_for_test_(GetParam()),
-      shader_translator_cache_(gpu_preferences_),
       memory_tracker_(nullptr),
       copy_texture_manager_(nullptr) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
@@ -102,7 +101,7 @@ void RasterDecoderTestBase::AddExpectationsForRestoreAttribState(
       .Times(1)
       .RetiresOnSaturation();
 
-  if (attrib != 0 || group_->feature_info()->gl_version_info().is_es) {
+  if (attrib != 0 || feature_info()->gl_version_info().is_es) {
     // TODO(bajones): Not sure if I can tell which of these will be called
     EXPECT_CALL(*gl_, EnableVertexAttribArray(attrib))
         .Times(testing::AtMost(1))
@@ -125,7 +124,7 @@ void RasterDecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
     EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
         .Times(1)
         .RetiresOnSaturation();
-    if (group_->feature_info()->feature_flags().ext_window_rectangles) {
+    if (feature_info()->feature_flags().ext_window_rectangles) {
       EXPECT_CALL(*gl_, WindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr))
           .Times(1)
           .RetiresOnSaturation();
@@ -167,8 +166,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   for (const std::string& extension : init.extensions) {
     all_extensions += extension + " ";
   }
-  const bool bind_generates_resource(false);
-  const ContextType context_type(CONTEXT_TYPE_OPENGLES2);
+  const ContextType context_type = CONTEXT_TYPE_OPENGLES2;
 
   // For easier substring/extension matching
   gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
@@ -176,17 +174,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
 
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gl::MockGLInterface::SetGLInterface(gl_.get());
-
-  GpuFeatureInfo gpu_feature_info;
-  scoped_refptr<gles2::FeatureInfo> feature_info =
-      new gles2::FeatureInfo(init.workarounds, gpu_feature_info);
-
-  group_ = scoped_refptr<gles2::ContextGroup>(new gles2::ContextGroup(
-      gpu_preferences_, false, &mailbox_manager_, nullptr /* memory_tracker */,
-      &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
-      bind_generates_resource, &image_manager_, nullptr /* image_factory */,
-      nullptr /* progress_reporter */, gpu_feature_info, &discardable_manager_,
-      nullptr /* passthrough_discardable_manager */, &shared_image_manager_));
 
   InSequence sequence;
 
@@ -201,60 +188,48 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
 
   context_->GLContextStub::MakeCurrent(surface_.get());
 
-  gles2::TestHelper::SetupContextGroupInitExpectations(
-      gl_.get(), gles2::DisallowedFeatures(), all_extensions.c_str(),
-      init.gl_version.c_str(), context_type, bind_generates_resource);
-
-  // We initialize the ContextGroup with a MockRasterDecoder so that
-  // we can use the ContextGroup to figure out how the real RasterDecoder
-  // will initialize itself.
-  command_buffer_service_.reset(new FakeCommandBufferServiceBase());
-  command_buffer_service_for_mock_decoder_.reset(
-      new FakeCommandBufferServiceBase());
-  mock_decoder_.reset(
-      new MockRasterDecoder(command_buffer_service_for_mock_decoder_.get()));
-
-  EXPECT_EQ(group_->Initialize(mock_decoder_.get(), context_type,
-                               gles2::DisallowedFeatures()),
-            gpu::ContextResult::kSuccess);
-
-  scoped_refptr<gpu::Buffer> buffer =
-      command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
-                                                          &shared_memory_id_);
-  shared_memory_offset_ = kSharedMemoryOffset;
-  shared_memory_address_ =
-      static_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
-  shared_memory_base_ = buffer->memory();
-  ClearSharedMemory();
-
-  ContextCreationAttribs attribs;
-  attribs.lose_context_when_out_of_memory =
-      init.lose_context_when_out_of_memory;
-  attribs.context_type = context_type;
+  GpuFeatureInfo gpu_feature_info;
+  feature_info_ = base::MakeRefCounted<gles2::FeatureInfo>(init.workarounds,
+                                                           gpu_feature_info);
+  gles2::TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+      gl_.get(), all_extensions.c_str(), "", init.gl_version.c_str(),
+      context_type);
+  feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
+                            gpu_preferences_.use_passthrough_cmd_decoder &&
+                                gles2::PassthroughCommandDecoderSupported(),
+                            gles2::DisallowedFeatures());
 
   // Setup expectations for SharedContextState::InitializeGL().
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
-  SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
-  SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
+  SetupInitCapabilitiesExpectations(feature_info()->IsES3Capable());
+  SetupInitStateExpectations(feature_info()->IsES3Capable());
 
   shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       new gl::GLShareGroup(), surface_, context_,
-      feature_info->workarounds().use_virtualized_gl_contexts,
+      feature_info()->workarounds().use_virtualized_gl_contexts,
       base::DoNothing());
 
-  shared_context_state_->InitializeGL(GpuPreferences(), feature_info);
+  shared_context_state_->InitializeGL(GpuPreferences(), feature_info_);
 
-  decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
-                                       &outputter_, group_.get(),
-                                       shared_context_state_));
+  command_buffer_service_.reset(new FakeCommandBufferServiceBase());
+
+  decoder_.reset(RasterDecoder::Create(
+      this, command_buffer_service_.get(), &outputter_, gpu_feature_info,
+      gpu_preferences_, nullptr /* memory_tracker */, &shared_image_manager_,
+      shared_context_state_));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->DisableFlushWorkaroundForTest();
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
   copy_texture_manager_ = new gles2::MockCopyTextureResourceManager();
   decoder_->SetCopyTextureResourceManagerForTest(copy_texture_manager_);
+
+  ContextCreationAttribs attribs;
+  attribs.lose_context_when_out_of_memory =
+      init.lose_context_when_out_of_memory;
+  attribs.context_type = context_type;
 
   ASSERT_EQ(decoder_->Initialize(surface_, shared_context_state_->context(),
                                  true, gles2::DisallowedFeatures(), attribs),
@@ -267,6 +242,15 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   }
   decoder_->MakeCurrent();
   decoder_->BeginDecoding();
+
+  scoped_refptr<gpu::Buffer> buffer =
+      command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
+                                                          &shared_memory_id_);
+  shared_memory_offset_ = kSharedMemoryOffset;
+  shared_memory_address_ =
+      static_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
+  shared_memory_base_ = buffer->memory();
+  ClearSharedMemory();
 
   client_texture_mailbox_ = CreateFakeTexture(
       kServiceTextureId, viz::ResourceFormat::RGBA_8888, /*width=*/2,
@@ -290,9 +274,7 @@ void RasterDecoderTestBase::ResetDecoder() {
 
   decoder_->Destroy(!decoder_->WasContextLost());
   decoder_.reset();
-  group_->Destroy(mock_decoder_.get(), false);
   command_buffer_service_.reset();
-  command_buffer_service_for_mock_decoder_.reset();
   for (auto& image : shared_images_)
     image->OnContextLost();
   shared_images_.clear();

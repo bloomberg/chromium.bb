@@ -13,8 +13,12 @@
 namespace gpu {
 
 class DecoderClient;
-class SharedContextState;
+struct GpuFeatureInfo;
+struct GpuPreferences;
+class MemoryTracker;
 class ServiceTransferCache;
+class SharedContextState;
+class SharedImageManager;
 
 namespace gles2 {
 class CopyTextureCHROMIUMResourceManager;
@@ -35,7 +39,10 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
       DecoderClient* client,
       CommandBufferServiceBase* command_buffer_service,
       gles2::Outputter* outputter,
-      gles2::ContextGroup* group,
+      const GpuFeatureInfo& gpu_feature_info,
+      const GpuPreferences& gpu_preferences,
+      MemoryTracker* memory_tracker,
+      SharedImageManager* shared_image_manager,
       scoped_refptr<SharedContextState> shared_context_state);
 
   ~RasterDecoder() override;

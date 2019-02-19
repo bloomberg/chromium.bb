@@ -2200,6 +2200,7 @@ bool TextureManager::ClearRenderableLevels(DecoderContext* decoder,
   return ref->texture()->ClearRenderableLevels(decoder);
 }
 
+// static
 bool TextureManager::ClearTextureLevel(DecoderContext* decoder,
                                        TextureRef* ref,
                                        GLenum target,
@@ -2209,6 +2210,7 @@ bool TextureManager::ClearTextureLevel(DecoderContext* decoder,
   return ClearTextureLevel(decoder, texture, target, level);
 }
 
+// static
 bool TextureManager::ClearTextureLevel(DecoderContext* decoder,
                                        Texture* texture,
                                        GLenum target,

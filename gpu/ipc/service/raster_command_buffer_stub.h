@@ -34,7 +34,7 @@ class GPU_IPC_SERVICE_EXPORT RasterCommandBufferStub
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
   void SetActiveURL(GURL url) override;
 
-  scoped_refptr<gles2::ContextGroup> context_group_;
+  std::unique_ptr<MemoryTracker> memory_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterCommandBufferStub);
 };
