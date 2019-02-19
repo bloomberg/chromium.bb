@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -100,8 +101,9 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<ManagementUIHandler>());
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreateManagementUIHtmlSource());
+  content::WebUIDataSource* source = CreateManagementUIHtmlSource();
+  DarkModeHandler::Initialize(web_ui, source);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 ManagementUI::~ManagementUI() {}
