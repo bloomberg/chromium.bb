@@ -8,7 +8,6 @@ import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
-import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
 import com.google.android.libraries.feed.testing.conformance.scheduler.SchedulerConformanceTest;
 
 import org.junit.After;
@@ -58,8 +57,6 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
 
     @Mock
     private RequestManager mRequestManager;
-    @Mock
-    private SessionManager mSessionManager;
     private boolean mUseRequestManager;
 
     public FeedSchedulerBridgeConformanceTest(boolean useRequestManager) {
@@ -71,8 +68,7 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
         // The scheduler is declared and tested in SchedulerConformanceTest.
         scheduler = new FeedSchedulerBridge(Profile.getLastUsedProfile());
         if (mUseRequestManager) {
-            ((FeedSchedulerBridge) scheduler)
-                    .initializeFeedDependencies(mRequestManager, mSessionManager);
+            ((FeedSchedulerBridge) scheduler).initializeFeedDependencies(mRequestManager);
         }
     }
 
