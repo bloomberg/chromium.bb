@@ -1185,6 +1185,25 @@ public class DownloadUtils {
         return primaryPath == null ? false : path.contains(primaryPath);
     }
 
+    /**
+     * Parses an originating URL string and returns a valid Uri that can be inserted into
+     * DownloadProvider. The returned Uri has to be null or non-empty http(s) scheme.
+     * @param originalUrl String representation of the originating URL.
+     * @return A valid Uri that can be accepted by DownloadProvider.
+     */
+    public static Uri parseOriginalUrl(String originalUrl) {
+        Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
+        if (originalUri != null) {
+            String scheme = originalUri.normalizeScheme().getScheme();
+            if (scheme == null
+                    || (!scheme.equals(UrlConstants.HTTPS_SCHEME)
+                            && !scheme.equals(UrlConstants.HTTP_SCHEME))) {
+                originalUri = null;
+            }
+        }
+        return originalUri;
+    }
+
     private static native String nativeGetFailStateMessage(@FailState int failState);
     private static native int nativeGetResumeMode(String url, @FailState int failState);
 }

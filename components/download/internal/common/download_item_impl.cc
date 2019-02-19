@@ -41,6 +41,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -57,6 +58,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif  // defined(OS_ANDROID)
 
 namespace download {
 
@@ -1561,6 +1566,19 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
+#if defined(OS_ANDROID)
+  if (DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DownloadFile::CreateIntermediateUriForPublish,
+                       // Safe because we control download file lifetime.
+                       base::Unretained(download_file_.get()), GetOriginalUrl(),
+                       GetReferrerUrl(), GetTargetFilePath().BaseName(),
+                       GetMimeType(), std::move(callback)));
+    return;
+  }
+#endif  // defined(OS_ANDROID)
+
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndUniquify,

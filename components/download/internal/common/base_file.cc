@@ -25,6 +25,10 @@
 #include "components/download/quarantine/quarantine.h"
 #include "crypto/secure_hash.h"
 
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif  // defined(OS_ANDROID)
+
 #define CONDITIONAL_TRACE(trace)                  \
   do {                                            \
     if (download_id_ != DownloadItem::kInvalidId) \
@@ -194,12 +198,21 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   CONDITIONAL_TRACE(BEGIN2("download", "DownloadFileRename", "old_filename",
                            full_path_.AsUTF8Unsafe(), "new_filename",
                            new_path.AsUTF8Unsafe()));
+  bool need_to_move_file = true;
+#if defined(OS_ANDROID)
+  if (new_path.IsContentUri()) {
+    rename_result = DownloadCollectionBridge::MoveFileToIntermediateUri(
+        full_path_, new_path);
+    need_to_move_file = false;
+  }
+#endif
+  if (need_to_move_file) {
+    base::CreateDirectory(new_path.DirName());
 
-  base::CreateDirectory(new_path.DirName());
-
-  // A simple rename wouldn't work here since we want the file to have
-  // permissions / security descriptors that makes sense in the new directory.
-  rename_result = MoveFileAndAdjustPermissions(new_path);
+    // A simple rename wouldn't work here since we want the file to have
+    // permissions / security descriptors that makes sense in the new directory.
+    rename_result = MoveFileAndAdjustPermissions(new_path);
+  }
 
   CONDITIONAL_TRACE(END0("download", "DownloadFileRename"));
 
