@@ -101,8 +101,8 @@ Function annotations should precede the return type:
 ```c++
 class FooSingleton {
   FOO_EXPORT Foo& GetFoo();
-  FOO_EXPORT Foo& SetFooForTesting(Foo& foo);
-  void SetFoo(Foo& foo);
+  FOO_EXPORT Foo& SetFooForTesting(Foo* foo);
+  void SetFoo(Foo* foo);
 };
 ```
 
