@@ -195,7 +195,7 @@ void MimeTypeCollector::CollectForLocalPaths(
   if (!left_) {
     // Nothing to process.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, base::Passed(&result_)));
+        FROM_HERE, base::BindOnce(callback_, std::move(result_)));
     callback_ = CompletionCallback();
     return;
   }
@@ -212,7 +212,7 @@ void MimeTypeCollector::OnMimeTypeCollected(size_t index,
   (*result_)[index] = mime_type;
   if (!--left_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, base::Passed(&result_)));
+        FROM_HERE, base::BindOnce(callback_, std::move(result_)));
     // Release the callback to avoid a circullar reference in case an instance
     // of this class is a member of a ref counted class, which instance is bound
     // to this callback.

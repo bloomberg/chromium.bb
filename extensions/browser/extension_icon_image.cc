@@ -220,8 +220,8 @@ void IconImage::LoadImageForScaleAsync(float scale) {
     const gfx::ImageSkiaRep& rep = default_icon_.GetRepresentation(scale);
     if (!rep.is_null()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&IconImage::OnImageRepLoaded,
-                                weak_ptr_factory_.GetWeakPtr(), rep));
+          FROM_HERE, base::BindOnce(&IconImage::OnImageRepLoaded,
+                                    weak_ptr_factory_.GetWeakPtr(), rep));
     }
   }
 }

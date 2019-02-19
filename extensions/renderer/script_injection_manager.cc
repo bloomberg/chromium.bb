@@ -188,8 +188,8 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   // keep waiting.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ScriptInjectionManager::RFOHelper::RunIdle,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kScriptIdleTimeoutInMs));
 
   ExtensionFrameHelper::Get(render_frame())

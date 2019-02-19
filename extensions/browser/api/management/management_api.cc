@@ -562,7 +562,8 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
   } else {  // No confirm dialog.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ManagementUninstallFunctionBase::UninstallExtension, this));
+        base::BindOnce(&ManagementUninstallFunctionBase::UninstallExtension,
+                       this));
   }
 
   return RespondLater();

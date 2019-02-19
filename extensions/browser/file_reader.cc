@@ -20,7 +20,7 @@ FileReader::FileReader(const extensions::ExtensionResource& resource,
 
 void FileReader::Start() {
   extensions::GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&FileReader::ReadFileOnFileSequence, this));
+      FROM_HERE, base::BindOnce(&FileReader::ReadFileOnFileSequence, this));
 }
 
 FileReader::~FileReader() {}
