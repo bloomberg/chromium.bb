@@ -7,6 +7,7 @@
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
@@ -23,7 +24,10 @@ void TestInstallFinalizer::FinalizeInstall(
   const AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
 
   web_app_info_ = std::move(web_app_info);
-  std::move(callback).Run(app_id, InstallResultCode::kSuccess);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), app_id, InstallResultCode::kSuccess));
 }
 
 }  // namespace web_app

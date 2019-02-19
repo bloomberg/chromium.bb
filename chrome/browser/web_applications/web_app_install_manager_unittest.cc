@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -15,9 +16,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
@@ -78,7 +81,9 @@ void TestAcceptDialogCallback(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
     InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
-  std::move(acceptance_callback).Run(true /*accept*/, std::move(web_app_info));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
+                                std::move(web_app_info)));
 }
 
 void TestDeclineDialogCallback(
@@ -86,7 +91,9 @@ void TestDeclineDialogCallback(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
     InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
-  std::move(acceptance_callback).Run(false /*accept*/, std::move(web_app_info));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(acceptance_callback),
+                                false /*accept*/, std::move(web_app_info)));
 }
 
 }  // namespace
@@ -166,6 +173,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     const bool force_shortcut_app = false;
     install_manager_->InstallWebApp(
         web_contents(), force_shortcut_app,
+        WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -208,7 +216,7 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -253,7 +261,7 @@ TEST_F(WebAppInstallManagerTest, AlreadyInstalled) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& already_installed_app_id, InstallResultCode code) {
@@ -279,7 +287,7 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -303,7 +311,7 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -352,7 +360,7 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -527,7 +535,7 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -560,7 +568,7 @@ TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
   const bool force_shortcut_app = false;
 
   install_manager_->InstallWebApp(
-      web_contents(), force_shortcut_app,
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestDeclineDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {

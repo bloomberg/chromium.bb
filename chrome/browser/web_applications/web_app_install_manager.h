@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,6 +41,7 @@ class WebAppInstallManager final : public InstallManager,
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebApp(content::WebContents* contents,
                      bool force_shortcut_app,
+                     WebappInstallSource install_source,
                      WebAppInstallDialogCallback dialog_callback,
                      OnceInstallCallback callback) override;
 
@@ -69,13 +71,21 @@ class WebAppInstallManager final : public InstallManager,
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
                         ForInstallableSite for_installable_site,
                         IconsMap icons_map);
-  void OnDialogCompleted(bool user_accepted,
+  void OnDialogCompleted(ForInstallableSite for_installable_site,
+                         bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
-  void OnInstallFinalized(const AppId& app_id, InstallResultCode code);
+  void OnInstallFinalized(ForInstallableSite for_installable_site,
+                          const AppId& app_id,
+                          InstallResultCode code);
 
-  // Saved callbacks:
+  // TODO(loyso): Extract these parameters as a struct and reset it on every
+  // installation task:
   WebAppInstallDialogCallback dialog_callback_;
   OnceInstallCallback install_callback_;
+  // The mechanism via which the app creation was triggered.
+  static constexpr WebappInstallSource kNoInstallSource =
+      WebappInstallSource::COUNT;
+  WebappInstallSource install_source_ = kNoInstallSource;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
