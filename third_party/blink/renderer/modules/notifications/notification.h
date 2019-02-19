@@ -184,7 +184,7 @@ class MODULES_EXPORT Notification final
 
   String token_;
 
-  TaskRunnerTimer<Notification> prepare_show_method_runner_;
+  TaskRunnerTimer<Notification> prepare_show_timer_;
 
   Member<NotificationResourcesLoader> loader_;
 

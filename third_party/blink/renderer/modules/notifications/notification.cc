@@ -155,10 +155,9 @@ Notification::Notification(ExecutionContext* context,
       type_(type),
       state_(State::kLoading),
       data_(std::move(data)),
-      prepare_show_method_runner_(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI),
-          this,
-          &Notification::PrepareShow),
+      prepare_show_timer_(context->GetTaskRunner(TaskType::kMiscPlatformAPI),
+                          this,
+                          &Notification::PrepareShow),
       listener_binding_(this) {}
 
 Notification::~Notification() = default;
@@ -166,7 +165,7 @@ Notification::~Notification() = default;
 void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
 
-  prepare_show_method_runner_.StartOneShot(TimeDelta(), FROM_HERE);
+  prepare_show_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void Notification::PrepareShow(TimerBase*) {
@@ -470,8 +469,8 @@ void Notification::ContextDestroyed(ExecutionContext* context) {
 
   state_ = State::kClosed;
 
-  if (prepare_show_method_runner_.IsActive())
-    prepare_show_method_runner_.Stop();
+  if (prepare_show_timer_.IsActive())
+    prepare_show_timer_.Stop();
 
   if (loader_)
     loader_->Stop();
