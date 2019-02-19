@@ -168,7 +168,6 @@ static_library("browser") {
     "//components/account_id",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
-    "//components/invalidation/public",
     "//components/keyed_service/core",
     "//components/prefs",
     "//google_apis",
