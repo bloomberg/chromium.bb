@@ -95,8 +95,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
 
-  VisualID GetVisualID() const { return visual_id_; }
-
  protected:
   ~NativeViewGLSurfaceGLX() override;
 
@@ -127,7 +125,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
   GLXFBConfig config_;
   gfx::Size size_;
-  VisualID visual_id_;
 
   bool has_swapped_buffers_;
 
