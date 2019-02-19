@@ -154,28 +154,31 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserverUnified) {
   status->ime_menu_tray()->OnIMEMenuActivationChanged(true);
   ASSERT_TRUE(status->ime_menu_tray()->visible());
 
-  // Set focus to status area widget, which will be be system tray.
+  // Set focus to status area widget. The first focused view will be the IME
+  // tray.
   ASSERT_TRUE(Shell::Get()->focus_cycler()->FocusWidget(status));
   views::FocusManager* focus_manager = status->GetFocusManager();
-  EXPECT_EQ(status->unified_system_tray(), focus_manager->GetFocusedView());
-
-  // A tab key event will move focus to notification tray.
-  GenerateTabEvent(false);
   EXPECT_EQ(status->ime_menu_tray(), focus_manager->GetFocusedView());
+
+  // A tab key event will move focus to the system tray.
+  GenerateTabEvent(false);
+  EXPECT_EQ(status->unified_system_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(0, test_observer_->focus_out_count());
   EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
 
   // Another tab key event will send FocusOut event, since we are not handling
-  // this event, focus will still be moved to system tray.
+  // this event, focus will remain within the status widhet and will be
+  // moved to the IME tray.
   GenerateTabEvent(false);
-  EXPECT_EQ(status->unified_system_tray(), focus_manager->GetFocusedView());
+  EXPECT_EQ(status->ime_menu_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(1, test_observer_->focus_out_count());
   EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
 
   // A reverse tab key event will send reverse FocusOut event, since we are not
-  // handling this event, focus will still be moved to notification tray.
+  // handling this event, focus will remain within the status widget and will
+  // be moved to the system tray.
   GenerateTabEvent(true);
-  EXPECT_EQ(status->ime_menu_tray(), focus_manager->GetFocusedView());
+  EXPECT_EQ(status->unified_system_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(1, test_observer_->focus_out_count());
   EXPECT_EQ(1, test_observer_->reverse_focus_out_count());
 }
