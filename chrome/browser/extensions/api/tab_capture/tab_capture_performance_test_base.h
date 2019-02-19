@@ -7,8 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
+#include "base/test/trace_event_analyzer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace base {
@@ -43,6 +46,11 @@ class TabCapturePerformanceTestBase : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
+  // If true, run a full performance test. If false, all tests should just run a
+  // quick test, something appropriate for running in a CQ try run or the
+  // waterfall.
+  bool is_full_performance_run() const { return is_full_performance_run_; }
+
   // Returns the currently-loaded extension.
   const extensions::Extension* extension() const { return extension_; }
 
@@ -68,9 +76,12 @@ class TabCapturePerformanceTestBase : public InProcessBrowserTest {
   base::Value SendMessageToExtension(const std::string& json);
 
   // Runs the browser for a while, with tracing enabled to collect events
-  // matching the given |category_patterns|, then returns the JSON events string
-  // returned by tracing::EndTracing().
-  std::string TraceAndObserve(const std::string& category_patterns);
+  // matching the given |category_patterns|.
+  using TraceAnalyzerUniquePtr = std::unique_ptr<trace_analyzer::TraceAnalyzer>;
+  TraceAnalyzerUniquePtr TraceAndObserve(
+      const std::string& category_patterns,
+      const std::vector<base::StringPiece>& event_names,
+      int required_event_count);
 
   // Returns the path ".../test/data/extensions/api_test/".
   static base::FilePath GetApiTestDataDir();
@@ -82,11 +93,19 @@ class TabCapturePerformanceTestBase : public InProcessBrowserTest {
   // Uses base::RunLoop to run the browser for the given |duration|.
   static void ContinueBrowserFor(base::TimeDelta duration);
 
+  // Queries the |analyzer| for events having the given |event_name| whose phase
+  // is classified as BEGIN, INSTANT, or COMPLETE (i.e., omit END events).
+  static void QueryTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
+                               base::StringPiece event_name,
+                               trace_analyzer::TraceEventVector* events);
+
  protected:
-  // After the page has loaded, this is how long the browser is run with trace
-  // event recording taking place.
-  static constexpr base::TimeDelta kObservationPeriod =
+  // These are how long the browser is run with trace event recording taking
+  // place.
+  static constexpr base::TimeDelta kFullRunObservationPeriod =
       base::TimeDelta::FromSeconds(15);
+  static constexpr base::TimeDelta kQuickRunObservationPeriod =
+      base::TimeDelta::FromSeconds(4);
 
   // If sending a message to the extension fails, because the extension has not
   // started its message listener yet, how long before the next retry?
@@ -103,6 +122,8 @@ class TabCapturePerformanceTestBase : public InProcessBrowserTest {
   static const char kExtensionId[];
 
  private:
+  bool is_full_performance_run_ = false;
+
   // Set to the test page that should be served by the next call to
   // HandleRequest().
   std::string test_page_to_serve_;
