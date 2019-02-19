@@ -25,18 +25,18 @@ static size_t Mismatch(const std::string& input1, const std::string& input2) {
 class StyledMarkupSerializerTest : public EditingTestBase {
  protected:
   template <typename Strategy>
-  std::string Serialize(EAnnotateForInterchange = kDoNotAnnotateForInterchange);
+  std::string Serialize(AnnotateForInterchange = kDoNotAnnotateForInterchange);
 
   template <typename Strategy>
   std::string SerializePart(
       const PositionTemplate<Strategy>& start,
       const PositionTemplate<Strategy>& end,
-      EAnnotateForInterchange = kDoNotAnnotateForInterchange);
+      AnnotateForInterchange = kDoNotAnnotateForInterchange);
 };
 
 template <typename Strategy>
 std::string StyledMarkupSerializerTest::Serialize(
-    EAnnotateForInterchange should_annotate) {
+    AnnotateForInterchange should_annotate) {
   PositionTemplate<Strategy> start = PositionTemplate<Strategy>(
       GetDocument().body(), PositionAnchorType::kBeforeChildren);
   PositionTemplate<Strategy> end = PositionTemplate<Strategy>(
@@ -48,7 +48,7 @@ template <typename Strategy>
 std::string StyledMarkupSerializerTest::SerializePart(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
-    EAnnotateForInterchange should_annotate) {
+    AnnotateForInterchange should_annotate) {
   return CreateMarkup(start, end, should_annotate).Utf8().data();
 }
 

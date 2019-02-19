@@ -163,7 +163,7 @@ bool CanAppendNewLineFeedToSelection(const VisibleSelection& selection,
 }  // anonymous namespace
 
 TypingCommand::TypingCommand(Document& document,
-                             ETypingCommand command_type,
+                             CommandType command_type,
                              const String& text_to_insert,
                              Options options,
                              TextGranularity granularity,
@@ -573,7 +573,7 @@ InputEvent::InputType TypingCommand::GetInputType() const {
 }
 
 void TypingCommand::TypingAddedToOpenCommand(
-    ETypingCommand command_type_for_added_typing) {
+    CommandType command_type_for_added_typing) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
     return;
@@ -1088,7 +1088,7 @@ void TypingCommand::DeleteSelection(bool smart_delete,
   TypingAddedToOpenCommand(kDeleteSelection);
 }
 
-void TypingCommand::UpdatePreservesTypingStyle(ETypingCommand command_type) {
+void TypingCommand::UpdatePreservesTypingStyle(CommandType command_type) {
   switch (command_type) {
     case kDeleteSelection:
     case kDeleteKey:

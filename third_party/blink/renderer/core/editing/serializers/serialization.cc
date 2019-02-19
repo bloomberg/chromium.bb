@@ -170,7 +170,7 @@ template <typename Strategy>
 static HTMLElement* HighestAncestorToWrapMarkup(
     const PositionTemplate<Strategy>& start_position,
     const PositionTemplate<Strategy>& end_position,
-    EAnnotateForInterchange should_annotate,
+    AnnotateForInterchange should_annotate,
     Node* constraining_ancestor) {
   Node* first_node = start_position.NodeAsRangeFirstNode();
   // For compatibility reason, we use container node of start and end
@@ -255,9 +255,9 @@ class CreateMarkupAlgorithm {
   static String CreateMarkup(
       const PositionTemplate<Strategy>& start_position,
       const PositionTemplate<Strategy>& end_position,
-      EAnnotateForInterchange should_annotate = kDoNotAnnotateForInterchange,
+      AnnotateForInterchange should_annotate = kDoNotAnnotateForInterchange,
       ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
-      EAbsoluteURLs should_resolve_urls = kDoNotResolveURLs,
+      AbsoluteURLs should_resolve_urls = kDoNotResolveURLs,
       Node* constraining_ancestor = nullptr);
 };
 
@@ -269,9 +269,9 @@ template <typename Strategy>
 String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
     const PositionTemplate<Strategy>& start_position,
     const PositionTemplate<Strategy>& end_position,
-    EAnnotateForInterchange should_annotate,
+    AnnotateForInterchange should_annotate,
     ConvertBlocksToInlines convert_blocks_to_inlines,
-    EAbsoluteURLs should_resolve_urls,
+    AbsoluteURLs should_resolve_urls,
     Node* constraining_ancestor) {
   if (start_position.IsNull() || end_position.IsNull())
     return g_empty_string;
@@ -303,9 +303,9 @@ String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
 
 String CreateMarkup(const Position& start_position,
                     const Position& end_position,
-                    EAnnotateForInterchange should_annotate,
+                    AnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_urls,
+                    AbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
@@ -314,9 +314,9 @@ String CreateMarkup(const Position& start_position,
 
 String CreateMarkup(const PositionInFlatTree& start_position,
                     const PositionInFlatTree& end_position,
-                    EAnnotateForInterchange should_annotate,
+                    AnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_urls,
+                    AbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingInFlatTreeStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
@@ -446,8 +446,8 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
 }
 
 String CreateMarkup(const Node* node,
-                    EChildrenOnly children_only,
-                    EAbsoluteURLs should_resolve_urls) {
+                    ChildrenOnly children_only,
+                    AbsoluteURLs should_resolve_urls) {
   if (!node)
     return "";
 

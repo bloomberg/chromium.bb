@@ -120,7 +120,7 @@ static bool OffsetIsBeforeLastNodeOffset(int offset, Node* anchor_node) {
 ApplyStyleCommand::ApplyStyleCommand(Document& document,
                                      const EditingStyle* style,
                                      InputEvent::InputType input_type,
-                                     EPropertyLevel property_level)
+                                     PropertyLevel property_level)
     : CompositeEditCommand(document),
       style_(style->Copy()),
       input_type_(input_type),
@@ -1877,7 +1877,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
     Node* passed_start,
     Node* passed_end,
     StyleChange& style_change,
-    EAddStyledElement add_styled_element,
+    AddStyledElement add_styled_element,
     EditingState* editing_state) {
   Node* start_node = passed_start;
   Node* end_node = passed_end;

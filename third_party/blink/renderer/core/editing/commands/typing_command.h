@@ -33,7 +33,7 @@ namespace blink {
 
 class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
  public:
-  enum ETypingCommand {
+  enum CommandType {
     kDeleteSelection,
     kDeleteKey,
     kForwardDeleteKey,
@@ -90,7 +90,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                                                              LocalFrame*);
 
   TypingCommand(Document&,
-                ETypingCommand,
+                CommandType,
                 const String& text,
                 Options,
                 TextGranularity,
@@ -113,7 +113,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       const wtf_size_t text_length,
       EditingState*);
 
-  ETypingCommand CommandTypeOfOpenCommand() const { return command_type_; }
+  CommandType CommandTypeOfOpenCommand() const { return command_type_; }
   TextCompositionType CompositionType() const { return composition_type_; }
   // |TypingCommand| may contain multiple |InsertTextCommand|, should return
   // |textDataForInputEvent()| of the last one.
@@ -122,7 +122,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
  private:
   static TypingCommand* Create(
       Document& document,
-      ETypingCommand command,
+      CommandType command,
       const String& text = "",
       Options options = 0,
       TextGranularity granularity = TextGranularity::kCharacter) {
@@ -131,7 +131,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   }
 
   static TypingCommand* Create(Document& document,
-                               ETypingCommand command,
+                               CommandType command,
                                const String& text,
                                Options options,
                                TextCompositionType composition_type) {
@@ -153,12 +153,12 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   bool IsTypingCommand() const override;
   bool PreservesTypingStyle() const override { return preserves_typing_style_; }
 
-  void UpdatePreservesTypingStyle(ETypingCommand);
-  void TypingAddedToOpenCommand(ETypingCommand);
+  void UpdatePreservesTypingStyle(CommandType);
+  void TypingAddedToOpenCommand(CommandType);
   bool MakeEditableRootEmpty(EditingState*);
 
-  void UpdateCommandTypeOfOpenCommand(ETypingCommand typing_command) {
-    command_type_ = typing_command;
+  void UpdateCommandTypeOfOpenCommand(CommandType command_type) {
+    command_type_ = command_type;
   }
 
   bool IsIncrementalInsertion() const { return is_incremental_insertion_; }
@@ -177,7 +177,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       bool kill_ring,
       EditingState*);
 
-  ETypingCommand command_type_;
+  CommandType command_type_;
   String text_to_insert_;
   bool open_for_more_typing_;
   const bool select_inserted_text_;

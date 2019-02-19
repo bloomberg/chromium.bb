@@ -135,7 +135,7 @@ class MarkupAccumulator::ElementSerializationData final {
   AtomicString serialized_prefix_;
 };
 
-MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolve_urls_method,
+MarkupAccumulator::MarkupAccumulator(AbsoluteURLs resolve_urls_method,
                                      SerializationType serialization_type)
     : formatter_(resolve_urls_method, serialization_type) {}
 
@@ -539,7 +539,7 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
 template <typename Strategy>
 void MarkupAccumulator::SerializeNodesWithNamespaces(
     const Node& target_node,
-    EChildrenOnly children_only) {
+    ChildrenOnly children_only) {
   if (!target_node.IsElementNode()) {
     if (!children_only)
       AppendStartMarkup(target_node);
@@ -590,7 +590,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
 
 template <typename Strategy>
 String MarkupAccumulator::SerializeNodes(const Node& target_node,
-                                         EChildrenOnly children_only) {
+                                         ChildrenOnly children_only) {
   if (!SerializeAsHTMLDocument(target_node)) {
     // https://w3c.github.io/DOM-Parsing/#dfn-xml-serialization
     DCHECK_EQ(namespace_stack_.size(), 0u);
@@ -608,6 +608,6 @@ String MarkupAccumulator::SerializeNodes(const Node& target_node,
 
 template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
     const Node&,
-    EChildrenOnly);
+    ChildrenOnly);
 
 }  // namespace blink

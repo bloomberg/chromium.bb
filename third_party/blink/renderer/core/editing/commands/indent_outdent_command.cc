@@ -59,7 +59,7 @@ static bool IsHTMLListOrBlockquoteElement(const Node* node) {
 }
 
 IndentOutdentCommand::IndentOutdentCommand(Document& document,
-                                           EIndentType type_of_action)
+                                           IndentType type_of_action)
     : ApplyBlockElementCommand(
           document,
           kBlockquoteTag,

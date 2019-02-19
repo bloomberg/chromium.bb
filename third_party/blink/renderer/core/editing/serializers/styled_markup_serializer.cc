@@ -120,8 +120,8 @@ bool StyledMarkupTraverser<Strategy>::ShouldConvertBlocksToInlines() const {
 
 template <typename Strategy>
 StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(
-    EAbsoluteURLs should_resolve_urls,
-    EAnnotateForInterchange should_annotate,
+    AbsoluteURLs should_resolve_urls,
+    AnnotateForInterchange should_annotate,
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     Node* highest_node_to_be_serialized,

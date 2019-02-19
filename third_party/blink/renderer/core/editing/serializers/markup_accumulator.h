@@ -46,12 +46,12 @@ class MarkupAccumulator {
   STACK_ALLOCATED();
 
  public:
-  MarkupAccumulator(EAbsoluteURLs,
+  MarkupAccumulator(AbsoluteURLs,
                     SerializationType = SerializationType::kAsOwnerDocument);
   virtual ~MarkupAccumulator();
 
   template <typename Strategy>
-  String SerializeNodes(const Node&, EChildrenOnly);
+  String SerializeNodes(const Node&, ChildrenOnly);
 
  protected:
   // Returns serialized prefix. It should be passed to AppendEndTag().
@@ -112,7 +112,7 @@ class MarkupAccumulator {
 
   template <typename Strategy>
   void SerializeNodesWithNamespaces(const Node& target_node,
-                                    EChildrenOnly children_only);
+                                    ChildrenOnly children_only);
 
   class NamespaceContext;
   Vector<NamespaceContext> namespace_stack_;
@@ -125,7 +125,7 @@ class MarkupAccumulator {
 
 extern template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
     const Node&,
-    EChildrenOnly);
+    ChildrenOnly);
 
 }  // namespace blink
 

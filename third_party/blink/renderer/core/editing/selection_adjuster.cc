@@ -309,7 +309,7 @@ class GranularityAdjuster final {
 
  private:
   template <typename Strategy>
-  static EWordSide ChooseWordSide(
+  static WordSide ChooseWordSide(
       const VisiblePositionTemplate<Strategy>& position) {
     return IsEndOfEditableOrNonEditableContent(position) ||
                    (IsEndOfLine(position) && !IsStartOfLine(position) &&

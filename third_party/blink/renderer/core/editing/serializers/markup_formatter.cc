@@ -123,7 +123,7 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
   }
 }
 
-MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolve_urls_method,
+MarkupFormatter::MarkupFormatter(AbsoluteURLs resolve_urls_method,
                                  SerializationType serialization_type)
     : resolve_urls_method_(resolve_urls_method),
       serialization_type_(serialization_type) {}
