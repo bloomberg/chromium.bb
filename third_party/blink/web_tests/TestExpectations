@@ -6016,16 +6016,12 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html 
 # Disabled until FreezeFramesOnVisiblity feature enabled by default.
 crbug.com/907125 external/wpt/lifecycle/child-display-none.tentative.html [ Skip ]
 
-# Sheriff 2019-02-01
-# These are crashy on Win10. The first is also flaky on other platforms, but apparently
-# this file doesn't support having two lines referring to the same test with nested specificity.
-crbug.com/927862 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/mousemove-to-scrollbar-changes-cursor.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/offsetX-offsetY-svg.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/mutation-during-replace-child-2.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/overflow-scroll-fake-mouse-move.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/event-view-toString.html [ Skip ]
-crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-page-leave.html [ Skip ]
+# Sheriff 2019-02-01, 2019-02-19
+# These are crashy on Win10, and seem to leave processes lying around, causing the swarming
+# task to hang.
+crbug.com/927860 [ Win10 ] virtual/user-activation-v2/ [ Skip ]
+crbug.com/927862 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
+crbug.com/927862 [ Linux ] virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
 
 # Recently became flaky on multiple platforms (Linux and Windows primarily)
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
