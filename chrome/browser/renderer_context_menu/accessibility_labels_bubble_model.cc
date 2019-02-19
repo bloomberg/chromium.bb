@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_context_menu/accessibility_labels_bubble_model.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,16 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+
+namespace {
+
+// static
+void RecordModalDialogAccepted(bool accepted) {
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.ImageLabels.ModalDialogAccepted",
+                        accepted);
+}
+
+}  // namespace
 
 AccessibilityLabelsBubbleModel::AccessibilityLabelsBubbleModel(
     Profile* profile,
@@ -54,8 +65,8 @@ void AccessibilityLabelsBubbleModel::Accept() {
   // Note that the user has already seen and accepted this opt-in dialog.
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kAccessibilityImageLabelsOptInAccepted, true);
+  RecordModalDialogAccepted(true);
 
-  // TODO(katie): Add logging.
   if (enable_always_) {
     SetPref(true);
     return;
@@ -65,10 +76,10 @@ void AccessibilityLabelsBubbleModel::Accept() {
 }
 
 void AccessibilityLabelsBubbleModel::Cancel() {
-  // TODO(katie): Add logging.
   if (enable_always_)
     SetPref(false);
   // If not enable_always_, canceling does not have any impact.
+  RecordModalDialogAccepted(/* not accepted */ false);
 }
 
 base::string16 AccessibilityLabelsBubbleModel::GetLinkText() const {

@@ -41,6 +41,8 @@ class AccessibilityLabelsService : public KeyedService {
 
   void OnImageLabelsEnabledChanged();
 
+  void UpdateAccessibilityLabelsHistograms();
+
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 

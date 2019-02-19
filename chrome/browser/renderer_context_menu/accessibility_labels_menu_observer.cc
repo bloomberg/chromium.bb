@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -31,6 +32,25 @@
 #include "ui/gfx/geometry/rect.h"
 
 using content::BrowserThread;
+
+namespace {
+
+// These enums are logged and must match AccessibilityImageLabelMode in
+// enums.xml.
+enum class AccessibilityImageLabelMode {
+  kModeEnabled = 1,
+  kModeEnabledOnce = 2,
+  kModeDisabled = 3,
+  kMaxValue = kModeDisabled,
+};
+
+// Static
+void RecordContextMenuOptionSelected(AccessibilityImageLabelMode option) {
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.ImageLabels.ContextMenuOption",
+                            option);
+}
+
+}  // namespace
 
 AccessibilityLabelsMenuObserver::AccessibilityLabelsMenuObserver(
     RenderViewContextMenuProxy* proxy)
@@ -77,9 +97,7 @@ bool AccessibilityLabelsMenuObserver::IsCommandIdEnabled(int command_id) {
 }
 
 void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
-  // TODO(katie): Add logging.
   DCHECK(IsCommandIdSupported(command_id));
-
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
   if (command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE) {
     // When a user enables the accessibility labeling item, we
@@ -91,9 +109,13 @@ void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
       // Always show the confirm bubble when enabling the full feature,
       // regardless of whether it's been shown before.
       ShowConfirmBubble(profile, true /* enable always */);
+      RecordContextMenuOptionSelected(
+          AccessibilityImageLabelMode::kModeEnabled);
     } else {
       profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
                                       false);
+      RecordContextMenuOptionSelected(
+          AccessibilityImageLabelMode::kModeDisabled);
     }
   } else if (command_id ==
              IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE) {
@@ -105,6 +127,8 @@ void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
       AccessibilityLabelsServiceFactory::GetForProfile(profile)
           ->EnableLabelsServiceOnce();
     }
+    RecordContextMenuOptionSelected(
+        AccessibilityImageLabelMode::kModeEnabledOnce);
   }
 }
 

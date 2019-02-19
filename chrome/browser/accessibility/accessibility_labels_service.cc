@@ -5,6 +5,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,6 +38,12 @@ void AccessibilityLabelsService::Init() {
       prefs::kAccessibilityImageLabelsEnabled,
       base::BindRepeating(
           &AccessibilityLabelsService::OnImageLabelsEnabledChanged,
+          weak_factory_.GetWeakPtr()));
+
+  // Log whether the feature is enabled after startup.
+  content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
+      base::BindRepeating(
+          &AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms,
           weak_factory_.GetWeakPtr()));
 }
 
@@ -81,4 +88,10 @@ void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {
     web_contents->SetAccessibilityMode(ax_mode);
   }
 #endif
+}
+
+void AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms() {
+  base::UmaHistogramBoolean("Accessibility.ImageLabels",
+                            profile_->GetPrefs()->GetBoolean(
+                                prefs::kAccessibilityImageLabelsEnabled));
 }
