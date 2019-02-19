@@ -7010,7 +7010,7 @@ namespace gles2 {
           if capability_es3:
             continue
           if 'extension_flag' in capability:
-            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info()->feature_flags().%s) {\n" %
                      capability['extension_flag'])
             f.write("  ")
           f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
@@ -7030,7 +7030,7 @@ namespace gles2 {
 """)
       f.write("""
 void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
-  auto* feature_info_ = group_->feature_info();
+  auto* feature_info_ = feature_info();
 """ % _prefix)
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATE_INFO.keys()):
@@ -7072,7 +7072,7 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
             f.write(guarded_operation)
         elif 'no_init' not in state:
           if 'extension_flag' in state:
-            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info()->feature_flags().%s) {\n" %
                        state['extension_flag'])
             f.write("  ")
           args = []

@@ -939,15 +939,15 @@ class GPU_GLES2_EXPORT TextureManager
   bool ClearRenderableLevels(DecoderContext* decoder, TextureRef* ref);
 
   // Clear a specific level.
-  bool ClearTextureLevel(DecoderContext* decoder,
-                         TextureRef* ref,
-                         GLenum target,
-                         GLint level);
+  static bool ClearTextureLevel(DecoderContext* decoder,
+                                TextureRef* ref,
+                                GLenum target,
+                                GLint level);
 
-  bool ClearTextureLevel(DecoderContext* decoder,
-                         Texture* texture,
-                         GLenum target,
-                         GLint level);
+  static bool ClearTextureLevel(DecoderContext* decoder,
+                                Texture* texture,
+                                GLenum target,
+                                GLint level);
 
   // Creates a new texture info.
   TextureRef* CreateTexture(GLuint client_id, GLuint service_id);

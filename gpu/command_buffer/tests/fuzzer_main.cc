@@ -356,13 +356,6 @@ class CommandBufferSetup {
 #endif
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(config_.workarounds, gpu_feature_info);
-    scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
-        gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
-        &translator_cache_, &completeness_cache_, feature_info,
-        config_.attrib_helper.bind_generates_resource, &image_manager_,
-        nullptr /* image_factory */, nullptr /* progress_reporter */,
-        gpu_feature_info, discardable_manager_.get(),
-        passthrough_discardable_manager_.get(), &shared_image_manager_);
     command_buffer_.reset(new CommandBufferDirect());
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
@@ -376,8 +369,16 @@ class CommandBufferSetup {
     auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
-        context_group.get(), std::move(context_state)));
+        gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
+        &shared_image_manager_, std::move(context_state)));
 #else
+    scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
+        gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
+        &translator_cache_, &completeness_cache_, feature_info,
+        config_.attrib_helper.bind_generates_resource, &image_manager_,
+        nullptr /* image_factory */, nullptr /* progress_reporter */,
+        gpu_feature_info, discardable_manager_.get(),
+        passthrough_discardable_manager_.get(), &shared_image_manager_);
     auto* context = context_.get();
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
@@ -396,7 +397,9 @@ class CommandBufferSetup {
     InitializeInitialCommandBuffer();
 
     decoder_->set_max_bucket_size(8 << 20);
+#if !defined(GPU_FUZZER_USE_RASTER_DECODER)
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+#endif
     return decoder_->MakeCurrent();
   }
 

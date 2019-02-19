@@ -599,7 +599,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
-          context_group_.get(), context_state_));
+          task_executor_->gpu_feature_info(), task_executor_->gpu_preferences(),
+          context_group_->memory_tracker(),
+          task_executor_->shared_image_manager(), context_state_));
     } else {
       decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
                                                  task_executor_->outputter(),
