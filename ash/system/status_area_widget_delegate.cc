@@ -136,7 +136,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   if (shelf_->IsHorizontalAlignment()) {
-    for (int c = child_count() - 1; c >= 0; --c) {
+    for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);
       if (!child->visible())
         continue;
@@ -145,7 +145,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
                          views::GridLayout::USE_PREF, 0, 0);
     }
     layout->StartRow(0, 0);
-    for (int c = child_count() - 1; c >= 0; --c) {
+    for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);
       if (child->visible())
         layout->AddView(child);
@@ -154,7 +154,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
-    for (int c = child_count() - 1; c >= 0; --c) {
+    for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);
       if (!child->visible())
         continue;
