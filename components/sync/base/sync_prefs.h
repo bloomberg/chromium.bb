@@ -55,18 +55,6 @@ class CryptoSyncPrefs {
   virtual std::string GetKeystoreEncryptionBootstrapToken() const = 0;
   virtual void SetKeystoreEncryptionBootstrapToken(
       const std::string& token) = 0;
-
-  // Get/set for flag indicating that passphrase encryption transition is in
-  // progress.
-  virtual void SetPassphraseEncryptionTransitionInProgress(bool value) = 0;
-  virtual bool GetPassphraseEncryptionTransitionInProgress() const = 0;
-
-  // Get/set for saved Nigori specifics that must be passed to backend
-  // initialization after transition.
-  virtual void SetNigoriSpecificsForPassphraseTransition(
-      const sync_pb::NigoriSpecifics& nigori_specifics) = 0;
-  virtual void GetNigoriSpecificsForPassphraseTransition(
-      sync_pb::NigoriSpecifics* nigori_specifics) const = 0;
 };
 
 // SyncPrefs is a helper class that manages getting, setting, and persisting
@@ -206,18 +194,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   std::string GetLastRunVersion() const;
   void SetLastRunVersion(const std::string& current_version);
 
-  // Get/set for flag indicating that passphrase encryption transition is in
-  // progress.
-  void SetPassphraseEncryptionTransitionInProgress(bool value) override;
-  bool GetPassphraseEncryptionTransitionInProgress() const override;
-
-  // Get/set for saved Nigori specifics that must be passed to backend
-  // initialization after transition.
-  void SetNigoriSpecificsForPassphraseTransition(
-      const sync_pb::NigoriSpecifics& nigori_specifics) override;
-  void GetNigoriSpecificsForPassphraseTransition(
-      sync_pb::NigoriSpecifics* nigori_specifics) const override;
-
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
 
@@ -262,6 +238,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
 void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service);
 void ClearObsoleteUserTypePrefs(PrefService* pref_service);
+void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

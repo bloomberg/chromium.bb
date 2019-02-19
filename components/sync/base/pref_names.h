@@ -84,9 +84,6 @@ extern const char kSyncInvalidationVersions[];
 
 extern const char kSyncLastRunVersion[];
 
-extern const char kSyncPassphraseEncryptionTransitionInProgress[];
-extern const char kSyncNigoriStateForPassphraseTransition[];
-
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
 
