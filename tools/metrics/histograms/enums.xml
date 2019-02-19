@@ -31249,6 +31249,7 @@ from previous Chrome versions.
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
+  <int value="-1241002324" label="FocusMode:enabled"/>
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
   <int value="-1237621246" label="WebXRGamepadSupport:disabled"/>
   <int value="-1236065190" label="HardwareMediaKeyHandling:disabled"/>
@@ -32888,6 +32889,7 @@ from previous Chrome versions.
   <int value="1593917165" label="SimplifiedNTP:disabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
   <int value="1594664550" label="NTPModernLayout:enabled"/>
+  <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1611522475" label="AutofillPrimaryInfoStyleExperiment:disabled"/>

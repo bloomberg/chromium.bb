@@ -1426,6 +1426,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabLoadingAnimation)},
 #endif  // !defined(OS_ANDROID)
+    {"focus-mode", flag_descriptions::kFocusMode,
+     flag_descriptions::kFocusModeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kFocusMode)},
     {"site-settings", flag_descriptions::kSiteSettings,
      flag_descriptions::kSiteSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSiteSettings)},

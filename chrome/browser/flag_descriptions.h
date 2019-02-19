@@ -642,6 +642,9 @@ extern const char kFillOnAccountSelectDescription[];
 extern const char kFillOnAccountSelectHttpName[];
 extern const char kFillOnAccountSelectHttpDescription[];
 
+extern const char kFocusMode[];
+extern const char kFocusModeDescription[];
+
 extern const char kForceTextDirectionName[];
 extern const char kForceTextDirectionDescription[];
 extern const char kForceDirectionLtr[];
