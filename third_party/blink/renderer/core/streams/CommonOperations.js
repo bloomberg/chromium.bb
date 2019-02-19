@@ -13,6 +13,11 @@
   const _queue = v8.createPrivateSymbol('[[queue]]');
   const _queueTotalSize = v8.createPrivateSymbol('[[queueTotalSize]]');
 
+  // A symbol to protect against double-resolution of promises. This
+  // functionality is not explicit in the standard, but is implied in the way
+  // the operations are defined.
+  const _isSettled = v8.createPrivateSymbol('isSettled');
+
   // Javascript functions. It is important to use these copies for security and
   // robustness. See "V8 Extras Design Doc", section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
@@ -72,6 +77,12 @@
     if (!v8.isPromise(p)) {
       streamInternalError();
     }
+
+    if (p[_isSettled]) {
+      return;
+    }
+    p[_isSettled] = true;
+
     v8.rejectPromise(p, reason);
   }
 
@@ -79,6 +90,12 @@
     if (!v8.isPromise(p)) {
       streamInternalError();
     }
+
+    if (p[_isSettled]) {
+      return;
+    }
+    p[_isSettled] = true;
+
     v8.resolvePromise(p, value);
   }
 
