@@ -46,7 +46,10 @@ class NET_EXPORT HttpContentDisposition {
     HAS_PERCENT_ENCODED_STRINGS = 1 << 5,
 
     // Quoted-string contains RFC 2047 encoded words.
-    HAS_RFC2047_ENCODED_STRINGS = 1 << 6
+    HAS_RFC2047_ENCODED_STRINGS = 1 << 6,
+
+    // Has a filename that starts with a single quote.
+    HAS_SINGLE_QUOTED_FILENAME = 1 << 7,
   };
 
   HttpContentDisposition(const std::string& header,
