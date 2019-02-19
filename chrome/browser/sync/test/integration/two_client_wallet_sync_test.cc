@@ -560,12 +560,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
   // Make sure they have the same local profile.
   std::vector<AutofillProfile*> local_addresses_0 = GetLocalProfiles(0);
-  EXPECT_EQ(1u, local_addresses_0.size());
+  ASSERT_EQ(1u, local_addresses_0.size());
+  // Make a copy in case it gets freed later.
+  AutofillProfile local_address_0 = *local_addresses_0[0];
 
   std::vector<AutofillProfile*> local_addresses_1 = GetLocalProfiles(1);
-  EXPECT_EQ(1u, local_addresses_1.size());
-  EXPECT_TRUE(
-      local_addresses_0[0]->EqualsForSyncPurposes(*local_addresses_1[0]));
+  ASSERT_EQ(1u, local_addresses_1.size());
+  EXPECT_TRUE(local_address_0.EqualsForSyncPurposes(*local_addresses_1[0]));
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
