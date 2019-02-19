@@ -50,9 +50,15 @@ class Server(object):
     if self._process is None:
       raise RuntimeError('ChromeDriver server cannot be started')
 
-    max_time = time.time() + 10
+    max_time = time.time() + 20
     while not self.IsRunning():
       if time.time() > max_time:
+        self._process.poll()
+        if self._process.returncode is None:
+          print 'ChromeDriver process still running, but not responding'
+        else:
+          print ('ChromeDriver process exited with return code %d'
+                 % self._process.returncode)
         self._process.terminate()
         raise RuntimeError('ChromeDriver server did not start')
       time.sleep(0.1)
