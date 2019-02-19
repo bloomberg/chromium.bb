@@ -186,7 +186,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 38
+// Next available id: 39
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -397,6 +397,9 @@ message AutofillUploadContents {
 
   // Whether the fields are enclosed by a <form> tag or are unowned elements.
   optional bool has_form_tag = 37;
+
+  // Captures whether or not this upload was a candidate for throttling.
+  optional bool was_throttleable = 38;
 }
 
 // This proto contains information about the validity of each field in an

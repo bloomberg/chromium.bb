@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
@@ -29,6 +30,13 @@ namespace autofill {
 
 class AutofillDriver;
 class FormStructure;
+
+// A helper to make sure that tests which modify the set of active autofill
+// experiments do not interfere with one another.
+struct ScopedActiveAutofillExperiments {
+  ScopedActiveAutofillExperiments();
+  ~ScopedActiveAutofillExperiments();
+};
 
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager {
@@ -111,6 +119,7 @@ class AutofillDownloadManager {
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Upload);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Query);
+  friend struct ScopedActiveAutofillExperiments;
 
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
@@ -157,6 +166,9 @@ class AutofillDownloadManager {
       base::TimeTicks request_start,
       std::unique_ptr<std::string> response_body);
 
+  static void InitActiveExperiments();
+  static void ResetActiveExperiments();
+
   // The AutofillDriver that this instance will use. Must not be null, and must
   // outlive this instance.
   AutofillDriver* const driver_;  // WEAK
@@ -171,6 +183,12 @@ class AutofillDownloadManager {
   // The autofill server URL root: scheme://host[:port]/path excluding the
   // final path component for the request and the query params.
   const GURL autofill_server_url_;
+
+  // The period after which the tracked set of uploads to throttle is reset.
+  const base::TimeDelta throttle_reset_period_;
+
+  // The set of active autofill server experiments.
+  static std::vector<variations::VariationID>* active_experiments_;
 
   // Loaders used for the processing the requests. Invalidated after completion.
   std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;
