@@ -5,8 +5,8 @@ vars = {
 
   # When changing these, also update the svn revisions in deps_revisions.gni
   "clang_format_revision": "96636aa0e9f047f17447f2d45a094d0b59ed7917",
-  "libcxx_revision":       "e713cc0acf1ae8b82f451bf58ebef67a46ceddfb",
-  "libcxxabi_revision":    "307bb62985575b2e3216a8cfd7e122e0574f33a9",
+  "libcxx_revision":       "22d3f6dd25e5efc59124ba1c00b8f98b14be4201",
+  "libcxxabi_revision":    "0d529660e32d77d9111912d73f2c74fc5fa2a858",
   "libunwind_revision":    "69d9b84cca8354117b9fe9705a4430d789ee599b",
 }
 
