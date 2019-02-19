@@ -603,6 +603,7 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
   // We may be destroyed before we allocate any buffer.
   if (input_queue_)
     input_queue_->DeallocateBuffers();
+  input_queue_ = nullptr;
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
@@ -614,6 +615,7 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
   // We may be destroyed before we allocate any buffer.
   if (output_queue_)
     output_queue_->DeallocateBuffers();
+  output_queue_ = nullptr;
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
@@ -636,7 +638,6 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 void V4L2ImageProcessor::ServiceDeviceTask() {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
-  DCHECK(input_queue_);
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
   // * device_poll_thread_ is running normally
@@ -644,6 +645,8 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
   //   in which case we should early-out.
   if (!device_poll_thread_.task_runner())
     return;
+
+  DCHECK(input_queue_);
 
   Dequeue();
   ProcessJobsTask();
