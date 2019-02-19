@@ -4266,6 +4266,24 @@
             ]
         }
     ],
+    "SafeBrowsingTelemetryForApkDownloads": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "enabled": "true"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingTelemetryForApkDownloads"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingThreatDomDetailsTagAttributes": [
         {
             "platforms": [
