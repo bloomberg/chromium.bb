@@ -323,12 +323,15 @@ class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
   ~TestProfileBuilder() override;
 
   // StackSamplingProfiler::ProfileBuilder:
+  ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
   void OnSampleCompleted(Frames frames) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
 
  private:
+  ModuleCache module_cache_;
+
   // The sets of frames recorded.
   std::vector<Frames> frame_sets_;
 
@@ -345,6 +348,10 @@ TestProfileBuilder::TestProfileBuilder(const ProfileCompletedCallback& callback)
     : callback_(callback) {}
 
 TestProfileBuilder::~TestProfileBuilder() = default;
+
+ModuleCache* TestProfileBuilder::GetModuleCache() {
+  return &module_cache_;
+}
 
 void TestProfileBuilder::RecordMetadata() {
   ++metadata_count_;

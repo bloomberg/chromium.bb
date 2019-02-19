@@ -64,6 +64,10 @@ CallStackProfileBuilder::CallStackProfileBuilder(
 
 CallStackProfileBuilder::~CallStackProfileBuilder() = default;
 
+base::ModuleCache* CallStackProfileBuilder::GetModuleCache() {
+  return &module_cache_;
+}
+
 // This function is invoked on the profiler thread while the target thread is
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.

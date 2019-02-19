@@ -264,6 +264,7 @@ class ScopedSuspendThread {
 class NativeStackSamplerMac : public NativeStackSampler {
  public:
   NativeStackSamplerMac(mach_port_t thread_port,
+                        ModuleCache* module_cache,
                         NativeStackSamplerTestDelegate* test_delegate);
   ~NativeStackSamplerMac() override;
 
@@ -293,13 +294,13 @@ class NativeStackSamplerMac : public NativeStackSampler {
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
 
+  // Maps a module's address range to the module.
+  ModuleCache* const module_cache_;
+
   NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
-
-  // Maps a module's address range to the module.
-  ModuleCache module_cache_;
 
   // The address range of |_sigtramp|, the signal trampoline function.
   uintptr_t sigtramp_start_;
@@ -310,8 +311,10 @@ class NativeStackSamplerMac : public NativeStackSampler {
 
 NativeStackSamplerMac::NativeStackSamplerMac(
     mach_port_t thread_port,
+    ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_port_(thread_port),
+      module_cache_(module_cache),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
           pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))) {
@@ -327,7 +330,6 @@ NativeStackSamplerMac::NativeStackSamplerMac(
 NativeStackSamplerMac::~NativeStackSamplerMac() {}
 
 void NativeStackSamplerMac::ProfileRecordingStarting() {
-  module_cache_.Clear();
 }
 
 std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
@@ -387,7 +389,7 @@ std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   uintptr_t rip = thread_state.__rip;
   if (MayTriggerUnwInitLocalCrash(rip)) {
-    frames.emplace_back(rip, module_cache_.GetModuleForAddress(rip));
+    frames.emplace_back(rip, module_cache_->GetModuleForAddress(rip));
     return frames;
   }
 
@@ -442,7 +444,7 @@ bool NativeStackSamplerMac::WalkStackFromContext(
     // libunwind adds the expected stack size, it will look for the return
     // address in the wrong place. This check should ensure that we bail before
     // trying to deref a bad IP obtained this way in the previous frame.
-    const ModuleCache::Module& module = module_cache_.GetModuleForAddress(rip);
+    const ModuleCache::Module& module = module_cache_->GetModuleForAddress(rip);
     if (!module.is_valid)
       return false;
 
@@ -512,8 +514,10 @@ void NativeStackSamplerMac::WalkStack(
 // static
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
+    ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate) {
-  return std::make_unique<NativeStackSamplerMac>(thread_id, test_delegate);
+  return std::make_unique<NativeStackSamplerMac>(thread_id, module_cache,
+                                                 test_delegate);
 }
 
 // static

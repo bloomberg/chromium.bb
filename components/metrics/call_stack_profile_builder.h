@@ -74,6 +74,7 @@ class CallStackProfileBuilder
   ~CallStackProfileBuilder() override;
 
   // base::StackSamplingProfiler::ProfileBuilder:
+  base::ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override;
@@ -102,6 +103,10 @@ class CallStackProfileBuilder
     bool operator()(const CallStackProfile::Stack* stack1,
                     const CallStackProfile::Stack* stack2) const;
   };
+
+  // The module cache to use for the duration the sampling associated with this
+  // ProfileBuilder.
+  base::ModuleCache module_cache_;
 
   unsigned int last_work_id_ = std::numeric_limits<unsigned int>::max();
   bool is_continued_work_ = false;

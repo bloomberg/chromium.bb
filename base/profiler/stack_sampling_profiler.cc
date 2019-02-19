@@ -699,7 +699,8 @@ void StackSamplingProfiler::Start() {
   DCHECK(profile_builder_);
 
   if (!native_sampler_)
-    native_sampler_ = NativeStackSampler::Create(thread_id_, test_delegate_);
+    native_sampler_ = NativeStackSampler::Create(
+        thread_id_, profile_builder_->GetModuleCache(), test_delegate_);
 
   if (!native_sampler_)
     return;

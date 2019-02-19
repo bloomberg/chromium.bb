@@ -411,6 +411,7 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
 class NativeStackSamplerWin : public NativeStackSampler {
  public:
   NativeStackSamplerWin(win::ScopedHandle thread_handle,
+                        ModuleCache* module_cache,
                         NativeStackSamplerTestDelegate* test_delegate);
   ~NativeStackSamplerWin() override;
 
@@ -439,6 +440,9 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
 NativeStackSamplerWin::NativeStackSamplerWin(
     win::ScopedHandle thread_handle,
+    // Ignored for now, until we can switch the internal module cache to use
+    // this one.
+    ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_handle_(thread_handle.Take()),
       test_delegate_(test_delegate),
@@ -515,6 +519,7 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
 // static
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
+    ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate) {
 #if _WIN64
   // Get the thread's handle.
@@ -524,7 +529,7 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
 
   if (thread_handle) {
     return std::unique_ptr<NativeStackSampler>(new NativeStackSamplerWin(
-        win::ScopedHandle(thread_handle), test_delegate));
+        win::ScopedHandle(thread_handle), module_cache, test_delegate));
   }
 #endif
   return std::unique_ptr<NativeStackSampler>();

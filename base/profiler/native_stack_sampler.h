@@ -14,6 +14,7 @@
 
 namespace base {
 
+class ModuleCache;
 class NativeStackSamplerTestDelegate;
 
 // NativeStackSampler is an implementation detail of StackSamplingProfiler. It
@@ -47,6 +48,7 @@ class NativeStackSampler {
   // Returns null if this platform does not support stack sampling.
   static std::unique_ptr<NativeStackSampler> Create(
       PlatformThreadId thread_id,
+      ModuleCache* module_cache,
       NativeStackSamplerTestDelegate* test_delegate);
 
   // Gets the required size of the stack buffer.

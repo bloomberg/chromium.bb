@@ -13,6 +13,7 @@ namespace base {
 
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
+    ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate) {
   return std::unique_ptr<NativeStackSampler>();
 }
