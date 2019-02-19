@@ -35,7 +35,7 @@ namespace views {
 
 namespace {
 
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false);
 
 // How long the hover animation takes if uninterrupted.
 const int kHoverFadeDurationMs = 150;

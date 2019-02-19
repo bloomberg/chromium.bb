@@ -33,12 +33,6 @@
 //    // allocated object, and has to be owned and freed by the class.
 //    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 //
-//    // Use this to define a non exported property that is primitive,
-//    // or a pointer you don't want to automatically deleted, and is used
-//    // only in a specific file. This will define the property in an unnamed
-//    // namespace which cannot be accessed from another file.
-//    DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault);
-//
 //  }  // foo namespace
 //
 // To define a new type used for ClassProperty.
@@ -234,17 +228,8 @@ class UI_BASE_EXPORT PropertyHelper {
 
 #define DEFINE_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)                    \
   static_assert(sizeof(TYPE) <= sizeof(int64_t), "property type too large"); \
-  namespace {                                                                \
   const ::ui::ClassProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
-  } /* namespace */                                                          \
   const ::ui::ClassProperty<TYPE>* const NAME = &NAME##_Value;
-
-#define DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)              \
-  static_assert(sizeof(TYPE) <= sizeof(int64_t), "property type too large"); \
-  namespace {                                                                \
-  const ::ui::ClassProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
-  const ::ui::ClassProperty<TYPE>* const NAME = &NAME##_Value;               \
-  }  // namespace
 
 #define DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)         \
   namespace {                                                           \

@@ -136,7 +136,7 @@ constexpr int kTextFontSizeDelta = 1;
 constexpr double kProgressNotificationMessageRatio = 0.7;
 
 // This key/property allows tagging the textfield with its index.
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(int, kTextfieldIndexKey, 0U);
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kTextfieldIndexKey, 0U);
 
 // FontList for the texts except for the header.
 gfx::FontList GetTextFontList() {
