@@ -315,6 +315,11 @@ function PDFViewer(browserApi) {
 
   // Request translated strings.
   chrome.resourcesPrivate.getStrings('pdf', this.handleStrings_.bind(this));
+
+  // Listen for save commands from the browser.
+  if (chrome.mimeHandlerPrivate && chrome.mimeHandlerPrivate.onSave) {
+    chrome.mimeHandlerPrivate.onSave.addListener(this.onSave.bind(this));
+  }
 }
 
 PDFViewer.prototype = {
@@ -1121,6 +1126,21 @@ PDFViewer.prototype = {
    */
   setIsFormFieldFocused: function(focused) {
     this.isFormFieldFocused_ = focused;
+  },
+
+  /**
+   * An event handler for when the browser tells the PDF Viewer to perform a
+   * save.
+   *
+   * @param {string} streamUrl unique identifier for a PDF Viewer instance.
+   * @private
+   */
+  onSave: async function(streamUrl) {
+    if (streamUrl != this.browserApi_.getStreamInfo().streamUrl) {
+      return;
+    }
+
+    this.save();
   },
 
   /**

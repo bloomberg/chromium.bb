@@ -16541,6 +16541,7 @@ Called by update_net_error_codes.py.-->
   <int value="433" label="AUTOFILL_PRIVATE_ON_LOCAL_CREDIT_CARD_LIST_CHANGED"/>
   <int value="434" label="AUTOFILL_PRIVATE_ON_SERVER_CREDIT_CARD_LIST_CHANGED"/>
   <int value="435" label="ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY"/>
+  <int value="436" label="MIME_HANDLER_PRIVATE_SAVE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">

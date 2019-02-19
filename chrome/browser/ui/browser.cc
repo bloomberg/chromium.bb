@@ -205,6 +205,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -1573,6 +1574,12 @@ void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
     WebContents* source) {
   return JavaScriptDialogTabHelper::FromWebContents(source);
+}
+
+bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {
+  auto* guest_view =
+      extensions::MimeHandlerViewGuest::FromWebContents(guest_web_contents);
+  return guest_view && guest_view->PluginDoSave();
 }
 
 content::ColorChooser* Browser::OpenColorChooser(

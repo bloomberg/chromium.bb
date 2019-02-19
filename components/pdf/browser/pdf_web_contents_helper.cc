@@ -81,6 +81,10 @@ void PDFWebContentsHelper::SelectionChanged(const gfx::PointF& left,
   DidScroll();
 }
 
+void PDFWebContentsHelper::SetPluginCanSave(bool can_save) {
+  client_->SetPluginCanSave(web_contents(), can_save);
+}
+
 void PDFWebContentsHelper::DidScroll() {
   if (!touch_selection_controller_client_manager_)
     InitTouchSelectionClientManager();

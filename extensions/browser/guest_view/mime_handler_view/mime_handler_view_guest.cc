@@ -22,12 +22,14 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/api/mime_handler_private.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -156,7 +158,7 @@ void MimeHandlerViewGuest::SetBeforeUnloadController(
 }
 
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
-  return "mimeHandlerViewGuestInternal";
+  return mime_handler_view::kAPINamespace;
 }
 
 int MimeHandlerViewGuest::GetTaskPrefix() const {
@@ -314,6 +316,29 @@ MimeHandlerViewGuest::GetJavaScriptDialogManager(
   // JavaScriptDialogManager we will be honest about who we are.
   return owner_web_contents()->GetDelegate()->GetJavaScriptDialogManager(
       owner_web_contents());
+}
+
+bool MimeHandlerViewGuest::PluginDoSave() {
+  if (!attached() || !plugin_can_save_)
+    return false;
+
+  base::ListValue::ListStorage args;
+  args.emplace_back(stream_->stream_url().spec());
+
+  auto event = std::make_unique<Event>(
+      events::MIME_HANDLER_PRIVATE_SAVE,
+      api::mime_handler_private::OnSave::kEventName,
+      std::make_unique<base::ListValue>(std::move(args)), browser_context());
+  EventRouter* event_router = EventRouter::Get(browser_context());
+  event_router->DispatchEventToExtension(extension_misc::kPdfExtensionId,
+                                         std::move(event));
+  return true;
+}
+
+bool MimeHandlerViewGuest::GuestSaveFrame(
+    content::WebContents* guest_web_contents) {
+  MimeHandlerViewGuest* guest_view = FromWebContents(guest_web_contents);
+  return guest_view == this && PluginDoSave();
 }
 
 bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
