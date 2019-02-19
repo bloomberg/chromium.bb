@@ -638,6 +638,7 @@ void AssistantInteractionController::OnUiVisible(
       FALLTHROUGH;
     case AssistantEntryPoint::kDeepLink:
     case AssistantEntryPoint::kHotword:
+    case AssistantEntryPoint::kLauncherSearchResult:
       should_attempt_warmer_welcome_ = false;
       break;
     case AssistantEntryPoint::kUnspecified:

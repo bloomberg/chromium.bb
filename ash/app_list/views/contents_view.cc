@@ -113,7 +113,7 @@ void ContentsView::Init(AppListModel* model) {
 
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
     assistant_page_view_ =
-        new AssistantPageView(this, view_delegate->GetAssistantViewDelegate());
+        new AssistantPageView(view_delegate->GetAssistantViewDelegate());
     assistant_page_view_->SetVisible(false);
     AddLauncherPage(assistant_page_view_,
                     ash::AppListState::kStateEmbeddedAssistant);
@@ -365,13 +365,15 @@ void ContentsView::UpdateSearchBox(double progress,
 void ContentsView::UpdateExpandArrowOpacity(double progress,
                                             ash::AppListState current_state,
                                             ash::AppListState target_state) {
-  if (current_state == ash::AppListState::kStateSearchResults &&
+  if ((current_state == ash::AppListState::kStateSearchResults ||
+       current_state == ash::AppListState::kStateEmbeddedAssistant) &&
       (target_state == ash::AppListState::kStateStart ||
        target_state == ash::AppListState::kStateApps)) {
     // Fade in the expand arrow when search results page is opened.
     expand_arrow_view_->layer()->SetOpacity(
         gfx::Tween::FloatValueBetween(progress, 0, 1));
-  } else if (target_state == ash::AppListState::kStateSearchResults &&
+  } else if ((target_state == ash::AppListState::kStateSearchResults ||
+              target_state == ash::AppListState::kStateEmbeddedAssistant) &&
              (current_state == ash::AppListState::kStateStart ||
               current_state == ash::AppListState::kStateApps)) {
     // Fade out the expand arrow when search results page is closed.

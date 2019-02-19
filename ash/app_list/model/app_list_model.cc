@@ -40,7 +40,13 @@ void AppListModel::SetStatus(ash::AppListModelStatus status) {
 }
 
 void AppListModel::SetState(ash::AppListState state) {
+  if (state_ == state)
+    return;
+
+  auto old_state = state_;
   state_ = state;
+  for (auto& observer : observers_)
+    observer.OnAppListStateChanged(state_, old_state);
 }
 
 void AppListModel::SetStateFullscreen(AppListViewState state) {

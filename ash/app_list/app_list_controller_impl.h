@@ -17,6 +17,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -58,7 +59,8 @@ class ASH_EXPORT AppListControllerImpl
       public WallpaperControllerObserver,
       public DefaultVoiceInteractionObserver,
       public WindowTreeHostManager::Observer,
-      public ash::MruWindowTracker::Observer {
+      public ash::MruWindowTracker::Observer,
+      public AssistantUiModelObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -125,6 +127,8 @@ class ASH_EXPORT AppListControllerImpl
   void OnAppListItemAdded(app_list::AppListItem* item) override;
   void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
   void OnAppListItemUpdated(app_list::AppListItem* item) override;
+  void OnAppListStateChanged(ash::AppListState new_state,
+                             ash::AppListState old_state) override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
@@ -236,6 +240,13 @@ class ASH_EXPORT AppListControllerImpl
 
   // MruWindowTracker::Observer:
   void OnWindowUntracked(aura::Window* untracked_window) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 

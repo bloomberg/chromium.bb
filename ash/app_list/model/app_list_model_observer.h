@@ -31,6 +31,10 @@ class APP_LIST_MODEL_EXPORT AppListModelObserver {
   // Triggered after |item| has moved, changed folders, or changed properties.
   virtual void OnAppListItemUpdated(AppListItem* item) {}
 
+  // Triggered after AppListState has changed.
+  virtual void OnAppListStateChanged(ash::AppListState new_state,
+                                     ash::AppListState old_state) {}
+
   // Triggered when the custom launcher page enabled state is changed.
   virtual void OnCustomLauncherPageEnabledStateChanged(bool enabled) {}
 

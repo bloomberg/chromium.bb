@@ -21,13 +21,12 @@ class LayerOwner;
 namespace app_list {
 
 class AssistantMainView;
-class ContentsView;
 
 // The Assistant page for the app list.
 class APP_LIST_EXPORT AssistantPageView : public AppListPage {
  public:
-  AssistantPageView(ContentsView* contents_view,
-                    ash::AssistantViewDelegate* assistant_view_delegate);
+  explicit AssistantPageView(
+      ash::AssistantViewDelegate* assistant_view_delegate);
   ~AssistantPageView() override;
 
   void InitLayout();
@@ -50,8 +49,9 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   views::View* GetLastFocusableView() override;
 
  private:
+  ash::AssistantViewDelegate* const assistant_view_delegate_;
+
   // Owned by the views hierarchy.
-  ContentsView* contents_view_ = nullptr;
   AssistantMainView* assistant_main_view_ = nullptr;
 
   // Used to enforce round corners on the Assistant view hierarchy.

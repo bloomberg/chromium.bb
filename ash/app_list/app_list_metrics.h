@@ -131,7 +131,8 @@ enum AppListShowSource {
   kTabletMode = 3,
   kSearchKeyFullscreen = 4,
   kShelfButtonFullscreen = 5,
-  kMaxValue = kShelfButtonFullscreen,
+  kAssistantEntryPoint = 6,
+  kMaxValue = kAssistantEntryPoint,
 };
 
 // The two versions of folders. These values are written to logs.  New enum

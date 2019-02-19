@@ -1640,6 +1640,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Shown Via Tablet Mode Transition"/>
   <int value="4" label="Search Key With Shift"/>
   <int value="5" label="Shelf Button With Shift"/>
+  <int value="6" label="Assistant Entry Point"/>
 </enum>
 
 <enum name="AppListStateTransitionSource">
@@ -2037,6 +2038,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="kLongPressLauncher"/>
   <int value="6" label="kSetup"/>
   <int value="7" label="kStylus"/>
+  <int value="8" label="kLauncherSearchResult"/>
 </enum>
 
 <enum name="AssistantExitPoint">
@@ -2048,6 +2050,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="kOutsidePress"/>
   <int value="6" label="kSetup"/>
   <int value="7" label="kStylus"/>
+  <int value="8" label="kBackInLauncher"/>
+  <int value="9" label="kLauncherClose"/>
+  <int value="10" label="kLauncherOpen"/>
 </enum>
 
 <enum name="AssistantGestureType">
