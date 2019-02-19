@@ -57,7 +57,7 @@ bool WorkingSetTrimmer::ShouldObserve(const NodeBase* coordination_unit) {
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
-    const ProcessNodeImpl* process_cu) {
+    ProcessNodeImpl* process_cu) {
   const base::ProcessId process_id = process_cu->process_id();
   if (process_id != base::kNullProcessId) {
     EmptyWorkingSet(process_id, process_cu->launch_time());
