@@ -663,10 +663,8 @@ void ToolbarView::InitLayout() {
 void ToolbarView::LayoutCommon() {
   DCHECK(display_mode_ == DisplayMode::NORMAL);
 
-  constexpr gfx::Insets kToolbarInteriorMargin(4, 8, 5, 8);
-  const gfx::Insets interior_margin = ui::MaterialDesignController::touch_ui()
-                                          ? gfx::Insets()
-                                          : kToolbarInteriorMargin;
+  const gfx::Insets interior_margin =
+      GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
   layout_manager_->SetInteriorMargin(interior_margin);
 
   const bool maximized =

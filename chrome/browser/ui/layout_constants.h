@@ -116,6 +116,9 @@ enum LayoutInset {
 
   // The padding inside the border of a toolbar action view button.
   TOOLBAR_ACTION_VIEW,
+
+  // The padding between the edges of the toolbar and its content.
+  TOOLBAR_INTERIOR_MARGIN,
 };
 
 int GetLayoutConstant(LayoutConstant constant);

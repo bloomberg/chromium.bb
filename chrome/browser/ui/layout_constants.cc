@@ -101,6 +101,9 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
       // https://crbug.com/822967.
       return gfx::Insets(touch_ui ? 10 : 0);
     }
+
+    case TOOLBAR_INTERIOR_MARGIN:
+      return touch_ui ? gfx::Insets() : gfx::Insets(4, 8, 5, 8);
   }
   NOTREACHED();
   return gfx::Insets();

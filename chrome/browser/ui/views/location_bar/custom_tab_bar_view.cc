@@ -186,19 +186,11 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       kForegroundColor, kCustomTabBarViewBackgroundColor);
   AddChildView(title_origin_view_);
 
-  int padding = GetLayoutConstant(LayoutConstant::LOCATION_BAR_ELEMENT_PADDING);
-  // The location icon already has some padding, so we subtract it from the
-  // padding we're going to apply.
-  int location_icon_padding =
-      GetLayoutInsets(LayoutInset::LOCATION_BAR_ICON_INTERIOR_PADDING).left();
-  gfx::Insets insets(padding, padding - location_icon_padding, padding,
-                     padding);
-
   auto layout = std::make_unique<views::FlexLayout>();
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(insets);
+      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
 
   SetLayoutManager(std::move(layout));
 
