@@ -196,6 +196,12 @@ bool RunOpenFileDialog(HWND owner,
     return false;
   }
 
+  // The FOS_FORCEFILESYSTEM option ensures that if the user enters a URL in the
+  // "File name" box, it will be downloaded locally and its new file path will
+  // be returned by the dialog. This was a default option in the deprecated
+  // GetOpenFileName API.
+  dialog_options |= FOS_FORCEFILESYSTEM;
+
   if (!ConfigureDialog(file_open_dialog.Get(), title, ok_button_label,
                        default_path, filter, *filter_index, dialog_options)) {
     return false;
@@ -267,7 +273,7 @@ bool ExecuteSelectFolder(HWND owner,
         IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON);
   }
 
-  DWORD dialog_options = FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM;
+  DWORD dialog_options = FOS_PICKFOLDERS;
 
   std::vector<FileFilterSpec> no_filter;
   int filter_index = 0;
