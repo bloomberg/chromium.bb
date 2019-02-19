@@ -34,6 +34,10 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
+#if DCHECK_IS_ON()
+#include "ui/accessibility/ax_tree_source_checker.h"
+#endif
+
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
   static base::NoDestructor<AutomationManagerAura> instance;
@@ -212,8 +216,7 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   std::vector<ui::AXTreeUpdate> tree_updates;
   ui::AXTreeUpdate update;
   if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
-    LOG(ERROR) << "Unable to serialize one accessibility event: "
-               << update.ToString();
+    OnSerializeFailure(event_type, update);
     return;
   }
   tree_updates.push_back(update);
@@ -312,4 +315,16 @@ void AutomationManagerAura::PerformHitTest(
   if (window_wrapper)
     SendEvent(window_wrapper, action.hit_test_event_to_fire);
 #endif
+}
+
+void AutomationManagerAura::OnSerializeFailure(ax::mojom::Event event_type,
+                                               const ui::AXTreeUpdate& update) {
+#if DCHECK_IS_ON()
+  ui::AXTreeSourceChecker<views::AXAuraObjWrapper*, ui::AXNodeData,
+                          ui::AXTreeData>
+      checker(current_tree_.get());
+  checker.Check();
+#endif
+  LOG(FATAL) << "Unable to serialize accessibility event, type " << event_type
+             << " update " << update.ToString();
 }
