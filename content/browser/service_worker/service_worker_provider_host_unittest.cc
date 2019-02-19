@@ -1152,6 +1152,6 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
 
 INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
                          ServiceWorkerProviderHostTest,
-                         ::testing::Bool(););
+                         ::testing::Bool());
 
 }  // namespace content
