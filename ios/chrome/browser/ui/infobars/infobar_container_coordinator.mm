@@ -6,10 +6,13 @@
 
 #include <memory>
 
+#import "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
@@ -24,15 +27,14 @@
 #endif
 
 @interface InfobarContainerCoordinator () <
-    InfobarContainerPresenter,
+    InfobarContainerConsumer,
     UIViewControllerTransitioningDelegate,
     SigninPresenter>
 
 @property(nonatomic, assign) TabModel* tabModel;
 
 // UIViewController that contains Infobars.
-@property(nonatomic, strong)
-    UIViewController<InfobarContainerConsumer>* containerViewController;
+@property(nonatomic, strong) UIViewController* containerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
 
@@ -56,12 +58,15 @@
   DCHECK(self.positioner);
   DCHECK(self.dispatcher);
 
-  // Create and setup the ViewController.
+  // Create and setup the ViewController, and initialize the mediator.
   if (experimental_flags::IsInfobarUIRebootEnabled()) {
     InfobarContainerViewController* container =
         [[InfobarContainerViewController alloc] init];
-    container.presenter = self;
     self.containerViewController = container;
+    self.mediator =
+        [[InfobarContainerMediator alloc] initWithConsumer:self
+                                              browserState:self.browserState
+                                                  tabModel:self.tabModel];
   } else {
     LegacyInfobarContainerViewController* legacyContainer =
         [[LegacyInfobarContainerViewController alloc]
@@ -76,13 +81,12 @@
     [legacyContainer didMoveToParentViewController:self.baseViewController];
     legacyContainer.positioner = self.positioner;
     self.containerViewController = legacyContainer;
+    self.mediator =
+        [[InfobarContainerMediator alloc] initWithConsumer:legacyContainer
+                                              browserState:self.browserState
+                                                  tabModel:self.tabModel];
   }
 
-  // Create the mediator once the VC has been added to the View hierarchy.
-  self.mediator = [[InfobarContainerMediator alloc]
-      initWithConsumer:self.containerViewController
-          browserState:self.browserState
-              tabModel:self.tabModel];
   self.mediator.syncPresenter = self.syncPresenter;
   self.mediator.signinPresenter = self;
 
@@ -102,7 +106,14 @@
 }
 
 - (void)updateInfobarContainer {
-  [self.containerViewController updateLayoutAnimated:NO];
+  // TODO(crbug.com/927064): No need to update the non legacy version since
+  // updateLayoutAnimated is NO-OP.
+  if (!experimental_flags::IsInfobarUIRebootEnabled()) {
+    LegacyInfobarContainerViewController* legacyContainer =
+        base::mac::ObjCCastStrict<LegacyInfobarContainerViewController>(
+            self.containerViewController);
+    [legacyContainer updateLayoutAnimated:NO];
+  }
 }
 
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState {
@@ -114,18 +125,42 @@
   return NO;
 }
 
-#pragma mark - InfobarContainerPresenter
+#pragma mark - InfobarConsumer
 
-- (void)presentInfobarContainer {
-  // Should only be called in the new UI implementation.
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                      position:(NSInteger)position {
   DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
+      static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
 
+  [infobarCoordinator start];
+
+  // Add the infobarCoordinator bannerVC to the containerVC.
+  InfobarContainerViewController* containerViewController =
+      base::mac::ObjCCastStrict<InfobarContainerViewController>(
+          self.containerViewController);
+  [containerViewController
+      addInfobarViewController:static_cast<UIViewController*>(
+                                   [infobarCoordinator bannerViewController])];
+
+  // Present the containerVC.
   self.containerViewController.transitioningDelegate = self;
   [self.containerViewController
       setModalPresentationStyle:UIModalPresentationCustom];
   [self.baseViewController presentViewController:self.containerViewController
                                         animated:YES
                                       completion:nil];
+}
+
+- (void)setUserInteractionEnabled:(BOOL)enabled {
+  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  [self.view setUserInteractionEnabled:enabled];
+}
+
+- (void)updateLayoutAnimated:(BOOL)animated {
+  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
+  // since we use autolayout for the contained Infobars.
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

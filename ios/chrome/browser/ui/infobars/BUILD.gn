@@ -21,6 +21,7 @@ source_set("infobars") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/infobars/presentation",
     "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/chrome/browser/ui/signin_interaction/public",

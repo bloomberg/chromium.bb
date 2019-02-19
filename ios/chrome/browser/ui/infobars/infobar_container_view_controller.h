@@ -7,25 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
-
-// TODO(crbug.com/1372916): PLACEHOLDER Work in Progress protocol for the new
-// InfobarUI.
-// Manages the InfobarContainer presentation.
-@protocol InfobarContainerPresenter
-
-// Presents the InfobarContainerViewController.
-- (void)presentInfobarContainer;
-
-@end
 
 // TODO(crbug.com/1372916): PLACEHOLDER Work in Progress class for the new
 // InfobarUI. ViewController that contains all Infobars.
-@interface InfobarContainerViewController
-    : UIViewController <InfobarContainerConsumer>
+@interface InfobarContainerViewController : UIViewController
 
-// Delegate to present this ViewController.
-@property(nonatomic, strong) id<InfobarContainerPresenter> presenter;
+// Adds a new InfobarViewController to this container.
+- (void)addInfobarViewController:(UIViewController*)infobarViewController;
 
 @end
 

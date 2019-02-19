@@ -21,6 +21,7 @@ class ChromeBrowserState;
 @interface InfobarContainerMediator : NSObject<UpgradeCenterClient>
 
 // Designated initializer. None of the parameters are retained.
+// TODO(crbug.com/927064): BrowserState shouldn't be passed to the mediator.
 - (instancetype)initWithConsumer:(id<InfobarContainerConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
                         tabModel:(TabModel*)tabModel NS_DESIGNATED_INITIALIZER;

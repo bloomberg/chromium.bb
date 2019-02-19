@@ -4,8 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,21 +12,22 @@
 
 @interface InfobarBannerViewController ()
 
-@property(nonatomic, readonly) ConfirmInfoBarDelegate* infoBarDelegate;
+// The original position of this InfobarVC view in the parent's view coordinate
+// system.
 @property(nonatomic, assign) CGPoint originalCenter;
+// Delegate to handle this InfobarVC actions.
+@property(nonatomic, weak) id<InfobarBannerDelegate> delegate;
 
 @end
 
 // TODO(crbug.com/1372916): PLACEHOLDER Work in Progress class for the new
 // InfobarUI.
 @implementation InfobarBannerViewController
-@synthesize delegate = _delegate;
 
-- (instancetype)initWithInfoBarDelegate:
-    (ConfirmInfoBarDelegate*)infoBarDelegate {
+- (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _infoBarDelegate = infoBarDelegate;
+    _delegate = delegate;
   }
   return self;
 }
@@ -37,22 +37,18 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  NSString* messageText =
-      base::SysUTF16ToNSString(self.infoBarDelegate->GetMessageText());
   UILabel* messageLabel = [[UILabel alloc] init];
-  messageLabel.text = messageText;
+  messageLabel.text = self.messageText;
   messageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   messageLabel.adjustsFontForContentSizeCategory = YES;
   messageLabel.textColor = [UIColor blackColor];
   messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
   messageLabel.numberOfLines = 0;
 
-  NSString* buttonText = base::SysUTF16ToNSString(
-      self.infoBarDelegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
   UIButton* infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [infobarButton setTitle:buttonText forState:UIControlStateNormal];
-  [infobarButton addTarget:self
-                    action:@selector(buttonTapped:)
+  [infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
+  [infobarButton addTarget:self.delegate
+                    action:@selector(bannerInfobarButtonWasPressed:)
           forControlEvents:UIControlEventTouchUpInside];
   infobarButton.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -81,16 +77,6 @@
   ]];
 }
 
-#pragma mark - InfobarUIDelegate
-
-- (void)removeView {
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)detachView {
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
-
 #pragma mark - Private Methods
 
 - (void)buttonTapped:(id)sender {
@@ -113,7 +99,7 @@
     if (self.view.center.y > self.originalCenter.y) {
       self.view.center = self.originalCenter;
     } else {
-      [self dismissViewControllerAnimated:YES completion:nil];
+      [self.delegate dismissInfobarBanner:self];
     }
   }
 
