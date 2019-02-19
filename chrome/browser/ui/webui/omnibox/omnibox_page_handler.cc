@@ -149,6 +149,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->inline_autocompletion =
         base::UTF16ToUTF8(input.inline_autocompletion);
     result->destination_url = input.destination_url.spec();
+    result->stripped_destination_url = input.stripped_destination_url.spec();
     result->image = input.ImageUrl().spec().c_str();
     result->contents = base::UTF16ToUTF8(input.contents);
     // At this time, we're not bothering to send along the long vector that
