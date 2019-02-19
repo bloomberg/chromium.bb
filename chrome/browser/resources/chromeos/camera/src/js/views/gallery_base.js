@@ -126,7 +126,8 @@ cca.views.GalleryBase.prototype.deleteSelection = function() {
   var param = multi ? selectedIndexes.length.toString() :
       this.lastSelectedPicture().picture.pictureEntry.name;
   var message = chrome.i18n.getMessage(
-      multi ? 'delete_multi_confirmation_msg' : 'delete_confirmation_msg', param);
+      multi ? 'delete_multi_confirmation_msg' : 'delete_confirmation_msg',
+      param);
   cca.nav.open('dialog', message, true).then((confirmed) => {
     if (!confirmed) {
       return;
