@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -37,6 +38,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -11302,25 +11304,9 @@ TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh) {
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
   // Warm up the host cache so it has an entry for "www.example.org".
-  AddressList addrlist;
-  TestCompletionCallback callback;
-  std::unique_ptr<HostResolver::Request> request1;
-  int rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
-      DEFAULT_PRIORITY, &addrlist, callback.callback(), &request1,
-      NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
+  int rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("www.example.org", 80), base::nullopt);
   EXPECT_THAT(rv, IsOk());
-
-  // Verify that it was added to host cache, by doing a subsequent async lookup
-  // and confirming it completes synchronously.
-  std::unique_ptr<HostResolver::Request> request2;
-  rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
-      DEFAULT_PRIORITY, &addrlist, callback.callback(), &request2,
-      NetLogWithSource());
-  ASSERT_THAT(rv, IsOk());
 
   // Inject a failure the next time that "www.example.org" is resolved. This way
   // we can tell if the next lookup hit the cache, or the "network".
@@ -11334,6 +11320,7 @@ TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Run the request.
+  TestCompletionCallback callback;
   rv = trans.Start(&request_info, callback.callback(), NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -15402,15 +15389,8 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   EXPECT_EQ("hello!", response_data);
 
   // Preload mail.example.com into HostCache.
-  HostPortPair host_port("mail.example.com", 443);
-  HostResolver::RequestInfo resolve_info(host_port);
-  AddressList ignored;
-  std::unique_ptr<HostResolver::Request> request;
-  rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
-                                            &ignored, callback.callback(),
-                                            &request, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
+  rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("mail.example.com", 443), base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
@@ -15581,16 +15561,8 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
   AddSSLSocketData();
 
   // Preload mail.example.org into HostCache.
-  HostPortPair host_port("mail.example.org", 443);
-  HostResolver::RequestInfo resolve_info(host_port);
-  AddressList ignored;
-  std::unique_ptr<HostResolver::Request> request;
-  TestCompletionCallback callback;
-  int rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
-                                                &ignored, callback.callback(),
-                                                &request, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
+  int rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("mail.example.com", 443), base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;
@@ -15601,6 +15573,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
+  TestCompletionCallback callback;
   rv = trans1.Start(&request1, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -15714,16 +15687,8 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
   AddSSLSocketData();
 
   // Preload mail.example.org into HostCache.
-  HostPortPair host_port("mail.example.org", 443);
-  HostResolver::RequestInfo resolve_info(host_port);
-  AddressList ignored;
-  std::unique_ptr<HostResolver::Request> request;
-  TestCompletionCallback callback;
-  int rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
-                                                &ignored, callback.callback(),
-                                                &request, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
+  int rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("mail.example.com", 443), base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;
@@ -15734,6 +15699,7 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
+  TestCompletionCallback callback;
   rv = trans1.Start(&request1, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -15854,14 +15820,8 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hello!", response_data);
 
   // Preload cache entries into HostCache.
-  HostResolver::RequestInfo resolve_info(HostPortPair("mail.example.com", 443));
-  AddressList ignored;
-  std::unique_ptr<HostResolver::Request> request;
-  rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
-                                            &ignored, callback.callback(),
-                                            &request, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
+  rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("mail.example.com", 443), base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
@@ -19090,15 +19050,9 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   AddSSLSocketData();
 
   // Preload mail.example.org into HostCache.
-  HostPortPair host_port("mail.example.org", 443);
-  HostResolver::RequestInfo resolve_info(host_port);
-  AddressList ignored;
-  std::unique_ptr<HostResolver::Request> request;
-  TestCompletionCallback callback;
-  int rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
-                                                &ignored, callback.callback(),
-                                                &request, NetLogWithSource());
-  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  int rv = session_deps_.host_resolver->LoadIntoCache(
+      HostPortPair("mail.example.com", 443), base::nullopt);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -19109,6 +19063,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   auto trans1 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
+  TestCompletionCallback callback;
   rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
 

@@ -352,6 +352,36 @@ bool MockHostResolverBase::HasCached(
   return cache_->HasEntry(hostname, source_out, stale_out);
 }
 
+int MockHostResolverBase::LoadIntoCache(
+    const HostPortPair& host,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(cache_);
+
+  ResolveHostParameters parameters =
+      optional_parameters.value_or(ResolveHostParameters());
+
+  AddressList addresses;
+  base::Optional<HostCache::EntryStaleness> stale_info;
+  int rv = ResolveFromIPLiteralOrCache(
+      host, parameters.dns_query_type,
+      ParametersToHostResolverFlags(parameters), parameters.source,
+      parameters.cache_usage, &addresses, &stale_info);
+  if (rv != ERR_DNS_CACHE_MISS) {
+    // Request already in cache (or IP literal). No need to load it.
+    return rv;
+  }
+
+  // Just like the real resolver, refuse to do anything with invalid
+  // hostnames.
+  if (!IsValidDNSDomain(host.host()))
+    return ERR_NAME_NOT_RESOLVED;
+
+  return ResolveProc(
+      host, DnsQueryTypeToAddressFamily(parameters.dns_query_type),
+      ParametersToHostResolverFlags(parameters), parameters.source, &addresses);
+}
+
 void MockHostResolverBase::ResolveAllPending() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ondemand_mode_);
