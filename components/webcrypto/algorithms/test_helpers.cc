@@ -138,9 +138,8 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   return MakeJsonVector(json);
 }
 
-::testing::AssertionResult ReadJsonTestFile(
-    const char* test_file_name,
-    std::unique_ptr<base::Value>* value) {
+::testing::AssertionResult ReadJsonTestFile(const char* test_file_name,
+                                            base::Value* value) {
   base::FilePath test_data_dir;
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir))
     return ::testing::AssertionFailure() << "Couldn't retrieve test dir";
@@ -162,52 +161,49 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   re2::RE2::GlobalReplace(&file_contents, re2::RE2("\\s*//.*"), "");
 
   // Parse the JSON to a dictionary.
-  *value = base::JSONReader::ReadDeprecated(file_contents);
-  if (!*value) {
+  base::Optional<base::Value> read_value =
+      base::JSONReader::Read(file_contents);
+  if (!read_value.has_value()) {
     return ::testing::AssertionFailure()
            << "Couldn't parse test file JSON: " << file_path.value();
   }
 
+  *value = std::move(read_value).value();
   return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult ReadJsonTestFileToList(
-    const char* test_file_name,
-    std::unique_ptr<base::ListValue>* list) {
+::testing::AssertionResult ReadJsonTestFileToList(const char* test_file_name,
+                                                  base::ListValue* list) {
   // Read the JSON.
-  std::unique_ptr<base::Value> json;
+  base::Value json;
   ::testing::AssertionResult result = ReadJsonTestFile(test_file_name, &json);
   if (!result)
     return result;
 
   // Cast to an ListValue.
-  base::ListValue* list_value = nullptr;
-  if (!json->GetAsList(&list_value) || !list_value)
+  base::ListValue* json_as_list = nullptr;
+  if (!json.GetAsList(&json_as_list))
     return ::testing::AssertionFailure() << "The JSON was not a list";
 
-  list->reset(list_value);
-  ignore_result(json.release());
-
+  *list = std::move(*json_as_list);
   return ::testing::AssertionSuccess();
 }
 
 ::testing::AssertionResult ReadJsonTestFileToDictionary(
     const char* test_file_name,
-    std::unique_ptr<base::DictionaryValue>* dict) {
+    base::DictionaryValue* dict) {
   // Read the JSON.
-  std::unique_ptr<base::Value> json;
+  base::Value json;
   ::testing::AssertionResult result = ReadJsonTestFile(test_file_name, &json);
   if (!result)
     return result;
 
   // Cast to an DictionaryValue.
-  base::DictionaryValue* dict_value = nullptr;
-  if (!json->GetAsDictionary(&dict_value) || !dict_value)
+  base::DictionaryValue* json_as_dict = nullptr;
+  if (!json.GetAsDictionary(&json_as_dict))
     return ::testing::AssertionFailure() << "The JSON was not a dictionary";
 
-  dict->reset(dict_value);
-  ignore_result(json.release());
-
+  *dict = std::move(*json_as_dict);
   return ::testing::AssertionSuccess();
 }
 
@@ -385,29 +381,31 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                    usages, key);
 }
 
-std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
+base::Optional<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json) {
   base::StringPiece json_string(reinterpret_cast<const char*>(json.data()),
                                 json.size());
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(json_string);
-  EXPECT_TRUE(value.get());
-  EXPECT_TRUE(value->is_dict());
+  base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+  EXPECT_TRUE(value.has_value());
+  EXPECT_TRUE(value.value().is_dict());
 
-  return std::unique_ptr<base::DictionaryValue>(
-      static_cast<base::DictionaryValue*>(value.release()));
+  base::DictionaryValue* dict_value = nullptr;
+  if (!value.value().GetAsDictionary(&dict_value))
+    return base::nullopt;
+
+  return std::move(*dict_value);
 }
 
 // Verifies the input dictionary contains the expected values. Exact matches are
 // required on the fields examined.
 ::testing::AssertionResult VerifyJwk(
-    const std::unique_ptr<base::DictionaryValue>& dict,
+    const base::DictionaryValue& dict,
     const std::string& kty_expected,
     const std::string& alg_expected,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
   // ---- kty
   std::string value_string;
-  if (!dict->GetString("kty", &value_string))
+  if (!dict.GetString("kty", &value_string))
     return ::testing::AssertionFailure() << "Missing 'kty'";
   if (value_string != kty_expected)
     return ::testing::AssertionFailure() << "Expected 'kty' to be "
@@ -415,7 +413,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
                                          << value_string;
 
   // ---- alg
-  if (!dict->GetString("alg", &value_string))
+  if (!dict.GetString("alg", &value_string))
     return ::testing::AssertionFailure() << "Missing 'alg'";
   if (value_string != alg_expected)
     return ::testing::AssertionFailure() << "Expected 'alg' to be "
@@ -425,15 +423,15 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
   // ---- ext
   // always expect ext == true in this case
   bool ext_value;
-  if (!dict->GetBoolean("ext", &ext_value))
+  if (!dict.GetBoolean("ext", &ext_value))
     return ::testing::AssertionFailure() << "Missing 'ext'";
   if (!ext_value)
     return ::testing::AssertionFailure()
            << "Expected 'ext' to be true but found false";
 
   // ---- key_ops
-  base::ListValue* key_ops;
-  if (!dict->GetList("key_ops", &key_ops))
+  const base::ListValue* key_ops;
+  if (!dict.GetList("key_ops", &key_ops))
     return ::testing::AssertionFailure() << "Missing 'key_ops'";
   blink::WebCryptoKeyUsageMask key_ops_mask = 0;
   Status status =
@@ -453,13 +451,13 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& alg_expected,
     const std::string& k_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
-  std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
-  if (!dict || dict->empty())
+  base::Optional<base::DictionaryValue> dict = GetJwkDictionary(json);
+  if (!dict.has_value() || dict.value().empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 
   // ---- k
   std::string value_string;
-  if (!dict->GetString("k", &value_string))
+  if (!dict.value().GetString("k", &value_string))
     return ::testing::AssertionFailure() << "Missing 'k'";
   std::string k_value;
   if (!Base64DecodeUrlSafe(value_string, &k_value))
@@ -471,7 +469,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
                                          << " but found something different";
   }
 
-  return VerifyJwk(dict, "oct", alg_expected, use_mask_expected);
+  return VerifyJwk(dict.value(), "oct", alg_expected, use_mask_expected);
 }
 
 ::testing::AssertionResult VerifyPublicJwk(
@@ -480,13 +478,13 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& n_expected_hex,
     const std::string& e_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
-  std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
-  if (!dict || dict->empty())
+  base::Optional<base::DictionaryValue> dict = GetJwkDictionary(json);
+  if (!dict.has_value() || dict.value().empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 
   // ---- n
   std::string value_string;
-  if (!dict->GetString("n", &value_string))
+  if (!dict.value().GetString("n", &value_string))
     return ::testing::AssertionFailure() << "Missing 'n'";
   std::string n_value;
   if (!Base64DecodeUrlSafe(value_string, &n_value))
@@ -498,7 +496,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
   // TODO(padolph): LowerCaseEqualsASCII() does not work for above!
 
   // ---- e
-  if (!dict->GetString("e", &value_string))
+  if (!dict.value().GetString("e", &value_string))
     return ::testing::AssertionFailure() << "Missing 'e'";
   std::string e_value;
   if (!Base64DecodeUrlSafe(value_string, &e_value))
@@ -510,7 +508,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
                                          << " but found something different";
   }
 
-  return VerifyJwk(dict, "RSA", alg_expected, use_mask_expected);
+  return VerifyJwk(dict.value(), "RSA", alg_expected, use_mask_expected);
 }
 
 void ImportExportJwkSymmetricKey(

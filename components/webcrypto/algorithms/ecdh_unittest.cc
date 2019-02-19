@@ -77,14 +77,14 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
 class WebCryptoEcdhTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
-  std::unique_ptr<base::ListValue> tests;
+  base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
 
-  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
 
     const base::DictionaryValue* test;
-    ASSERT_TRUE(tests->GetDictionary(test_index, &test));
+    ASSERT_TRUE(tests.GetDictionary(test_index, &test));
 
     // Import the keys.
     blink::WebCryptoKey public_key;
@@ -119,15 +119,15 @@ TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
 // 528 bits.
 ::testing::AssertionResult LoadTestKeys(blink::WebCryptoKey* public_key,
                                         blink::WebCryptoKey* private_key) {
-  std::unique_ptr<base::ListValue> tests;
+  base::ListValue tests;
   if (!ReadJsonTestFileToList("ecdh.json", &tests))
     return ::testing::AssertionFailure() << "Failed loading ecdh.json";
 
   const base::DictionaryValue* test = nullptr;
   bool valid_p521_keys = false;
-  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
-    EXPECT_TRUE(tests->GetDictionary(test_index, &test));
+    EXPECT_TRUE(tests.GetDictionary(test_index, &test));
     test->GetBoolean("valid_p521_keys", &valid_p521_keys);
     if (valid_p521_keys)
       break;
@@ -302,11 +302,11 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyAes128) {
 TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   blink::WebCryptoKey key;
 
-  std::unique_ptr<base::ListValue> tests;
+  base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
 
   const base::DictionaryValue* test;
-  ASSERT_TRUE(tests->GetDictionary(0, &test));
+  ASSERT_TRUE(tests.GetDictionary(0, &test));
 
   // Import the public key.
   const base::DictionaryValue* public_key_json = nullptr;
