@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_AUTOCOMPLETE_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -22,10 +23,10 @@ namespace vr {
 
 class AutocompleteController : public AutocompleteControllerDelegate {
  public:
-  typedef base::RepeatingCallback<void(std::unique_ptr<OmniboxSuggestions>)>
-      SuggestionCallback;
+  using SuggestionCallback =
+      base::RepeatingCallback<void(std::vector<OmniboxSuggestion>)>;
 
-  explicit AutocompleteController(const SuggestionCallback& callback);
+  explicit AutocompleteController(SuggestionCallback callback);
   AutocompleteController();
   ~AutocompleteController() override;
 

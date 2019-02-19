@@ -134,8 +134,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
       bool has_or_can_request_record_audio) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
-  void SetOmniboxSuggestions(
-      std::unique_ptr<OmniboxSuggestions> result) override;
+  void SetOmniboxSuggestions(std::vector<OmniboxSuggestion> result) override;
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;

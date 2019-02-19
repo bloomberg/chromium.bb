@@ -49,8 +49,4 @@ OmniboxSuggestion::OmniboxSuggestion(const OmniboxSuggestion& other) {
   autocompletion = other.autocompletion;
 }
 
-OmniboxSuggestions::OmniboxSuggestions() {}
-
-OmniboxSuggestions::~OmniboxSuggestions() {}
-
 }  // namespace vr

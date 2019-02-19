@@ -427,7 +427,7 @@ void VrGLThread::OnSpeechRecognitionStateChanged(int new_state) {
 }
 
 void VrGLThread::SetOmniboxSuggestions(
-    std::unique_ptr<OmniboxSuggestions> suggestions) {
+    std::vector<OmniboxSuggestion> suggestions) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE,

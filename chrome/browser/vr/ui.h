@@ -41,7 +41,7 @@ class UiRenderer;
 struct Assets;
 struct ControllerModel;
 struct Model;
-struct OmniboxSuggestions;
+struct OmniboxSuggestion;
 struct ReticleModel;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
@@ -106,7 +106,7 @@ class VR_UI_EXPORT Ui : public UiInterface,
       bool has_or_can_request_record_audio) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
-      std::unique_ptr<OmniboxSuggestions> suggestions) override;
+      std::vector<OmniboxSuggestion> suggestions) override;
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
