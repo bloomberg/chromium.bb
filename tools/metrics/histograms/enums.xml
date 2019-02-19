@@ -124,6 +124,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
 </enum>
 
+<enum name="AccessibilityImageLabelMode">
+  <summary>
+    Tracks what mode the user has selected for accessibility image labels,
+    either always enabled, enabled once, or disabled.
+  </summary>
+  <int value="0" label="Enabled (always)"/>
+  <int value="1" label="Enabled (once)"/>
+  <int value="2" label="Disabled"/>
+</enum>
+
 <enum name="AccessibilityModeFlagEnum">
   <summary>Track individual accessibility mode flags that are enabled.</summary>
   <int value="0" label="Native APIs"/>

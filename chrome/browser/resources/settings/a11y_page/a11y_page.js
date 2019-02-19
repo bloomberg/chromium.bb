@@ -92,6 +92,9 @@ Polymer({
     if (a11yImageLabelsOn) {
       chrome.send('confirmA11yImageLabels');
     }
+    chrome.metricsPrivate.recordBoolean(
+        'Accessibility.ImageLabels.FromSettings.ToggleSetting',
+        a11yImageLabelsOn);
   },
 
   // <if expr="chromeos">
