@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Atidaryti naujame skirtuke</translation>
 <translation id="3024255823539804759">Pastaroji diena</translation>
 <translation id="3037605927509011580">Oi!</translation>
-<translation id="3059750684806925578">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="3112556859945124369">Pažymėti…</translation>
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3175081911749765310">Žin. pasl.</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nepavyko prisijungti prie serverio.</translation>
 <translation id="3335947283844343239">Iš naujo atidarykite uždarytą skirtuką</translation>
 <translation id="3393920035788932672">Iššok. l. leidžiami</translation>
+<translation id="3424059454230285158">Galite bet kuriuo metu <ph name="BEGIN_LINK" />tinkinti šiuos nustatymus<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Padalytas rodinys</translation>
 <translation id="345565170154308620">Tvarkyti slaptažodžius...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
-<translation id="3771149149411027381">Ieškoti nukopijuoto teksto</translation>
 <translation id="3779810277399252432">Nėra interneto ryšio.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Ieškoti</translation>
 <translation id="4121993058175073134">Jei n. siųsti tinklo eksp. duom., sukonf. el. pšt. pask. nust. progr.</translation>
 <translation id="4124987746317609294">Laikotarpis</translation>
-<translation id="4155190233692914060">Apsilankyti nukopijuotos nuorodos adresu</translation>
 <translation id="4172051516777682613">Visada rodyti</translation>
 <translation id="418156467088430727">Žiūrėti neprisij. naudoj. versiją naujame skirtuke</translation>
 <translation id="4237682350741091554">Tvarkykite „Chrome“ sinchronizavimo ir suasmeninimo funkcijas skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" /></translation>

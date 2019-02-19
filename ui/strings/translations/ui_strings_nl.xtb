@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1243314992276662751">Uploaden</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209"><ph name="DRAGGED_APP" /> verplaatsen naar map <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">AANBEVOLEN APPS</translation>
 <translation id="1368832886055348810">Links naar rechts</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">klikken</translation>
 <translation id="3036649622769666520">Bestanden openen</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Plank aan linkerkant</translation>
 <translation id="3087734570205094154">Onderaan</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Herstellen</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagen}}</translation>
 <translation id="335581015389089642">Spraak</translation>
 <translation id="3479552764303398839">Niet nu</translation>
+<translation id="348799646910989694">Plank automatisch verborgen</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag resterend}other{# dagen resterend}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' opzoeken</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Inspreken starten</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4588090240171750605">Naar rechts bladeren</translation>
+<translation id="4690510401873698237">Plank aan onderkant</translation>
 <translation id="4724120544754982507">Meldingscentrum, <ph name="UNREAD_NOTIFICATION_COUNT" /> ongelezen meldingen</translation>
 <translation id="4730374152663651037">VEELGEBRUIKT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Nog 1 maand}other{Nog # maanden}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Driehoek voor samen-/uitvouwen</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> bovenop <ph name="IN_PLACE_APP" />, laat los om een map te maken.</translation>
 <translation id="5463830097259460683">Emoji en symbolen</translation>
 <translation id="5476505524087279545">Deselecteren</translation>
+<translation id="547979256943495781">Plank aan rechterkant</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" />-systeem</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Pijl-links</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec. resterend}other{# sec. resterend}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatisch aanvullen</translation>
 <translation id="815598010540052116">Omlaag bladeren</translation>
+<translation id="8170087467028567933">Als je de suggestie verwijdert, wordt deze verborgen voor je account op al je apparaten.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Pagina omlaag</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Deze suggestie verwijderen?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 j}other{# j}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-bestand (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Plank altijd weergegeven</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" />  KB/s</translation>
 <translation id="8725488761726303204">+ nog <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gereed</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Afbeelding annoteren</translation>
 <translation id="8841375032071747811">Knop Terug</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
+<translation id="8926951137623668982">Plank altijd verborgen</translation>
 <translation id="9002566407876343676">openen</translation>
+<translation id="9039076430527029379">Verplaatsen naar pagina <ph name="PAGE_NUMBER" />, rij <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec.}other{# sec.}}</translation>
 <translation id="9059834730836941392">Melding samenvouwen</translation>
 <translation id="9150735707954472829">Tabblad</translation>

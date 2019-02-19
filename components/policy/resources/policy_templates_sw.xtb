@@ -158,10 +158,25 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu wasifu wa wageni kuanzishwa.</translation>
 <translation id="1363275621236827384">Washa kipengele cha hoja za Seva ya Quirks ya wasifu wa maunzi</translation>
+<translation id="1383493480903114193">Sera hii hulazimisha msimbo wa kuweka mitandao kutekelezwa katika mchakato wa kivinjari.
+
+      Sera hii imezimwa kwa chaguomsingi na ikiwashwa, watumiaji hawalindwi dhidi ya matatizo ya usalama baada ya mchakato wa kuweka mitandao kuanza utaratibu wa kuweweka vikwazo.
+
+      Sera hii ina lengo la kuzipa biashara fursa ya kuhamia kwenye programu ya watu au kampuni nyingine ambayo haitegemei mvuto wa API za kuweka mtandao. Seva mbadala zinapendekezwa badala ya urekebishaji wa API ya Win32 na LPS.
+
+      Ikiwa sera hii haijawekwa, msimbo wa kuweka mItandao huenda hautatekeleza mchakato wa kivinjari kulingana na majaribio ya sehemu ya jaribio la NetworkService.</translation>
 <translation id="1384459581748403878">Marejeleo: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Huruhusu watumiaji kudhibiti vyeti vilivyosakinishwa.</translation>
 <translation id="1387596372902085462">Ikiwa utaruhusu uaminifu katika sera ya Muundomsingi wa PKI ya Symantec Corporation Legacy</translation>
 <translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
 <translation id="1397855852561539316">Mtoa huduma chaguomsingi wa utafutaji anapendekeza URL</translation>
+<translation id="1404043648050567997">Mipangilio ya Kuvinjari Salama inaonyesha ukurasa wa kuonya wakati watumiaji wanavinjari tovuti ambazo zimeripotiwa kuwa hasidi. Kuwasha mipangilio hii kunawazuia watumiaji wasifungue kurasa nyinginezo za tovuti hasidi ila ukurasa wa kuonya.
+
+      Sera hii huwazuia watumiaji wasiendelee baada ya maonyo kutoka mipangilio ya Kuvinjari Salama pekee (kwa mfano, programu hasidi na wizi wa data binafsi) wala si katika masuala yanayohusiana na cheti cha SSL kama vile vyeti visivyo sahihi au vyeti ambavyo muda wa kuvitumia umekwisha.
+
+      Ikiwa mipangilio hii imezimwa au haijawekwa, basi watumiaji wanaweza kuchagua kufungua tovuti iliyoripotiwa baada ya kuonyeshwa onyo.
+
+      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu mipangilio ya Kuvinjari Salama.</translation>
 <translation id="1413936351612032792">Ripoti maelezo kuhusu matumizi ya programu za Linux</translation>
 <translation id="142346659686073702">Ruhusu watumiaji wasio washirika watumie Crostini</translation>
 <translation id="1426410128494586442">Ndio</translation>
@@ -1100,6 +1115,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="355118380775352753">Tovuti zinazofunguka katika kivinjari mbadala</translation>
 <translation id="3577251398714997599">Mipangilio ya matangazo kwa tovuti zilizo na matangazo yanayokatiza matumizi</translation>
+<translation id="357917253161699596">Ruhusu watumiaji kudhibiti vyeti vya watumiaji</translation>
 <translation id="3583230441447348508">Hubainisha orodha ya faili za kushiriki mtandaoni zilizowekewa mipangilio mapema.
 
       Kila kipengee cha sera kwenye orodha huwa na sehemu mbili: "share_url" na "mode". "share_url" inapaswa kuwa URL ya kipengee cha kushiriki na "mode" inapaswa kuwa "drop_down" au "pre_mount". Hali ya "drop_down" inaashiria kuwa "share_url" itaongezwa kwenye menyu kunjuzi ya kutambua kipengee cha kushiriki. Hali ya "pre_mount" inaashiria kuwa "share_url" itawekwa.</translation>
@@ -1433,6 +1449,7 @@ Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
 <translation id="4372704773119750918">Usiruhusu mtumiaji wa biashara kuwa sehemu ya wasifu nyingi (ya msingi au ya pili)</translation>
 <translation id="4377599627073874279">Ruhusu tovuti zote kuonyesha picha zote</translation>
 <translation id="437791893267799639">Sera haijawekwa, usiruhusu uhamishaji data na ARC</translation>
+<translation id="4389073105055031853">Ruhusu watumiaji kudhibiti vyeti vyote</translation>
 <translation id="4389091865841123886">Sanidi uthibitishaji wa mbali unaotumia mfumo wa TPM.</translation>
 <translation id="4408428864159735559">Orodha ya faili za kushiriki mtandaoni zilizowekewa mipangilio mapema.</translation>
 <translation id="4410236409016356088">Washa kipengele cha kudhibiti kipimo data cha mtandao</translation>
@@ -1678,6 +1695,11 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Kama sera hii imewekwa kuwa 0, kipengele cha kubadilisha nenosiri la akaunti ya mashine itazimwa.
 
      Kumbuka kwamba manenosiri huenda yakawa ya zamani zaidi kuliko siku zilizobainishwa ikiwa mteja amekuwa nje ya mtandao kwa muda mrefu zaidi.</translation>
+<translation id="510196893779239086">Sera hii hubaini iwapo Chrome itafungwa kabisa wakati kichupo cha mwisho kitahamia kwenye kivinjari kingine.
+
+      Sera hii isipowekwa au ikiwekwa kuwa 'ndivyo', Chrome itasalia na angalau kichupo kimoja kilichofunguka, baada ya kuhamia kwenye kivinjari mbadala.
+
+      Sera hii ikiwekwa kuwa 'sivyo', Chrome itafunga kichupo baada ya kuhamia kwenye kivinjari mbadala hata kama kilikuwa kichupo cha mwisho. Hali hii itasababisha Chrome kufungwa kabisa.</translation>
 <translation id="5105313908130842249">Ufungaji wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="5108031557082757679">Printa za biashara zisizotumia sera</translation>
 <translation id="5113732180192599620">Sera hii inadhibiti orodha ya tovuti ambazo hazitawahi kusababisha kubadilishwa kwa kivinjari.
@@ -2273,6 +2295,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6430366557948788869">Kiendelezi cha Kuripoti Chrome</translation>
 <translation id="6440051664870270040">Ruhusu tovuti zivinjari kwa wakati mmoja na zifungue madirisha ibukizi</translation>
 <translation id="6447948611083700881">Vipengele vya kuhifadhi nakala na kurejesha vimezimwa</translation>
+<translation id="6449476513004303784">Usiruhusu watumiaji kudhibiti vyeti</translation>
 <translation id="645425387487868471">Washa kulazimisha kuingia katika akaunti ya <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Washa kipengele cha Kujaza Kiotomatiki kwa anwani</translation>
 <translation id="6473623140202114570">Weka mipangilio ya orodha ya vikoa ambavyo kipengele cha Kuvinjari Salama hakisababishi onyo.</translation>
@@ -2335,6 +2358,13 @@ Kuacha sera hii bila kuiweka kutaruhusu mtumiaji kuchagua mwenyewe iwapo ukurasa
           Ukiweka sera hii, watumiaji wanaweza kuibatilisha kwa muda kwa kuwasha au kuzima kibodi ya skrini. Hata hivyo, chaguo la watumiaji halidumu na chaguomsingi hurejeshwa kila wakati skrini ya kuingia katika akaunti inapoonyeshwa upya au mtumiaji anapokuwa hafanyi kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja.
 
           Sera hii isipowekwa, kibodi ya skrini inawashwa skrini ya kuingia katika akaunti inapoonyeshwa mara ya kwanza. Watumiaji wanaweza wakazima au kuwasha kibodi ya skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inadumu kati ya watumiaji.</translation>
+<translation id="6570691255874112762">Sera hii inabaini iwapo mtumiaji ataweza kupakia au kuondoa vyeti kupitia Kidhibiti cha Vyeti.
+
+      Sera hii ikiwekwa kuwa ''Ruhusu watumiaji kudhibiti vyeti vyote'' au isipowekwa, watumiaji wanaweza kudhibiti vyeti.
+
+      Sera hii ikiwekwa kuwa ''Ruhusu watumiaji kudhibiti vyeti'', watumiaji wataweza kudhibiti vyeti vya watumiaji lakini si vyeti vinavyotumika kwenye vifaa.
+
+      Sera hii ikiwekwa kuwa ''Usiruhusu watumiaji kudhibiti vyeti'', watumiaji hawataweza kudhibiti vyeti, wataweza tu kuviangalia.</translation>
 <translation id="6573305661369899995">Weka chanzo cha nje cha vikwazo vya URL</translation>
 <translation id="6598235178374410284">Picha ya ishara ya mtumiaji</translation>
 <translation id="6603004149426829878">Kila wakati, tuma kwenye seva mawimbi yoyote ya mahali yanayopatikana unaporekebisha saa za eneo</translation>
@@ -2670,6 +2700,9 @@ Kama umeweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzim
 
 Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kikuza skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
 <translation id="7249828445670652637">Washa kipengele cha vyeti vya CA vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
+<translation id="7252681704926980614">Tuma jina la mtumiaji na la faili kwenye seva za printa zinazotokana na mfumo kwa kila kazi ya kuchapisha. Haitatuma ikiwa katika mipangilio chaguomsingi.
+
+      Kuweka sera hii kuwa ndivyo pia huzima printa ambazo zinatumia itifaki zingine mbali na IPPS, USB au IPP-over-USB kwa kuwa jina la mtumiaji na la faili hayafai kutumwa kwenye mtandao kwa njia ya wazi.</translation>
 <translation id="7258823566580374486">Wezesha uzuiaji wa wapangishaji wa ufikiaji mbali.</translation>
 <translation id="7260277299188117560">Usasishaji kiotomatiki wa P2P umewashwa</translation>
 <translation id="7261252191178797385">Picha ya mandhari ya kifaa</translation>
@@ -2735,6 +2768,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa sera hii haitawekwa, kufuta kiotomatiki hutumia mkakati wa chaguomsingi uliojengwa ndani. Kwa sasa, ni mkakati wa 'RemoveLRUIfDormant'.</translation>
 <translation id="7336785017449297672">Hudhibiti mipangilio ya saa na saa za maeneo.</translation>
 <translation id="7336878834592315572">Weka vidakuzi katika muda wa kipindi</translation>
+<translation id="7339315111520512972">Lazimisha msimbo wa mtandao kutekelezwa katika mchakato wa kivinjari</translation>
 <translation id="7340034977315324840">Ripoti muda wa shughuli za kifaa</translation>
 <translation id="7343497214039883642">Faili za mipangilio ya printa ya biashara kwenye vifaa</translation>
 <translation id="7349338075015720646">Hubainisha orodha ya tovuti ambazo zinasakinishwa kwa njia fiche, bila kuhusisha mtumiaji, na ambazo haziwezi kuondolewa wala kuzimwa na mtumiaji.
@@ -2957,22 +2991,12 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Ili upate mifano ya kina, tembelea:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Acha kichupo cha mwisho kikiwa kimefunguliwa katika Chrome.</translation>
 <translation id="793134539373873765">Hubainisha iwapo p2p itatumika kwa sasisho za data ya OS. Kama imewekwa kuwa Kweli, vifaa vitashiriki na kujaribu kusasisha data kwenye LAN, hivyo kuna uwezekano wa kupunguza matumizi ya kipimo data cha intaneti na msongamano. Kama sasisho ya data haipo kwenye LAN, kifaa kitarudia kupakua kutoka kwenye seva ya sasisho. Kama imewekwa kuwa Uongo ama haijasanidiwa, p2p haitatumika.</translation>
 <translation id="7933141401888114454">Washa uundaji wa watumiaji wanaosimamiwa</translation>
 <translation id="793473937901685727">Weka upatikanaji wa cheti kwa programu za ARC</translation>
 <translation id="7937766917976512374">Ruhusu au ukatae kurekodi video</translation>
 <translation id="7941975817681987555">Usibashiri vitendo vya mtandao kwenye muunganisho wa mtandao wowote</translation>
-<translation id="7952002811557367112">Sera hii humzuia mtumiaji kupakia kurasa za wavuti kutoka kwenye URL zisizoidhinishwa. Orodha ya URL zisizoidhinishwa hutoa orodha ya ruwaza za URL ambazo hubainisha URL zitakazoondolewa kwenye orodha ya URL zilizoidhinishwa.
-
-      Lazima URL iundwe kulingana na https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Vipengee visivyofuata kanuni vinaweza kufafanuliwa katika sera ya URL zilizoidhinishwa. Sera hizi hazizidi vipengee 1000; vipengee vitakavyofuata vitapuuzwa.
-
-      Kumbuka kwamba haipendekezwi kuzuia URL za 'chrome://*' za ndani kwa sababu hatua hii inaweza kusababisha hitilafu zisizotarajiwa.
-
-      Kumbuka kwamba sera hii haizuii ukurasa kusasishwa kipekee kupitia JavaScript. Kwa mfano, ukizuia, 'example.com/abc', watumiaji bado wanaweza kutembelea 'example.com' na kubofya kwenye kiungo ili kutembelea 'example.com/abc', ikiwa ukurasa hautaonyesha upya.
-
-      Sera hii isipowekwa, hakuna URL itakayoondolewa kwenye orodha ya URL zisizoidhinishwa katika kivinjari.</translation>
 <translation id="7953256619080733119">Wapangishi wasiofuata kanuni za mwongozo wa mtumiaji uliodhibitiwa</translation>
 <translation id="7961779417826583251">Zima utekelezaji wa Uwazi wa Cheti katika orodha ya Mamlaka ya Vyeti Vilivyopitwa na Wakati</translation>
 <translation id="7974114691960514888">Sera hii haihimiliwi tena.

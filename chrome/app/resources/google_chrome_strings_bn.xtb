@@ -167,7 +167,6 @@
 <translation id="5386244825306882791">আপনি Chrome শুরু করলে বা Omnibox থেকে সার্চ করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="5430073640787465221">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome এখনই রিলঞ্চ হবে}=1{Chrome ১ সেকেন্ডের মধ্যে রিলঞ্চ হবে}one{Chrome # সেকেন্ডের মধ্যে রিলঞ্চ হবে}other{Chrome # সেকেন্ডের মধ্যে রিলঞ্চ হবে}}</translation>
-<translation id="5505603430818498864">Google সার্ভারে পৃষ্ঠার ছবি পাঠানোর মাধ্যমে Google Chrome ছবি এবং ছবিতে দেওয়া টেক্সট শনাক্ত করতে পারে যার ফলে আপনার পক্ষে পৃষ্ঠার কন্টেন্ট আরও ভালভাবে বুঝতে সুবিধে হয়।</translation>
 <translation id="556024056938947818">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
@@ -198,6 +197,7 @@
 <translation id="6566149418543181476">Google Chrome আপডেট হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">আপনার Chrome জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chrome ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
+<translation id="6609605543612238677"><ph name="URL" /> অ্যাক্সেস করতে আপনার সিস্টেম অ্যাডমিনিস্ট্রেটর Google Chrome-কে অন্য ব্রাউজার খোলার জন্য কনফিগার করেছেন।</translation>
 <translation id="6634887557811630702">Google Chrome আপ টু ডেট আছে:</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6679975945624592337">Google Chrome-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
@@ -216,6 +216,7 @@
 <translation id="7106741999175697885">কার্য পরিচালক - Google Chrome</translation>
 <translation id="7164397146364144019">আপনি Google এ নিরাপত্তার সম্ভাব্য লঙ্ঘনের ঘটনাগুলি স্বয়ংক্রিয়ভাবে প্রতিবেদন করার মাধ্যমে Chrome কে নিরাপদ ও সহজে ব্যবহারযোগ্য করতে তুলতে সাহায্য করতে পারেন।</translation>
 <translation id="7242029209006116544">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে সাইন-ইন করছেন এবং এর অ্যাডমিনিস্ট্রেটরকে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টের ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে পারবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ বিকল্প হিসেবে আপনি আপনার বিদ্যমান Chrome ডেটা আলাদা রাখার জন্য একটি নতুন প্রোফাইল তৈরি করতে পারেন৷ <ph name="LEARN_MORE" /></translation>
+<translation id="7295052994004373688">Google Chrome UI-এ দেখানোর জন্য এই ভাষা ব্যবহার করা হয়</translation>
 <translation id="7296210096911315575">ব্যবহার ও নিরাপত্তা সম্পর্কে গুরুত্বপূর্ণ তথ্য</translation>
 <translation id="7308322188646931570">ফাইল ডাউনলোড করতে Chrome-এর স্টোরেজের অ্যাক্সেস প্রয়োজন</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
@@ -278,6 +279,7 @@
 <translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
 <translation id="873133009373065397">Google Chrome ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="8736674169840206667">একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chrome আবার চালু করুন</translation>
+<translation id="8788264404293392165">Chrome OS UI-এ দেখানোর জন্য এই ভাষা ব্যবহার করা হয়</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS ১ মিনিটের মধ্যে রিস্টার্ট হবে}one{Chrome OS # মিনিটের মধ্যে রিস্টার্ট হবে}other{Chrome OS # মিনিটের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="8823341990149967727">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="884296878221830158">আপনি Chrome শুরু করলে বা হোম বোতামটি ক্লিক করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>

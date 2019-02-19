@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
 <translation id="407254336480250557">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Descobriu aplicacions, jocs, extensions i temes genials per a Chromium.</translation>
+<translation id="4216212958613226427">És l'idioma en què es mostra la IU de Chromium</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>
 <translation id="4230135487732243613">Voleu enllaçar les vostres dades de Chromium amb aquest compte?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">Inicia la sessió a Chromium</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
 <translation id="5712253116097046984">L'administrador demana que reiniciïs Chromium OS per aplicar aquesta actualització</translation>
+<translation id="5756484659843248772">És l'idioma en què es mostra la IU de Chromium OS</translation>
 <translation id="5768914737813585044">Mostra Chromium OS en aquest idioma</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -181,8 +183,8 @@
 <translation id="6810143991807788455">Informa de la configuració actual per ajudar-nos a millorar Chromium</translation>
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiada a Chromium)</translation>
+<translation id="6877899728743402439">L'administrador del sistema ha configurat Chromium perquè obri un navegador alternatiu.</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
-<translation id="692832138936263906">Chromium pot reconèixer les imatges i el text d'una imatge perquè entenguis millor el contingut de la pàgina. Per fer-ho, ha d'enviar imatges de la pàgina als servidors de Google.</translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
 <translation id="6990124437352146030">Per visitar aquest lloc web, Chromium necessita permís per accedir al micròfon</translation>

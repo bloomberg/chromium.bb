@@ -175,10 +175,25 @@
 
       Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép bắt đầu hồ sơ khách.</translation>
 <translation id="1363275621236827384">Bật truy vấn cấu hình Máy chủ Quirks cho phần cứng</translation>
+<translation id="1383493480903114193">Chính sách này buộc mã nối mạng chạy trong quá trình chạy trình duyệt.
+
+      Chính sách này được tắt theo mặc định. Nếu bạn bật chính sách này, người dùng sẽ dễ gặp phải các sự cố bảo mật sau khi quá trình nối mạng được chạy trong hộp cát.
+
+      Chính sách này nhằm mang đến cho doanh nghiệp cơ hội di chuyển sang phần mềm của bên thứ 3 không phụ thuộc vào việc hook các API nối mạng. Bạn nên sử dụng máy chủ proxy khi vá LSP và API Win32.
+
+      Nếu bạn không đặt chính sách này, mã nối mạng có thể chạy ngoài quá trình chạy trình duyệt tùy theo kết quả thử nghiệm thực tế của thử nghiệm NetworkService.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Cho phép người dùng quản lý các chứng chỉ đã cài đặt.</translation>
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1404043648050567997">Dịch vụ Duyệt web an toàn hiển thị trang cảnh báo khi người dùng chuyển đến các trang web bị gắn cờ là có thể độc hại. Khi bạn bật mục cài đặt này, người dùng sẽ không thể tiếp tục truy cập vào trang web độc hại từ trang cảnh báo.
+
+      Chính sách này chỉ ngăn không cho người dùng tiếp tục truy cập khi có cảnh báo của dịch vụ Duyệt web an toàn (ví dụ: phần mềm độc hại và lừa đảo trực tuyến) chứ không áp dụng cho các vấn đề liên quan đến chứng chỉ SSL, chẳng hạn như chứng chỉ không hợp lệ hoặc hết hạn.
+
+      Nếu bạn đã tắt hoặc chưa định cấu hình mục cài đặt này, thì người dùng sẽ có thể chọn tiếp tục truy cập vào trang web bị gắn cờ sau khi cảnh báo hiển thị.
+
+      Bạn có thể truy cập vào trang web https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
 <translation id="1413936351612032792">Báo cáo thông tin về việc sử dụng các ứng dụng Linux</translation>
 <translation id="142346659686073702">Cho phép người dùng chưa liên kết sử dụng Crostini</translation>
 <translation id="1426410128494586442">Có</translation>
@@ -1125,6 +1140,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
+<translation id="357917253161699596">Cho phép người dùng quản lý chứng chỉ người dùng</translation>
 <translation id="3583230441447348508">Chỉ định một danh sách các mục chia sẻ tệp trong mạng đã định cấu hình sẵn.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng có hai thành phần: "share_url" và "mode". "share_url" phải là URL của mục chia sẻ và "mode" phải là "drop_down" hoặc "pre_mount". Chế độ "drop_down" cho biết rằng "share_url" sẽ được thêm vào danh sách thả xuống của vị trí chia sẻ. Chế độ "pre_mount" cho biết rằng "share_url" sẽ được kết nối.</translation>
@@ -1460,6 +1476,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
 <translation id="437791893267799639">Chưa đặt chính sách, không cho phép di chuyển dữ liệu và ARC</translation>
+<translation id="4389073105055031853">Cho phép người dùng quản lý tất cả chứng chỉ</translation>
 <translation id="4389091865841123886">Định cấu hình chứng thực từ xa với cơ chế TPM.</translation>
 <translation id="4408428864159735559">Danh sách các mục chia sẻ tệp trong mạng đã định cấu hình sẵn.</translation>
 <translation id="4410236409016356088">Cho phép điều chỉnh băng thông mạng</translation>
@@ -1708,6 +1725,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách được đặt thành 0 thì tùy chọn thay đổi mật khẩu tài khoản của máy sẽ bị tắt.
 
       Lưu ý rằng mật khẩu có thể tồn tại lâu hơn số ngày đã chỉ định nếu máy khách ở trạng thái ngoại tuyến một thời gian dài hơn.</translation>
+<translation id="510196893779239086">Chính sách này kiểm soát việc có đóng hoàn toàn Chrome hay không khi tab cuối cùng sẽ chuyển sang một trình duyệt khác.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì Chrome sẽ tiếp tục mở ít nhất một tab sau khi chuyển sang trình duyệt thay thế.
+
+      Khi bạn đặt chính sách này thành false, thì Chrome sẽ đóng tab sau khi chuyển sang trình duyệt thay thế, ngay cả khi đó là tab cuối cùng. Điều này sẽ khiến cho Chrome thoát hoàn toàn.</translation>
 <translation id="5105313908130842249">Độ trễ khóa màn hình khi chạy trên nguồn pin</translation>
 <translation id="5108031557082757679">Đã tắt máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="5113732180192599620">Chính sách này kiểm soát danh sách các trang web không bao giờ gây ra tình trạng chuyển đổi trình duyệt.
@@ -2315,6 +2337,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="6430366557948788869">Tiện ích báo cáo của Chrome</translation>
 <translation id="6440051664870270040">Cho phép các trang web chuyển tới và mở các cửa sổ bật lên cùng một lúc</translation>
 <translation id="6447948611083700881">Đã tắt tính năng sao lưu và khôi phục</translation>
+<translation id="6449476513004303784">Không cho phép người dùng quản lý chứng chỉ</translation>
 <translation id="645425387487868471">Bật bắt buộc đăng nhập cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Bật tính năng Tự động điền cho địa chỉ</translation>
 <translation id="6473623140202114570">Định cấu hình danh sách các miền mà Duyệt web an toàn sẽ không kích hoạt cảnh báo.</translation>
@@ -2376,6 +2399,13 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách này bằng cách bật hoặc tắt bàn phím ảo. Tuy nhiên, lựa chọn của người dùng không cố định và giá trị mặc định được khôi phục bất cứ lúc nào màn hình đăng nhập được hiển thị lại hoặc người dùng duy trì trạng thái rảnh trên màn hình đăng nhập trong một phút.
 
           Nếu chính sách này không được đặt, bàn phím ảo bị tắt khi màn hình đăng nhập được hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất kỳ lúc nào và trạng thái của bàn phím trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
+<translation id="6570691255874112762">Chính sách này kiểm soát việc người dùng có thể nhập và xóa các chứng chỉ thông qua Trình quản lý chứng chỉ hay không.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành ''Cho phép người dùng quản lý tất cả chứng chỉ', thì người dùng sẽ có thể quản lý các chứng chỉ.
+
+      Nếu bạn đặt chính sách này thành ''Cho phép người dùng quản lý chứng chỉ người dùng'', thì người dùng sẽ có thể quản lý các chứng chỉ người dùng, chứ không phải các chứng chỉ cho toàn bộ thiết bị.
+
+      Nếu bạn đặt chính sách này thành ''Không cho phép người dùng quản lý chứng chỉ'', thì người dùng sẽ không thể quản lý các chứng chỉ, họ chỉ có thể xem chứng chỉ.</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
 <translation id="6603004149426829878">Luôn gửi mọi tín hiệu vị trí có sẵn cho máy chủ trong khi phân giải múi giờ</translation>
@@ -2713,6 +2743,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Nếu không đặt chính sách này, kính lúp màn hình bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt kính lúp màn hình bất cứ lúc nào và trạng thái của kính lúp trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="7249828445670652637">Bật chứng chỉ CA <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
+<translation id="7252681704926980614">Gửi tên người dùng và tên tệp tới máy chủ máy in gốc cùng với mỗi lệnh in. Tùy chọn mặc định là không gửi.
+
+      Việc đặt chính sách này thành true cũng sẽ tắt các máy in sử dụng giao thức khác với IPPS, USB hoặc "IPP qua USB" vì tên người dùng và tên tệp sẽ không được gửi tự do qua mạng.</translation>
 <translation id="7258823566580374486">Bật tính năng ẩn của máy chủ truy cập từ xa</translation>
 <translation id="7260277299188117560">Tự động cập nhật p2p được bật</translation>
 <translation id="7261252191178797385">Hình nền của thiết bị</translation>
@@ -2778,6 +2811,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách này không được đặt, tính năng dọn sạch tự động sẽ sử dụng chiến lược tích hợp sẵn mặc định. Hiện tại đó là chiến lược 'RemoveLRUIfDormant'.</translation>
 <translation id="7336785017449297672">Kiểm soát các tùy chọn cài đặt đồng hồ và múi giờ.</translation>
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
+<translation id="7339315111520512972">Buộc mã nối mạng chạy trong quá trình chạy trình duyệt</translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
 <translation id="7343497214039883642">Tệp cấu hình máy dành cho in doanh nghiệp cho các thiết bị</translation>
 <translation id="7349338075015720646">Xác định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt cũng như tắt.
@@ -2999,22 +3033,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
          Để biết các ví dụ cụ thể, hãy truy cập:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Tiếp tục mở tab cuối cùng trong Chrome.</translation>
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
-<translation id="7952002811557367112">Chính sách này ngăn không cho người dùng tải trang web từ các URL có trong danh sách cấm. Danh sách cấm cung cấp một danh sách các mẫu URL cho biết URL nào bị cấm.
-
-      Bạn phải định dạng mẫu URL theo định dạng trên trang web https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Bạn có thể xác định các trường hợp ngoại lệ trong chính sách về danh sách URL cho phép. Những chính sách này chỉ giới hạn trong 1000 mục; các mục sau đó sẽ bị bỏ qua.
-
-      Lưu ý rằng bạn không nên chặn các URL 'chrome://*' nội bộ vì điều này có thể dẫn đến các lỗi không mong muốn.
-
-      Lưu ý rằng chính sách này không ngăn trang web cập nhật động thông qua JavaScript. Ví dụ: Nếu bạn chặn 'example.com/abc' thì người dùng vẫn có thể truy cập vào 'example.com' và nhấp vào một đường dẫn liên kết để truy cập vào 'example.com/abc', miễn là trang không làm mới.
-
-      Nếu bạn không đặt chính sách này, thì không có URL nào sẽ bị đưa vào danh sách cấm trong trình duyệt.</translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="7961779417826583251">Tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ cho một danh sách Tổ chức phát hành chứng chỉ kế thừa</translation>
 <translation id="7974114691960514888">Chính sách này không còn được hỗ trợ.

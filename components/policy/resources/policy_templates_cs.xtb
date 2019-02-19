@@ -159,10 +159,25 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
+<translation id="1383493480903114193">Tato zásada vynucuje spuštění kódu pro sítě v procesu prohlížeče.
+
+      Tato zásada je ve výchozím nastavení vypnutá. Pokud ji zapnete, budou uživatelé po přesunutí procesu pro sítě do izolovaného prostoru vystaveni bezpečnostním rizikům.
+
+      Účelem této zásady je umožnit organizacím přejít na software třetích stran, který není závislý na propojení s rozhraními API pro sítě. Proxy servery se doporučují prostřednictvím LSP a oprav rozhraní Win32 API.
+
+      Pokud tato zásada není nastavená, kód pro sítě se může spouštět mimo proces prohlížeče v závislosti na zkouškách experimentu NetworkService.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Povolit uživatelům spravovat nainstalované certifikáty.</translation>
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
+<translation id="1404043648050567997">Když uživatel přejde na web, který je označen jako potenciálně škodlivý, zobrazí služba Bezpečné prohlížení stránku s upozorněním. Aktivace tohoto nastavení zabrání uživatelům pokračovat ze stránky s upozorněním na škodlivý web.
+
+      Tato zásada uživatelům znemožňuje pokračovat jen u upozornění Bezpečného prohlížení (např. malware a phishing), nikoliv u problémů souvisejících s certifikáty SSL, jako jsou neplatné nebo prošlé certifikáty.
+
+      Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, uživatelé mohou po zobrazení upozornění pokračovat na nahlášený web.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Hlásit informace o využití Linuxových aplikací</translation>
 <translation id="142346659686073702">Povolit cizím uživatelům používat Crostini</translation>
 <translation id="1426410128494586442">Ano</translation>
@@ -1086,6 +1101,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="355118380775352753">Weby, které se mají otevírat v alternativním prohlížeči</translation>
 <translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
+<translation id="357917253161699596">Povolit uživatelům spravovat uživatelské certifikáty</translation>
 <translation id="3583230441447348508">Určuje seznam předem nakonfigurovaných síťových sdílených úložišť.
 
       Každá položka v seznamu zásady je objekt se dvěma členy: „share_url“ a „mode“. Hodnota „share_url“ by měla být adresa URL sdíleného úložiště a hodnota „mode“ by měla být buď „drop_down“, nebo „pre_mount“. Režim „drop_down“ udává, že úložiště „share_url“ bude přidáno do rozbalovacího seznamu pro výběr sdílených úložišť. Režim „pre_mount“ udává, že úložiště „share_url“ bude připojeno.</translation>
@@ -1418,6 +1434,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="4372704773119750918">Nepovolí podnikovým uživatelům být součástí multiprofilu (primárního či sekundárního)</translation>
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
 <translation id="437791893267799639">Zásada nenastavena, zakázat migraci dat a rozšíření ARC</translation>
+<translation id="4389073105055031853">Povolit uživatelům spravovat všechny certifikáty</translation>
 <translation id="4389091865841123886">Konfiguruje vzdálené ověření identity pomocí mechanismu TPM.</translation>
 <translation id="4408428864159735559">Seznam předem nakonfigurovaných sdílených síťových úložišť.</translation>
 <translation id="4410236409016356088">Zapnout omezení rychlosti připojení</translation>
@@ -1666,6 +1683,11 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Pokud je tato zásada nastavena na hodnotu 0, je změna hesla počítače zakázána.
 
       Jestliže byl klient delší dobu offline, mohou být hesla starší než zadaný počet dní.</translation>
+<translation id="510196893779239086">Tato zásada určuje, zda se má Chrome zcela ukončit v případě, že poslední karta způsobí přepnutí na jiný prohlížeč.
+
+      Když je tato zásada ponechána nenastavená nebo je nastavená na hodnotu true, Chrome po přepnutí na alternativní prohlížeč ponechá otevřenou alespoň jednu kartu.
+
+      Když je tato zásada nastavená na hodnotu false, Chrome kartu po přepnutí na alternativní prohlížeč zavře, i kdyby byla poslední. Tím se Chrome zcela ukončí.</translation>
 <translation id="5105313908130842249">Prodleva uzamčení obrazovky při napájení z baterie</translation>
 <translation id="5108031557082757679">Zakázané podnikové tiskárny pro zařízení</translation>
 <translation id="5113732180192599620">Tato zásada určuje seznam webů, které nikdy nezpůsobí přepnutí prohlížeče.
@@ -2251,6 +2273,7 @@ Nastavením této zásady můžete nakonfigurovat, zda má uživatel povoleno p�
 <translation id="6430366557948788869">Rozšíření Chrome Reporting</translation>
 <translation id="6440051664870270040">Povolit webům zároveň provádět navigaci a otevírat vyskakovací okna</translation>
 <translation id="6447948611083700881">Zálohování a obnovení zakázáno</translation>
+<translation id="6449476513004303784">Zakázat uživatelům správu certifikátů</translation>
 <translation id="645425387487868471">Aktivovat vynucené přihlášení do prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Povolit automatické vyplňování pro adresy</translation>
 <translation id="6473623140202114570">Konfiguruje seznam domén, na kterých Bezpečné prohlížení nebude zobrazovat upozornění.</translation>
@@ -2312,6 +2335,13 @@ Pokud tato zásada nebude nastavená, uživatel bude moci sám zvolit, zda se ja
           Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat aktivací nebo deaktivací softwarové klávesnice. Volba uživatele nicméně nebude trvalá a po opětovném zobrazení přihlašovací obrazovky nebo nečinnosti uživatele na přihlašovací obrazovce po dobu jedné minuty se obnoví původní nastavení.
 
           Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky softwarová klávesnice deaktivována. Uživatelé budou moci softwarovou klávesnici kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
+<translation id="6570691255874112762">Tato zásada určuje, zda uživatelé mohou importovat a odstraňovat certifikáty prostřednictvím Správce certifikátů.
+
+      Pokud je tato zásada nastavená na možnost „Povolit uživatelům spravovat všechny certifikáty“ nebo je ponechána nenastavená, uživatelé certifikáty budou moci spravovat.
+
+      Pokud je nastavená na hodnotu „Povolit uživatelům spravovat uživatelské certifikáty“, uživatelé budou moci spravovat uživatelské certifikáty, ale nikoliv certifikáty pro celé zařízení.
+
+      Pokud je nastavená na možnost „Zakázat uživatelům správu certifikátů“, uživatelé certifikáty nebudou moci spravovat (budou je moci jen zobrazit).</translation>
 <translation id="6573305661369899995">Nastavit externí zdroj omezení adres URL</translation>
 <translation id="6598235178374410284">Obrázek avatara uživatele</translation>
 <translation id="6603004149426829878">Při určování časového pásma na server vždy odesílat všechny dostupné signály týkající se polohy</translation>
@@ -2642,6 +2672,9 @@ Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat akti
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky lupa deaktivována. Uživatelé budou moci lupu kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
 <translation id="7249828445670652637">Povolit aplikacím ARC používání certifikátů CA systému <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="7252681704926980614">S každou tiskovou úlohou na server nativních tiskáren odeslat uživatelské jméno a název souboru. Ve výchozím nastavení se tyto údaje neodesílají.
+
+      Nastavením této zásady na hodnotu true také zakážete tiskárny, které používají jiné protokoly než IPPS, USB nebo IPP-over-USB, protože uživatelské jméno a název soubor by se neměly volně odesílat prostřednictvím sítě.</translation>
 <translation id="7258823566580374486">Povolit blokování uživatelského rozhraní hostitelů vzdáleného přístupu</translation>
 <translation id="7260277299188117560">Automatické aktualizace pomocí sítě p2p aktivovány</translation>
 <translation id="7261252191178797385">Obrázek tapety zařízení</translation>
@@ -2707,6 +2740,7 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Ovládá nastavení hodin a časového pásma.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání návštěvy</translation>
+<translation id="7339315111520512972">Vynutit spuštění kódu pro sítě v procesu prohlížeče</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
 <translation id="7343497214039883642">Konfigurační soubor podnikových tiskáren pro zařízení</translation>
 <translation id="7349338075015720646">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
@@ -2930,22 +2964,12 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
           Podrobné příklady naleznete na následující adrese:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Poslední kartu v Chromu ponechat otevřenou.</translation>
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
 <translation id="793473937901685727">Nastavení dostupnosti certifikátů pro aplikace ARC</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
-<translation id="7952002811557367112">Tato zásada uživateli zabraňuje v načítání webových stránek ze zakázaných adres URL. Seznam zakázaných položek obsahuje vzory adres URL. Ty určují, které adresy URL budou zakázány.
-
-      Vzor adres URL musí být naformátován podle pokynů na stránce https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
-
-      Blokování interních adres URL s předponou „chrome://*“ nedoporučujeme, protože může vést k neočekávaným chybám.
-
-      Tato zásada nezabraňuje dynamické aktualizaci stránky prostřednictvím JavaScriptu. Jestliže například zablokujete stránku example.com/abc, uživatelům by se mohlo podařit navštívit stránku example.com a kliknutím na odkaz navštívit stránku example.com/abc (pokud se stránka neobnoví).
-
-      Pokud tato zásada není nastavená, nebude v prohlížeči zakázána žádná adresa URL.</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
 <translation id="7961779417826583251">Deaktivovat vynucování zásad Certificate Transparency pro seznam starších certifikačních autorit</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.

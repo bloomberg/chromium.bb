@@ -165,7 +165,6 @@
 
 Google Chrome 無法復原你的設定。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將於 1 秒後重新啟動}other{Chrome 將於 # 秒後重新啟動}}</translation>
-<translation id="5505603430818498864">Google Chrome 可將網頁圖片傳送到 Google 伺服器，運用相關技術辨識圖片和圖片所含文字，讓你更瞭解網頁內容。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
@@ -196,6 +195,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">你正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理你的 Chrome 資料。如要更新你的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
+<translation id="6609605543612238677">系統管理員已設定 Google Chrome 透過替代瀏覽器存取 <ph name="URL" />。</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="6679975945624592337">讓 Google Chrome 在背景執行</translation>
@@ -214,6 +214,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="7164397146364144019">你可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
 <translation id="7242029209006116544">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chrome 設定檔。你的 Chrome 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，你可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
+<translation id="7295052994004373688">這是 Google Chrome UI 的顯示語言</translation>
 <translation id="7296210096911315575">重要的使用與安全資訊</translation>
 <translation id="7308322188646931570">Chrome 需要儲存空間存取權，才能下載檔案</translation>
 <translation id="7339898014177206373">新視窗</translation>
@@ -276,6 +277,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
 <translation id="873133009373065397">Google Chrome 無法偵測或設定預設瀏覽器</translation>
 <translation id="8736674169840206667">你的管理員要求你重新啟動 Chrome，以套用更新</translation>
+<translation id="8788264404293392165">這是 Chrome 作業系統 UI 的顯示語言</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome 作業系統將於 1 分鐘後重新啟動}other{Chrome 作業系統將於 # 分鐘後重新啟動}}</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或你點選 [首頁] 按鈕時所顯示的網頁。</translation>

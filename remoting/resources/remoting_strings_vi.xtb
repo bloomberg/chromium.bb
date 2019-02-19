@@ -15,7 +15,7 @@
 
 Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể nhận được phương thức nhập văn bản không chính xác. Sắp có hỗ trợ bố cục bàn phím khác!
 
-Để biết thông tin về bảo mật, hãy xem Chính sách bảo mật của Google (http://goo.gl/SyrVzj) và Chính sách bảo mật của Chrome (http://goo.gl/0uXE5d).</translation>
+Để biết thông tin về bảo mật, hãy xem Chính sách quyền riêng tư của Google (http://goo.gl/SyrVzj) và Chính sách quyền riêng tư của Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(tính năng này chưa khả dụng đối với máy tính của bạn)</translation>
 <translation id="1342297293546459414">Xem và kiểm soát máy tính dùng chung.</translation>
 <translation id="1389790901665088353">Tải xuống trình cài đặt máy chủ Chrome Remote Desktop</translation>
@@ -51,7 +51,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 • Trên mỗi máy tính của bạn, hãy thiết lập truy cập từ xa sử dụng ứng dụng Chrome Remote Desktop từ Cửa hàng Chrome trực tuyến: https://chrome.google.com/remotedesktop
 • Trên thiết bị Android của bạn, hãy mở ứng dụng và nhấn vào bất kỳ máy tính trực tuyến nào của bạn để kết nối.
 
-Để biết thông tin về bảo mật, hãy xem Chính sách bảo mật của Google (http://goo.gl/SyrVzj) và Chính sách bảo mật của Chrome (http://goo.gl/0uXE5d).</translation>
+Để biết thông tin về bảo mật, hãy xem Chính sách quyền riêng tư của Google (http://goo.gl/SyrVzj) và Chính sách quyền riêng tư của Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
 <translation id="2208514473086078157">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Chrome Remote Desktop. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="2220529011494928058">Báo cáo sự cố</translation>
@@ -306,7 +306,7 @@ PC</translation>
 <translation id="7836926030608666805">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đang chạy phiên bản Chrome mới nhất và thử lại.</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
 <translation id="7869445566579231750">Bạn không có quyền chạy ứng dụng này.</translation>
-<translation id="7895403300744144251">Chính sách bảo mật trên máy tính từ xa không cho phép các kết nối từ tài khoản của bạn.</translation>
+<translation id="7895403300744144251">Chính sách quyền riêng tư trên máy tính từ xa không cho phép các kết nối từ tài khoản của bạn.</translation>
 <translation id="7936528439960309876">Gắn vào bên phải</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="7970576581263377361">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chromium.</translation>

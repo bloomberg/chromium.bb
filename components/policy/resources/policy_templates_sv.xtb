@@ -175,10 +175,25 @@
 
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
+<translation id="1383493480903114193">Principen tvingar nätverkskod att köras i webbläsarprocessen.
+
+      Principen är inaktiverad som standard, och när den är aktiverad utsätts användarna för säkerhetsproblemen när nätverksprocessen körs i en sandlåda.
+
+      Syftet med principen är att ge företag en möjlighet att migrera till programvara från tredje part som inte är beroende av att kunna anropa nätverks-API:erna. Proxyservrar rekommenderas framför LSP och korrigeringar av Win32 API.
+
+      Om principen inte har ställts in kan nätverkskod köras utanför webbläsarprocessen, beroende på vilka experiment med NetworkService som körs.</translation>
 <translation id="1384459581748403878">Referens: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Tillåt användarna att hantera installerade certifikat.</translation>
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="1404043648050567997">Med tjänsten Säker webbsökning visas en varningssida när användaren är på väg till en webbplats som flaggats som potentiellt skadlig. Om du aktiverar den här inställningen kan användaren inte fortsätta från varningssidan till den skadliga webbplatsen.
+
+      Principen hindrar bara användaren från att fortsätta efter en varning från Säker webbsökning (t.ex. om skadlig programvara eller nätfiske). Problem med SSL-certifikat, som att ett certifikat är ogiltigt eller har upphört att gälla, omfattas inte av principen.
+
+      Om inställningen inaktiveras eller inte konfigureras kan användaren välja att fortsätta till den flaggade webbplatsen efter att varningen har visats.
+
+      Mer information om Säker webbsökning finns på https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Rapportera information om användning av Linux-appar</translation>
 <translation id="142346659686073702">Tillåt oanknutna användare att använda Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -1129,6 +1144,7 @@
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
+<translation id="357917253161699596">Tillåt användarna att hantera användarcertifikat</translation>
 <translation id="3583230441447348508">Anger en lista med förkonfigurerade filresurser i nätverket.
 
       Varje post i principens lista är ett objekt med två medlemmar: share_url och mode. share_url ska vara filresursens webbadress och mode ska vara antingen drop_down eller pre_mount. Läget drop_down anger att share_url ska läggas till på rullgardinsmenyn för filresurser att söka efter. Läget pre_mount anger att share_url ska monteras.</translation>
@@ -1465,6 +1481,7 @@
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
 <translation id="437791893267799639">Princip inte angiven, tillåt inte datamigrering och ARC</translation>
+<translation id="4389073105055031853">Tillåt användarna att hantera alla certifikat</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
 <translation id="4408428864159735559">Lista med förkonfigurerade filresurser i nätverket.</translation>
 <translation id="4410236409016356088">Aktivera begränsning av bandbredden i nätverket</translation>
@@ -1714,6 +1731,11 @@
       Om värdet anges som 0 inaktiveras ändring av datorns lösenord.
 
       Observera att om klienten har varit offline en längre tid kan lösenorden vara äldre än det angivna antalet dagar.</translation>
+<translation id="510196893779239086">Principen styr om Chrome ska stängas helt när den sista fliken dirigeras om till en annan webbläsare.
+
+      När principen saknar inställning eller är inställd på sant förblir minst en flik öppen i Chrome efter bytet till en annan webbläsare.
+
+      När principen är inställd på falskt stängs fliken i Chrome efter bytet till en annan webbläsare, även om det var den sista öppna fliken. Detta innebär att Chrome avslutas helt.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
 <translation id="5108031557082757679">Inaktiverade skrivare för företagsenheter</translation>
 <translation id="5113732180192599620">Med den här principen styrs listan över webbplatser som aldrig ska aktivera ett webbläsarbyte.
@@ -2321,6 +2343,7 @@
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Tillåt att webbplatser navigerar och öppnar popup-fönster samtidigt</translation>
 <translation id="6447948611083700881">Säkerhetskopiering och återställning har inaktiverats</translation>
+<translation id="6449476513004303784">Tillåt inte användarna att hantera certifikat</translation>
 <translation id="645425387487868471">Aktivera tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Aktivera autofyll för adresser</translation>
 <translation id="6473623140202114570">Konfigurera listan över domäner där Säker webbsökning inte utlöser varningar.</translation>
@@ -2382,6 +2405,13 @@
           Om du ställer in den här policyn kan användarna åsidosätta den tillfälligt genom att aktivera eller inaktivera skärmtangentbordet. Användarens val sparas däremot inte och standardinställningen återställs varje gång inloggningsskärmen öppnas igen eller användaren är inaktiv på inloggningsskärmen i en minut.
 
           Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
+<translation id="6570691255874112762">Principen styr om användaren får importera och ta bort certifikat med Certifikathanteraren.
+
+      Om principen är inställd på Tillåt användarna att hantera alla certifikat, eller om inställning saknas, kan användarna hantera certifikat.
+
+      Om principen är inställd på Tillåt användarna att hantera användarcertifikat kan användarna hantera användarcertifikat, men inte certifikat som gäller hela enheten.
+
+      Om principen är inställd på Tillåt inte användarna att hantera certifikat kan användarna inte hantera certifikat, bara visa dem.</translation>
 <translation id="6573305661369899995">Ange en extern källa för webbadressbegränsningar</translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
 <translation id="6603004149426829878">Skicka alla tillgängliga platssignaler till servern när tidszon fastställs</translation>
@@ -2721,6 +2751,9 @@
 
           Om principen inte anges är skärmförstoraren inaktiverad första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera skärmförstoraren när som helst och dess inställning på inloggningsskärmen sparas för olika användare.</translation>
 <translation id="7249828445670652637">Aktivera användning av CA-certifikat i <ph name="PRODUCT_OS_NAME" /> för ARC-appar</translation>
+<translation id="7252681704926980614">Skicka användarnamn och filnamn till den lokala skrivarservern för alla utskriftsjobb. Standardinställningen är att inte skicka dem.
+
+      När principen är inställd på sant inaktiveras skrivare som använder andra protokoll än IPPS, USB eller IPP-over-USB, eftersom användarnamn och filnamn inte ska skickas öppet över nätverket.</translation>
 <translation id="7258823566580374486">Aktivera avskärmning av fjärråtkomstvärdar</translation>
 <translation id="7260277299188117560">Automatisk uppdatering av p2p har aktiverats</translation>
 <translation id="7261252191178797385">Enhetens bakgrundsbild</translation>
@@ -2786,6 +2819,7 @@
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Styr inställningar för klocka och tidszon.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
+<translation id="7339315111520512972">Tvinga nätverkskod att köras i webbläsarprocessen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="7343497214039883642">Skivarkonfigurationsfil för företagsenheter</translation>
 <translation id="7349338075015720646">Anger en lista över webbplatser som installeras obemärkt utan att användaren gör något och som användaren inte kan avinstallera eller inaktivera.
@@ -3014,22 +3048,12 @@
 
           Mer ingående exempel hittar du på:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Låt den sista fliken förbli öppen i Chrome.</translation>
 <translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="7933141401888114454">Aktivera alternativet att skapa kontrollerade användare</translation>
 <translation id="793473937901685727">Ange om certifikat ska vara tillgängliga för ARC-appar</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
-<translation id="7952002811557367112">Den här principen förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan är en lista med webbadressmallar som anger vilka webbadresser som ska svartlistas.
-
-      En webbadressmall måste formateras enligt https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Undantag kan definieras i principerna för vitlistade webbadresser. Dessa principer är begränsade till 1000 poster. Ytterligare poster ignoreras.
-
-      Interna adresser som börjar med chrome://* bör inte blockeras eftersom det kan leda till oväntade fel.
-
-      Den här principen förhindrar inte att sidan uppdateras dynamiskt via JavaScript. Om du till exempel blockerar example.com/abc kan användarna fortfarande besöka example.com och klicka på en länk till example.com/abc, förutsatt att sidan inte uppdateras.
-
-      Om den här principen inte anges, svartlistas inga webbadresser i webbläsaren.</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
 <translation id="7961779417826583251">Inaktivera tillämpning av certifikattransparens för en lista med äldre certifikatutfärdare</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.

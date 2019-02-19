@@ -168,10 +168,25 @@
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
+<translation id="1383493480903114193">Esta política força o código de rede a ser executado no processo do navegador.
+
+      A política está desativada por padrão e, se ativada, deixa usuários vulneráveis aos problemas de segurança quando o processo de rede estiver no sandbox.
+
+      Esta política tem como objetivo oferecer às empresas a oportunidade de migrar para um software de terceiros que não dependa de hook das APIs de rede. Recomendamos o uso de servidores proxy em vez da aplicação de patches de API Win32 e LSPs.
+
+      Se esta política não for definida, o código de rede pode sair do processo do navegador, dependendo de testes de campo do experimento do NetworkService.</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Permitir que os usuários gerenciem certificados instalados.</translation>
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
+<translation id="1404043648050567997">O serviço Navegação segura mostra uma página de aviso quando os usuários navegam em sites que são sinalizados como potencialmente mal-intencionados. A ativação dessa configuração impede que os usuários prossigam da página de aviso para o site.
+
+      Esta política apenas evita que os usuários prossigam para sites com avisos do Navegação segura (por exemplo, com malware e phishing), mas não é aplicada para problemas relacionados a certificados SSL como certificados inválidos ou vencidos.
+
+      Se essa configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após a exibição do aviso.
+
+      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o Navegação segura.</translation>
 <translation id="1413936351612032792">Enviar informações sobre o uso de apps Linux</translation>
 <translation id="142346659686073702">Permitir que usuários sem afiliação utilizem o Crostini</translation>
 <translation id="1426410128494586442">Sim</translation>
@@ -1087,6 +1102,7 @@
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="355118380775352753">Sites que serão abertos no navegador alternativo</translation>
 <translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
+<translation id="357917253161699596">Permitir que os usuários gerenciem certificados</translation>
 <translation id="3583230441447348508">Especifica uma lista de compartilhamentos de arquivos de rede pré-configurados.
 
       Cada item de lista da política é um objeto com dois elementos: "share_url" e "mode". O "share_url" é o URL do compartilhamento, e "mode" é o "drop_down" ou "pre_mount". O modo "drop_down" indica que o "share_url" será adicionado à lista suspensa de descoberta de compartilhamentos. O modo "pre_mount" indica que o "share_url" será ativado.</translation>
@@ -1419,6 +1435,7 @@
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
 <translation id="437791893267799639">Política não definida. Bloquear migração de dados e ARC</translation>
+<translation id="4389073105055031853">Permitir que os usuários gerenciem todos os certificados</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
 <translation id="4408428864159735559">Lista de compartilhamentos de arquivos de rede pré-configurados.</translation>
 <translation id="4410236409016356088">Ativar o acelerador de largura de banda da rede</translation>
@@ -1656,6 +1673,11 @@
       Se a política for definida como 0, a alteração da senha da conta da máquina ficará desativada.
 
       As senhas poderão ficar mais antigas que o número de dias especificado se o cliente ficar off-line por um período mais longo.</translation>
+<translation id="510196893779239086">Esta política controla se o Chrome será totalmente fechado quando a última guia for alternada para outro navegador.
+
+      Quando esta política não estiver definida ou estiver definida como verdadeira, o Chrome manterá pelo menos uma guia aberta depois de alternar para um navegador alternativo.
+
+      Quando ela estiver definida como falsa, o Chrome fechará a guia depois de alternar para um navegador alternativo, mesmo que essa seja a última guia. Assim, o Chrome será totalmente fechado.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
 <translation id="5113732180192599620">Esta política controla a lista de sites que nunca causarão uma troca de navegador.
@@ -2225,6 +2247,7 @@
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permitir que sites naveguem e abram pop-ups simultaneamente</translation>
 <translation id="6447948611083700881">Backup e restauração desativados</translation>
+<translation id="6449476513004303784">Não permitir que os usuários gerenciem certificados</translation>
 <translation id="645425387487868471">Ativar login forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Ativa o Preenchimento automático de endereços</translation>
 <translation id="6473623140202114570">Configure a lista de domínios em que a política Safe Browsing não acionará avisos.</translation>
@@ -2286,6 +2309,13 @@
           Se você definir essa política, os usuários poderão modificá-la temporariamente ao ativar ou desativar o teclado na tela. No entanto, a opção do usuário não é permanente, e o padrão é restaurado sempre que a tela de login é exibida novamente ou que o usuário permanece inativo na tela de login por um minuto.
 
           Se essa política não for definida, o teclado na tela será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativá-lo ou desativá-lo a qualquer momento e seu status na tela de login é mantido entre os usuários.</translation>
+<translation id="6570691255874112762">Esta política controla a autorização do usuário para importar e remover certificados com o Administrador de certificados.
+
+      Se esta política estiver definida para "Permitir que os usuários gerenciem todos os certificados'' ou se não estiver definida, os usuários poderão gerenciar os certificados.
+
+      Se esta política estiver definida para ''Permitir que os usuários gerenciem certificados de usuário", os usuários poderão gerenciar certificados, mas não todos os certificados do dispositivo.
+
+      Se esta política estiver definida para "Não permitir que os usuários gerenciem certificados'', os usuários não poderão gerenciar certificados, mas apenas visualizá-los.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
 <translation id="6603004149426829878">Sempre enviar qualquer sinal de localização disponível para o servidor ao determinar o fuso horário</translation>
@@ -2610,6 +2640,9 @@
 
           Se esta política não for definida, a lupa será desativada quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar a lupa a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
+<translation id="7252681704926980614">Envia o nome de usuário e de arquivo para o servidor de impressoras nativas com cada trabalho de impressão. O padrão é não enviar.
+
+      Se esta política for definida como verdadeira, ela também desativará impressoras que usam protocolos diferentes de IPPS, USB ou IPP-over-USB, uma vez que o nome de usuário e o nome de arquivo não podem ser enviados pela rede abertamente.</translation>
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de plano de fundo do dispositivo</translation>
@@ -2673,6 +2706,7 @@
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Controla configurações do relógio e de fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
+<translation id="7339315111520512972">Força a execução do código de rede no processo do navegador</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
 <translation id="7349338075015720646">Especifica uma lista de sites instalados silenciosamente sem a interação do usuário e que não podem ser desinstalados nem desativados pelo usuário.
@@ -2895,22 +2929,12 @@
 
           Para ver exemplos detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Mantém a última guia aberta no Chrome.</translation>
 <translation id="793134539373873765">Especifica se p2p deve ser usado para cargas de atualização do sistema operacional. Se for definido como verdadeiro, os dispositivos compartilharão e tentarão consumir as cargas de atualização na LAN, possivelmente reduzindo o uso de largura de banda de Internet e o congestionamento. Se a carga de atualização não estiver disponível na LAN, o dispositivo voltará a fazer download a partir de um servidor de atualização. Se for definido como falso ou não for configurado, o p2p não será usado.</translation>
 <translation id="7933141401888114454">Ativar a criação de usuários supervisionados</translation>
 <translation id="793473937901685727">Definir a disponibilidade do certificado para apps ARC</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
-<translation id="7952002811557367112">Esta política evita que o usuário carregue páginas da Web com URLs que constam em listas negras. A lista negra fornece uma relação de padrões de URL que especifica quais URLs entrarão na lista.
-
-      Um padrão de URL pode ser formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      É possível configurar exceções na política de lista de permissões de URLs. Essas políticas são limitadas a 1.000 entradas. Entradas subsequentes serão ignoradas.
-
-      Observe que não é recomendado bloquear URLs internos "chrome://*", já que isso pode causar erros inesperados.
-
-      A política não evita a atualização dinâmica da página por JavaScript. Por exemplo, se você bloquear "example.com/abc", os usuários ainda poderão visitar "example.com" e clicar em um link para visitar "example.com/abc", desde que a página não seja atualizada.
-
-      Se esta política não for definida, nenhum URL será incluído na lista negra no navegador.</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência dos certificados para uma lista de Autoridades de certificação de legado</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>

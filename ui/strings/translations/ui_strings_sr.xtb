@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Уклони</translation>
 <translation id="1243314992276662751">Отпреми</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Премести апликацију <ph name="DRAGGED_APP" /> у директоријум <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРУЧЕНЕ АПЛИКАЦИЈЕ</translation>
 <translation id="1368832886055348810">Слева надесно</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">клик</translation>
 <translation id="3036649622769666520">Отварање датотека</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Полица на левој страни</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Поново отвори</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 дан}one{# дан}few{# дана}other{# дана}}</translation>
 <translation id="335581015389089642">Говор</translation>
 <translation id="3479552764303398839">Не сада</translation>
+<translation id="348799646910989694">Полица је аутоматски сакривена</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Још 1 дан}one{Још # дан}few{Још # дана}other{Још # дана}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Потражи „<ph name="LOOKUP_STRING" />“</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Почните да говорите</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
+<translation id="4690510401873698237">Полица у дну</translation>
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧЕСТО КОРИШЋЕНЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Још 1 месец}one{Још # месец}few{Још # месеца}other{Још # месеци}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Троугао за откривање</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Избриши</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> преко апликације <ph name="IN_PLACE_APP" />, отпустите да бисте направили директоријум.</translation>
 <translation id="5463830097259460683">Емоџи и симболи</translation>
 <translation id="5476505524087279545">опозови избор</translation>
+<translation id="547979256943495781">Полица на десној страни</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> систем</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Стрелица налево</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Још 1 сек}one{Још # сек}few{Још # сек}other{Још # сек}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
+<translation id="8170087467028567933">Уклањањем овог предлога сакрићете га за свој налог на свим уређајима.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надоле</translation>
 <translation id="8245914219290430011">Табулатор</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Желите ли да уклоните овај предлог?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г}one{# г}few{# г}other{# г}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> датотека (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Полица се увек приказује</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">и још <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Додај напомену у слику</translation>
 <translation id="8841375032071747811">Дугме Назад</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">Полица је увек сакривена</translation>
 <translation id="9002566407876343676">отварање</translation>
+<translation id="9039076430527029379">Премести на <ph name="PAGE_NUMBER" />. страницу, <ph name="ROW_NUMBER" />. ред, <ph name="COLUMN_NUMBER" />. колона.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}one{# сек}few{# сек}other{# сек}}</translation>
 <translation id="9059834730836941392">Скупи обавештење</translation>
 <translation id="9150735707954472829">Картица</translation>

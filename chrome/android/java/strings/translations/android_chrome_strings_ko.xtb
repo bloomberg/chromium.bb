@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">탭 및 창 단축키</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3205824638308738187">거의 완료되었습니다.</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> 삭제됨</translation>
 <translation id="321773570071367578">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3745176700485982507">이 페이지에서 즐겨찾는 웹사이트 링크를 찾을 수 있습니다.</translation>
+<translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
 <translation id="3778956594442850293">홈 화면에 추가됨</translation>
 <translation id="3781011235031427080">중간 높이로 '비슷한 항목 더보기'가 열렸습니다.</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4988210275050210843">파일 다운로드 중(<ph name="MEGABYTES" />MB)</translation>
 <translation id="4988526792673242964">페이지</translation>
+<translation id="4994033804516042629">연락처 없음</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="5004416275253351869">Google 활동 제어</translation>
 <translation id="5005498671520578047">비밀번호 복사</translation>
@@ -759,6 +762,7 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6643649862576733715">저장된 데이터 양에 따라 정렬</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}other{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}}</translation>
+<translation id="6649642165559792194">이미지 미리보기 표시 <ph name="BEGIN_NEW" />새로운 기능<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK" />권한 업데이트<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6659594942844771486">탭</translation>
@@ -776,7 +780,6 @@
 <translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
 <translation id="6766758767654711248">탭하여 사이트로 이동</translation>
-<translation id="6776813977906306442">다운로드 버튼을 사용하여 나중에 볼 동영상 다운로드</translation>
 <translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지합니다.</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="679325081238418596">모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 동기화합니다.</translation>
@@ -934,7 +937,9 @@
 <translation id="7929962904089429003">메뉴 열기</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
+<translation id="7960977077911686065">계속하면 Chrome에서 Chrome 자동 완성 데이터, 사이트의 URL, 콘텐츠를 Google에 전송하여 서비스를 제공하는 것에 동의하게 됩니다. 또한 Chrome이 사용자가 선택한 개인 정보를 Chrome 자동 완성을 통해 웹사이트에 전송하는 것에도 동의하게 됩니다. \n\nChrome 및 Chrome 자동 완성에서 Google 어시스턴트를 사용 중지하려면 Chrome 설정으로 이동하세요.  <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">공급업체:</translation>
+<translation id="7975379999046275268">페이지 미리보기 표시 <ph name="BEGIN_NEW" />새로운 기능<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 미리 로드</translation>
 <translation id="79859296434321399">증강 현실 콘텐츠를 보려면 ARCore를 설치하세요.</translation>
 <translation id="7986741934819883144">연락처 선택</translation>
@@ -1069,7 +1074,6 @@
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
 <translation id="8965591936373831584">보류 중</translation>
 <translation id="8972098258593396643">기본 폴더에 다운로드하시겠습니까?</translation>
-<translation id="8979405271719829084">나중에 볼 동영상 다운로드</translation>
 <translation id="8981454092730389528">Google 활동 제어</translation>
 <translation id="8983677657449185470">세이프 브라우징 개선에 참여</translation>
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>
@@ -1091,6 +1095,7 @@
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
+<translation id="9138504265731110181">Google 어시스턴트가 웹 체크아웃을 지원하여 시간을 절약할 수 있습니다.</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>
 <translation id="9139318394846604261">쇼핑</translation>
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>

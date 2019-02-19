@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">નવા ટૅબમાં ખોલો</translation>
 <translation id="3024255823539804759">ગત દિવસ</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
-<translation id="3059750684806925578">કૉપિ કરેલી છબી શોધો</translation>
 <translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
 <translation id="3175081911749765310">વેબ સેવાઓ</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">સર્વરથી કનેક્ટ કરી શક્યું નથી.</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
 <translation id="3393920035788932672">પૉપ-અપ્સ મંજૂર છે</translation>
+<translation id="3424059454230285158">તમે ગમે ત્યારે <ph name="BEGIN_LINK" />આ સેટિંગને કસ્ટમાઇઝ<ph name="END_LINK" /> કરી શકો છો</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
 <translation id="345565170154308620">પાસવર્ડ મેનેજ કરો…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
 <translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
-<translation id="3771149149411027381">કૉપિ કરેલ ટેક્સ્ટ શોધો</translation>
 <translation id="3779810277399252432">કોઈ ઇન્ટરનેટ કનેક્શન નથી.</translation>
 <translation id="3783017676699494206">ફોટા સાચવો</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">શોધો</translation>
 <translation id="4121993058175073134">ચોખ્ખો-નિકાસ ડેટા મોકલવા માટે, કૃપા કરીને સેટિંગ એપ્લિકેશનમાં તમારા ઇમેઇલ એકાઉન્ટને ગોઠવો.</translation>
 <translation id="4124987746317609294">સમય શ્રેણી</translation>
-<translation id="4155190233692914060">કૉપિ કરેલ લિંકની મુલાકાત લો</translation>
 <translation id="4172051516777682613">હંમેશા બતાવો</translation>
 <translation id="418156467088430727">ઑફલાઇન વર્ઝન નવા ટૅબમાં જુઓ</translation>
 <translation id="4237682350741091554">Chrome સમન્વયન અને વૈયક્તિકરણને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં સંચાલિત કરો</translation>

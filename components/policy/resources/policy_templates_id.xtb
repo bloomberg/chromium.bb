@@ -160,10 +160,25 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
+<translation id="1383493480903114193">Kebijakan ini memaksa kode jaringan untuk dijalankan dalam proses browser.
+
+      Kebijakan ini dinonaktifkan secara default, dan jika diaktifkan, pengguna akan rentan terhadap masalah keamanan setelah proses jaringan masuk dalam sandbox.
+
+      Kebijakan ini dimaksudkan untuk memberi perusahaan kesempatan melakukan migrasi ke software pihak ke-3 yang tidak bergantung pada penarikan networking API. Sebaiknya gunakan server proxy daripada patch API Win32 dan LSP.
+
+      Jika kebijakan ini tidak disetel, kode jaringan mungkin dijalankan di luar proses browser yang bergantung pada uji coba kolom eksperimen NetworkService.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Izinkan pengguna mengelola sertifikat yang diinstal.</translation>
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
+<translation id="1404043648050567997">Layanan Safe Browsing menampilkan halaman peringatan saat pengguna membuka situs yang ditanda sebagai berpotensi berbahaya. Mengaktifkan setelan ini akan mencegah pengguna agar tidak melanjutkan penelusuran dari halaman peringatan ke situs berbahaya.
+
+      Kebijakan ini hanya mencegah pengguna agar tidak melanjutkan penelusuran pada halaman peringatan Safe Browsing (misalnya, malware dan phishing) bukan untuk masalah terkait sertifikat SSL seperti sertifikat yang masa berlakunya habis atau tidak valid.
+
+      Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat memilih untuk melanjutkan penelusuran ke situs yang ditandai setelah peringatan ditampilkan.
+
+      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="1413936351612032792">Informasi laporan tentang penggunaan aplikasi Linux</translation>
 <translation id="142346659686073702">Izinkan pengguna tak terafiliasi menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
@@ -1077,6 +1092,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="355118380775352753">Situs yang akan dibuka di browser alternatif</translation>
 <translation id="3577251398714997599">Setelan iklan untuk situs yang menayangkan iklan mengganggu</translation>
+<translation id="357917253161699596">Izinkan pengguna mengelola sertifikat pengguna</translation>
 <translation id="3583230441447348508">Menentukan daftar berbagi file jaringan yang dikonfigurasi sebelumnya.
 
       Tiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_url" dan "mode". "share_url" harus berupa URL berbagi dan "mode" harus berupa "drop_down" atau "pre_mount". Mode "drop_down" menandakan bahwa "share_url" akan ditambahkan ke drop-down penemuan berbagi. Mode "pre_mount" menandakan bahwa "share_url" akan dipasang.</translation>
@@ -1410,6 +1426,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
 <translation id="437791893267799639">Kebijakan tidak disetel, jangan izinkan migrasi data dan ARC</translation>
+<translation id="4389073105055031853">Izinkan pengguna mengelola semua sertifikat</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
 <translation id="4408428864159735559">Daftar berbagi file jaringan yang telah dikonfigurasikan sebelumnya.</translation>
 <translation id="4410236409016356088">Aktifkan pembatasan bandwidth jaringan</translation>
@@ -1647,6 +1664,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan disetel ke 0, perubahan sandi akun mesin dinonaktifkan.
 
       Perlu diperhatikan bahwa sandi mungkin lebih lama daripada jumlah hari yang ditentukan jika klien offline dalam waktu yang lebih lama.</translation>
+<translation id="510196893779239086">Kebijakan ini mengontrol apakah Chrome sepenuhnya ditutup saat tab terakhir akan beralih ke browser lain.
+
+      Saat kebijakan ini tidak disetel atau disetel ke BENAR, Chrome akan membiarkan setidaknya satu tab terbuka setelah beralih ke browser alternatif.
+
+      Saat kebijakan ini disetel ke SALAH, Chrome akan menutup tab setelah beralih ke browser alternatif, meskipun itu adalah tab terakhir. Hal ini akan membuat Chrome ditutup sepenuhnya.</translation>
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
 <translation id="5108031557082757679">Menonaktifkan printer yang merupakan perangkat perusahaan</translation>
 <translation id="5113732180192599620">Kebijakan ini mengontrol daftar situs yang tidak akan pernah menyebabkan pengalihan browser.
@@ -2199,6 +2221,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6430366557948788869">Ekstensi Pelaporan Chrome</translation>
 <translation id="6440051664870270040">Izinkan situs menavigasi dan membuka (jendela) pop-up sekaligus</translation>
 <translation id="6447948611083700881">Opsi backup dan pemulihan dinonaktifkan</translation>
+<translation id="6449476513004303784">Jangan izinkan pengguna mengelola sertifikat</translation>
 <translation id="645425387487868471">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Mengaktifkan IsiOtomatis untuk alamat</translation>
 <translation id="6473623140202114570">Mengonfigurasi daftar domain tempat Safe Browsing tidak akan memicu peringatan.</translation>
@@ -2260,6 +2283,13 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika Anda menyetel kebijakan ini, pengguna dapat menggantinya untuk sementara dengan mengaktifkan atau menonaktifkan keyboard di layar. Akan tetapi, pilihan pengguna tidak bersifat tetap dan setelan default akan dipulihkan ketika layar masuk ditampilkan kembali atau pengguna menganggur di layar masuk selama satu menit.
 
           Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan ketika layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan keyboard di layar kapan saja dan statusnya pada layar masuk bersifat tetap antarpengguna.</translation>
+<translation id="6570691255874112762">Kebijakan ini mengontrol apakah pengguna dapat mengimpor dan menghapus sertifikat melalui Pegelola Sertifikat.
+
+      Jika kebijakan ini disetel ke ''Izinkan pengguna mengelola semua sertifikat'' atau tidak disetel, pengguna dapat mengelola sertifikat.
+
+      Jika kebijakan disetel ke ''Izinkan pengguna mengelola sertifikat'', pengguna dapat mengelola sertifikat pengguna, namun bukan sertifikat di seluruh perangkat.
+
+      Jika kebijakan ini disetel ke ''Jangan izinkan pengguna mengelola sertifikat'', pengguna tidak dapat mengelola sertifikat, mereka hanya dapat melihat sertifikat.</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6598235178374410284">Gambar avatar pengguna</translation>
 <translation id="6603004149426829878">Selalu kirim sinyal lokasi yang tersedia ke server sembari menentukan zona waktu</translation>
@@ -2584,6 +2614,9 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 
           Jika kebijakan ini tidak disetel, lup dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan lup kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
+<translation id="7252681704926980614">Kirimkan nama pengguna dan nama file ke server printer native beserta setiap pekerjaan cetak. Setelan defaultnya bukan untuk mengirim.
+
+      Menyetel kebijakan ini ke BENAR juga akan menonaktifkan printer yang menggunakan protokol selain IPPS, USB, atau IPP melalui USB karena nama pengguna dan nama file tidak boleh dikirim melalui jaringan secara terbuka.</translation>
 <translation id="7258823566580374486">Mengaktifkan pemberian tirai hosting akses jarak jauh</translation>
 <translation id="7260277299188117560">Pembaruan p2p otomatis diaktifkan</translation>
 <translation id="7261252191178797385">Gambar wallpaper perangkat</translation>
@@ -2647,6 +2680,7 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Jika kebijakan ini tidak disetel, pembersihan otomatis menggunakan strategi yang tertanam secara default. Saat ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
 <translation id="7336785017449297672">Mengontrol setelan jam dan zona waktu.</translation>
 <translation id="7336878834592315572">Menyimpan cookie selama durasi sesi</translation>
+<translation id="7339315111520512972">Paksa kode jaringan untuk dijalankan dalam proses browser</translation>
 <translation id="7340034977315324840">Laporkan waktu aktivitas perangkat</translation>
 <translation id="7343497214039883642">File konfigurasi printer perusahaan untuk perangkat</translation>
 <translation id="7349338075015720646">Menentukan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
@@ -2868,22 +2902,12 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Untuk contoh detailnya, buka:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Biarkan tab terakhir terbuka di Chrome.</translation>
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mendownload dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
 <translation id="793473937901685727">Menyetel ketersediaan sertifikat untuk aplikasi ARC</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
-<translation id="7952002811557367112">Kebijakan ini mencegah pengguna memuat halaman dari URL yang masuk daftar hitam. Daftar hitam menyediakan daftar pola URL yang menentukan URL mana yang masuk daftar hitam.
-
-      Pola URL harus diformat sesuai dengan https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Pengecualian dapat ditetapkan dalam kebijakan daftar URL yang diizinkan. Kebijakan ini memiliki batas 1.000 entri; entri berikutnya akan diabaikan.
-
-      Perlu diketahui bahwa pemblokiran URL 'chrome://*' internal tidak direkomendasikan karena dapat menyebabkan error.
-
-      Perlu diperhatikan bahwa kebijakan ini tidak mencegah update halaman secara dinamis melalui JavaScript. Misalnya, jika Anda memblokir 'example.com/abc', pengguna mungkin masih dapat mengunjungi 'example.com' dan mengklik link untuk mengunjungi 'example.com/abc', selama halaman tidak dimuat ulang.
-
-      Jika kebijakan ini tidak disetel, tidak ada URL yang akan dimasukkan ke daftar hitam di browser.</translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
 <translation id="7961779417826583251">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar Otoritas Sertifikat Lama</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>

@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1243314992276662751">Prześlij</translation>
 <translation id="1269641567813814718">Windows</translation>
+<translation id="1290982764014248209">Przenieś aplikację <ph name="DRAGGED_APP" /> do folderu <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">POLECANE APLIKACJE</translation>
 <translation id="1368832886055348810">Od lewej do prawej</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">kliknij</translation>
 <translation id="3036649622769666520">Otwórz pliki</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Półka po lewej</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Przywróć</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="335581015389089642">Mowa</translation>
 <translation id="3479552764303398839">Nie teraz</translation>
+<translation id="348799646910989694">Półka ukryta automatycznie</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Pozostał 1 dzień}few{Pozostały # dni}many{Pozostało # dni}other{Pozostało # dnia}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Sprawdź słowo „<ph name="LOOKUP_STRING" />”</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Zacznij mówić</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
 <translation id="4588090240171750605">Przewiń w prawo</translation>
+<translation id="4690510401873698237">Półka na dole</translation>
 <translation id="4724120544754982507">Centrum powiadomień, liczba nieprzeczytanych powiadomień: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">CZĘSTO UŻYWANE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Pozostał miesiąc}few{Pozostały # miesiące}many{Pozostało # miesięcy}other{Pozostało # miesiąca}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Trójkąt rozwinięcia</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
+<translation id="5395308026110844773">Aplikacja <ph name="DRAGGED_APP_NAME" /> jest nad aplikacją <ph name="IN_PLACE_APP" /> – puść, by utworzyć folder.</translation>
 <translation id="5463830097259460683">Emotikony i symbole</translation>
 <translation id="5476505524087279545">odznacz</translation>
+<translation id="547979256943495781">Półka po prawej</translation>
 <translation id="5574202486608032840">System <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Strzałka w lewo</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Pozostała 1 s}few{Pozostały # s}many{Pozostało # s}other{Pozostało # s}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autouzupełnianie</translation>
 <translation id="815598010540052116">Przewiń w dół</translation>
+<translation id="8170087467028567933">Usunięcie tej sugestii ukryje ją na Twoim koncie na wszystkich Twoich urządzeniach.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Strona w dół</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Usunąć tę sugestię?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 rok}few{# lata}many{# lat}other{# roku}}</translation>
 <translation id="8602707065186045623">Plik <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Półka zawsze widoczna</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
 <translation id="8725488761726303204">i jeszcze <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gotowe</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Dodaj notatkę na grafice</translation>
 <translation id="8841375032071747811">Przycisk Wstecz</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
+<translation id="8926951137623668982">Półka zawsze ukryta</translation>
 <translation id="9002566407876343676">otwórz</translation>
+<translation id="9039076430527029379">Przenieś na stronę <ph name="PAGE_NUMBER" />, do wiersza <ph name="ROW_NUMBER" />, kolumny <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Zwiń powiadomienie</translation>
 <translation id="9150735707954472829">Karta</translation>

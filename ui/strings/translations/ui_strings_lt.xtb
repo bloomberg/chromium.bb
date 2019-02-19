@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1243314992276662751">Įkelti</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Perkelti „<ph name="DRAGGED_APP" />“ į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">REKOMENDUOJAMOS PROGRAMOS</translation>
 <translation id="1368832886055348810">Iš kairės į dešinę</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">spustelėti</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">Lentyna kairėje</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Atkurti</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 diena}one{# diena}few{# dienos}many{# dienos}other{# dienų}}</translation>
 <translation id="335581015389089642">Kalba</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
+<translation id="348799646910989694">Lentyna automatiškai slepiama</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Liko 1 diena}one{Liko # diena}few{Liko # dienos}many{Liko # dienos}other{Liko # dienų}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> ir daugiau</translation>
 <translation id="3618849550573277856">Ieškoti „<ph name="LOOKUP_STRING" />“</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Pradėti kalbėti</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
+<translation id="4690510401873698237">Lentyna apačioje</translation>
 <translation id="4724120544754982507">Pranešimų centras, neskaitytų pranešimų: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">DAŽNAI NAUDOJAMOS PROGRAMOS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Liko 1 mėnuo}one{Liko # mėnuo}few{Liko # mėnesiai}many{Liko # mėnesio}other{Liko # mėnesių}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Paskelbimo trikampis</translation>
 <translation id="528468243742722775">Pabaiga</translation>
 <translation id="5329858601952122676">&amp;Pašalinti</translation>
+<translation id="5395308026110844773">„<ph name="DRAGGED_APP_NAME" />“ ant „<ph name="IN_PLACE_APP" />“, paleiskite, kad sukurtumėte aplanką.</translation>
 <translation id="5463830097259460683">Jaustukai ir simboliai</translation>
 <translation id="5476505524087279545">Nuimti žymėjimą</translation>
+<translation id="547979256943495781">Lentyna dešinėje</translation>
 <translation id="5574202486608032840">„<ph name="IDS_SHORT_PRODUCT_OS_NAME" />“ sistema</translation>
 <translation id="5583640892426849032">Grįžties klavišas</translation>
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatinis užbaigimas</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>
+<translation id="8170087467028567933">Pašalinus šį pasiūlymą jis bus paslėptas jūsų paskyroje visuose įrenginiuose.</translation>
 <translation id="8179976553408161302">Įvesti</translation>
 <translation id="8210608804940886430">Puslapį žemyn</translation>
 <translation id="8245914219290430011">Skirtukas</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Pašalinti šį siūlymą?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 m.}one{# m.}few{# m.}many{# m.}other{# m.}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> failas (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Lentyna visada rodoma</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB per sek.</translation>
 <translation id="8725488761726303204">Dar <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Atlikta</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Komentuoti vaizdą</translation>
 <translation id="8841375032071747811">Mygtukas „Atgal“</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">Lentyna visada slepiama</translation>
 <translation id="9002566407876343676">atidaryti</translation>
+<translation id="9039076430527029379">Perkelti į <ph name="PAGE_NUMBER" /> puslapį, <ph name="ROW_NUMBER" /> eilutę, <ph name="COLUMN_NUMBER" /> stulpelį.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}few{# sek.}many{# sek.}other{# sek.}}</translation>
 <translation id="9059834730836941392">Sutraukti pranešimą</translation>
 <translation id="9150735707954472829">Skirtukas</translation>

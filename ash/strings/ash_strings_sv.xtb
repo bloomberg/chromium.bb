@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Kopplade enheter</translation>
 <translation id="1195412055398077112">överskanning</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
+<translation id="123828989343052515">Ny arbetsyta</translation>
 <translation id="1247372569136754018">Mikrofon (inbyggd)</translation>
 <translation id="1252999807265626933">Laddar från <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Vad är det för väder?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Skriv ett meddelande</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Ljusstyrka för tangentbordet</translation>
+<translation id="209965399369889474">Ingen nätverksanslutning</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="2135456203358955318">Dockad skärmförstoring</translation>
 <translation id="2144487987174258011">Starta om för att uppdatera Adobe Flash Player</translation>
@@ -435,6 +437,7 @@
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8297006494302853456">Svag</translation>
 <translation id="8308637677604853869">Föregående meny</translation>
+<translation id="8332664326438198339">Tillbaka till översikten</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Skapa anteckning</translation>
 <translation id="8375916635258623388">Denna <ph name="DEVICE_NAME" /> ansluts automatiskt till din mobil</translation>

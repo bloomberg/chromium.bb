@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Otevřít v nové kartě</translation>
 <translation id="3024255823539804759">Z uplynulého dne</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
-<translation id="3059750684806925578">Vyhledat zkopírovaný obrázek</translation>
 <translation id="3112556859945124369">Označit…</translation>
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nelze se připojit k serveru.</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
+<translation id="3424059454230285158"><ph name="BEGIN_LINK" />Tato nastavení si můžete kdykoli přizpůsobit<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Režim Split View</translation>
 <translation id="345565170154308620">Spravovat hesla...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
-<translation id="3771149149411027381">Vyhledat zkopírovaný text</translation>
 <translation id="3779810277399252432">Nejste připojeni k internetu</translation>
 <translation id="3783017676699494206">Uložit obrázek</translation>
 <translation id="3789841737615482174">Instalovat</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Hledat</translation>
 <translation id="4121993058175073134">Chcete-li odesílat data nástroje net-export, nakonfigurujte e-mailový účet v aplikaci Nastavení.</translation>
 <translation id="4124987746317609294">Časové období</translation>
-<translation id="4155190233692914060">Navštívit zkopírovaný odkaz</translation>
 <translation id="4172051516777682613">Vždy zobrazovat</translation>
 <translation id="418156467088430727">Zobrazit offline verzi na nové kartě</translation>
 <translation id="4237682350741091554">Synchronizaci a přizpůsobení Chromu můžete spravovat v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /></translation>

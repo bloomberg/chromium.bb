@@ -161,10 +161,25 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
+<translation id="1383493480903114193">Această politică forțează codul de rețea să ruleze în procesul browserului.
+
+      Această politică este dezactivată în mod prestabilit, iar dacă este activată, utilizatorii vor fi vulnerabili în fața problemelor de securitate odată ce procesului de rețea îi este limitat accesul.
+
+      Politica este concepută pentru a oferi companiilor ocazia de a migra la software oferit de terțe părți, care nu depinde de conectarea la API-urile de rețea. Se recomandă serverele proxy în schimbul LSP-urilor și corecțiilor API Win32.
+
+      Dacă politica nu este setată, codul de rețea poate epuiza procesul browserului, în funcție de testările limitate ale experimentului NetworkService.</translation>
 <translation id="1384459581748403878">Referință: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Permite utilizatorilor să gestioneze certificatele instalate.</translation>
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="1404043648050567997">Serviciul Navigare sigură afișează o pagină de avertisment atunci când utilizatorii navighează pe site-uri semnalate ca fiind potențial dăunătoare. Dacă activezi această setare, utilizatorii nu vor putea să navigheze mai departe de pe pagina de avertisment pe site-ul dăunător.
+
+      Această politică împiedică utilizatorii să navigheze mai departe după avertismentele Navigării sigure (de exemplu: malware și phishing) doar în cazul unor probleme care nu sunt legate de certificatul SSL, cum ar fi certificate nevalide sau expirate.
+
+      Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să navigheze către site-ul semnalat după ce a fost afișat avertismentul.
+
+      Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="1413936351612032792">Raportează informații despre utilizarea aplicațiilor Linux</translation>
 <translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
@@ -1087,6 +1102,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="355118380775352753">Site-uri care vor fi deschise în browserul secundar</translation>
 <translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
+<translation id="357917253161699596">Permite utilizatorilor să gestioneze certificatele de utilizator</translation>
 <translation id="3583230441447348508">Specifică o listă de dispozitive de stocare în rețea preconfigurate.
 
       Fiecare element din listă al politicii este un obiect cu doi membri: „share_url” și „mode”. „share_url” trebuie să fie adresa URL a dispozitivului, iar „mode” trebuie să fie ori „drop_down”, ori „pre_mount”. Modul „drop_down” indică faptul că „share_url” va fi adăugat în meniul drop-down al descoperirii dispozitivelor de stocare. Modul „pre_mount” indică faptul că „share_url” va fi montat.</translation>
@@ -1422,6 +1438,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4372704773119750918">Nu permite ca utilizatorul întreprindere să facă parte din profilul multiplu (principal sau secundar)</translation>
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
 <translation id="437791893267799639">Politica nu este configurată; nu se permite migrarea datelor și ARC</translation>
+<translation id="4389073105055031853">Permite utilizatorilor să gestioneze toate certificatele</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
 <translation id="4408428864159735559">Lista dispozitivelor de stocare în rețea preconfigurate.</translation>
 <translation id="4410236409016356088">Activează limitarea lățimii de bandă a rețelei</translation>
@@ -1659,6 +1676,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este setată la 0, schimbarea parolei contului de dispozitiv este dezactivată.
 
       Reține că parolele pot deveni mai vechi decât numărul specificat de zile dacă clientul a fost offline o perioadă lungă de timp.</translation>
+<translation id="510196893779239086">Politica stabilește dacă să închidă Chrome complet când ultima filă comută la un alt browser.
+
+      Când politica nu este configurată sau este activată, Chrome va menține cel puțin o filă deschisă după ce comută la un alt browser.
+
+      Când politica nu este activată, Chrome va închide fila după ce comută la un alt browser, chiar dacă era ultima filă. Astfel, Chrome se va închide complet.</translation>
 <translation id="5105313908130842249">Interval până la blocarea ecranului la funcționarea pe baterie</translation>
 <translation id="5108031557082757679">Imprimantele dezactivate asociate dispozitivelor companiei</translation>
 <translation id="5113732180192599620">Această politică controlează lista site-urilor care nu declanșează niciodată comutarea browserului.
@@ -2237,6 +2259,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permite site-urilor să navigheze și să deschidă ferestre pop-up în același timp</translation>
 <translation id="6447948611083700881">Crearea și restaurarea backupurilor a fost dezactivată</translation>
+<translation id="6449476513004303784">Nu mai permite utilizatorilor să gestioneze certificate</translation>
 <translation id="645425387487868471">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Activează completarea automată pentru adrese</translation>
 <translation id="6473623140202114570">Configurează lista de domenii pe care Navigarea sigură nu va declanșa avertismente.</translation>
@@ -2298,6 +2321,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă politica este configurată, utilizatorii o pot suprascrie temporar activând sau dezactivând tastatura pe ecran. Cu toate acestea, alegerea utilizatorului nu se păstrează, iar setarea implicită este restabilită ori de câte ori ecranul de conectare este afișat din nou sau utilizatorul este inactiv pe ecranul de conectare timp de un minut.
 
           Dacă politica nu este configurată, tastatura pe ecran este dezactivată la prima afișare a ecranului de conectare. Utilizatorii pot activa sau dezactiva oricând tastatura pe ecran, iar starea acesteia pe ecranul de conectare se păstrează de la un utilizator la altul.</translation>
+<translation id="6570691255874112762">Politica stabilește dacă utilizatorul poate să importe și să elimine certificate prin Managerul de certificate.
+
+      Dacă politica este setată la „Permite utilizatorilor să gestioneze toate certificatele” sau nu este setată, utilizatorii vor putea să gestioneze certificatele.
+
+      Dacă politica este setată la „Permite utilizatorilor să gestioneze certificatele de utilizator”, utilizatorii vor putea să gestioneze certificatele de utilizator, dar nu și certificatele la nivel de dispozitiv.
+
+      Dacă politica este setată la „Nu permite utilizatorilor să gestioneze certificate”, utilizatorii nu vor putea să gestioneze certificate, ci doar să le vizualizeze.</translation>
 <translation id="6573305661369899995">Setează o sursă externă a restricțiilor privind adresele URL</translation>
 <translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
 <translation id="6603004149426829878">Trimite întotdeauna semnalele disponibile privind locația către server în timp ce se stabilește fusul orar</translation>
@@ -2623,6 +2653,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă această politică nu este configurată, lupa pentru ecran este dezactivată la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze lupa pentru ecran, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="7249828445670652637">Activează certificatele CA <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
+<translation id="7252681704926980614">Trimite numele de utilizator și numele fișierului la serverul imprimantelor native cu fiecare sarcină de printare. Setarea prestabilită este de a nu trimite.
+
+      Dacă activezi această politică, imprimantele care folosesc alte protocoale în afară de IPPS, USB sau IPP prin USB vor fi dezactivate, deoarece numele de utilizator și numele fișierului nu trebuie trimise în mod deschis în rețea.</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
 <translation id="7260277299188117560">Actualizare automată p2p este activată</translation>
 <translation id="7261252191178797385">Imaginea de fundal a dispozitivului</translation>
@@ -2686,6 +2719,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
 <translation id="7336785017449297672">Controlează setările de ceas și fus orar.</translation>
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
+<translation id="7339315111520512972">Forțează codul de rețea să ruleze în procesul browserului</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
 <translation id="7343497214039883642">Fișierul de configurare a imprimantelor companiei pentru dispozitive</translation>
 <translation id="7349338075015720646">Specifică o listă cu site-uri care sunt instalate silențios, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de utilizator.
@@ -2907,22 +2941,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Pentru exemple detaliate, accesează:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Păstrează ultima filă deschisă în Chrome.</translation>
 <translation id="793134539373873765">Specifică dacă trebuie utilizată o rețea p2p pentru încărcările utile ale actualizărilor sistemului de operare. Dacă politica este activată, dispozitivele vor utiliza în comun și vor încerca să consume încărcările utile ale actualizărilor în rețeaua LAN, ceea ce ar putea reduce utilizarea lățimii de bandă de internet și ar evita congestionarea traficului. Dacă încărcarea utilă a actualizărilor nu este disponibilă în rețeaua LAN, dispozitivul va utiliza pentru descărcare un server cu actualizări. Dacă politica nu este activată sau nu este configurată, nu va fi utilizată o rețea p2p.</translation>
 <translation id="7933141401888114454">Permiteți crearea de utilizatori monitorizați</translation>
 <translation id="793473937901685727">Setează disponibilitatea certificatelor pentru aplicațiile ARC</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
-<translation id="7952002811557367112">Această politică împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
-
-      Un șablon de adrese URL trebuie să fie formatat conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate
-
-      Reține că nu este recomandat să blochezi adresele URL interne de tipul „chrome://*”, deoarece pot rezulta erori neașteptate.
-
-      Reține că această politică nu împiedică actualizarea dinamică a paginii prin JavaScript. De exemplu, dacă blochezi „example.com/abc”, utilizatorii pot încă să acceseze „example.com” și să dea clic pe un link pentru a accesa „example.com/abc”, atât timp cât pagina nu se actualizează.
-
-      Dacă această politică nu este configurată, în browser nu va fi adăugată nicio adresă URL în lista neagră.</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7961779417826583251">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de autorități de certificare vechi</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>

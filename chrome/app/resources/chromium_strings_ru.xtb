@@ -91,6 +91,7 @@
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="407254336480250557">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Широкий выбор приложений, игр, расширений и тем для Chromium.</translation>
+<translation id="4216212958613226427">На этом языке отображается интерфейс Chromium</translation>
 <translation id="4222580632002216401">Добро пожаловать в Chromium! Синхронизация отключена администратором.</translation>
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
 <translation id="4230135487732243613">Связать данные Chromium с этим аккаунтом?</translation>
@@ -135,6 +136,7 @@
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
 <translation id="5712253116097046984">Администратор просит перезапустить Chromium OS для установки обновления.</translation>
+<translation id="5756484659843248772">На этом языке отображается интерфейс Chromium OS</translation>
 <translation id="5768914737813585044">Отображать Chromium OS на этом языке</translation>
 <translation id="5796460469508169315">Chromium почти готов к работе</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -179,8 +181,8 @@
 <translation id="6810143991807788455">Отправьте отчет о текущих настройках Chromium и помогите усовершенствовать работу браузера</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопирована в Chromium)</translation>
+<translation id="6877899728743402439">Ваш системный администратор установил настройки, согласно которым Chromium должен запустить альтернативный браузер.</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
-<translation id="692832138936263906">Chromium может распознавать для вас картинки и текст на них. Чтобы получать метки, браузер отправляет изображения в Google.</translation>
 <translation id="6964305034639999644">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
 <translation id="6990124437352146030">Для этого сайта Chromium запрашивает доступ к микрофону.</translation>

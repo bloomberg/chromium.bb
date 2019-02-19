@@ -798,7 +798,6 @@
 <translation id="2190355936436201913">(empty)</translation>
 <translation id="2191223688506386601">One last thing</translation>
 <translation id="2192505247865591433">From:</translation>
-<translation id="2192779824098378521">Get Image Labels from Google</translation>
 <translation id="2193365732679659387">Trust settings</translation>
 <translation id="2195729137168608510">Email Protection</translation>
 <translation id="2199298570273670671">Error</translation>
@@ -843,6 +842,7 @@
 <translation id="2238379619048995541">Frequency State Data</translation>
 <translation id="2239921694246509981">Add supervised person</translation>
 <translation id="2241053333139545397">Read and change your data on a number of websites</translation>
+<translation id="2241634353105152135">Just once</translation>
 <translation id="2242687258748107519">File Info</translation>
 <translation id="224940702122312781">This page will use a lot of data.</translation>
 <translation id="2249605167705922988">e.g. 1-5, 8, 11-13</translation>
@@ -1258,6 +1258,7 @@
 <translation id="2871813825302180988">This account is already being used on this device.</translation>
 <translation id="287286579981869940">Add <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2874343608108773609">To get your passwords on all your devices, sign in to Chrome.</translation>
+<translation id="2874939134665556319">Previous track</translation>
 <translation id="2875698561019555027">(Chrome error pages)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
 <translation id="288042212351694283">Access your Universal 2nd Factor devices</translation>
@@ -1880,6 +1881,7 @@
 <translation id="3812525830114410218">Bad certificate</translation>
 <translation id="3813296892522778813">Go to <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome help<ph name="END_LINK_CHROMIUM" /> if you can't find what you're looking for</translation>
 <translation id="3817579325494460411">Not provided</translation>
+<translation id="3819257035322786455">Back Up</translation>
 <translation id="3819261658055281761">The system failed to store the long-term API access token for this device.</translation>
 <translation id="3819752733757735746">Switch access (control the computer with just one or two switches)</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
@@ -2559,7 +2561,6 @@
 <translation id="4890242622846228088">Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or delete voice activity in your Google activity controls.</translation>
 <translation id="4890773143211625964">Show advanced printer options</translation>
 <translation id="4891089016822695758">Beta forum</translation>
-<translation id="4892823793812813456">Get labels</translation>
 <translation id="4892969127351273348">Unable to open with <ph name="APP_NAME" /></translation>
 <translation id="4893336867552636863">This will permanently delete your browsing data from this device.</translation>
 <translation id="4893522937062257019">On the lock screen</translation>
@@ -3241,7 +3242,6 @@
 <translation id="5884474295213649357">This tab is connected to a USB device.</translation>
 <translation id="5885324376209859881">Manage media settings...</translation>
 <translation id="5886009770935151472">Finger 1</translation>
-<translation id="5886757894761828163">Get image labels from Google</translation>
 <translation id="5889282057229379085">Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5895187275912066135">Issued On</translation>
@@ -3449,7 +3449,6 @@
 <translation id="6176043333338857209">Bluetooth will be temporarily turned on to communicate with your security key</translation>
 <translation id="6178664161104547336">Select a certificate</translation>
 <translation id="6181431612547969857">Download blocked</translation>
-<translation id="6184660361319693890">Get labels</translation>
 <translation id="6185132558746749656">Device Location</translation>
 <translation id="6189412234224385711">Open with <ph name="EXTENSION_NAME" /></translation>
 <translation id="6195693561221576702">This device cannot be set up in offline demo mode.</translation>
@@ -4185,7 +4184,6 @@
 <translation id="7309257895202129721">Show &amp;controls</translation>
 <translation id="7310598146671372464">Failed to log in. The server does not support specified Kerberos encryption types. Please contact your administrator.</translation>
 <translation id="7311079019872751559">Unsandboxed plug-in access</translation>
-<translation id="7317680720589234980">Screen lock and sign-in options</translation>
 <translation id="7321545336522791733">Server unreachable</translation>
 <translation id="7324297612904500502">Beta forum</translation>
 <translation id="7325437708553334317">High Contrast Extension</translation>
@@ -4330,6 +4328,7 @@
 <translation id="7556033326131260574">Smart Lock couldn’t verify your account. Type your password to enter.</translation>
 <translation id="7556242789364317684">Unfortunately, <ph name="SHORT_PRODUCT_NAME" /> is unable to recover your settings. To fix the error, <ph name="SHORT_PRODUCT_NAME" /> must reset your device with Powerwash.</translation>
 <translation id="7559719679815339381">Please wait... Kiosk app is in the process of being updated. Do not remove the USB stick.</translation>
+<translation id="7561196759112975576">Always</translation>
 <translation id="7563991800558061108">To recover from this error, you will need to sign in to your Google Account
     from the sign-in screen. You can then sign out of your Google Account and
     try creating a supervised user again.</translation>

@@ -159,10 +159,25 @@
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
+<translation id="1383493480903114193">此政策会强制网络代码在浏览器进程中运行。
+
+      此政策默认处于停用状态；若被启用，则会在网络进程被沙盒化后令用户面临安全问题的威胁。
+
+      此政策旨在为企业提供一个机会，以便企业迁移到不依靠与网络 API 挂钩来运行的第三方软件。我们建议通过 LSP 和 Win32 API 修补来使用代理服务器。
+
+      如果此政策未设置，网络代码可能会在浏览器进程之外运行，具体取决于 NetworkService 实验的现场试验。</translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">允许用户管理已安装的证书。</translation>
 <translation id="1387596372902085462">是否信任赛门铁克公司的旧版 PKI 基础架构</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
+<translation id="1404043648050567997">当用户打开被标记为可能存在恶意内容的网站时，安全浏览服务会显示警告页面。如果您启用了此设置，用户在看到警告页面后将无法再继续访问相应的恶意网站。
+
+      此政策只会致使用户在收到安全浏览警告（如针对恶意软件和网上诱骗的警告）后无法继续进行访问，不针对与 SSL 证书相关的问题（如证书无效或已过期）。
+
+      如果此设置处于停用状态或未配置，用户在看到警告后可以选择继续访问被标记为可能存在恶意内容的网站。
+
+      要详细了解安全浏览服务，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="1413936351612032792">报告有关 Linux 应用使用情况的信息</translation>
 <translation id="142346659686073702">允许独立用户使用 Crostini</translation>
 <translation id="1426410128494586442">是</translation>
@@ -1051,6 +1066,7 @@
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
 <translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
+<translation id="357917253161699596">允许用户管理用户证书</translation>
 <translation id="3583230441447348508">以列表的形式指定一系列预先配置的网络文件共享。
 
       此政策的每个列表项都是一个包含以下两个成员的对象，“share_url”和“mode”。“share_url”应该是共享文件的网址，“mode”应设为“drop_down”或“pre_mount”。“drop_down”模式表示“share_url”将会添加到共享文件发现下拉菜单中。“pre_mount”模式表示“share_url”将会提前装载。</translation>
@@ -1378,6 +1394,7 @@
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="437791893267799639">政策未设置，禁止数据迁移和 ARC</translation>
+<translation id="4389073105055031853">允许用户管理所有证书</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
 <translation id="4408428864159735559">预先配置的网络文件共享列表。</translation>
 <translation id="4410236409016356088">启用网络带宽限制功能</translation>
@@ -1614,6 +1631,11 @@
       如果此政策设为 0，客户端则无法更改设备帐号密码。
 
       请注意，如果客户端在较长时间内一直处于离线状态，那么即使指定的天数已过，密码也可能不会更改。</translation>
+<translation id="510196893779239086">此政策用于控制当从 Chrome 中仅剩的那个标签页切换到其他浏览器时是否彻底关闭 Chrome。
+
+      如果此政策设为 true 或未设置，那么当切换到备用浏览器后，Chrome 会使至少 1 个标签页保持打开状态。
+
+      如果此政策设为 false，那么当切换到备用浏览器后，Chrome 会关闭其中的标签页（即使是仅剩的那个标签页）。这将导致用户彻底退出 Chrome。</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
 <translation id="5113732180192599620">此政策可控制始终不会导致切换浏览器的网站列表。
@@ -2167,6 +2189,7 @@
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">允许网站在导航的同时打开弹出式窗口</translation>
 <translation id="6447948611083700881">已停用备份和恢复服务</translation>
+<translation id="6449476513004303784">禁止用户管理证书</translation>
 <translation id="645425387487868471">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
 <translation id="6464074037294098618">自动填充地址信息</translation>
 <translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
@@ -2228,6 +2251,13 @@
           如果您设置了此政策，用户可以通过启用或停用屏幕键盘暂时将其覆盖。但用户的选择只是暂时有效，登录屏幕重新打开或用户在登录屏幕上停止操作一定时间后，该政策即会恢复默认设置。
 
           如果此政策未设置，登录屏幕初次打开时会停用屏幕键盘。用户可以随时启用或停用屏幕键盘，并且屏幕键盘在登录屏幕上的状态对各用户均有效。</translation>
+<translation id="6570691255874112762">此政策用于控制用户是否能够通过证书管理器导入和移除证书。
+
+      如果此政策设为“允许用户管理所有证书”或未设置，用户将能够管理证书。
+
+      如果此政策设为“允许用户管理用户证书”，用户将能够管理用户证书，但无法管理设备级证书。
+
+      如果此政策设为“禁止用户管理证书”，用户将无法管理证书，只能查看证书。</translation>
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6598235178374410284">用户头像图片</translation>
 <translation id="6603004149426829878">解析时区时一律将任何可用的位置信号发送给服务器</translation>
@@ -2545,6 +2575,9 @@
 
           如果未设置此政策，则登录屏幕初次显示时会停用放大镜。用户可以随时启用或停用放大镜，并且其在登录屏幕上的启用或停用状态对各用户均有效。</translation>
 <translation id="7249828445670652637">允许 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> CA 证书</translation>
+<translation id="7252681704926980614">每次执行打印任务时都向原生打印机服务器发送用户名和文件名。默认设置是不发送。
+
+      将此政策设为 true 也会停用那些使用除 IPPS、USB 和 USB 型 IPP 以外的协议的打印机，因为用户名和文件名不应通过网络公开发送。</translation>
 <translation id="7258823566580374486">启用远程访问主机的屏蔽设置</translation>
 <translation id="7260277299188117560">自动更新 p2p 已启用</translation>
 <translation id="7261252191178797385">设备壁纸图片</translation>
@@ -2608,6 +2641,7 @@
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
 <translation id="7336785017449297672">控制时钟和时区设置。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
+<translation id="7339315111520512972">强制网络代码在浏览器进程中运行</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="7343497214039883642">设备的企业打印机配置文件</translation>
 <translation id="7349338075015720646">以列表形式指定在无需用户干预的情况下静默安装的网站，用户无法卸载或停用这些网站。
@@ -2827,21 +2861,12 @@
 
           要查看详细示例，请访问以下网址：
           <ph name="PROXY_HELP_URL" />。</translation>
+<translation id="7922358664346625612">使 Chrome 中仅剩的那个标签页保持打开状态。</translation>
 <translation id="793134539373873765">指定是否对操作系统更新有效负荷使用 p2p。如果设置为 True，设备将共享并试图消耗局域网中的更新有效负荷，从而可能会减少互联网带宽使用量和拥堵。如果局域网中没有更新有效负荷，设备将回退到从更新服务器下载。如果设置为 False 或未配置，则不会使用 p2p。</translation>
 <translation id="7933141401888114454">允许创建受监管用户</translation>
 <translation id="793473937901685727">为 ARC 应用设置证书可用性</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
-<translation id="7952002811557367112">此政策可禁止用户从已列入黑名单的网址加载网页。黑名单提供了一系列网址格式，从而指定了哪些网址会被禁止。
-      必须根据 https://www.chromium.org/administrators/url-blacklist-filter-format 来设置网址格式。
-
-      可在网址白名单政策中定义例外情况。这类政策最多只能包含 1000 个条目；在超出这一上限后添加的条目将被忽略。
-
-      请注意：最好不要屏蔽内部“chrome://*”网址，否则可能会导致意外的错误。
-
-      请注意，此政策不会阻止网页通过 JavaScript 进行动态更新。例如，如果您屏蔽了“example.com/abc”，用户可能仍能访问“example.com”并点击链接以访问“example.com/abc”，前提是页面不刷新。
-
-      如果此政策未设置，浏览器便不会禁止任何网址。</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>

@@ -174,10 +174,25 @@
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
+<translation id="1383493480903114193">Dasar ini memaksa kod rangkaian dijalankan dalam proses penyemak imbas.
+
+      Dasar ini dilumpuhkan secara lalai. Jika didayakan, dasar ini mendedahkan pengguna kepada isu keselamatan sebaik sahaja proses rangkaian memasuki mod kotak pasir.
+
+      Dasar ini bertujuan memberi perusahaan peluang untuk berhijrah kepada perisian pihak ke-3 yang tidak bergantung pada pengkaitan API rangkaian. Pelayan proksi lebih disyorkan berbanding LSP dan tampung API Win32.
+
+      Jika dasar ini tidak ditetapkan, kod rangkaian mungkin dijalankan di luar proses penyemak imbas bergantung pada ujian lapangan percubaan NetworkService.</translation>
 <translation id="1384459581748403878">Rujukan: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Benarkan pengguna mengurus sijil yang dipasang.</translation>
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="1404043648050567997">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang ditandakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan dari halaman amaran ke tapak yang bersifat hasad.
+
+      Dasar ini hanya menghalang pengguna daripada meneruskan pada amaran Penyemakan Imbas Selamat (mis. perisian hasad dan pancingan data) bukan untuk isu berkaitan sijil SSL seperti sijil tidak sah atau tamat tempoh.
+
+      Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
+
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="1413936351612032792">Laporkan maklumat tentang penggunaan apl Linux</translation>
 <translation id="142346659686073702">Benarkan pengguna yang bukan ahli gabungan menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
@@ -1124,6 +1139,7 @@
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="355118380775352753">Tapak web untuk dibuka dalam penyemak imbas alternatif</translation>
 <translation id="3577251398714997599">Tetapan iklan untuk tapak yang mengandungi iklan yang mengganggu</translation>
+<translation id="357917253161699596">Benarkan pengguna mengurus sijil pengguna</translation>
 <translation id="3583230441447348508">Menentukan senarai perkongsian fail rangkaian prakongfigurasi.
 
       Setiap item senarai dasar ialah objek yang mengandungi dua ahli: "share_url" dan "mode". "share_url" harus merupakan URL perkongsian dan "mode" harus merupakan sama ada "drop_down" atau "pre_mount". Mod "drop_down" menunjukkan bahawa "share_url" akan ditambahkan pada menu lungsur penemuan perkongsian. Mod "pre_mount" menunjukkan bahawa "share_url" akan dilekapkan.</translation>
@@ -1459,6 +1475,7 @@
 <translation id="4372704773119750918">Jangan benarkan pengguna perusahaan menjadi sebahagian daripada berbilang profil (utama atau kedua)</translation>
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
 <translation id="437791893267799639">Dasar tidak ditetapkan, tidak membenarkan penghijrahan data dan ARC</translation>
+<translation id="4389073105055031853">Benarkan pengguna mengurus semua sijil</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
 <translation id="4408428864159735559">Senarai perkongsian fail rangkaian prakonfigurasi.</translation>
 <translation id="4410236409016356088">Dayakan lebar jalur pendikitan rangkaian</translation>
@@ -1708,6 +1725,11 @@
       Jika dasar ini ditetapkan kepada 0, kata laluan akaun mesin akan dilumpuhkan.
 
       Sila ambil perhatian bahawa kata laluan mungkin akan berusia lebih lama daripada bilangan hari yang ditetapkan jika pelanggan berada di luar talian untuk tempoh yang lebih panjang.</translation>
+<translation id="510196893779239086">Dasar ini mengawal sama ada Chrome akan ditutup sepenuhnya apabila tab terakhir akan bertukar kepada penyemak imbas lain.
+
+      Apabila dasar ini dibiarkan tidak ditetapkan, atau ditetapkan kepada benar, Chrome akan membiarkan sekurang-kurangnya satu tab terbuka, selepas bertukar kepada penyemak imbas alternatif.
+
+      Apabila dasar ini ditetapkan kepada palsu, Chrome akan menutup tab selepas bertukar kepada penyemak imbas alternatif, walaupun tab itu ialah tab yang terakhir. Ini akan menyebabkan Chrome keluar sepenuhnya.</translation>
 <translation id="5105313908130842249">Kelewatan kunci skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="5108031557082757679">Pencetak peranti perusahaan dilumpuhkan</translation>
 <translation id="5113732180192599620">Dasar ini mengawal senarai tapak web yang tidak akan menyebabkan penukaran penyemak imbas.
@@ -2311,6 +2333,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="6430366557948788869">Sambungan Pelaporan Chrome</translation>
 <translation id="6440051664870270040">Benarkan tapak menavigasi dan membuka tetingkap timbul secara serentak</translation>
 <translation id="6447948611083700881">Sandaran dan pemulihan dilumpuhkan</translation>
+<translation id="6449476513004303784">Jangan benarkan pengguna mengurus sijil</translation>
 <translation id="645425387487868471">Dayakan log masuk paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Dayakan Autolengkap untuk alamat</translation>
 <translation id="6473623140202114570">Konfigurasikan senarai domain tempat Penyemakan Imbas Selamat tidak akan mencetuskan amaran.</translation>
@@ -2372,6 +2395,13 @@ Jika dasar ini ditetapkan kepada palsu, papan kekunci pada skrin akan dilumpuhka
 Jika anda menetapkan dasar ini, pengguna boleh mengatasi dasar sementara dengan mendayakan atau melumpuhkan papan kekunci pada skrin. Walau bagaimanapun, pilihan pengguna tidak berterusan dan pilihan lalai dipulihkan apabila skrin log masuk ditunjukkan semula atau pengguna melahu pada skrin log masuk selama seminit.
 
 Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan apabila skrin log masuk mula-mula ditunjukkan. Pengguna boleh mendayakan atau melumpuhkan papan kekunci pada skrin pada bila-bila masa dan status pada skrin log masuk diteruskan antara pengguna.</translation>
+<translation id="6570691255874112762">Dasar ini mengawal sama ada pengguna dapat mengimport dan mengalih keluar sijil melalui Pengurus Sijil.
+
+      Jika dasar ini ditetapkan kepada ''Benarkan pengguna untuk mengurus semua sijil'' atau dibiarkan tidak ditetapkan, pengguna akan dapat mengurus sijil.
+
+      Jika dasar ini ditetapkan kepada "Benarkan pengguna mengurus sijil pengguna'', pengguna akan dapat mengurus sijil pengguna, tetapi tidak dapat mengurus sijil seluruh peranti.
+
+      Jika dasar ini ditetapkan kepada ''Jangan benarkan pengguna mengurus sijil", pengguna tidak akan dapat mengurus sijil, mereka hanya boleh melihat sijil.</translation>
 <translation id="6573305661369899995">Tetapkan sumber luaran sekatan URL</translation>
 <translation id="6598235178374410284">Imej avatar pengguna</translation>
 <translation id="6603004149426829878">Sentiasa hantar sebarang isyarat lokasi yang tersedia kepada pelayan semasa menyelesaikan zon waktu</translation>
@@ -2711,6 +2741,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, penggadang skrin dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan penggadang skrin pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
 <translation id="7249828445670652637">Dayakan sijil CA <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
+<translation id="7252681704926980614">Hantar nama pengguna dan nama fail kepada pelayan pencetak asli untuk setiap tugas cetakan. Tindakan lalai ialah tidak menghantar.
+
+      Menetapkan dasar ini kepada benar turut melumpuhkan pencetak yang menggunakan protokol selain IPPS, USB, atau IPP melalui USB kerana nama pengguna dan nama fail tidak harus dihantar melalui rangkaian secara terbuka.</translation>
 <translation id="7258823566580374486">Dayakan pengadangan hos akses jauh</translation>
 <translation id="7260277299188117560">Auto kemas kini p2p didayakan</translation>
 <translation id="7261252191178797385">Imej kertas dinding peranti</translation>
@@ -2776,6 +2809,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, pembersihan autimatik menggunakan strategi terbina dalam lalai. Pada masa ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
 <translation id="7336785017449297672">Mengawal tetapan jam dan zon waktu.</translation>
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
+<translation id="7339315111520512972">Paksa kod rangkaian dijalankan dalam proses penyemak imbas</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7343497214039883642">Fail konfigurasi pencetak perusahaan untuk peranti</translation>
 <translation id="7349338075015720646">Menyatakan senarai tapak web yang dipasang secara senyap, tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun dilumpuhkan oleh pengguna.
@@ -3004,22 +3038,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Untuk melihat contoh terperinci, lawati:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Biarkan tab terakhir dibuka dalam Chrome.</translation>
 <translation id="793134539373873765">Menentukan sama ada p2p akan digunakan untuk beban bayar kemas kini OS. Jika ditetapkan kepada Benar, peranti akan berkongsi dan cuba menggunakan beban bayar kemas kini pada LAN, berkemungkinan mengurangkan penggunaan dan kesesakan lebar jalur Internet. Jika beban bayar kemas kini tidak tersedia pada LAN, peranti ini akan kembali kepada memuat turun dari pelayan kemas kini. Jika ditetapkan kepada Palsu atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
 <translation id="793473937901685727">Tetapkan ketersediaan sijil untuk apl ARC</translation>
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="7941975817681987555">Jangan ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
-<translation id="7952002811557367112">Dasar ini menghalang pengguna daripada memuatkan halaman web daripada URL yang disenaraihitamkan. Senarai hitam tersebut memberikan senarai pola URL yang menentukan URL yang akan disenaraihitamkan.
-
-      Pola URL mesti diformatkan mengikut https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Pengecualian boleh ditentukan dalam dasar senarai putih URL. Dasar ini terhad kepada 1,000 masukan; masukan berikutnya akan diabaikan.
-
-      Sila ambil perhatian bahawa anda tidak disyorkan menyekat URL 'chrome://*' dalaman kerana tindakan itu akan menimbulkan ralat tidak dijangka.
-
-      Sila ambil perhatian bahawa dasar ini tidak menghalang kemas kini halaman secara dinamik melalui JavaScript. Sebagai contoh, jika anda menyekat 'example.com/abc', pengguna mungkin masih boleh melawati 'example.com' dan mengklik pautan untuk melawati 'example.com/abc', selagi halaman tidak dimuat semula.
-
-      Jika dasar ini tidak ditetapkan, tiada URL akan disenaraihitamkan dalam penyemak imbas.</translation>
 <translation id="7953256619080733119">Hos pengecualian manual pengguna terurus</translation>
 <translation id="7961779417826583251">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk Sijil Kuasa Lama yang disenaraikan</translation>
 <translation id="7974114691960514888">Dasar ini tidak lagi disokong.

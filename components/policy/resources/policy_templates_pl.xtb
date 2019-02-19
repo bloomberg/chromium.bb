@@ -171,10 +171,25 @@
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
+<translation id="1383493480903114193">Ta zasada wymusza działanie kodu obsługi sieci w procesie przeglądarki.
+
+      Ta zasada jest domyślnie wyłączona. Jej włączenie naraża bezpieczeństwo użytkowników po przeniesieniu procesu obsługi sieci do piaskownicy.
+
+      Tę zasadę wprowadzono, by umożliwić firmom przejście na oprogramowanie innych firm, które nie wymaga łączenia z interfejsami API obsługi sieci. Zamiast używania LSP i stosowania poprawek do interfejsu API Win32 zalecane jest używanie serwerów proxy.
+
+      Jeśli ta zasada jest nieskonfigurowana, kod obsługi sieci może działać poza procesem przeglądarki w zależności od wersji eksperymentu NetworkService.</translation>
 <translation id="1384459581748403878">Odniesienie: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Zezwalaj użytkownikom na zarządzanie zainstalowanymi certyfikatami.</translation>
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="1404043648050567997">Usługa Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
+
+      Ta zasada uniemożliwia użytkownikom przejście na docelową stronę jedynie z ostrzeżenia Bezpiecznego przeglądania (np. o złośliwym oprogramowaniu lub phishingu), a nie z ostrzeżenia o problemie z certyfikatem SSL (np. o nieprawidłowym lub wygasłym certyfikacie).
+
+      Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
+
+      Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="1413936351612032792">Przesyłaj informacje o używaniu aplikacji na Linuxa</translation>
 <translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
@@ -1094,6 +1109,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
 <translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
+<translation id="357917253161699596">Zezwalaj użytkownikom na zarządzanie certyfikatami użytkownika</translation>
 <translation id="3583230441447348508">Określa listę prekonfigurowanych sieciowych udziałów plików.
 
       Wartością tej zasady jest lista, której pozycje są obiektami o dwóch składowych: „share_url” i „mode”. „share_url” to URL udziału, a „mode” musi mieć wartość „drop_down” albo „pre_mount”. Tryb „drop_down” wskazuje, że udział „share_url” zostanie dodany do menu wykrywania udziałów. Tryb „pre_mount” wskazuje, że udział „share_url” zostanie podłączony.</translation>
@@ -1425,6 +1441,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
 <translation id="437791893267799639">Zasada nie jest skonfigurowana, nie zezwalaj na migrację danych ani na działanie ARC</translation>
+<translation id="4389073105055031853">Zezwalaj użytkownikom na zarządzanie wszystkimi certyfikatami</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
 <translation id="4408428864159735559">Lista prekonfigurowanych sieciowych udziałów plików.</translation>
 <translation id="4410236409016356088">Włącz ograniczanie przepustowości sieci</translation>
@@ -1666,6 +1683,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli zasada ma wartość 0, zmienianie hasła do konta komputera jest wyłączone.
 
       Pamiętaj, że hasła mogą być starsze niż ustawiona liczba dni, gdy klient przez długi czas pozostawał w trybie offline.</translation>
+<translation id="510196893779239086">Ta zasada określa, czy całkowicie zamknąć Chrome, gdy ostatnia karta ma zostać przełączona do innej przeglądarki.
+
+      Kiedy ta zasada jest nieskonfigurowana lub ma wartość Prawda, Chrome pozostawi otwartą co najmniej jedną kartę po przełączeniu do innej przeglądarki.
+
+      Kiedy zasada ma wartość Fałsz, Chrome zamknie kartę po przełączeniu do innej przeglądarki, nawet jeśli jest to ostatnia karta. Spowoduje to całkowite zamknięcie Chrome.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5113732180192599620">Ta zasada określa listę stron, które nigdy nie będą powodować zmiany przeglądarki.
@@ -2239,6 +2261,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6430366557948788869">Rozszerzenie zgłaszające informacje o Chrome</translation>
 <translation id="6440051664870270040">Zezwalaj stronom na otwieranie wyskakujących okienek podczas nawigowania</translation>
 <translation id="6447948611083700881">Wyłączono tworzenie i przywracanie kopii zapasowej</translation>
+<translation id="6449476513004303784">Nie zezwalaj użytkownikom na zarządzanie certyfikatami</translation>
 <translation id="645425387487868471">Włącz wymuszone logowanie w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Włącz Autouzupełnianie adresów</translation>
 <translation id="6473623140202114570">Skonfiguruj listę domen, w których Bezpieczne przeglądanie nie wywołuje ostrzeżeń.</translation>
@@ -2300,6 +2323,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Jeśli skonfigurujesz tę zasadę, użytkownicy będą mogli ją tymczasowo zastępować, włączając lub wyłączając klawiaturę ekranową. Wybór użytkownika nie będzie jednak stały i ustawienie domyślnie będzie przywracane po każdym wyświetleniu ekranu logowania lub jeśli przez minutę użytkownik nie wykona żadnej czynności na tym ekranie.
 
           Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
+<translation id="6570691255874112762">Ta zasada określa, czy użytkownicy mogą importować i usuwać certyfikaty za pomocą Menedżera certyfikatów.
+
+      Jeśli ta zasada ma wartość „Zezwalaj użytkownikom na zarządzanie wszystkimi certyfikatami” lub jest nieskonfigurowana, użytkownicy mogą zarządzać certyfikatami.
+
+      Jeśli zasada ma wartość „Zezwalaj użytkownikom na zarządzanie certyfikatami użytkownika”, użytkownicy mogą zarządzać certyfikatami użytkownika, ale nie certyfikatami dla całego urządzenia.
+
+      Jeśli ta zasada ma wartość „Nie zezwalaj użytkownikom na zarządzanie certyfikatami”, użytkownicy nie mogą zarządzać certyfikatami, a jedynie je wyświetlać.</translation>
 <translation id="6573305661369899995">Pozwala na ustawianie zewnętrznego źródła ograniczeń URL</translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
 <translation id="6603004149426829878">Zawsze przesyłaj wszelkie dostępne sygnały o lokalizacji do serwera podczas określania strefy czasowej</translation>
@@ -2616,6 +2646,9 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania lupa jest wyłączona. Użytkownicy mogą ją w każdej chwili włączyć lub wyłączyć i jej stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="7249828445670652637">Włącz korzystanie z certyfikatów CA <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
+<translation id="7252681704926980614">Wysyłaj nazwę użytkownika i nazwę pliku do serwera drukarek natywnych z każdym zadaniem drukowania. Domyślnie te dane nie są wysyłane.
+
+      Ustawienie tej zasady na wartość Prawda powoduje również wyłączenie drukarek używających protokołów innych niż IPPS, USB i IPP-over-USB, ponieważ nazwy użytkownika ani nazwy pliku nie wolno przesyłać w sieci bez szyfrowania.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="7260277299188117560">Sieć P2P aktualizacji automatycznych włączona</translation>
 <translation id="7261252191178797385">Tapeta na urządzeniu</translation>
@@ -2679,6 +2712,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli nie ustawisz tej zasady, funkcja automatycznego czyszczenia korzysta z domyślnej wbudowanej strategii. Obecnie to „RemoveLRUIfDormant”.</translation>
 <translation id="7336785017449297672">Kontroluje ustawienia zegara i strefy czasowej.</translation>
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
+<translation id="7339315111520512972">Wymuś działanie kodu obsługi sieci wewnątrz procesu przeglądarki</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>
 <translation id="7349338075015720646">Określa listę witryn internetowych instalowanych dyskretnie, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
@@ -2901,22 +2935,12 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
           Szczegółowe przykłady znajdziesz na:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Pozostaw otwartą ostatnią kartę Chrome.</translation>
 <translation id="793134539373873765">Określa, czy do pobierania aktualizacji systemu operacyjnego ma być używana sieć P2P. Jeśli w tej opcji ustawisz wartość Prawda, urządzenia będą dzieliły aktualizacje w sieci LAN i próbowały pobierać je z tej sieci, co może zmniejszyć wykorzystanie i obciążenie łącza internetowego. Jeśli aktualizacje nie będą dostępne w sieci LAN, urządzenie przełączy się na pobieranie aktualizacji z serwera. Jeśli ustawisz w tej opcji wartość Fałsz, sieć P2P nie będzie używana.</translation>
 <translation id="7933141401888114454">Włącz tworzenie użytkowników nadzorowanych</translation>
 <translation id="793473937901685727">Ustaw dostępność certyfikatu dla aplikacji ARC</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="7941975817681987555">Nie przewiduj działań w sieci dla żadnego połączenia sieciowego</translation>
-<translation id="7952002811557367112">Ta zasada uniemożliwia użytkownikom otwieranie stron internetowych, których adresy URL znajdują się na czarnej liście. Czarna lista zawiera wykaz wzorców adresów URL określających, które adresy URL będą blokowane.
-
-      Wzorzec adresu URL musi być sformatowany zgodnie z wytycznymi podanymi na stronie https://www.chromium.org/administrators/url-blacklist-filter-format
-
-      Wyjątki można definiować za pomocą białej listy adresów URL. Listy w tych zasadach mogą zawierać maksymalnie 1000 pozycji. Dalsze pozycje będą ignorowane.
-
-      Pamiętaj, że nie zalecamy blokowania wewnętrznych adresów URL „chrome://*” – mogłoby to powodować nieoczekiwane błędy.
-
-      Pamiętaj też, że ta zasada nie blokuje dynamicznego aktualizowania strony za pomocą JavaScriptu. Jeśli np. zablokujesz stronę „example.com/abc”, użytkownicy nadal będą mogli odwiedzić witrynę „example.com” i kliknąć link do strony „example.com/abc”. Będą więc widzieć zawartość tej strony, dopóki jej nie odświeżą.
-
-      Jeśli ta zasada pozostanie nieskonfigurowana, przeglądarka nie będzie blokować żadnego adresu URL.</translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7961779417826583251">Wyłącz egzekwowanie protokołu Certificate Transparency dla starych urzędów certyfikacji z listy</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>

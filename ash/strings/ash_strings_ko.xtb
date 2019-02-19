@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="119944043368869598">모두 삭제</translation>
+<translation id="123828989343052515">새 데스크</translation>
 <translation id="1247372569136754018">마이크(내부)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
 <translation id="1255033239764210633">날씨가 어때?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">메시지 입력</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2067602449040652523">키보드 밝기</translation>
+<translation id="209965399369889474">네트워크에 연결되어 있지 않음</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2135456203358955318">고정 돋보기</translation>
 <translation id="2144487987174258011">Adobe Flash Player를 업데이트하려면 다시 시작하세요.</translation>
@@ -435,6 +437,7 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8297006494302853456">약함</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
+<translation id="8332664326438198339">런처로 돌아가기</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">메모 만들기</translation>
 <translation id="8375916635258623388">이 <ph name="DEVICE_NAME" />과(와) 휴대전화가 자동으로 연결됩니다.</translation>

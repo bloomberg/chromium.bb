@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">टॅब आणि विंडो शॉर्टकट</translation>
 <translation id="3190152372525844641">Chrome साठी परवानग्या <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्‍ये चालू करा.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> संचयित केलेला डेटा</translation>
+<translation id="3205824638308738187">जवळजवळ पूर्ण झाले!</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> हटवले</translation>
 <translation id="321773570071367578">तुम्ही तुमचा सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB अन्य अ‍ॅप्स</translation>
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
 <translation id="3745176700485982507">तुमच्या आवडत्या वेबसाइटच्या लिंक या पेजवर मिळू शकतात</translation>
+<translation id="3771001275138982843">अपडेट डाउनलोड करता आले नाही</translation>
 <translation id="3773755127849930740">पेअरिंगला अनुमती देण्‍यासाठी <ph name="BEGIN_LINK" />ब्लूटूथ सुरू करा<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">होम स्क्रीनवर जोडले</translation>
 <translation id="3781011235031427080">यासारखे आणखी अर्ध्या उंचीवर उघडले</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">पुढे जा</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />) ची फाइल डाउनलोड करत आहे.</translation>
 <translation id="4988526792673242964">पेज</translation>
+<translation id="4994033804516042629">संपर्क सापडले नाहीत</translation>
 <translation id="4996978546172906250">याद्वारे शेअर करा</translation>
 <translation id="5004416275253351869">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
@@ -759,6 +762,7 @@
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6643649862576733715">वाचवलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अधिक}one{<ph name="CONTACT_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अधिक}other{<ph name="CONTACT_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अधिक}}</translation>
+<translation id="6649642165559792194">इमेज <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /> चे पूर्वावलोकन करा</translation>
 <translation id="6656545060687952787">डिव्‍हाइसेस स्कॅन करण्‍यासाठी Chrome ला स्थान प्रवेशाची आवश्‍यकता असते. <ph name="BEGIN_LINK" />परवानग्या अपडेट करा<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">टॅब</translation>
@@ -776,7 +780,6 @@
 <translation id="6746124502594467657">खाली हलवा</translation>
 <translation id="6766622839693428701">बंद करण्यासाठी खाली स्वाइप करा.</translation>
 <translation id="6766758767654711248">साइटवर जाण्यासाठी टॅप करा</translation>
-<translation id="6776813977906306442">डाउनलोड बटण वापरून व्हिडिओ नंतर पाहण्यासाठी डाउनलोड करा</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="679325081238418596">आपल्या सर्व डिव्हाइसेसवर तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळवा</translation>
@@ -934,7 +937,9 @@
 <translation id="7929962904089429003">मेनू उघडा</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> कालबाह्य झाले आहे.</translation>
 <translation id="7947953824732555851">स्वीकार करा आणि साइन इन करा</translation>
+<translation id="7960977077911686065">सुरू ठेवून, तुम्ही सहमती दर्शवता की Chrome ही सेवा पुरवण्यासाठी Chrome ऑटोफिल साइटवरील डेटा, साइटची URL आणि तिचा आशय Google ला पाठवेल. तुम्ही यालादेखील सहमती दर्शवता की Chrome तुम्ही निवडलेला वैयक्तिक डेटा Chrome ऑटोफिल मार्फत वेबसाइटला पाठवेल. \n\nChrome आणि Chrome ऑटोफिल मध्ये Google असिस्टंट बंद करण्यासाठी Chrome सेटिंग्जला भेट द्या.  <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
+<translation id="7975379999046275268">पेज <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /> चे पूर्वावलोकन करा</translation>
 <translation id="7981313251711023384">जलद ब्राउझिंग आणि शोधाकरता पेज आधीच लोड करा</translation>
 <translation id="79859296434321399">ऑगमेंटेड रीअ‍ॅलिटी आशय पाहण्यासाठी, ARCore इंस्टॉल करा</translation>
 <translation id="7986741934819883144">संपर्क निवडा</translation>
@@ -1069,7 +1074,6 @@
 <translation id="8959122750345127698">नेव्हिगेशन आवाक्याबाहेर आहे: <ph name="URL" /></translation>
 <translation id="8965591936373831584">प्रलंबित</translation>
 <translation id="8972098258593396643">डीफॉल्ट फोल्डरमध्ये डाउनलोड करायचे?</translation>
-<translation id="8979405271719829084">नंतर पाहण्यासाठी व्हिडिओ डाउनलोड करा</translation>
 <translation id="8981454092730389528">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="8983677657449185470">सुरक्षित ब्राउझिंग सुधारण्यात मदत करा</translation>
 <translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवा</translation>
@@ -1091,6 +1095,7 @@
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
+<translation id="9138504265731110181">तुम्हाला वेबवर चेक आउट करण्यात मदत करून Google असिस्टंट तुमचा वेळ वाचवते</translation>
 <translation id="9139068048179869749">साइटना सूचना पाठविण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>
 <translation id="9139318394846604261">खरेदी</translation>
 <translation id="9155898266292537608">तुम्ही शब्दावर जलद टॅप करूनदेखील शोधू शकता</translation>

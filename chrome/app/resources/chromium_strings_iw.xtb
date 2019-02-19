@@ -91,6 +91,7 @@
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="407254336480250557">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים בשביל Chromium.</translation>
+<translation id="4216212958613226427">‏זו השפה שבה מוצג ממשק המשתמש של Chromium</translation>
 <translation id="4222580632002216401">‏אתה מחובר כעת ל-Chromium! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
 <translation id="4224199872375172890">‏Chromium‏ מעודכן.</translation>
 <translation id="4230135487732243613">‏האם לקשר את הנתונים שלך ב-Chromium לחשבון זה?</translation>
@@ -135,6 +136,7 @@
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
 <translation id="5712253116097046984">‏לפי הבקשה של מנהל המערכת, צריך להפעיל מחדש את Chromium OS כדי להחיל את העדכון</translation>
+<translation id="5756484659843248772">‏זו השפה שבה מוצג ממשק המשתמש של Chromium OS</translation>
 <translation id="5768914737813585044">‏הצג את Chromium OS בשפה זו</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
@@ -179,8 +181,8 @@
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (‏הועתק ל-Chromium)</translation>
+<translation id="6877899728743402439">‏מנהל המערכת שלך קבע ש-Chromium יפתח דפדפן חלופי.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
-<translation id="692832138936263906">‏Chromium יכול לזהות תמונות וטקסט בתמונה על-ידי שליחת התמונות בדף אל שרתי Google, וכך מאפשר לך להבין טוב יותר את התוכן בדף.</translation>
 <translation id="6964305034639999644">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="6990124437352146030">‏Chromium זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>

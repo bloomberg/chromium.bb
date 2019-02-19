@@ -174,10 +174,25 @@
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
 <translation id="1363275621236827384">Activer l'envoi de requêtes de profils matériels à Quirks Server</translation>
+<translation id="1383493480903114193">Cette règle force le code réseau à s'exécuter dans le processus du navigateur.
+
+      Cette règle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à des problèmes de sécurité une fois le processus de mise en réseau envoyé dans le bac à sable.
+
+      Cette règle est destinée à donner aux entreprises une chance de migrer vers un logiciel tiers qui ne dépend pas de la connexion des API de mise en réseau. Il est recommandé d'utiliser des serveurs proxy plutôt que des correctifs LSP et l'API Win32.
+
+      Si cette règle n'est pas définie, le code réseau peut ne pas suivre le processus du navigateur, en fonction des essais sur le terrain de l'expérience NetworkService.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Autoriser les utilisateurs à gérer les certificats installés.</translation>
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
+<translation id="1404043648050567997">Le service de navigation sécurisée affiche une page d'avertissement lorsque les utilisateurs essaient d'accéder à des sites potentiellement malveillants. L'activation de ce paramètre bloque la navigation sur ces sites lorsqu'une telle page d'avertissement apparaît.
+
+      Cette règle empêche uniquement les utilisateurs de poursuivre en affichant les avertissements de navigation sécurisée (par exemple, pour les protéger des logiciels malveillants et des attaques d'hameçonnage). Elle n'est pas destinée aux problèmes liés aux certificats SSL, comme les certificats non valides ou expirés.
+
+      Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs peuvent choisir de continuer et d'accéder ainsi aux sites potentiellement malveillants après avoir lu l'avertissement.
+
+      Consultez la page https://developers.google.com/safe-browsing pour en savoir plus sur la navigation sécurisée.</translation>
 <translation id="1413936351612032792">Transmettre des informations sur l'utilisation des applications Linux</translation>
 <translation id="142346659686073702">Autoriser les utilisateurs non affiliés à utiliser Crostini</translation>
 <translation id="1426410128494586442">Oui</translation>
@@ -1135,6 +1150,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
+<translation id="357917253161699596">Autoriser les utilisateurs à gérer les certificats utilisateur</translation>
 <translation id="3583230441447348508">Spécifie une liste de partages de fichiers en réseau préconfigurés.
 
       Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'URL du partage et "mode" devrait correspondre à "drop_down" ou "pre_mount". Le mode "drop_down" indique que cette "share_url" sera ajoutée à la liste déroulante de découverte des partages. Le mode "pre_mount" indique que cette "share_url" sera installée.</translation>
@@ -1472,6 +1488,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4372704773119750918">Ne pas autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils, que ce soit en tant qu'utilisateur principal ou secondaire</translation>
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
 <translation id="437791893267799639">Règle non définie, interdire la migration de données et ARC</translation>
+<translation id="4389073105055031853">Autoriser les utilisateurs à gérer tous les certificats</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
 <translation id="4408428864159735559">Liste de partages de fichiers sur le réseau préconfigurés.</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
@@ -1720,6 +1737,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle indique 0, la modification du mot de passe machine est désactivée.
 
       Notez que la validité des mots de passe peut dépasser le délai spécifié en cas de mise hors connexion du client pendant une période plus longue.</translation>
+<translation id="510196893779239086">Cette règle détermine si Chrome doit être complètement fermé lorsque le dernier onglet bascule vers un autre navigateur.
+
+      Si elle n'est pas configurée, ou si elle est définie sur "True", Chrome laissera au moins un onglet ouvert après le passage à un autre navigateur.
+
+      Si elle est définie sur "False", Chrome fermera l'onglet lorsque vous changez de navigateur, même s'il s'agissait du dernier onglet. Chrome sera alors fermé complètement.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5113732180192599620">Cette règle contrôle la liste des sites Web qui n'entraîneront jamais de changement de navigateur.
@@ -2329,6 +2351,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Autoriser les sites à parcourir et à ouvrir des pop-up simultanément</translation>
 <translation id="6447948611083700881">Service de sauvegarde et de restauration désactivé</translation>
+<translation id="6449476513004303784">Ne pas autoriser les utilisateurs à gérer les certificats</translation>
 <translation id="645425387487868471">Activer la connexion forcée pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Activer la saisie automatique pour les adresses</translation>
 <translation id="6473623140202114570">Configurez la liste des domaines sur lesquels la navigation sécurisée ne déclenchera aucun avertissement.</translation>
@@ -2390,6 +2413,13 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Si vous définissez cette règle, les utilisateurs peuvent temporairement l'ignorer en activant ou en désactivant le clavier à l'écran. Toutefois, leur sélection n'est pas permanente, et le paramètre par défaut est restauré chaque fois que l'écran de connexion s'affiche de nouveau ou lorsque l'utilisateur reste inactif sur l'écran de connexion pendant une minute.
 
           Si vous ne définissez pas cette règle, le clavier à l'écran est désactivé la première fois que l'écran de connexion s'affiche. Les utilisateurs peuvent activer ou désactiver à tout moment le clavier à l'écran, et son état est permanent d'un utilisateur à l'autre sur le même écran de connexion.</translation>
+<translation id="6570691255874112762">Cette règle contrôle la capacité de l'utilisateur à importer et supprimer des certificats via le gestionnaire de certificats.
+
+      Si cette règle est définie sur ''Autoriser les utilisateurs à gérer tous les certificats" ou si elle n'est pas configurée, les utilisateurs pourront gérer les certificats.
+
+      Si cette règle est définie sur ''Autoriser les utilisateurs à gérer les certificats utilisateur", ils pourront gérer les certificats utilisateur, mais pas les certificats applicables à l'intégralité de l'appareil.
+
+      Si cette règle est définie sur "Ne pas autoriser les utilisateurs à gérer les certificats", ils pourront consulter les certificats utilisateur, mais ne seront pas en mesure de les gérer.</translation>
 <translation id="6573305661369899995">Définir une source externe pour les restrictions d'URL</translation>
 <translation id="6598235178374410284">Avatar de l'utilisateur</translation>
 <translation id="6603004149426829878">Toujours transmettre les signaux de localisation disponibles au serveur tout en mettant à jour le fuseau horaire</translation>
@@ -2724,6 +2754,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si vous ne définissez pas cette règle, la loupe est désactivée au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou la désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="7249828445670652637">Activer les certificats CA <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
+<translation id="7252681704926980614">Envoyez le nom d'utilisateur et le nom de fichier au serveur des imprimantes en natif avec chaque tâche d'impression. Le paramètre par défaut est de ne pas les envoyer.
+
+      Définir cette règle sur "True" désactive également les imprimantes utilisant des protocoles autres qu'IPPS, USB ou IPP sur USB, car le nom d'utilisateur et le nom de fichier ne doivent pas être envoyés ouvertement sur le réseau.</translation>
 <translation id="7258823566580374486">Activer la protection des hôtes d'accès à distance</translation>
 <translation id="7260277299188117560">Mise à jour automatique avec connexion P2P activée</translation>
 <translation id="7261252191178797385">Image de fond d'écran de l'appareil</translation>
@@ -2789,6 +2822,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Contrôle les paramètres d'horloge et de fuseau horaire.</translation>
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
+<translation id="7339315111520512972">Forcer le code réseau à s'exécuter dans le processus du navigateur</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7343497214039883642">Fichier de configuration des imprimantes d'entreprise pour des appareils</translation>
 <translation id="7349338075015720646">Établit une liste de sites Web installés de façon silencieuse, sans intervention de l'utilisateur, qui ne peuvent être ni désinstallés, ni désactivés par l'utilisateur.
@@ -3017,22 +3051,12 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Pour consulter des exemples détaillés, rendez-vous sur :
 <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Laisser le dernier onglet ouvert dans Chrome.</translation>
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
 <translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
-<translation id="7952002811557367112">Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur liste noire. Cette liste répertorie les formats d'URL servant à définir les URL qui y sont ajoutées.
-
-      Un format d'URL doit correspondre aux critères mentionnés sur cette page : https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Vous pouvez définir des exceptions dans la règle s'appliquant aux URL sur liste blanche. Cette règle étant limitée à 1 000 entrées, les entrées suivantes sont ignorées.
-
-      Sachez qu'il est déconseillé de bloquer les URL internes chrome://*, car cela peut provoquer des erreurs inattendues.
-
-      Notez que cette règle n'empêche pas la mise à jour dynamique de la page via JavaScript. Par exemple, si vous bloquez example.com/abc, les utilisateurs peuvent toujours se rendre sur example.com et cliquer sur un lien pour consulter example.com/abc', tant que la page n'est pas actualisée.
-
-      Si cette règle n'est pas configurée, aucune URL n'est mise sur liste noire dans le navigateur.</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
 <translation id="7961779417826583251">Désactiver l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 

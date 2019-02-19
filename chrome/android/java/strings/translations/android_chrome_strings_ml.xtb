@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">ടാബ്, വിൻഡോ കുറുക്കുവഴികൾ</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> Chrome-നായി അനുമതികൾ ഓണാക്കുക.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> സംഭരിച്ച വിവരം</translation>
+<translation id="3205824638308738187">ഏതാണ്ട് പൂർത്തിയായി!</translation>
 <translation id="3207960819495026254">ബുക്ക്‌മാർക്കുചെയ്‌തു</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> ഇല്ലാതാക്കി</translation>
 <translation id="321773570071367578">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB മറ്റ് ആപ്പുകൾ</translation>
 <translation id="3744111561329211289">പശ്ചാത്തല സമന്വയിപ്പിക്കൽ</translation>
 <translation id="3745176700485982507">നിങ്ങളുടെ പ്രിയപ്പെട്ട വെബ്‌സൈറ്റുകളിലേക്കുള്ള ലിങ്കുകൾ ഈ പേജിൽ കണ്ടെത്താനാവും</translation>
+<translation id="3771001275138982843">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">ഹോം സ്‌ക്രീനിലേക്ക് ചേർത്തു</translation>
 <translation id="3781011235031427080">'ഇതുപോലുള്ള കൂടുതല്‍' ഷീറ്റ്, പകുതി ഉയരത്തില്‍ തുറന്നിരിക്കുന്നു</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">മുന്നോട്ട് പോകുക</translation>
 <translation id="4988210275050210843">ഫയൽ ഡൗൺലോഡ് ചെയ്യുന്നു (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">പേജുകള്‍</translation>
+<translation id="4994033804516042629">കോൺടാക്റ്റുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="4996978546172906250">ഇതുവഴി പങ്കിടുക</translation>
 <translation id="5004416275253351869">Google പ്രവർത്തന നിയന്ത്രണങ്ങൾ</translation>
 <translation id="5005498671520578047">പാസ്‌വേഡ് പകർത്തുക</translation>
@@ -759,6 +762,7 @@
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="6643649862576733715">സംരക്ഷിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="CONTACT_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
+<translation id="6649642165559792194"><ph name="BEGIN_NEW" />പുതിയ<ph name="END_NEW" /> ചിത്രം പ്രിവ്യൂ ചെയ്യുക</translation>
 <translation id="6656545060687952787">ഉപകരണങ്ങൾ സ്‌കാൻ ചെയ്യുന്നതിന് Chrome-ന് ലൊക്കേഷൻ ആക്‌സസ്സ് ആവശ്യമാണ്. <ph name="BEGIN_LINK" />അനുമതികൾ അപ്‌ഡേറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6659594942844771486">ടാബ്</translation>
@@ -776,7 +780,6 @@
 <translation id="6746124502594467657">താഴേക്ക് നീക്കുക</translation>
 <translation id="6766622839693428701">അവസാനിപ്പിക്കാൻ താഴേക്ക് സ്വൈപ്പ് ചെയ്യുക.</translation>
 <translation id="6766758767654711248">സൈറ്റിലേക്ക് പോകാൻ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="6776813977906306442">പിന്നീട് കാണുന്നതിന്, ഡൗൺലോഡ് ബട്ടൺ ഉപയോഗിച്ച്, വീഡിയോകൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6782111308708962316">കുക്കി വിവരം സംരക്ഷിക്കുകയും വായിക്കുകയും ചെയ്യുന്നതിൽ നിന്ന് മൂന്നാംകക്ഷി വെബ്‌സൈറ്റുകളെ തടയുക</translation>
 <translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="679325081238418596">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവ എല്ലാ ഉപകരണങ്ങളിലും ഉപയോഗിക്കുക</translation>
@@ -934,7 +937,9 @@
 <translation id="7929962904089429003">മെനു തുറക്കുക</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> കാലഹരണപ്പെട്ടതാണ്.</translation>
 <translation id="7947953824732555851">അംഗീകരിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
+<translation id="7960977077911686065">തുടരുന്നതിലൂടെ, ഈ സേവനം നൽകുന്നതിന് Chrome സ്വയമേവ പൂരിപ്പിക്കലിൽ നിന്നുള്ള ഡാറ്റ, സൈറ്റിൻ്റെ URL, അതിൻ്റെ ഉള്ളടക്കം എന്നിവ Chrome, Google-ലേക്ക് അയയ്ക്കുമെന്നത് നിങ്ങൾ അംഗീകരിക്കുന്നു. കൂടാതെ, നിങ്ങൾ തിരഞ്ഞെടുത്ത വ്യക്തിഗത ഡാറ്റ Chrome സ്വയമേവ പൂരിപ്പിക്കൽ വഴി വെബ്സൈറ്റിലേക്ക് Chrome അയയ്ക്കുമെന്നതും നിങ്ങൾ അംഗീകരിക്കുന്നു. \n\nChrome-ലെയും Chrome സ്വമേധയാ പൂരിപ്പിക്കലിലെയും Google അസിസ്‌റ്റൻ്റ് ഓഫാക്കാൻ, Chrome ക്രമീകരണം സന്ദർശിക്കുക.  <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">വെണ്ടർ:</translation>
+<translation id="7975379999046275268"><ph name="BEGIN_NEW" />പുതിയ<ph name="END_NEW" /> പേജ് പ്രിവ്യൂ ചെയ്യുക</translation>
 <translation id="7981313251711023384">കൂടുതൽ വേഗത്തിൽ ബ്രൗസ് ചെയ്യാനും തിരയാനും പേജുകൾ റീലോഡ് ചെയ്യുക</translation>
 <translation id="79859296434321399">അനുബന്ധ യാഥാർത്ഥ്യ ഉള്ളടക്കം കാണാൻ, ARCore ഇൻസ്‌റ്റാൾ ചെയ്യൂ</translation>
 <translation id="7986741934819883144">ഒരു കോൺടാക്റ്റ് തിരഞ്ഞെടുക്കുക</translation>
@@ -1069,7 +1074,6 @@
 <translation id="8959122750345127698">നാവിഗേഷൻ ലഭ്യമല്ല: <ph name="URL" /></translation>
 <translation id="8965591936373831584">തീർച്ചപ്പെടുത്താത്തവ</translation>
 <translation id="8972098258593396643">ഡിഫോൾട്ട് ഫോൾഡറിലേക്ക് ഡൗൺലോഡ് ചെയ്യണോ?</translation>
-<translation id="8979405271719829084">പിന്നീട് കാണുന്നതിന്, വീഡിയോകൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="8981454092730389528">Google പ്രവർത്തന നിയന്ത്രണങ്ങൾ</translation>
 <translation id="8983677657449185470">സുരക്ഷിത ബ്രൗസിംഗ് മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
 <translation id="8986494364107987395">Google ലേക്ക് സ്വപ്രേരിതമായി ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോര്‍ട്ടുകളും അയയ്ക്കുക</translation>
@@ -1091,6 +1095,7 @@
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
+<translation id="9138504265731110181">വെബ്‌സൈറ്റിലെ തിരയൽ വേഗത്തിലാക്കി Google അസിസ്‌റ്റന്‍റ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നു</translation>
 <translation id="9139068048179869749">അറിയിപ്പുകൾ അയയ്‌ക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="9139318394846604261">ഷോപ്പിംഗ്</translation>
 <translation id="9155898266292537608">ഒരു വാക്കിൽ പെട്ടെന്ന് ടാപ്പ് ചെയ്‌തും നിങ്ങൾക്ക് തിരയാൻ കഴിയും</translation>

@@ -171,7 +171,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 
 Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome startas om nu}=1{Om en sekund startas Chrome om}other{Om # sekunder startas Chrome om}}</translation>
-<translation id="5505603430818498864">Du kan få bilder och text i bilder identifierade genom att skicka bilder på sidan i Google Chrome till Googles servrar, så att du får en bättre uppfattning om vad som finns på sidan.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome.</translation>
@@ -202,6 +201,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6566149418543181476">Google Chrome uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du använder <ph name="PROFILE_EMAIL" /> för att synkronisera dina grejer i Chrome. Om du vill uppdatera synkroniseringsinställningen eller använda Chrome utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
+<translation id="6609605543612238677">Systemadministratören har konfigurerat Google Chrome så att webbadressen <ph name="URL" /> öppnas i en annan webbläsare.</translation>
 <translation id="6634887557811630702">Google Chrome behöver inte uppdateras.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="6679975945624592337">Låt Google Chrome köras i bakgrunden</translation>
@@ -220,6 +220,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
 <translation id="7164397146364144019">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE" /></translation>
+<translation id="7295052994004373688">Användargränssnittet i Google Chrome visas på det här språket</translation>
 <translation id="7296210096911315575">Viktig användnings- och säkerhetsinformation</translation>
 <translation id="7308322188646931570">Du behöver ge Chrome åtkomst till lagringsutrymmet om det ska gå att ladda ned filer</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
@@ -282,6 +283,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome kan inte fastställa eller ange standardwebbläsaren</translation>
 <translation id="8736674169840206667">Administratören meddelar att du måste starta om Chrome så att en uppdatering tillämpas</translation>
+<translation id="8788264404293392165">Användargränssnittet i Chrome OS visas på det här språket</translation>
 <translation id="8791470158600044404">{0,plural, =1{Om en minut startas Chrome OS om}other{Om # minuter startas Chrome OS om}}</translation>
 <translation id="8823341990149967727">Den här versionen av Chrome är inaktuell</translation>
 <translation id="884296878221830158">Det styr också vilken sida som visas när du startar Chrome eller klickar på hemknappen.</translation>

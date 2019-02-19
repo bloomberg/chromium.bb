@@ -177,10 +177,25 @@
 
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> külaliste profiile käivitada.</translation>
 <translation id="1363275621236827384">Lubatakse riistvaraprofiilide päringud Quirks Serverist</translation>
+<translation id="1383493480903114193">Selle reegli tõttu käitatakse võrgustiku koode brauseri protsessis.
+
+      See reegel on vaikimisi keelatud. Kui see lubatakse, võib kasutajatel esineda turvalisuse probleeme, kui võrgustiku protsessi liivakast on piisav.
+
+      See reegel on loodud selleks, et anda ettevõtetele võimalus minna üle kolmanda osapoole tarkvarale, mis ei sõltu võrgustiku APIdest. Puhverservereid soovitatakse rohkem kui LSP-sid ja Win32 API paiku.
+
+      Kui see reegel on määramata, võib võrgustiku kood käivituda väljaspool brauseri protsesse, olenevalt teenuse NetworkService katsejärgust.</translation>
 <translation id="1384459581748403878">Viide: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Kasutajatel installitud sertifikaatide haldamise lubamine.</translation>
 <translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
+<translation id="1404043648050567997">Kui kasutajad satuvad navigeerides saitidele, mis on märgistatud kui potentsiaalselt pahatahtlikud, siis kuvab teenus Google'i ohutu sirvimine hoiatuslehe. Selle seade lubamine takistab kasutajatel hoiatuslehelt pahatahtlikule saidile edasi liikuda.
+
+      See reegel takistab kasutajatel ainult teenuse Google'i ohutu sirvimine hoiatustelt (nt pahavara või andmepüük) edasi liikumist. SSL-sertifikaatidega seotud probleeme (nagu kehtetu või aegunud sertifikaadid) see ei mõjuta.
+
+      Kui seade on keelatud või seadistamata, saavad kasutajad pärast hoiatuse kuvamist teha valiku edasiminekuks märgistatud saidile.
+
+      Vaadake Google'i ohutu sirvimise kohta lisateavet: https://developers.google.com/safe-browsing</translation>
 <translation id="1413936351612032792">Linuxi rakenduste kasutusteabe saatmine</translation>
 <translation id="142346659686073702">Seoseta kasutajatel Crostini kasutamise lubamine</translation>
 <translation id="1426410128494586442">Jah</translation>
@@ -1126,6 +1141,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
+<translation id="357917253161699596">Kasutajatel kasutajasertifikaatide haldamise lubamine</translation>
 <translation id="3583230441447348508">Määrab eelseadistatud failide võrguhoidlate loendi.
 
       Reegli iga loendiüksus on kahe liikmega objekt: „share_url” ja „mode”. „share_url” peab olema hoidla URL ja „mode” kas „drop_down” või „pre_mount”. Režiim „drop_down” näitab, et „share_url” lisatakse hoidla avastamise ripploendisse. Režiim „pre_mount” näitab, et „share_url” ühendatakse.</translation>
@@ -1461,6 +1477,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4372704773119750918">Ärge lubage ettevõtte kasutajal olla osa multiprofiilist (esmane või teisene)</translation>
 <translation id="4377599627073874279">Luba kõikidel saitidel kõikide kujutiste kuvamine</translation>
 <translation id="437791893267799639">Reegel on määramata, keela andmete üleviimine ja ARC</translation>
+<translation id="4389073105055031853">Kasutajatel kõikide sertifikaatide haldamise lubamine</translation>
 <translation id="4389091865841123886">Kaugatesteerimine konfigureeritakse TPM-mehhanismi abil.</translation>
 <translation id="4408428864159735559">Failide eelseadistatud võrgu-ühiskasutuse loend.</translation>
 <translation id="4410236409016356088">Võrgu ribalaiuse piiramise lubamine</translation>
@@ -1711,6 +1728,11 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui reegli väärtuseks on määratud 0, on seadme konto parooli muutmine keelatud.
 
       Pange tähele, et paroolid võivad saada vanemaks kui määratud päevade arv, kui klient on pikemat aega võrgust väljas olnud.</translation>
+<translation id="510196893779239086">See reegel kontrollib, kas sulgeda Chrome täielikult pärast seda, kui viimane vaheleht avaneb mõnes muus brauseris.
+
+      Kui see reegel on määramata või on seatud väärtusele Tõene, jätab Chrome lahti vähemalt ühe vahelehe pärast alternatiivses brauseris avamist.
+
+      Kui see reegel on seatud väärtusele Väär, sulgeb Chrome vahelehe peale alternatiivses brauseris avanemist, isegi siis, kui see on viimane vaheleht. See tähendab, et Chrome sulgub täielikult.</translation>
 <translation id="5105313908130842249">Ekraani lukustamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5108031557082757679">Ettevõtte seadmete jaoks keelatud printerid</translation>
 <translation id="5113732180192599620">Reegel juhib loendit veebisaitidest, mis ei põhjusta kunagi brauserivahetust.
@@ -2313,6 +2335,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6430366557948788869">Chrome'i aruandluse laiendus</translation>
 <translation id="6440051664870270040">Saitidel samaaegse navigeerimise ja hüpikakende avamise lubamine</translation>
 <translation id="6447948611083700881">Varundamine ja taastamine on keelatud</translation>
+<translation id="6449476513004303784">Kasutajatel sertifikaatide haldamise mittelubamine</translation>
 <translation id="645425387487868471">Teenusesse <ph name="PRODUCT_NAME" /> sundsisselogimise lubamine</translation>
 <translation id="6464074037294098618">Aadresside automaattäite lubamine</translation>
 <translation id="6473623140202114570">Seadistage loend domeenidest, kus Google'i ohutu sirvimise funktsioon hoiatusi ei käivita.</translation>
@@ -2374,6 +2397,13 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
           Kui määrate reegli, saavad kasutajad selle ajutiselt alistada, lubades või keelates ekraanil kuvatava klaviatuuri. Kasutaja valik ei ole jääv ja vaikeseade taastatakse iga kord, kui sisselogimiskuva uuesti ilmub või kasutaja on sisselogimiskuval minut aega tegevusetu.
 
           Kui jätate reegli määramata, keelatakse ekraanil kuvatav klaviatuur sisselogimiskuva esmakordsel ilmumisel. Kasutajad saavad ekraanil kuvatava klaviatuuri igal ajal lubada või keelata ja selle olek sisselogimiskuval on kõikide kasutajate jaoks jääv.</translation>
+<translation id="6570691255874112762">See reegel kontrollib, kas kasutaja saab sertifikaadi halduri kaudu sertifikaate importida ja eemaldada.
+
+      Kui see reegel on määratud olekusse „Kasutajatel kõikide sertifikaatide haldamise lubamine” või see on määramata, saavad kasutajad sertifikaate hallata.
+
+      Kui see reegel on määratud olekusse „Kasutajatel kasutaja sertifikaatide haldamise lubamine”, saavad kasutajad hallata kasutaja sertifikaate, aga mitte kõiki seadme sertifikaate.
+
+      Kui see reegel on määratud olekusse „Kasutajatel sertifikaatide haldamise mittelubamine”, saavad kasutajad sertifikaate ainult vaadata.</translation>
 <translation id="6573305661369899995">URL-i piirangute välise allika seadistamine</translation>
 <translation id="6598235178374410284">Kasutaja avatarkujutis</translation>
 <translation id="6603004149426829878">Ajavööndi lahendamisel saada saadaolevad asukohasignaalid alati serverisse</translation>
@@ -2714,6 +2744,9 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
           Kui jätate reegli määramata, on ekraaniluup sisselogimisekraani esmakuvamisel keelatud. Kasutajad võivad ekraaniluubi igal ajal lubada või keelata ja selle olek on sisselogimisekraanil kasutajati püsiv.</translation>
 <translation id="7249828445670652637">Luba ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> CA-sertifikaatide kasutamine</translation>
+<translation id="7252681704926980614">Saatke kasutajanimi ja faili nimi iga prinditöö puhul omaprinterite serverile. Vaikimisi neid ei saadeta.
+
+      Selle reegli seadistamine väärtusele Tõene keelab printerid, mis kasutavad muid protokolle kui IPPS, USB või IPP USB kaudu, kuna kasutajanime ja faili nime ei tohiks avalikult võrgustiku kaudu saata.</translation>
 <translation id="7258823566580374486">Kaugjuurdepääsu hostide varjamise lubamine</translation>
 <translation id="7260277299188117560">Lubatud p2p automaatne värskendamine</translation>
 <translation id="7261252191178797385">Seadme taustapildi kujutis</translation>
@@ -2779,6 +2812,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
 <translation id="7336785017449297672">Haldab kella ja ajavööndi seadeid.</translation>
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
+<translation id="7339315111520512972">Brauseri protsessis võrgustiku koodi käitamise sundimine</translation>
 <translation id="7340034977315324840">Saada teavet seadme aktiivsuse aja kohta</translation>
 <translation id="7343497214039883642">Ettevõtte printerite konfiguratsioonifail seadmetele</translation>
 <translation id="7349338075015720646">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma.
@@ -3007,22 +3041,12 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
           Vaadake üksikasjalikke näiteid siit:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Chrome’is viimase vahelehe avatuna jätmine.</translation>
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
 <translation id="793473937901685727">Sertifikaatide saadavuse määramine ARC-rakenduste jaoks</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
-<translation id="7952002811557367112">See reegel keelab kasutajal laadida keelatud URL-ide loendis olevaid veebilehti. Keelatute loend hõlmab URL-i mustreid, mis määravad, millised URL-id keelatute loendisse lisatakse.
-
-      URL-i muster tuleb vormindada aadressil https://www.chromium.org/administrators/url-blacklist-filter-format olevate juhiste järgi.
-
-      Erandid saab määrata lubatud URL-ide loendi reegliga. Need reeglid kehtivad vaid 1000 kirje puhul, järgnevaid kirjeid eiratakse.
-
-      Pange tähele, et me ei soovita blokeerida sisemisi URL-e „chrome://*”, kuna see võib tekitada ootamatuid vigu.
-
-      Pange tähele, et reegel ei takista lehe dünaamilist värskendamist JavaScripti kaudu. Näiteks kui blokeerite URL-i „example.com/abc”, saavad kasutajad võib-olla siiski külastada aadressi „example.com” ja klõpsata lingil, et külastada aadressi „example.com/abc” – eeldusel, et lehte ei värskendata.
-
-      Kui reegel on määramata, ei lisata ühtki URL-i brauseri keelatud loendisse.</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
 <translation id="7961779417826583251">Sertifikaadi läbipaistvuse jõustamise keelamine pärandsertimisorganite loendi jaoks</translation>
 <translation id="7974114691960514888">Seda reeglit ei toetata enam.

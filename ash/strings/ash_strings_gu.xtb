@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">જોડી કરેલા ઉપકરણો</translation>
 <translation id="1195412055398077112">ઓવરસ્કૅન</translation>
 <translation id="119944043368869598">બધા દૂર કરો</translation>
+<translation id="123828989343052515">નવું ડેસ્ક</translation>
 <translation id="1247372569136754018">માઇક્રોફોન (આંતરિક)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> પરથી ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="1255033239764210633">હવામાન કેવું છે?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
+<translation id="209965399369889474">નેટવર્કથી કનેક્ટ કરેલું નથી</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="2135456203358955318">ડૉક કરેલ મૅગ્નિફાયર</translation>
 <translation id="2144487987174258011">Adobe Flash Player અપડેટ કરવા પુનઃપ્રારંભ કરો</translation>
@@ -435,6 +437,7 @@
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8297006494302853456">નબળું</translation>
 <translation id="8308637677604853869">પાછલું મેનૂ</translation>
+<translation id="8332664326438198339">લૉન્ચર પર પાછા જાઓ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8375916635258623388">આ <ph name="DEVICE_NAME" /> અને તમારો ફોન ઑટોમૅટિક રીતે કનેક્ટ થશે</translation>

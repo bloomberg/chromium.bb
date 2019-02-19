@@ -160,10 +160,25 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
 <translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
+<translation id="1383493480903114193">Toto pravidlo vynúti spustenie kódu siete v procese prehliadača.
+
+      Predvolene je zakázané. Ak ho povolíte, po presunutí procesu siete do karantény nebudú používatelia chránení proti bezpečnostným problémom.
+
+      Cieľom tohto pravidla je poskytnúť podnikom možnosť migrovať na softvér tretej strany, ktorý nie je závislý od prepojení s rozhraniami API siete. V prípade opráv protokolov LSP a rozhraní Win32 API odporúčame použiť proxy servery.
+
+      Ak toto pravidlo nenastavíte, kód siete môže byť spustený mimo procesu prehliadača. Závisí to od testov funkcií v rámci experimentu NetworkService.</translation>
 <translation id="1384459581748403878">Referenčná stránka: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Povoliť používateľom spravovať nainštalované certifikáty.</translation>
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="1404043648050567997">Keď používatelia prejdú na weby, ktoré sú nahlásené ako potenciálne škodlivé, služba Bezpečné prehliadanie zobrazí stránku s upozornením. Povolením tohto nastavenia zabránite používateľom pokračovať zo stránky s upozornením na škodlivý web.
+
+      Toto pravidlo zabráni používateľom pokračovať iba v prípade upozornení Bezpečného prehliadania (napr. malvéru alebo phishingu), ale nie pri problémoch súvisiacich s certifikátom SSL, ako sú napríklad neplatné certifikáty.
+
+      Ak je toto nastavenie zakázané alebo ak nie je nakonfigurované, používatelia môžu pokračovať na nahlásené stránky aj po zobrazení upozornenia.
+
+      Ďalšie informácie o Bezpečnom prehliadaní nájdete na https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Nahlasovať informácie o používaní aplikácií pre Linux</translation>
 <translation id="142346659686073702">Povoliť používať funkciu Crostini používateľom, ktorí nie sú partneri</translation>
 <translation id="1426410128494586442">Áno</translation>
@@ -1105,6 +1120,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="355118380775352753">Weby, ktoré sa majú otvárať v alternatívnom prehliadači</translation>
 <translation id="3577251398714997599">Nastavenie reklám pre weby s obťažujúcimi reklamami</translation>
+<translation id="357917253161699596">Povoliť používateľom spravovať používateľské certifikáty</translation>
 <translation id="3583230441447348508">Umožňuje špecifikovať zoznam vopred nakonfigurovaných zdieľaných úložísk v sieti.
 
       Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z dvoch častí: „share_url“ a „mode“. „share_url“ by mala byť webová adresa zdieľaného úložiska a „mode“ by malo byť „drop_down“ alebo „pre_mount“. „drop_down“ označuje, že „share_url“ sa pridá do rozbaľovacieho zoznamu na objavovanie zdieľaných úložísk. Režim „pre_mount“ označuje, že „share_url“ sa pripojí.</translation>
@@ -1444,6 +1460,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4372704773119750918">Nepovoliť podnikovému používateľovi byť súčasťou viacnásobného profilu (primárneho ani sekundárneho)</translation>
 <translation id="4377599627073874279">Povoliť všetkým stránkam zobrazovať obrázky</translation>
 <translation id="437791893267799639">Pravidlo nie je nastavené, zakázať migráciu dát a ARC</translation>
+<translation id="4389073105055031853">Povoliť používateľom spravovať všetky certifikáty</translation>
 <translation id="4389091865841123886">Konfigurácia vzdialeného overenia s použitím mechanizmu TPM.</translation>
 <translation id="4408428864159735559">Zoznam vopred nakonfigurovaných zdieľaných súborov v sieti.</translation>
 <translation id="4410236409016356088">Povoliť obmedzenie rýchlosti pripojenia</translation>
@@ -1695,6 +1712,11 @@ Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prio
       Ak pravidlo nastavíte na hodnotu 0, zmena hesla účtu zariadenia bude zakázaná.
 
       Upozorňujeme, že heslá môžu byť staršie ako zadaný počet dní, ak je klient dlhší čas offline.</translation>
+<translation id="510196893779239086">Toto pravidlo ovláda, či sa má Chrome úplne zavrieť, keď sa posledná karta prepne na iný prehliadač.
+
+      Keď ho nenastavíte alebo nastavíte na hodnotu True, Chrome ponechá po prepnutí na alternatívny prehliadač otvorenú aspoň jednu kartu.
+
+      Keď ho nastavíte na hodnotu False, Chrome po prepnutí na alternatívny prehliadač príslušnú kartu zavrie dokonca aj vtedy, keď je posledná. Chrome sa tak úplne ukončí.</translation>
 <translation id="5105313908130842249">Oneskorenie uzamknutia obrazovky pri napájaní z batérie</translation>
 <translation id="5108031557082757679">Zakázané podnikové tlačiarne zariadenia</translation>
 <translation id="5113732180192599620">Toto pravidlo ovláda zoznam webov, ktoré nikdy nespustia prepnutie prehliadača.
@@ -2286,6 +2308,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 <translation id="6430366557948788869">Rozšírenie na nahlasovanie údajov o Chrome</translation>
 <translation id="6440051664870270040">Povoliť webom súbežne prechádzať a otvárať kontextové okná</translation>
 <translation id="6447948611083700881">Zálohovanie a obnovenie je zakázané</translation>
+<translation id="6449476513004303784">Zakázať používateľom spravovať certifikáty</translation>
 <translation id="645425387487868471">Povoliť vynútenie prihlásenia v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Povoliť Automatické dopĺňanie adries</translation>
 <translation id="6473623140202114570">Umožňuje nastaviť zoznam domén, na ktorých Bezpečné prehliadanie neaktivuje upozornenia.</translation>
@@ -2347,6 +2370,13 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať aktiváciou alebo deaktiváciou klávesnice na obrazovke. Voľba používateľa však nebude trvalá a po opätovnom zobrazení prihlasovacej obrazovky alebo nečinnosti používateľa na prihlasovacej obrazovke počas jednej minúty sa obnoví pôvodné nastavenie.
 
           Ak toto pravidlo nenastavíte, bude pri prvom zobrazení prihlasovacej obrazovky klávesnica na obrazovke deaktivovaná. Používatelia budú môcť klávesnicu na obrazovke kedykoľvek aktivovať alebo deaktivovať a zvolený stav na prihlasovacej obrazovke pretrvá aj u iných používateľov.</translation>
+<translation id="6570691255874112762">Toto pravidlo ovláda, či používatelia môžu importovať alebo odstraňovať certifikáty prostredníctvom správcu certifikátov.
+
+      Ak toto pravidlo nastavíte na možnosť Povoliť používateľom spravovať všetky certifikáty alebo ho nenastavíte, používatelia budú môcť certifikáty spravovať.
+
+      Ak ho nastavíte na možnosť Povoliť používateľom spravovať používateľské certifikáty, používatelia budú môcť spravovať používateľské certifikáty, ale nie certifikáty pre celé zariadenie.
+
+      Ak ho nastavíte na možnosť Zakázať používateľom spravovať certifikáty, používatelia nebudú môcť spravovať certifikáty, ale budú si ich môcť zobraziť.</translation>
 <translation id="6573305661369899995">Nastavenie externého zdroja na obmedzenie webových adries</translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
 <translation id="6603004149426829878">Počas rozpoznávania časového pásma vždy odosielať všetky dostupné signály polohy na server</translation>
@@ -2687,6 +2717,9 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
           Ak toto pravidlo ponecháte nenastavené, bude lupa obrazovky pri prvom zobrazení prihlasovacej obrazovky zakázaná. Používatelia budú môcť lupu obrazovky kedykoľvek povoliť alebo zakázať a jej stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
 <translation id="7249828445670652637">Povoliť certifikáty CA systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
+<translation id="7252681704926980614">Odosielajte s každou tlačovou úlohou používateľské meno aj názov súboru na server natívnych tlačiarní. Predvolené nastavenie je „neodosielať“.
+
+      Nastavením tohto pravidla na hodnotu True tiež zakážete tlačiarne, ktoré používajú protokoly iné ako IPPS, USB a IPP-over-USB, pretože používateľské meno a názov súboru by nemali byť odosielané cez sieť bez zabezpečenia.</translation>
 <translation id="7258823566580374486">Povoliť blokovanie hostiteľov so vzdialeným prístupom</translation>
 <translation id="7260277299188117560">Protokol p2p na automatické aktualizácie je povolený</translation>
 <translation id="7261252191178797385">Obrázok tapety zariadenia</translation>
@@ -2752,6 +2785,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak sa toto pravidlo nenastaví, automatické čistenie použije predvolenú vstavanú stratégiu, ktorá v súčasnosti predstavuje stratégiu RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Umožňuje ovládať nastavenia hodín a časového pásma.</translation>
 <translation id="7336878834592315572">Uchovať súbory cookie počas trvania relácie</translation>
+<translation id="7339315111520512972">Vynútiť spúšťanie kódu siete v procese prehliadača</translation>
 <translation id="7340034977315324840">Hlásiť časy aktivity zariadenia</translation>
 <translation id="7343497214039883642">Konfiguračný súbor podnikovej tlačiarne pre zariadenia</translation>
 <translation id="7349338075015720646">Určuje zoznam webov inštalovaných na pozadí, bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
@@ -2979,22 +3013,12 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
           Podrobné príklady nájdete na adrese:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Ponechať poslednú kartu v Chrome otvorenú</translation>
 <translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie rýchlosti pripojenia. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
 <translation id="7933141401888114454">Povoliť vytváranie kontrolovaných používateľov</translation>
 <translation id="793473937901685727">Nastaviť dostupnosť certifikátov pre aplikácie ARC</translation>
 <translation id="7937766917976512374">Povoliť alebo zakázať zaznamenávanie videa</translation>
 <translation id="7941975817681987555">Nepredpovedať akcie siete pri sieťovom pripojení</translation>
-<translation id="7952002811557367112">Toto pravidlo bráni používateľom načítať webové stránky zo zoznamu zakázaných webových adries. Zoznam zakázaných položiek obsahuje vzory webových adries. Tie určujú, ktoré webové adresy budú zakázané.
-
-      Vzor webovej adresy musí byť formátovaný v súlade s pokynmi na https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Výnimky môžu byť definované v pravidle zoznamu povolených webových adries. Počet záznamov v týchto pravidlách je obmedzený na 1 000. Všetky ďalšie záznamy sa budú ignorovať.
-
-      Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
-
-      Upozorňujeme, že toto pravidlo nezabraňuje dynamickému aktualizovaniu stránky prostredníctvom JavaScriptu. Ak napríklad zablokujete example.com/abc, používatelia stále budú môcť navštíviť example.com a kliknúť na odkaz, ktorý ich presmeruje na example.com/abc, pokiaľ sa stránka neobnoví.
-
-      Ak toto pravidlo nenastavíte, v prehliadači sa nezakáže žiadna webová adresa.</translation>
 <translation id="7953256619080733119">Spravované výnimky hostiteľov ručne nastavené používateľom</translation>
 <translation id="7961779417826583251">Zakázať presadzovanie pravidla transparentnosti certifikátov pre zoznam starých certifikačných autorít</translation>
 <translation id="7974114691960514888">Toto pravidlo už nie je podporované.

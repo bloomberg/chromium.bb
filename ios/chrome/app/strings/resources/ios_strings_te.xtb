@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">కొత్త టాబ్‌లో తెరువు</translation>
 <translation id="3024255823539804759">గత రోజు</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
-<translation id="3059750684806925578">కాపీ చేసిన చిత్రాన్ని వెతుకు</translation>
 <translation id="3112556859945124369">గుర్తు పెట్టు…</translation>
 <translation id="3157684681743766797">అన్నీ గుర్తు పెట్టు…</translation>
 <translation id="3175081911749765310">వెబ్ సేవలు</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="3335947283844343239">మూసిన ట్యాబ్‌ను మళ్లీ తెరువు</translation>
 <translation id="3393920035788932672">పాప్-అప్‌లు అనుమతించబడ్డాయి</translation>
+<translation id="3424059454230285158">మీరు ఏ సమయంలోనైనా <ph name="BEGIN_LINK" />ఈ సెట్టింగ్‌లను అనుకూలీకరించవచ్చు<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> నిమి</translation>
 <translation id="3448016392200048164">విభజన వీక్షణ</translation>
 <translation id="345565170154308620">పాస్‌వర్డ్‌లను నిర్వహించు...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3771033907050503522">అజ్ఞాత ట్యాబ్‌లు</translation>
-<translation id="3771149149411027381">కాపీ చేసిన వచనాన్ని వెతుకు</translation>
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">శోధన</translation>
 <translation id="4121993058175073134">నికర ఎగుమతి డేటాను పంపడానికి, దయచేసి సెట్టింగ్‌ల యాప్‌లో మీ ఇమెయిల్ ఖాతాను కాన్ఫిగర్ చేయండి.</translation>
 <translation id="4124987746317609294">సమయ పరిధి</translation>
-<translation id="4155190233692914060">కాపీ చేసిన లింక్‌ను సందర్శించండి</translation>
 <translation id="4172051516777682613">ఎల్లప్పుడూ చూపు</translation>
 <translation id="418156467088430727">కొత్త ట్యాబ్‌లో ఆఫ్‌లైన్ వెర్ష‌న్‌ను వీక్షించండి</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome సమకాలీకరణ మరియు వ్యక్తిగతీకరణను నిర్వహించండి</translation>

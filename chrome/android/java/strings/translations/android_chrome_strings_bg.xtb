@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">Комбинации за раздели и прозорци</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3205824638308738187">Още съвсем малко!</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3211426585530211793">Изтрихте „<ph name="ITEM_TITLE" />“</translation>
 <translation id="321773570071367578">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3745176700485982507">На тази страница можете да намерите връзки към любимите си уебсайтове</translation>
+<translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
 <translation id="3778956594442850293">Добавено към началния екран</translation>
 <translation id="3781011235031427080">„Още като това“ се отвори на половината височина</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">Преминаване напред</translation>
 <translation id="4988210275050210843">Изтегля се файл (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страници</translation>
+<translation id="4994033804516042629">Няма намерени контакти</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="5004416275253351869">Контроли за активността в Google</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
@@ -760,6 +763,7 @@
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6643649862576733715">Сортирайте по количество спестени данни</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
+<translation id="6649642165559792194">Визуализация <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6659594942844771486">Раздел</translation>
@@ -777,7 +781,6 @@
 <translation id="6746124502594467657">Придвижване надолу</translation>
 <translation id="6766622839693428701">Прекарайте пръст надолу, за да затворите.</translation>
 <translation id="6766758767654711248">Докоснете, за да посетите сайта</translation>
-<translation id="6776813977906306442">Изтегляйте видеоклипове посредством бутона „Изтегляне“, за да ги гледате по-късно</translation>
 <translation id="6782111308708962316">Забраняване на уебсайтовете на трети страни да запазват и четат данни в „бисквитки“</translation>
 <translation id="6790428901817661496">Пускане</translation>
 <translation id="679325081238418596">Получете отметките, историята, паролите и другите си настройки на всичките си устройства</translation>
@@ -935,7 +938,9 @@
 <translation id="7929962904089429003">Отваряне на менюто</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
+<translation id="7960977077911686065">Продължавайки, приемате, че Chrome ще изпраща до Google данни от функцията си за автоматично попълване, URL адреса на сайта и съдържанието му, за да предоставя тази услуга. Приемате също, че избраните от вас лични данни ще бъдат изпратени на уебсайта чрез функцията на Chrome за автоматично попълване. \n\nОтворете настройките на браузъра, за да изключите Google Асистент в Chrome и автоматичното попълване.  <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Доставчик:</translation>
+<translation id="7975379999046275268">Визуализация <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Предварително зареждане на страниците с цел по-бързо сърфиране и търсене</translation>
 <translation id="79859296434321399">За да гледате съдържание с обогатена реалност, инсталирайте ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
@@ -1070,7 +1075,6 @@
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>
 <translation id="8965591936373831584">изчаква</translation>
 <translation id="8972098258593396643">Да се изтегли ли файлът в стандартната папка?</translation>
-<translation id="8979405271719829084">Изтегляйте видеоклипове, за да ги гледате по-късно</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8983677657449185470">Помощ за подобряването на Безопасно сърфиране</translation>
 <translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>
@@ -1092,6 +1096,7 @@
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
+<translation id="9138504265731110181">Google Асистент ви спестява време, като ви помага с плащанията в мрежата</translation>
 <translation id="9139068048179869749">Извеждане на запитване, преди да се разреши на сайтовете да изпращат известия (препоръчително)</translation>
 <translation id="9139318394846604261">Пазаруване</translation>
 <translation id="9155898266292537608">Можете също да извършите търсене с бързо докосване на дума</translation>

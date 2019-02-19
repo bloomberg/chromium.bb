@@ -292,6 +292,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3166827708714933426">Atalhos de separadores e de janelas</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
+<translation id="3205824638308738187">Quase concluído!</translation>
 <translation id="3207960819495026254">Adicionado aos marcadores</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> eliminado</translation>
 <translation id="321773570071367578">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de outras aplicações</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3745176700485982507">Pode encontrar links para os seus Websites favoritos nesta página.</translation>
+<translation id="3771001275138982843">Não foi possível transferir a atualização.</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
 <translation id="3778956594442850293">Adicionado ao ecrã principal</translation>
 <translation id="3781011235031427080">Mais deste género aberta a meia altura.</translation>
@@ -535,6 +537,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4988210275050210843">A transferir ficheiro (<ph name="MEGABYTES" />)…</translation>
 <translation id="4988526792673242964">Páginas </translation>
+<translation id="4994033804516042629">Não foram encontrados contactos</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5004416275253351869">Controlos da atividade Google</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
@@ -759,6 +762,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6643649862576733715">Ordenar por quantidade de dados poupados</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
+<translation id="6649642165559792194">Pré-visualizar imagem <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -776,7 +780,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
 <translation id="6766758767654711248">Toque para aceder ao site.</translation>
-<translation id="6776813977906306442">Transferir vídeos para ver mais tarde através do botão Transferir</translation>
 <translation id="6782111308708962316">Impedir que os Sites de terceiros guardem e leiam dados de cookies</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="679325081238418596">Obter os marcadores, histórico, palavras-passe e outras definições em todos os dispositivos</translation>
@@ -934,7 +937,9 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7929962904089429003">Abrir o menu</translation>
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
+<translation id="7960977077911686065">Ao continuar, aceita que o Chrome envie dados do Preenchimento automático do Chrome, do URL do site e respetivo conteúdo à Google para fornecer este serviço. Também aceita que o Chrome envie dados pessoais que tenha selecionado para o Website através do Preenchimento automático do Chrome. \n\nAceda às definições do Chrome para desativar o Assistente Google no Chrome e o Preenchimento automático do Chrome.  <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
+<translation id="7975379999046275268">Pré-visualizar página <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pré-carregar as páginas para uma navegação e uma pesquisa mais rápidas</translation>
 <translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore.</translation>
 <translation id="7986741934819883144">Selecionar um contacto</translation>
@@ -1069,7 +1074,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8959122750345127698">A navegação está inacessível: <ph name="URL" /></translation>
 <translation id="8965591936373831584">pendente</translation>
 <translation id="8972098258593396643">Pretende transferir para a pasta predefinida?</translation>
-<translation id="8979405271719829084">Transferir vídeos para ver mais tarde</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>
 <translation id="8983677657449185470">Ajudar a melhorar a Navegação segura</translation>
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
@@ -1091,6 +1095,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
+<translation id="9138504265731110181">O Assistente Google poupa o seu tempo ao ajudá-lo a efetuar pagamentos na Web</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que os sites enviem notificações (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Também pode pesquisar ao tocar rapidamente numa palavra.</translation>

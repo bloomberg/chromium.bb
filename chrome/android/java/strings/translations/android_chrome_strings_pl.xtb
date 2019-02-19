@@ -292,6 +292,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3166827708714933426">Skróty kart i okien</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
+<translation id="3205824638308738187">Prawie gotowe!</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3211426585530211793">Usunięto: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Jeśli nie pamiętasz hasła lub chcesz zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB innych aplikacji</translation>
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3745176700485982507">Tutaj znajdziesz linki do swoich ulubionych stron</translation>
+<translation id="3771001275138982843">Nie udało się pobrać aktualizacji</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Włącz Bluetooth<ph name="END_LINK" />, by umożliwić parowanie</translation>
 <translation id="3778956594442850293">Dodano do ekranu głównego</translation>
 <translation id="3781011235031427080">Karta Więcej podobnych otwarta do połowy wysokości</translation>
@@ -535,6 +537,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="497421865427891073">Dalej</translation>
 <translation id="4988210275050210843">Pobieram plik (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Strony</translation>
+<translation id="4994033804516042629">Nie znaleziono kontaktów</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5004416275253351869">Zarządzanie aktywnością w Google</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
@@ -759,6 +762,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6643649862576733715">Sortuj według ilości zaoszczędzonych danych</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
+<translation id="6649642165559792194">Wyświetl podgląd obrazu <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK" />Zwiększ uprawnienia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -776,7 +780,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6746124502594467657">W dół</translation>
 <translation id="6766622839693428701">Przesuń w dół, by zamknąć.</translation>
 <translation id="6766758767654711248">Kliknij, by przejść do strony</translation>
-<translation id="6776813977906306442">Kliknij przycisk Pobierz, by pobrać film i obejrzeć go później</translation>
 <translation id="6782111308708962316">Nie pozwalaj witrynom innych firm zapisywać ani odczytywać danych z plików cookie</translation>
 <translation id="6790428901817661496">Odtwórz</translation>
 <translation id="679325081238418596">Korzystaj z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
@@ -934,7 +937,9 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7929962904089429003">Otwórz menu</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
+<translation id="7960977077911686065">Przechodząc dalej, zgadzasz się, by w ramach tej usługi przeglądarka Chrome wysyłała do Google dane z Autouzupełniania, a także URL i zawartość strony. Zgadzasz się także, by w ramach Autouzupełniania przeglądarka Chrome wysyłała do strony wybrane przez Ciebie dane osobowe. \n\nAutouzupełnianie i Asystenta Google możesz wyłączyć w ustawieniach Chrome.  <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Dostawca:</translation>
+<translation id="7975379999046275268">Wyświetl podgląd strony <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
 <translation id="79859296434321399">Aby oglądać treści rzeczywistości rozszerzonej, zainstaluj ARCore</translation>
 <translation id="7986741934819883144">Wybierz kontakt</translation>
@@ -1069,7 +1074,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="8965591936373831584">Oczekiwanie</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>
-<translation id="8979405271719829084">Pobierz film, by obejrzeć go później</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8983677657449185470">Pomóż ulepszyć Bezpieczne przeglądanie</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
@@ -1091,6 +1095,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
+<translation id="9138504265731110181">Asystent Google oszczędza Twój czas, pomagając Ci w płatnościach na stronach internetowych</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>
 <translation id="9139318394846604261">Zakupy</translation>
 <translation id="9155898266292537608">Możesz też wyszukiwać szybkim kliknięciem słowa</translation>

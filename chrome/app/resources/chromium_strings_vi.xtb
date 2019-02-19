@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="407254336480250557">Chọn <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
+<translation id="4216212958613226427">Ngôn ngữ này dùng để hiển thị giao diện người dùng Chromium</translation>
 <translation id="4222580632002216401">Bạn hiện đã đăng nhập vào Chromium! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
 <translation id="4224199872375172890">Chromium đã được cập nhật.</translation>
 <translation id="4230135487732243613">Bạn muốn liên kết dữ liệu Chromium của bạn với tài khoản này?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
 <translation id="5712253116097046984">Quản trị viên yêu cầu bạn khởi động lại Chromium OS để áp dụng bản cập nhật này</translation>
+<translation id="5756484659843248772">Ngôn ngữ này dùng để hiển thị giao diện người dùng Chromium OS</translation>
 <translation id="5768914737813585044">Hiển thị Chromium OS bằng ngôn ngữ này</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
@@ -181,8 +183,8 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
+<translation id="6877899728743402439">Quản trị viên hệ thống của bạn đã định cấu hình Chromium để mở một trình duyệt thay thế.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
-<translation id="692832138936263906">Chromium có thể nhận dạng hình ảnh và văn bản trên một hình ảnh bằng cách gửi hình ảnh trang tới máy chủ của Google. Nhờ vậy, bạn có thể hiểu rõ hơn nội dung trang.</translation>
 <translation id="6964305034639999644">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
 <translation id="6990124437352146030">Chromium cần có quyền truy cập vào micrô của bạn cho trang web này</translation>

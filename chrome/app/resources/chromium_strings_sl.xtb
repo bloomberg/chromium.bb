@@ -96,6 +96,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="407254336480250557">Izberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Odkrijte zanimive aplikacije, igre, razširitve in teme za Chromium.</translation>
+<translation id="4216212958613226427">Ta jezik se uporablja za prikaz uporabniškega vmesnika v Chromiumu</translation>
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
 <translation id="4230135487732243613">Želite svoje podatke v Chromiumu povezati s tem računom?</translation>
@@ -140,6 +141,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium v tem jeziku</translation>
 <translation id="5712253116097046984">Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete OS Chromium</translation>
+<translation id="5756484659843248772">Ta jezik se uporablja za prikaz uporabniškega vmesnika za Chrome OS</translation>
 <translation id="5768914737813585044">Prikaži Chromium OS v tem jeziku</translation>
 <translation id="5796460469508169315">Chromium je skoraj pripravljen.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -184,8 +186,8 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="6810143991807788455">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano v Chromium)</translation>
+<translation id="6877899728743402439">Skrbnik sistema je Chromium nastavil tako, da odpre drug brskalnik.</translation>
 <translation id="6893813176749746474">Chromium je posodobljen, vendar ga niste uporabljali najmanj 30 dni.</translation>
-<translation id="692832138936263906">Chromium lahko prepozna slike in besedilo v sliki tako, da v Googlove strežnike pošlje slike strani, kar vam omogoča boljše razumevanje vsebine strani.</translation>
 <translation id="6964305034639999644">Odpri povezavo v Chromiumovem oknu brez bele&amp;ženja zgodovine</translation>
 <translation id="6970811910055250180">Posodabljanje naprave ...</translation>
 <translation id="6990124437352146030">Chromium potrebuje dovoljenje za dostop do mikrofona za to spletno mesto</translation>

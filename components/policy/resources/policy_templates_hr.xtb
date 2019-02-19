@@ -162,10 +162,25 @@
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
+<translation id="1383493480903114193">To pravilo prisilno pokreće kôd za umrežavanje u procesu preglednika.
+
+      To je pravilo onemogućeno prema zadanim postavkama i ako se omogući, korisnici će biti izloženi sigurnosnim poteškoćama kada proces umrežavanja bude u testnom okruženju.
+
+      Tim se pravilom želi pružiti mogućnost organizacijama za prijelaz na softver treće strane koji ne ovisi o povezivanju API-ja za umrežavanje. Proxy poslužitelji preporučuju se putem LSP-ova i uz primjenu zakrpe API-ja Win32.
+
+      Ako se pravilo ne postavi, kôd za umrežavanje može ostati bez procesa preglednika ovisno o radnim verzijama eksperimenta NetworkService.</translation>
 <translation id="1384459581748403878">Referenca: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Omogući korisnicima upravljanje instaliranim certifikatima.</translation>
 <translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="1404043648050567997">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućavanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
+
+      To pravilo sprječava korisnike da krenu dalje samo u slučaju upozorenja Sigurnog pregledavanja (npr. o zlonamjernom softveru ili krađi identiteta), a ne poteškoća povezanih sa SSL certifikatima (npr. nevažeći ili istekli certifikati).
+
+      Ako se ta postavka onemogući ili ako se ne konfigurira, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Prijavi informacije o upotrebi Linux aplikacija</translation>
 <translation id="142346659686073702">Omogućuje nepridruženim korisnicima da upotrebljavaju Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
@@ -1082,6 +1097,7 @@
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="355118380775352753">Web-lokacije koje se trebaju otvoriti u zamjenskom pregledniku</translation>
 <translation id="3577251398714997599">Postavke oglasa za web-lokacije s ometajućim oglasima</translation>
+<translation id="357917253161699596">Omogući korisnicima upravljanje korisničkim certifikatima</translation>
 <translation id="3583230441447348508">Navodi popis unaprijed konfiguriranih mrežnih dijeljenja datoteka.
 
       Svaka stavka na popisu pravila objekt je s dva člana: "share_url" i "mode". "share_url" treba biti URL dijeljenja, a "mode" treba biti "drop_down" ili "pre_mount". "drop_down" naznačuje da će se "share_url" dodati na padajući izbornik otkrivenih dijeljenja. "pre_mount" naznačuje da će se "share_url" učitati.</translation>
@@ -1414,6 +1430,7 @@
 <translation id="4372704773119750918">Ne dopusti poslovnom korisniku da bude dio višestrukog profila (primarnom ili sekundarnom)</translation>
 <translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
 <translation id="437791893267799639">Postavljanje pravila poništeno, onemogući premještanje podataka i ARC</translation>
+<translation id="4389073105055031853">Dopusti korisnicima upravljanje svim certifikatima</translation>
 <translation id="4389091865841123886">Konfiguriranje daljinskog atestiranja TPM mehanizmom.</translation>
 <translation id="4408428864159735559">Popis unaprijed konfiguriranih mrežnih dijeljenja datoteka.</translation>
 <translation id="4410236409016356088">Omogući usporavanje propusnosti mreže</translation>
@@ -1653,6 +1670,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo postavi na 0, promjena zaporke računa na računalu onemogućena je.
 
       Zaporke mogu biti i starije od navedenog broja dana ako je klijent bio offline dulje vrijeme.</translation>
+<translation id="510196893779239086">To pravilo određuje hoće li se Chrome potpuno zatvoriti kada se posljednja kartica prebaci u drugi preglednik.
+
+      Ako se pravilo ne postavi ili se postavi na True, Chrome će zadržati barem jednu otvorenu karticu nakon prebacivanja na zamjenski preglednik.
+
+      Ako se pravilo postavi na False, Chrome će zatvoriti karticu nakon prebacivanja na zamjenski preglednik, čak i ako je to bila posljednja kartica. Chrome će se tako u potpunosti zatvoriti.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
 <translation id="5113732180192599620">To pravilo određuje popis web-lokacija koje nikad neće uzrokovati promjenu preglednika.
@@ -2227,6 +2249,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6430366557948788869">Chromeovo proširenje za prijavljivanje</translation>
 <translation id="6440051664870270040">Dopusti web-lokacijama istovremenu navigaciju i otvaranje skočnih prozora</translation>
 <translation id="6447948611083700881">Sigurnosno kopiranje i vraćanje su onemogućeni</translation>
+<translation id="6449476513004303784">Onemogući korisnicima upravljanje certifikatima</translation>
 <translation id="645425387487868471">Omogući nametanje prijave za preglednik <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Omogući Automatsko popunjavanje za adrese</translation>
 <translation id="6473623140202114570">Konfiguriranje popisa domena na kojima Sigurno pregledavanje neće prikazivati upozorenja.</translation>
@@ -2288,6 +2311,13 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Ako postavite ovo pravilo, korisnici ga mogu privremeno nadjačati tako što će omogućiti ili onemogućiti tipkovnicu na zaslonu. No, korisnikov odabir nije trajan i zadana se postavka vraća svaki put kad se ponovo prikaže zaslon za prijavu ili kad je korisnik neaktivan 1 minutu na zaslonu za prijavu.
 
           Ako ne postavite to pravilo, tipkovnica na zaslonu onemogućena je prilikom prvog prikazivanja zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti tipkovnicu na zaslonu u bilo kojem trenutku i njen status na zaslonu za prijavu zadržava se među korisnicima.</translation>
+<translation id="6570691255874112762">Pravilo određuje može li korisnik uvesti i ukloniti certifikate putem Upravitelja certifikata.
+
+      Ako se to pravilo postavi na "Dopusti korisnicima upravljanje svim certifikatima" ili se ne postavi, korisnici će moći upravljati certifikatima.
+
+      Ako se pravilo postavi na "Dopusti korisnicima upravljanje korisničkim certifikatima", korisnici će moći upravljati korisničkim certifikatima, ali ne i svim certifikatima uređaja.
+
+      Ako se pravilo postavi na "Onemogući korisnicima upravljanje certifikatima", korisnici neće moći upravljati certifikatima, već će ih moći samo prikazati.</translation>
 <translation id="6573305661369899995">Postavi vanjski izvor ograničenja URL-ova</translation>
 <translation id="6598235178374410284">Slika avatara korisnika</translation>
 <translation id="6603004149426829878">Uvijek šalji sve dostupne signale lokacije poslužitelju prilikom utvrđivanja vremenske zone</translation>
@@ -2609,6 +2639,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Ako se to pravilo ne postavi, povećalo je onemogućeno pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti povećalo u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
 <translation id="7249828445670652637">Omogući <ph name="PRODUCT_OS_NAME" /> CA certifikate za ARC aplikacije</translation>
+<translation id="7252681704926980614">Korisničko ime i naziv datoteke šalju se poslužitelju nativnih pisača sa svakim zadatkom ispisa. Prema zadanim se postavkama ne šalju.
+
+      Postavljanjem tog pravila na True onemogućuju se i pisači koji ne upotrebljavaju protokole IPPS, USB ili IPP putem USB-a, već neke druge jer se korisničko ime i naziv datoteke ne smiju otvoreno slati putem mreže.</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
 <translation id="7261252191178797385">Slika pozadine uređaja</translation>
@@ -2672,6 +2705,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Upravlja postavkama sata i vremenske zone.</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
+<translation id="7339315111520512972">Nametni pokretanje koda za umrežavanje u procesu preglednika</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
 <translation id="7343497214039883642">Datoteka za konfiguraciju pisača tvrtke za uređaje</translation>
 <translation id="7349338075015720646">Određuje popis web-lokacija koje su instalirane u pozadini, bez interakcije korisnika te se ne mogu deinstalirati niti ih korisnik može onemogućiti.
@@ -2894,22 +2928,12 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Detaljne primjere možete pronaći ovdje:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Zadrži otvorenu posljednju karticu u Chromeu.</translation>
 <translation id="793134539373873765">Određuje hoće li se p2p upotrebljavati za podatke ažuriranja OS-a. Ako je postavljeno na Točno, uređaji će dijeliti i pokušati konzumirati podatke ažuriranja na LAN-u potencijalno smanjujući potrošnju internetske propusnosti i zagušenje. Ako podaci ažuriranja nisu dostupni na LAN-u, uređaj će prijeći na preuzimanje s poslužitelja ažuriranja. Ako je postavljeno na Netočno ili nije konfigurirano, p2p se neće upotrebljavati.</translation>
 <translation id="7933141401888114454">Omogući izradu nadziranih korisnika</translation>
 <translation id="793473937901685727">Postavi dostupnost certifikata za ARC aplikacije</translation>
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
-<translation id="7952002811557367112">Ovo pravilo korisnicima onemogućuje preuzimanje web-stranica s URL-ova koji se nalaze na popisu nedopuštenih. Na tom se popisu nalaze uzorci URL-ova koji određuju URL-ove koji neće biti dopušteni.
-
-      Uzorak URL-ova mora se oblikovati prema uputama na https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Iznimke se mogu definirati u pravilu za popis dopuštenih URL-ova. Ta su pravila ograničena na 1000 unosa, a daljnji će se unosi zanemariti.
-
-      Ne preporučuje se blokiranje internih "chrome://*" URL-ova jer to može dovesti do neočekivanih pogrešaka.
-
-      To pravilo neće spriječiti dinamičko ažuriranje stranice putem Javascripta. Na primjer, ako blokirate "example.com/abc", korisnici će možda i dalje moći posjetiti "example.com" te kliknuti vezu i otvoriti "example.com/abc" ako se stranica ne osvježi.
-
-      Ako se pravilo ne postavi, nijedan URL u pregledniku neće biti zabranjen.</translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7961779417826583251">Onemogući provedbu Transparentnosti certifikata za popis starih tijela za izdavanje certifikata</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>

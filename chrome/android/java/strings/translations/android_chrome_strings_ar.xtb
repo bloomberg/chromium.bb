@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">اختصارات علامات التبويب والنوافذ</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
+<translation id="3205824638308738187">أوشك الانتهاء.</translation>
 <translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
 <translation id="3211426585530211793">تم حذف العنصر <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534">تطبيقات أخرى بحجم <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="3744111561329211289">مزامنة الخلفية</translation>
 <translation id="3745176700485982507">يمكنك العثور على روابط مواقعك الإلكترونية المُفضَّلة في هذه الصفحة</translation>
+<translation id="3771001275138982843">تعذُّر تنزيل التحديث</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />تشغيل البلوتوث<ph name="END_LINK" /> للسماح بالإقران</translation>
 <translation id="3778956594442850293">تمت الإضافة إلى الشاشة الرئيسية</translation>
 <translation id="3781011235031427080">يتم فتح "المزيد من النتائج المشابهة" بنصف ارتفاع</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4988210275050210843">جارٍ تنزيل الملف (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
+<translation id="4994033804516042629">لم يتم العثور على أي جهات اتصال</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5004416275253351869">‏عناصر التحكم بالنشاط على Google</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
@@ -759,6 +762,7 @@
 <translation id="6643016212128521049">محو</translation>
 <translation id="6643649862576733715">الترتيب حسب مقدار البيانات التي تم توفيرها</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهة اتصال إضافية واحدة <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}two{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهتا اتصال إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />)}few{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهات اتصال إضافية}many{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}}</translation>
+<translation id="6649642165559792194">معاينة صورة <ph name="BEGIN_NEW" />جديدة<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
@@ -776,7 +780,6 @@
 <translation id="6746124502594467657">الانتقال إلى أسفل</translation>
 <translation id="6766622839693428701">يمكنك التمرير السريع للأسفل للإغلاق.</translation>
 <translation id="6766758767654711248">انقر للانتقال إلى موقع الويب</translation>
-<translation id="6776813977906306442">يمكنك تنزيل فيديوهات لمشاهدتها لاحقًا باستخدام زر "التنزيل"</translation>
 <translation id="6782111308708962316">منع مواقع الويب التابعة لجهات خارجية من حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="679325081238418596">يمكنك الحصول على الإشارات المرجعية والسِجل وكلمات المرور والإعدادات الأخرى على جميع أجهزتك</translation>
@@ -934,7 +937,9 @@
 <translation id="7929962904089429003">فتح القائمة</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
+<translation id="7960977077911686065">‏تشير المتابعة إلى موافقتك على إرسال Chrome بيانات من ميزة الملء التلقائي في Chrome وعنوان URL لموقعك الإلكتروني ومحتواه إلى Google لتوفير هذه الخدمة. وتوافق أيضًا على إرسال Chrome البيانات الشخصية التي حدَّدتها إلى موقع الويب عبر ميزة الملء التلقائي في Chrome. \n\nيمكنك الانتقال إلى إعدادات Chrome لإيقاف "مساعد Google" على Chrome وميزة الملء التلقائي من Chrome.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />جديدة<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
@@ -1069,7 +1074,6 @@
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
 <translation id="8965591936373831584">في الانتظار</translation>
 <translation id="8972098258593396643">هل تريد التنزيل إلى المجلد التلقائي؟</translation>
-<translation id="8979405271719829084">يمكنك تنزيل فيديوهات لمشاهدتها لاحقًا</translation>
 <translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>
 <translation id="8983677657449185470">المساعدة في تحسين التصفُّح الآمن</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
@@ -1091,6 +1095,7 @@
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
+<translation id="9138504265731110181">‏يوفِّر عليك "مساعد Google" الوقت من خلال مساعدتك على تسجيل الخروج من الويب</translation>
 <translation id="9139068048179869749">السؤال قبل السماح للمواقع بإرسال الإشعارات (موصى به)</translation>
 <translation id="9139318394846604261">التسوّق</translation>
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>

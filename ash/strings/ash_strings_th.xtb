@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
 <translation id="1195412055398077112">โอเวอร์สแกน</translation>
 <translation id="119944043368869598">ล้างทั้งหมด</translation>
+<translation id="123828989343052515">พื้นที่ทำงานใหม่</translation>
 <translation id="1247372569136754018">ไมโครโฟน (ภายใน)</translation>
 <translation id="1252999807265626933">กำลังชาร์จจาก<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">วันนี้อากาศเป็นยังไงบ้าง</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">พิมพ์ข้อความ</translation>
 <translation id="2050339315714019657">แนวตั้ง</translation>
 <translation id="2067602449040652523">ความสว่างของแป้นพิมพ์</translation>
+<translation id="209965399369889474">ไม่ได้เชื่อมต่อกับเครือข่าย</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="2135456203358955318">แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="2144487987174258011">รีสตาร์ทเพื่ออัปเดต Adobe Flash Player</translation>
@@ -436,6 +438,7 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8297006494302853456">อ่อน</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
+<translation id="8332664326438198339">กลับไปที่ Launcher</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> นี้และโทรศัพท์จะเชื่อมต่อกันโดยอัตโนมัติ</translation>

@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">פתח בכרטיסייה חדשה</translation>
 <translation id="3024255823539804759">מהיום האחרון</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
-<translation id="3059750684806925578">חיפוש התמונה שהועתקה</translation>
 <translation id="3112556859945124369">סמן…</translation>
 <translation id="3157684681743766797">סמן הכול…</translation>
 <translation id="3175081911749765310">שירותי אינטרנט</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
+<translation id="3424059454230285158">אפשר <ph name="BEGIN_LINK" />להתאים אישית את ההגדרות האלה<ph name="END_LINK" /> בכל זמן</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
 <translation id="345565170154308620">ניהול סיסמאות…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3691593122358196899">התווסף לסימניות ב-<ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
-<translation id="3771149149411027381">חיפוש טקסט מועתק</translation>
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
 <translation id="3789841737615482174">התקן</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">חיפוש</translation>
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, יש להגדיר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
 <translation id="4124987746317609294">טווח זמן</translation>
-<translation id="4155190233692914060">מעבר לקישור שהועתק</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
 <translation id="418156467088430727">הצג גרסה לא מקוונת בכרטיסייה חדשה</translation>
 <translation id="4237682350741091554">‏נהל את סנכרון Chrome וההתאמה האישית ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" /></translation>

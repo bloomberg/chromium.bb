@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209">Переместить приложение "<ph name="DRAGGED_APP" />" в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="1368832886055348810">Слева направо</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">нажать</translation>
 <translation id="3036649622769666520">Открытие файлов</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
+<translation id="3068711042108640621">Временное хранилище расположено слева</translation>
 <translation id="3087734570205094154">Снизу</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Восстановить</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
 <translation id="335581015389089642">Озвучить</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
+<translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
+<translation id="4690510401873698237">Временное хранилище размещено в нижней части экрана</translation>
 <translation id="4724120544754982507">Центр уведомлений. Непрочитанных: <ph name="UNREAD_NOTIFICATION_COUNT" />.</translation>
 <translation id="4730374152663651037">ЧАСТО ИСПОЛЬЗУЕМЫЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{остался 1 месяц}one{остался # месяц}few{осталось # месяца}many{осталось # месяцев}other{осталось # месяца}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Треугольник развертывания</translation>
 <translation id="528468243742722775">Завершить</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
+<translation id="5395308026110844773">Вы поместили ярлык приложения "<ph name="DRAGGED_APP_NAME" />" над ярлыком приложения "<ph name="IN_PLACE_APP" />". Чтобы создать папку, отпустите палец.</translation>
 <translation id="5463830097259460683">Эмодзи и символы</translation>
 <translation id="5476505524087279545">снять галочку</translation>
+<translation id="547979256943495781">Временное хранилище расположено справа</translation>
 <translation id="5574202486608032840">Система <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
 <translation id="5613020302032141669">Стрелка влево</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Осталась 1 сек.}one{Осталась # сек.}few{Осталось # сек.}many{Осталось # сек.}other{Осталось # сек.}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
+<translation id="8170087467028567933">Если вы удалите эту подсказку, она будет скрыта на всех ваших устройствах, где выполнен вход в аккаунт.</translation>
 <translation id="8179976553408161302">ВВОД</translation>
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Удалить эту подсказку?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г.}one{# г.}few{# г.}many{# л.}other{# г.}}</translation>
 <translation id="8602707065186045623">Файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Временное хранилище будет всегда отображаться</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/с</translation>
 <translation id="8725488761726303204">Ещё <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Добавить примечание к изображению</translation>
 <translation id="8841375032071747811">Назад</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
+<translation id="8926951137623668982">Временное хранилище будет всегда скрыто</translation>
 <translation id="9002566407876343676">открыть</translation>
+<translation id="9039076430527029379">Перейти на страницу <ph name="PAGE_NUMBER" />, строка <ph name="ROW_NUMBER" />, столбец <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек.}one{# сек.}few{# сек.}many{# сек.}other{# сек.}}</translation>
 <translation id="9059834730836941392">Свернуть уведомление</translation>
 <translation id="9150735707954472829">Вкладка</translation>

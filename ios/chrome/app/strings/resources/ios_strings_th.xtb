@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">เปิดในแท็บใหม่</translation>
 <translation id="3024255823539804759">วันที่ผ่านมา</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
-<translation id="3059750684806925578">ค้นหารูปภาพที่คัดลอก</translation>
 <translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
 <translation id="3157684681743766797">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="3393920035788932672">อนุญาตให้แสดงป๊อปอัป</translation>
+<translation id="3424059454230285158">คุณ<ph name="BEGIN_LINK" />ปรับแต่งการตั้งค่าเหล่านี้<ph name="END_LINK" />ได้ทุกเมื่อ</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
 <translation id="345565170154308620">จัดการรหัสผ่าน...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
-<translation id="3771149149411027381">ค้นหาข้อความที่คัดลอก</translation>
 <translation id="3779810277399252432">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
 <translation id="3789841737615482174">ติดตั้ง</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">ค้นหา</translation>
 <translation id="4121993058175073134">หากต้องการส่งข้อมูล net-export โปรดกำหนดค่าบัญชีอีเมลของคุณในแอปการตั้งค่า</translation>
 <translation id="4124987746317609294">ช่วงเวลา</translation>
-<translation id="4155190233692914060">ไปที่ลิงก์ที่คัดลอก</translation>
 <translation id="4172051516777682613">แสดงทุกครั้ง</translation>
 <translation id="418156467088430727">ดูเวอร์ชันออฟไลน์ในแท็บใหม่</translation>
 <translation id="4237682350741091554">จัดการการซิงค์ของ Chrome และการปรับเปลี่ยนในแบบของคุณใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>

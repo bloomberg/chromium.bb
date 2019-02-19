@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">በአዲስ ትር ክፈት</translation>
 <translation id="3024255823539804759">ያለፈው ቀን</translation>
 <translation id="3037605927509011580">ውይ፣ ተሰናከለ!</translation>
-<translation id="3059750684806925578">የተቀዳ ምስልን ይፈልጉ</translation>
 <translation id="3112556859945124369">ምልክት አድርግበት…</translation>
 <translation id="3157684681743766797">ሁሉንም ምልክት አድርግባቸው…</translation>
 <translation id="3175081911749765310">የድር አገልግሎቶች</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">ከአገልጋዩ ጋር መገናኘት አልቻለም።</translation>
 <translation id="3335947283844343239">የተዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="3393920035788932672">ብቅ-ባዮች ተፈቅደዋል</translation>
+<translation id="3424059454230285158">በማናቸውም ጊዜ <ph name="BEGIN_LINK" />እነዚህን ቅንብሮች ማበጀት<ph name="END_LINK" /> ይችላሉ</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ደቂቃዎች</translation>
 <translation id="3448016392200048164">የተከፈለ ዕይታ</translation>
 <translation id="345565170154308620">የይለፍ ቃላትን አቀናብር...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">ድረ-ገጾችን አስቀድመው ይጫኑ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ላይ ዕልባት ተደርጓል</translation>
 <translation id="3771033907050503522">ማንነት የማያሳውቁ ትሮች</translation>
-<translation id="3771149149411027381">የተቀዳ ጽሑፍን ይፈልጉ</translation>
 <translation id="3779810277399252432">ምንም የበይነመረብ ግንኙነት የለም።</translation>
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
 <translation id="3789841737615482174">ጫን  </translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">ፍለጋ</translation>
 <translation id="4121993058175073134">የተጣራ-ወደ-ውጭ-የሚላክ ውሂብ ለመላክ እባክዎ የኢሜይል መለያዎን በቅንብሮች መተግበሪያው ውስጥ ያዋቅሩ።</translation>
 <translation id="4124987746317609294">የጊዜ ወሰን</translation>
-<translation id="4155190233692914060">የተቀዳ አገናኝ ይጎብኙ</translation>
 <translation id="4172051516777682613">ሁልጊዜ አሳይ</translation>
 <translation id="418156467088430727">የመስመር ውጭ ስሪቱን በአዲስ ትር ውስጥ ይመልከቱ</translation>
 <translation id="4237682350741091554">Chrome ስምረትን እና ግላዊነት ማለበስን በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ያቀናብሩ</translation>

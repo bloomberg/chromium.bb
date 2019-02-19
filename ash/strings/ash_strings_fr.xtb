@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Appareils associés</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="119944043368869598">Tout effacer</translation>
+<translation id="123828989343052515">Nouveau bureau</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1255033239764210633">Quel temps fait-il ?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Saisissez un message</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
+<translation id="209965399369889474">Aucune connexion réseau</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2135456203358955318">Loupe ancrée</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
@@ -436,6 +438,7 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
+<translation id="8332664326438198339">Retour au lanceur d'applications</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8375916635258623388">L'appareil <ph name="DEVICE_NAME" /> et votre téléphone seront associés automatiquement</translation>

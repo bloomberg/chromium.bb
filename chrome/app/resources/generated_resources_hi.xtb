@@ -795,7 +795,6 @@
 <translation id="2190355936436201913">(खाली)</translation>
 <translation id="2191223688506386601">एक अंतिम बात</translation>
 <translation id="2192505247865591433">द्वारा:</translation>
-<translation id="2192779824098378521">Google से इमेज लेबल पाएं</translation>
 <translation id="2193365732679659387">विश्‍वास सेटिंग</translation>
 <translation id="2195729137168608510">ईमेल सुरक्षा</translation>
 <translation id="2199298570273670671">गड़बड़ी</translation>
@@ -838,6 +837,7 @@
 <translation id="2238379619048995541">आवृत्ति स्थिति डेटा</translation>
 <translation id="2239921694246509981">पर्यवेक्षित व्‍यक्‍ति जोड़ें</translation>
 <translation id="2241053333139545397">कई वेबसाइटों पर अपना डेटा पढ़ें और बदलें</translation>
+<translation id="2241634353105152135">बस एक बार</translation>
 <translation id="2242687258748107519">फ़ाइल जानकारी</translation>
 <translation id="224940702122312781">इस पेज में बहुत ज़्यादा डेटा का इस्तेमाल होगा.</translation>
 <translation id="2249605167705922988">जैसे कि 1-5, 8, 11-13</translation>
@@ -1251,6 +1251,7 @@
 <translation id="2871813825302180988">यह खाता पहले से ही इस डिवाइस पर उपयोग किया जा रहा है.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> जोड़ें...</translation>
 <translation id="2874343608108773609">अपने सभी डिवाइस पर अपने पासवर्ड पाने के लिए, Chrome में साइन इन करें.</translation>
+<translation id="2874939134665556319">पिछला ट्रैक</translation>
 <translation id="2875698561019555027">(Chrome गड़बड़ी पृष्‍ठ)</translation>
 <translation id="2876336351874743617">उंगली दो</translation>
 <translation id="288042212351694283">अपने यूनीवर्सल सेकंड फ़ैक्टर डिवाइस एक्सेस करें</translation>
@@ -1872,6 +1873,7 @@
 <translation id="3812525830114410218">गलत प्रमाणपत्र</translation>
 <translation id="3813296892522778813">यदि आपको वह चीज़ नहीं मिल रही है जिसे आप खोज रहे हैं, तो <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome सहायता<ph name="END_LINK_CHROMIUM" /> पर जाएं</translation>
 <translation id="3817579325494460411">नहीं दिया गया</translation>
+<translation id="3819257035322786455">बैकअप लें</translation>
 <translation id="3819261658055281761">सिस्टम इस डिवाइस के लिए लंबी समयावधि का API (एपीआई) एक्सेस टोकन स्टोर नहीं कर सका.</translation>
 <translation id="3819752733757735746">स्विच एक्सेस (बस एक या दो स्विच से कंप्यूटर नियंत्रित करें)</translation>
 <translation id="3819800052061700452">&amp;पूर्ण स्क्रीन</translation>
@@ -2548,7 +2550,6 @@
 <translation id="4890242622846228088">आपकी Assistant आपकी आवाज़ का नमूना बनाने और उसे अपडेट करने के लिए इन रिकॉर्डिंग के साथ ही आपके बोले गए अनुरोधों का इस्तेमाल करती है. आवाज़ का नमूना सिर्फ़ उन डिवाइस पर सेव किया जाता है जहां आपने Voice Match को चालू किया हुआ है. अपने Google गतिविधि नियंत्रणों में आवाज़ की गतिविधि देखें या मिटाएं.</translation>
 <translation id="4890773143211625964">उन्नत प्रिंटर विकल्प दिखाएं</translation>
 <translation id="4891089016822695758">बीटा फ़ोरम</translation>
-<translation id="4892823793812813456">लेबल पाएं</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> के साथ नहीं खोला जा सकता</translation>
 <translation id="4893336867552636863">इससे इस डिवाइस से आपका संपूर्ण ब्राउज़िंग डेटा स्थायी रूप से हट जाएगा.</translation>
 <translation id="4893522937062257019">लॉक स्क्रीन पर</translation>
@@ -3226,7 +3227,6 @@
 <translation id="5884474295213649357">यह टैब किसी USB डिवाइस से कनेक्ट है.</translation>
 <translation id="5885324376209859881">मीडिया सेटिंग प्रबंधित करें...</translation>
 <translation id="5886009770935151472">उंगली एक</translation>
-<translation id="5886757894761828163">Google से इमेज लेबल पाएं</translation>
 <translation id="5889282057229379085">मध्यवर्ती CA की अधिकतम संख्या: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5895187275912066135">जारी करने की तिथि</translation>
@@ -3431,7 +3431,6 @@
 <translation id="6176043333338857209">आपकी 'सुरक्षा चाबी' के साथ काम करने के लिए थोड़ी देर के लिए ब्लूटूथ को चालू कर दिया जाएगा</translation>
 <translation id="6178664161104547336">किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6181431612547969857">डाउनलोड अवरोधित किया गया</translation>
-<translation id="6184660361319693890">लेबल पाएं</translation>
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> से खोलें</translation>
 <translation id="6195693561221576702">यह डिवाइस ऑफ़लाइन डेमो मोड में सेट अप नहीं किया जा सकता.</translation>
@@ -4166,7 +4165,6 @@
 <translation id="7309257895202129721">&amp;नियंत्रण दिखाएं</translation>
 <translation id="7310598146671372464">लॉगिन नहीं कर पाए. सर्वर पर बताए गए केर्बेरोस सुरक्षा प्रकार काम नहीं करते हैं. कृपया अपने एडमिन से संपर्क करें.</translation>
 <translation id="7311079019872751559">सैंडबॉक्‍स नहीं किए गए प्‍लग इन की ऐक्‍सेस</translation>
-<translation id="7317680720589234980">स्क्रीन लॉक और साइन-इन के विकल्प</translation>
 <translation id="7321545336522791733">सर्वर पहुंच योग्य नहीं है</translation>
 <translation id="7324297612904500502">बीटा फ़ोरम</translation>
 <translation id="7325437708553334317">उच्च कंट्रास्ट एक्सटेंशन</translation>
@@ -4311,6 +4309,7 @@
 <translation id="7556033326131260574">स्‍मार्ट लॉक आपका खाता सत्‍यापित नहीं कर सका. प्रवेश करने के लिए अपना पासवर्ड लिखें.</translation>
 <translation id="7556242789364317684">दुर्भाग्यवश, <ph name="SHORT_PRODUCT_NAME" /> आपकी सेटिंग पुनर्प्राप्त करने में अक्षम है. गड़बड़ी को ठीक करने के लिए, <ph name="SHORT_PRODUCT_NAME" /> को आपके डिवाइस को पावरवॉश के साथ रीसेट करना होगा.</translation>
 <translation id="7559719679815339381">कृपया प्रतीक्षा करें....कियोस्‍क ऐप अपडेट होने की प्रक्रिया में है. USB स्‍टिक ना निकालें.</translation>
+<translation id="7561196759112975576">हमेशा</translation>
 <translation id="7563991800558061108">इस गड़बड़ी से बचने के लिए, आपको साइन इन स्क्रीन के ज़रिए अपने 'Google खाते' में
     साइन इन करना होगा. इसके बाद आप 'Google खाते' से साइन आउट कर सकते हैं और
     फिर से कोई 'निगरानी में रखा गया उपयोगकर्ता' बना सकते हैं.</translation>

@@ -175,10 +175,25 @@
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
+<translation id="1383493480903114193">Taikant šią politiką darbo tinkle kodas priverstinai vykdomas naršyklės procese.
+
+      Ši politika išjungta pagal numatytuosius nustatymus, o įgalinus naudotojui gali iškilti saugos problemų, jei darbo tinkle procesas įtraukiamas į smėlio dėžę.
+
+      Ši politika skirta suteikti įmonėms galimybę perkelti sistemą į trečiosios šalies programinę įrangą, nepriklausančią nuo darbo tinkle API gaudymo. Geriau naudoti tarpinius serverius nei LSP ir „Win32“ API pataisas.
+
+      Jei ši politika nenustatyta, darbo tinkle kodas gali būti vykdomas ne naršyklės procese, atsižvelgiant į „NetworkService“ eksperimento bandymus.</translation>
 <translation id="1384459581748403878">Nuoroda: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Leidžiama naudotojams tvarkyti įdiegtus sertifikatus.</translation>
 <translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
+<translation id="1404043648050567997">Naudojant Saugaus naršymo paslaugą rodomas įspėjimo puslapis, kai naudotojai naršo svetaines, kurios pažymėtos kaip potencialiai kenksmingos. Įgalinus šį nustatymą neleidžiama naudotojams iš įspėjimo puslapio tęsti veiksmų kenkėjiškoje svetainėje.
+
+      Pagal šią politiką naudotojams neleidžiama atlikti veiksmų tik gavus Saugaus naršymo įspėjimų (pvz., dėl kenkėjiškų programų ir sukčiavimo), o ne iškilus su SSL sertifikatu susijusių problemų, pvz., dėl netinkamų ar nebegaliojančių sertifikatų.
+
+      Jei šis nustatymas išjungtas arba nesukonfigūruotas, naudotojai gali pasirinkti tęsti veiksmus pažymėtoje svetainėje, kai parodomas įspėjimas.
+
+      Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Informacijos apie „Linux“ programų pateikimas</translation>
 <translation id="142346659686073702">Leidimas nesusietiems naudotojams naudoti „Crostini“</translation>
 <translation id="1426410128494586442">Taip</translation>
@@ -1126,6 +1141,7 @@
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
+<translation id="357917253161699596">Leisti naudotojams tvarkyti naudotojų sertifikatus</translation>
 <translation id="3583230441447348508">Nurodomas iš anksto sukonfigūruotų tinklo failų bendrinimo įrenginių sąrašas.
 
       Kiekvienas politikos sąrašo elementas yra objektas iš dviejų narių: „share_url“ ir „mode“. „share_url“ turėtų būti bendrinimo įrenginio URL, o „mode“ turėtų būti „drop_down“ arba „pre_mount“. Režimas „drop_down“ nurodo, kad „share_url“ bus pridėtas prie bendrinimo įrenginio aptikimo išskleidžiamojo meniu. Režimas „pre_mount“ nurodo, kad bus įdėtas „share_url“.</translation>
@@ -1462,6 +1478,7 @@
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
 <translation id="437791893267799639">Politika nenustatyta, neleisti perkelti duomenų ir ARC</translation>
+<translation id="4389073105055031853">Leisti naudotojams tvarkyti visus sertifikatus</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
 <translation id="4408428864159735559">Iš anksto sukonfigūruotų tinklo failų bendrinimo įrenginių sąrašas.</translation>
 <translation id="4410236409016356088">Įgalinti tinklo siuntimo spartos reguliavimą</translation>
@@ -1710,6 +1727,11 @@
       Nustačius politikos vertę į 0, įrenginio slaptažodžio keitimas išjungiamas.
 
       Atminkite, kad slaptažodžiai gali būti senesni nei nurodytas dienų skaičius, jei klientas neprisijungia ilgesnį laikotarpį.</translation>
+<translation id="510196893779239086">Ši politika valdo, ar visiškai uždaryti „Chrome“, kai paskutinis skirtukas perjungiamas į kitą naršyklę.
+
+      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, perjungus į alternatyvią naršyklę, naršyklėje „Chrome“ paliekamas bent vienas atidarytas skirtukas.
+
+      Kai ši politika nustatyta kaip „Netiesa“, perjungus į alternatyvią naršyklę, naršyklėje „Chrome“ skirtukas uždaromas, net jei tai yra paskutinis skirtukas. Tada „Chrome“ visiškai išjungiama.</translation>
 <translation id="5105313908130842249">Ekrano užrakto delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="5108031557082757679">Išjungti įmonės įrenginių spausdintuvai</translation>
 <translation id="5113732180192599620">Ši politika valdo svetainių, kurios niekada neperjungia naršyklės, sąrašą.
@@ -2316,6 +2338,7 @@
 <translation id="6430366557948788869">„Chrome“ ataskaitų teikimo plėtinys</translation>
 <translation id="6440051664870270040">Leisti svetainėms vienu metu naršyti ir atidaryti iššokančiuosius langus</translation>
 <translation id="6447948611083700881">Atsarginis kopijavimas ir atkūrimas išjungtas</translation>
+<translation id="6449476513004303784">Neleisti naudotojams tvarkyti sertifikatų</translation>
 <translation id="645425387487868471">Įgalinti „<ph name="PRODUCT_NAME" />“ priverstinį prisijungimą</translation>
 <translation id="6464074037294098618">Adresų automatinio pildymo funkcijos įgalinimas</translation>
 <translation id="6473623140202114570">Domenų, kuriuose Saugaus naršymo funkcija nesuaktyvins įspėjimų, sąrašo konfigūravimas.</translation>
@@ -2377,6 +2400,13 @@
           Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalindami arba išjungdami ekrano klaviatūrą. Tačiau naudotojo pasirinkimas nėra nuolatinis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas parodomas iš naujo ar naudotojas minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, ekrano klaviatūra išjungiama, kai prisijungimo ekranas parodomas pirmą kartą. Naudotojai gali įgalinti arba išjungti ekrano klaviatūrą bet kuriuo metu. Ekrano klaviatūros būsena prisijungimo ekrane yra nuolatinė visiems naudotojams.</translation>
+<translation id="6570691255874112762">Ši politika valdo, ar naudotojas gali importuoti ir pašalinti sertifikatus naudodamas sertifikatų tvarkytuvę.
+
+      Jei ši politika nustatyta kaip „Leisti naudotojams tvarkyti visus sertifikatus“ arba nenustatyta, naudotojai galės tvarkyti sertifikatus.
+
+      Jei ši politika nustatyta kaip „Leisti naudotojams tvarkyti naudotojų sertifikatus“, naudotojai galės tvarkyti naudotojų, bet ne įrenginio sertifikatus.
+
+      Jei ši politika nustatyta kaip „Neleisti naudotojams tvarkyti sertifikatų“, naudotojai negalės tvarkyti sertifikatų, jie galės juos tik peržiūrėti.</translation>
 <translation id="6573305661369899995">Išorinio URL apribojimų šaltinio nustatymas</translation>
 <translation id="6598235178374410284">Naudotojo pseudoportreto vaizdas</translation>
 <translation id="6603004149426829878">Visada siųsti visus pasiekiamus vietovės signalus serveriui nustatant laiko juostą</translation>
@@ -2715,6 +2745,9 @@
 
           Jei ši politika nenustatyta, ekrano didinimas išjungiamas, kai pirmą kartą rodomas prisijungimo ekranas. Naudotojai gali bet kada įjungti arba išjungti ekrano didinimą ir jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
 <translation id="7249828445670652637">Įgalinti „<ph name="PRODUCT_OS_NAME" />“ CA sertifikatus ARC programose</translation>
+<translation id="7252681704926980614">Siųsti naudotojo vardą ir failo pavadinimą į savuosius spausdintuvus kiekvieną kartą spausdinant. Pagal numatytuosius nustatymus nustatyta nesiųsti.
+
+      Nustačius šią politiką kaip „Tiesa“, taip pat išjungiami spausdintuvai, naudojantys kitus nei IPPS, USB ar IPP per USB protokolus, nes naudotojo vardas ir failo pavadinimas neturėtų būti atvirai siunčiami tinklu.</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
 <translation id="7261252191178797385">Įrenginio ekrano fono vaizdas</translation>
@@ -2780,6 +2813,7 @@
       Jei ši politika nenustatyta, automatinis išvalymas naudos numatytąją įdiegtą strategiją. Šiuo metu tai strategija „RemoveLRUIfDormant“.</translation>
 <translation id="7336785017449297672">Valdomi laikrodžio ir laiko juostos nustatymai.</translation>
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
+<translation id="7339315111520512972">Priverstinis darbo tinkle kodo vykdymas naršyklės procese</translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
 <translation id="7343497214039883642">Įrenginiams skirtas įmonės spausdintuvų konfigūracijos failas</translation>
 <translation id="7349338075015720646">Nurodomas svetainių, įdiegtų automatiškai, naudotojui neatliekant jokių veiksmų, sąrašas. Naudotojas negali jų nei išdiegti, nei išjungti.
@@ -3008,22 +3042,12 @@
 
           Jei reikia išsamių pavyzdžių, apsilankykite adresu
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Palikti paskutinį skirtuką atidarytą naršyklėje „Chrome“.</translation>
 <translation id="793134539373873765">Nurodoma, ar P2P bus naudojamas naudingosiose OS naujinių apkrovose. Jei ši politika galioja, įrenginiai bendrins ir bandys naudoti naujinio naudingąsias apkrovas per LAN, taip potencialiai sumažindami interneto pralaidumo naudojimą ir perpildymą. Jei naujinio naudingoji apkrova nepasiekiama naudojant LAN, įrenginys vykdys atsisiuntimą iš naujinio serverio. Jei ši politika negalioja ar yra nesukonfigūruota, P2P nebus naudojama.</translation>
 <translation id="7933141401888114454">Įgalinti prižiūrimų naudotojų kūrimą</translation>
 <translation id="793473937901685727">Nustatykite, ar sertifikatai bus prieinami ARC programose</translation>
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
-<translation id="7952002811557367112">Naudojant šią politiką naudotojams neleidžiama įkelti tinklalapių iš juodojo URL sąrašo. Juodajame sąraše pateikiami URL šablonai, nurodantys, kurie URL bus įtraukti į juodąjį sąrašą.
-
-      URL šablonas turi būti suformatuotas atsižvelgiant į gaires, pateikiamas adresu https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Išimtis galima nurodyti URL baltojo sąrašo politikoje. Į politiką galima įtraukti iki 1 000 įrašų – į kitus nebus atsižvelgiama.
-
-      Atminkite, kad nerekomenduojama blokuoti vidinių „chrome://*“ URL, nes gali atsirasti netikėtų klaidų.
-
-      Atminkite, kad pagal šią politiką leidžiama dinamiškai atnaujinti puslapį naudojant „JavaScript“. Pvz., užblokavus „example.com/abc“, naudotojai vis tiek gali apsilankyti adresu „example.com“ ir spustelėti nuorodą, kad apsilankytų „example.com/abc“, jei puslapis neatnaujinamas.
-
-      Jei ši politika nenustatyta, į naršyklės juodąjį sąrašą nebus įtrauktas nė vienas URL.</translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
 <translation id="7961779417826583251">Išjungti sąraše nurodytų pasenusių sertifikavimo institucijų sertifikato skaidrumo reikalavimų įgyvendinimą</translation>
 <translation id="7974114691960514888">Ši politika nebepalaikoma.

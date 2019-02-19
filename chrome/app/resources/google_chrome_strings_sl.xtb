@@ -171,7 +171,6 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 
 Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome se bo zdaj znova zagnal}=1{Chrome se bo znova zagnal čez 1 sekundo}one{Chrome se bo znova zagnal čez # sekundo}two{Chrome se bo znova zagnal čez # sekundi}few{Chrome se bo znova zagnal čez # sekunde}other{Chrome se bo znova zagnal čez # sekund}}</translation>
-<translation id="5505603430818498864">Google Chrome lahko prepozna slike in besedilo v sliki tako, da v Googlove strežnike pošlje slike strani, kar vam omogoča boljše razumevanje vsebine strani.</translation>
 <translation id="556024056938947818">Google Chrome poskuša prikazati gesla.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> je morda nevarna, zato jo je Chrome blokiral.</translation>
@@ -202,6 +201,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6566149418543181476">Posodabljanje Google Chroma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Za sinhronizacijo stvari v Chromu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chrome brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopirano v Chrome</translation>
+<translation id="6609605543612238677">Skrbnik sistema je Google Chrome nastavil tako, da za dostop do <ph name="URL" /> odpre drug brskalnik.</translation>
 <translation id="6634887557811630702">Google Chrome je posodobljen.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="6679975945624592337">Naj se Google Chrome izvaja v ozadju</translation>
@@ -220,6 +220,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
 <translation id="7164397146364144019">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
 <translation id="7242029209006116544">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromu ostali ločeni. <ph name="LEARN_MORE" /></translation>
+<translation id="7295052994004373688">Ta jezik se uporablja za prikaz uporabniškega vmesnika za Google Chrome</translation>
 <translation id="7296210096911315575">Pomembne informacije glede uporabe in varnosti</translation>
 <translation id="7308322188646931570">Chrome potrebuje za prenos datotek dostop do shrambe</translation>
 <translation id="7339898014177206373">Novo okno</translation>
@@ -283,6 +284,7 @@ Te storitve lahko morda onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>
 <translation id="873133009373065397">Google Chrome ne more določiti ali nastaviti privzetega brskalnika</translation>
 <translation id="8736674169840206667">Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome</translation>
+<translation id="8788264404293392165">Ta jezik se uporablja za prikaz uporabniškega vmesnika za Chrome OS</translation>
 <translation id="8791470158600044404">{0,plural, =1{OS Chrome se bo znova zagnal čez 1 minuto}one{OS Chrome se bo znova zagnal čez # minuto}two{OS Chrome se bo znova zagnal čez # minuti}few{OS Chrome se bo znova zagnal čez # minute}other{OS Chrome se bo znova zagnal čez # minut}}</translation>
 <translation id="8823341990149967727">Chrome je zastarel</translation>
 <translation id="884296878221830158">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali kliknete gumb za domačo stran.</translation>

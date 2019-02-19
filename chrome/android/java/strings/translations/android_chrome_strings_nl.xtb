@@ -292,6 +292,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3166827708714933426">Sneltoetsen voor tabbladen en vensters</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
+<translation id="3205824638308738187">Bijna klaar</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> is verwijderd</translation>
 <translation id="321773570071367578">Als je je wachtwoordzin bent vergeten of deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB voor andere apps</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3745176700485982507">Links naar je favoriete websites vind je op deze pagina</translation>
+<translation id="3771001275138982843">Kan de update niet downloaden</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Schakel Bluetooth in<ph name="END_LINK" /> om te koppelen</translation>
 <translation id="3778956594442850293">Toegevoegd aan startscherm</translation>
 <translation id="3781011235031427080">'Meer zoals dit' geopend op halve hoogte</translation>
@@ -535,6 +537,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="4988210275050210843">Bestand downloaden (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Pagina's</translation>
+<translation id="4994033804516042629">Geen contacten gevonden</translation>
 <translation id="4996978546172906250">Delen via</translation>
 <translation id="5004416275253351869">Google-activiteitsopties</translation>
 <translation id="5005498671520578047">Wachtwoord kopiëren</translation>
@@ -759,6 +762,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6643649862576733715">Sorteren op hoeveelheid bespaarde data</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}other{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}}</translation>
+<translation id="6649642165559792194">Afbeelding bekijken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome heeft locatietoegang nodig om naar apparaten te zoeken. <ph name="BEGIN_LINK" />Rechten updaten<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6659594942844771486">Tabblad</translation>
@@ -776,7 +780,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
 <translation id="6766758767654711248">Tik om naar de site te gaan</translation>
-<translation id="6776813977906306442">Gebruik de knop Downloaden om video's te downloaden zodat je ze later kunt bekijken</translation>
 <translation id="6782111308708962316">Voorkomen dat websites van derden cookiegegevens opslaan en lezen</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="679325081238418596">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen ophalen op al je apparaten</translation>
@@ -934,7 +937,9 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7929962904089429003">Het menu openen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
+<translation id="7960977077911686065">Als je doorgaat, ga je ermee akkoord dat Chrome gegevens van de functie 'Automatisch aanvullen', de URL van de site en bijbehorende content naar Google verzendt om deze service te leveren. Je gaat er ook mee akkoord dat Chrome door jou geselecteerde persoonsgegevens naar de website stuurt via 'Automatisch aanvullen' van Chrome. \n\nGa naar de instellingen van Chrome om de Google Assistent in Chrome en de functie 'Automatisch aanvullen' uit te schakelen.  <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Leverancier:</translation>
+<translation id="7975379999046275268">Pagina bekijken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pagina's vooraf laden voor sneller browsen en zoeken</translation>
 <translation id="79859296434321399">Installeer ARCore om augmented reality-content te bekijken</translation>
 <translation id="7986741934819883144">Een contact selecteren</translation>
@@ -1069,7 +1074,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="8965591936373831584">in behandeling</translation>
 <translation id="8972098258593396643">Downloaden naar standaardmap?</translation>
-<translation id="8979405271719829084">Video's downloaden om later te bekijken</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8983677657449185470">Help 'Safe Browsing' te verbeteren</translation>
 <translation id="8986494364107987395">Automatisch gebruiksstatistieken en crashrapporten naar Google verzenden</translation>
@@ -1091,6 +1095,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
+<translation id="9138504265731110181">De Google Assistent helpt je sneller te betalen op internet</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>
 <translation id="9139318394846604261">Winkelen</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>

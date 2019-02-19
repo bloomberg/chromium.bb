@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Fungua katika Kichupo Kipya</translation>
 <translation id="3024255823539804759">Siku Iliyopita</translation>
 <translation id="3037605927509011580">Lo!</translation>
-<translation id="3059750684806925578">Tafuta Picha Iliyonakiliwa</translation>
 <translation id="3112556859945124369">Tia alama…</translation>
 <translation id="3157684681743766797">Tia Zote Alama...</translation>
 <translation id="3175081911749765310">Huduma za Wavuti</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Haikuweza kuunganisha kwenye seva.</translation>
 <translation id="3335947283844343239">Fungua Tena Kichupo Kilichofugwa</translation>
 <translation id="3393920035788932672">Ibukizi zimeruhusiwa</translation>
+<translation id="3424059454230285158">Pia unaweza <ph name="BEGIN_LINK" />kubadilisha mipangilio hii ikufae<ph name="END_LINK" /> wakati wowote</translation>
 <translation id="3445288400492335833">Dakika <ph name="MINUTES" /></translation>
 <translation id="3448016392200048164">Mwonekano wa Madirisha Mawili</translation>
 <translation id="345565170154308620">Dhibiti Manenosiri...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Pakia Kurasa za wavuti Mapema</translation>
 <translation id="3691593122358196899">Imetiwa alamisho kwenye <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Vichupo Fiche</translation>
-<translation id="3771149149411027381">Tafuta Maandishi Yaliyonakiliwa</translation>
 <translation id="3779810277399252432">Hakuna muunganisho wa intaneti.</translation>
 <translation id="3783017676699494206">Hifadhi Picha</translation>
 <translation id="3789841737615482174">Sakinisha</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Tafuta</translation>
 <translation id="4121993058175073134">Ili kutuma data ya uhamishaji nje ya mtandao, tafadhali sanidi akaunti yako ya barua pepe katika programu ya Mipangilio.</translation>
 <translation id="4124987746317609294">Masafa ya Muda</translation>
-<translation id="4155190233692914060">Tembelea Kiungo Kilichonakiliwa</translation>
 <translation id="4172051516777682613">Onyesha kila mara</translation>
 <translation id="418156467088430727">Tazama Toleo la Nje ya Mtandao ktk Kichupo Kipya</translation>
 <translation id="4237682350741091554">Dhibiti Usawazishaji wa Chrome na uboreshaji katika <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" /></translation>

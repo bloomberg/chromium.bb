@@ -286,7 +286,6 @@
       When this policy is set to False, extensions and plug-in data are not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="156076725332905550">Reboot after user sign-out if Android has started.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -978,11 +977,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="3165808775394012744">These policies are included here to make them easy to remove.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
-<translation id="3167893218284969605">
-      This policy, when set to ArcSession, forces the device to reboot after user sign-out if Android has started.
-      When set to Always, it forces the device to reboot after every user sign-out.
-      If left unset, it has no effect and no reboot is forced after user sign-out. The same applies if set to Never.
-      </translation>
 <translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
@@ -1488,7 +1482,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="437791893267799639">Policy unset, disallow data migration and ARC</translation>
 <translation id="4389073105055031853">Allow users to manage all certificates</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
-<translation id="4405680940102715001">Force device reboot after user sign-out</translation>
 <translation id="4408428864159735559">List of pre-configured network file shares.</translation>
 <translation id="4410236409016356088">Enable throttling network bandwidth</translation>
 <translation id="441217499641439905">Disable Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
@@ -3057,17 +3050,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
-<translation id="7952002811557367112">This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
-
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1,000 entries; subsequent entries will be ignored.
-
-      Note that it is not recommended to block internal 'chrome://*' URLs after this may lead to unexpected errors.
-
-      Note that this policy does not prevent the page updating dynamically through JavaScript. For example, if you block 'example.com/abc', users might still be able to visit 'example.com' and click on a link to visit 'example.com/abc', as long as the page does not refresh.
-
-      If this policy is not set, no URL will be blacklisted in the browser.</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
 <translation id="7961779417826583251">Disable Certificate Transparency enforcement for a list of Legacy Certificate Authorities</translation>
 <translation id="7974114691960514888">This policy is no longer supported.
@@ -3646,7 +3628,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy only affects users who authenticate using SAML.</translation>
-<translation id="9213202360779959016">Always reboot after user sign-out.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,
@@ -3662,7 +3643,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
-<translation id="933586407110825531">Do not reboot after user sign-out.</translation>
 <translation id="944817693306670849">Set disk cache size</translation>
 <translation id="981346395360763138">Google Location services disabled</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>

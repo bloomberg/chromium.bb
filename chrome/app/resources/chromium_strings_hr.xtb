@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="407254336480250557">Odaberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Otkrijte sjajne aplikacije, igre, proširenja i teme za Chromium.</translation>
+<translation id="4216212958613226427">Taj se jezik koristi za prikaz korisničkog sučelja Chromiuma</translation>
 <translation id="4222580632002216401">Sada ste prijavljeni na Chromium! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
 <translation id="4230135487732243613">Želite li povezati svoje podatke sustava Chromium s tim računom?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">prijavite se na Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium na tom jeziku</translation>
 <translation id="5712253116097046984">Vaš administrator traži da ponovo pokrenete OS Chromium radi primjene tog ažuriranja</translation>
+<translation id="5756484659843248772">Taj se jezik koristi za prikaz korisničkog sučelja OS-a Chromium</translation>
 <translation id="5768914737813585044">Prikaži OS Chromium na tom jeziku</translation>
 <translation id="5796460469508169315">Chromium će uskoro biti spreman.</translation>
 <translation id="5820394555380036790">OS Chromium</translation>
@@ -181,8 +183,8 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6810143991807788455">Doprinesite poboljšanju Chromiuma prijavljivanjem trenutačnih postavki</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano na Chromium)</translation>
+<translation id="6877899728743402439">Vaš administrator sustava konfigurirao je Chromium tako da otvara zamjenski preglednik.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
-<translation id="692832138936263906">Chromium može prepoznati slike i tekst na slikama tako što slike s web-stranica šalje Googleovim poslužiteljima, što vam omogućuje da bolje razumijete sadržaj web-stranica.</translation>
 <translation id="6964305034639999644">Otvori vezu u ano&amp;nimnom prozoru Chromiuma</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
 <translation id="6990124437352146030">Chromium treba dopuštenje za pristup mikrofonu za ovu web-lokaciju</translation>

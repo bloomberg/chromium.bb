@@ -94,6 +94,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="407254336480250557">Sélectionnez <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="421369550622382712">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Chromium.</translation>
+<translation id="4216212958613226427">Cette langue est utilisée pour l'UI Chromium</translation>
 <translation id="4222580632002216401">Vous êtes maintenant connecté à Chromium. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="4224199872375172890">Chromium est à jour.</translation>
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>
@@ -138,6 +139,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
 <translation id="5698481217667032250">Afficher Chromium dans cette langue</translation>
 <translation id="5712253116097046984">Votre administrateur vous demande de redémarrer Chromium OS pour installer cette mise à jour</translation>
+<translation id="5756484659843248772">Cette langue est utilisée pour l'UI Chromium OS</translation>
 <translation id="5768914737813585044">Afficher Chromium OS dans cette langue</translation>
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -182,8 +184,8 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6810143991807788455">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiée dans Chromium)</translation>
+<translation id="6877899728743402439">Votre administrateur système a configuré Chromium de sorte qu'un autre navigateur s'ouvre.</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
-<translation id="692832138936263906">Chromium peut reconnaître des images et du texte dans une image en envoyant les images aux serveurs Google. Ce service vous permet de mieux comprendre le contenu d'une page.</translation>
 <translation id="6964305034639999644">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chromium</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
 <translation id="6990124437352146030">Chromium a besoin de votre autorisation pour accéder à votre micro pour ce site</translation>

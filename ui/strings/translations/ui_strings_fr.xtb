@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1243314992276662751">Importer</translation>
 <translation id="1269641567813814718">Windows</translation>
+<translation id="1290982764014248209">Déplacer <ph name="DRAGGED_APP" /> vers le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Échap</translation>
 <translation id="1306549533752902673">APPLICATIONS RECOMMANDÉES</translation>
 <translation id="1368832886055348810">De gauche à droite</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">cliquer</translation>
 <translation id="3036649622769666520">Ouvrir les fichiers</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> Mo</translation>
+<translation id="3068711042108640621">Étagère à gauche</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Restaurer</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 jour}one{# jour}other{# jours}}</translation>
 <translation id="335581015389089642">Voix</translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
+<translation id="348799646910989694">Étagère automatiquement masquée</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 jour restant}one{# jour restant}other{# jours restants}}</translation>
 <translation id="3608915363409716668">+ de <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Rechercher "<ph name="LOOKUP_STRING" />"</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Commencer à parler</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
+<translation id="4690510401873698237">Étagère en bas</translation>
 <translation id="4724120544754982507">Centre de notification, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifications non lues</translation>
 <translation id="4730374152663651037">SOUVENT UTILISÉES</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mois restant}one{# mois restant}other{# mois restants}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">Triangle d'expansion</translation>
 <translation id="528468243742722775">Fin</translation>
 <translation id="5329858601952122676">&amp;Supprimer</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sur <ph name="IN_PLACE_APP" />. Relâcher pour créer un dossier.</translation>
 <translation id="5463830097259460683">Emoji et symboles</translation>
 <translation id="5476505524087279545">décocher</translation>
+<translation id="547979256943495781">Étagère à droite</translation>
 <translation id="5574202486608032840">Système <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Retour</translation>
 <translation id="5613020302032141669">Gauche</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restante}one{# s restante}other{# s restantes}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, saisie semi-automatique</translation>
 <translation id="815598010540052116">Défilement vers le bas</translation>
+<translation id="8170087467028567933">Si vous choisissez de supprimer cette suggestion, elle ne s'affichera plus lorsque vous serez connecté à votre compte, sur tous vos appareils.</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8210608804940886430">Page suivante</translation>
 <translation id="8245914219290430011">Tabulation</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">Supprimer cette suggestion ?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 a}one{# a}other{# a}}</translation>
 <translation id="8602707065186045623">Fichier <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">Étagère toujours affichée</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> Ko/s</translation>
 <translation id="8725488761726303204"><ph name="NUMBER" /> autres</translation>
 <translation id="8730621377337864115">OK</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">Annoter l'image</translation>
 <translation id="8841375032071747811">Bouton Retour</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> Ko</translation>
+<translation id="8926951137623668982">Étagère toujours masquée</translation>
 <translation id="9002566407876343676">ouvrir</translation>
+<translation id="9039076430527029379">Accéder à la page <ph name="PAGE_NUMBER" />, ligne <ph name="ROW_NUMBER" />, colonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Réduire la notification</translation>
 <translation id="9150735707954472829">Onglet</translation>

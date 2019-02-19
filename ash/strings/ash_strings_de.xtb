@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="119944043368869598">Alle löschen</translation>
+<translation id="123828989343052515">Neuer Arbeitsbereich</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Nachricht eingeben</translation>
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
+<translation id="209965399369889474">Keine Netzwerkverbindung</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2135456203358955318">Angedockte Lupe</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
@@ -435,6 +437,7 @@
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8297006494302853456">Schwach</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
+<translation id="8332664326438198339">Zurück zum Launcher</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> und Ihr Smartphone werden automatisch miteinander verbunden</translation>

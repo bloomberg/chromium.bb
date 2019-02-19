@@ -32,7 +32,7 @@
 <translation id="1377255359165588604">ஒத்திசைவு நிறுத்தப்பட்டது.</translation>
 <translation id="1377321085342047638">கார்டு எண்</translation>
 <translation id="1383876407941801731">தேடல்</translation>
-<translation id="1389974829397082527">இங்கு புத்தகக்குறிகள் இல்லை</translation>
+<translation id="1389974829397082527">இங்கு புக்மார்க்குகள் இல்லை</translation>
 <translation id="1400642268715879018">கடந்த 4 வாரங்கள்</translation>
 <translation id="1407135791313364759">எல்லாவற்றையும் திற</translation>
 <translation id="1430915738399379752">அச்சிடுக</translation>
@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">புதிய தாவலில் திற</translation>
 <translation id="3024255823539804759">நேற்று</translation>
 <translation id="3037605927509011580">அச்சச்சோ!</translation>
-<translation id="3059750684806925578">நகலெடுத்த படத்தைத் தேடு</translation>
 <translation id="3112556859945124369">குறி…</translation>
 <translation id="3157684681743766797">அனைத்தையும் குறி…</translation>
 <translation id="3175081911749765310">இணைய சேவைகள்</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">சேவையகத்துடன் இணைக்க முடியவில்லை.</translation>
 <translation id="3335947283844343239">மூடப்பட்ட தாவலை மீண்டும் திற</translation>
 <translation id="3393920035788932672">பாப்-அப்கள் அனுமதிக்கப்பட்டன</translation>
+<translation id="3424059454230285158">எந்த நேரத்திலும் <ph name="BEGIN_LINK" />இந்த அமைப்புகளை மாற்றியமைக்கலாம்<ph name="END_LINK" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> நி.</translation>
 <translation id="3448016392200048164">காட்சிப் பிரிப்பு</translation>
 <translation id="345565170154308620">கடவுச்சொற்களை நிர்வகி...</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">வலைப்பக்கங்களை முன்னதாக ஏற்று</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> இல் புத்தகக்குறியைச் சேர்த்தது</translation>
 <translation id="3771033907050503522">மறைநிலைத் தாவல்கள்</translation>
-<translation id="3771149149411027381">நகலெடுத்த உரையைத் தேடு</translation>
 <translation id="3779810277399252432">இணைய இணைப்பு இல்லை.</translation>
 <translation id="3783017676699494206">படத்தைச் சேமி</translation>
 <translation id="3789841737615482174">நிறுவுக</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">தேடுக</translation>
 <translation id="4121993058175073134">மொத்த-ஏற்றுமதி தரவை அனுப்புவதற்கு, அமைப்புகளின் பயன்பாட்டில் உங்கள் மின்னஞ்சல் கணக்கை உள்ளமைக்கவும்.</translation>
 <translation id="4124987746317609294">நேர வரம்பு</translation>
-<translation id="4155190233692914060">நகலெடுத்த இணைப்பிற்குச் செல்</translation>
 <translation id="4172051516777682613">எப்போதும் காட்டு</translation>
 <translation id="418156467088430727">புதிய தாவலில் ஆஃப்லைன் பதிப்பைக் காட்டு</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> Chrome ஒத்திசைவையும் தனிப்பயனாக்கத்தையும் நிர்வகிக்கலாம்</translation>
@@ -339,7 +337,7 @@
 <translation id="6380866119319257197">கடவுச்சொற்றொடரை மறந்துவிட்டால் அல்லது இந்த அமைப்பை மாற்ற விரும்பினால், <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">அட்டையிலுள்ள பெயர்</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6417838470969808600"><ph name="USER_EMAIL1" /> இன் புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் உள்ளன.</translation>
+<translation id="6417838470969808600"><ph name="USER_EMAIL1" /> இன் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் உள்ளன.</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> ஆக உள்நுழைந்துள்ளீர்கள்.
 
 <ph name="TIME" /> அன்று உங்கள் தரவு உங்கள் ஒத்திசைவு கடவுச்சொற்றொடரைக் கொண்டு என்க்ரிப்ட் செய்யப்பட்டது. ஒத்திசைவைத் தொடங்க, அதை உள்ளிடவும்.</translation>
@@ -361,7 +359,7 @@
 <translation id="6730682669179532099">கடவுச்சொற்களை ஏற்ற முடியவில்லை</translation>
 <translation id="6780034285637185932">அஞ்சல் குறியீடு</translation>
 <translation id="6785453220513215166">சிதைவு அறிக்கையை அனுப்புகிறது...</translation>
-<translation id="679325081238418596">உங்கள் புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகளை, உங்கள் எல்லா சாதனங்களிலும் பெறவும்</translation>
+<translation id="679325081238418596">உங்கள் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகளை, உங்கள் எல்லா சாதனங்களிலும் பெறவும்</translation>
 <translation id="6797885426782475225">குரல் தேடல்</translation>
 <translation id="6807889908376551050">எல்லாவற்றையும் காட்டு...</translation>
 <translation id="681368974849482173">புத்தகக்குறி உருவாக்கப்பட்டது</translation>
@@ -396,7 +394,7 @@
 <translation id="7346909386216857016">சரி, புரிந்தது</translation>
 <translation id="7383797227493018512">வாசிப்புப் பட்டியல்</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7425346204213733349">புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் ஆகியவற்றிலும் பிற அமைப்புகளிலும் செய்யும் மாற்றங்கள், இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது. எனினும், ஏற்கனவே சேமிக்கப்பட்ட உங்கள் தரவு Google கணக்கில் அப்படியே இருக்கும்.</translation>
+<translation id="7425346204213733349">புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் ஆகியவற்றிலும் பிற அமைப்புகளிலும் செய்யும் மாற்றங்கள், இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது. எனினும், ஏற்கனவே சேமிக்கப்பட்ட உங்கள் தரவு Google கணக்கில் அப்படியே இருக்கும்.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> இல்லை</translation>
 <translation id="7454057999980797137">மாநிலம் / மாகாணம்</translation>
 <translation id="7456847797759667638">இருப்பிடத்தைத் திற...</translation>
@@ -473,7 +471,7 @@
 <translation id="8741995161408053644">உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> என்ற தளத்தில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கலாம்.</translation>
 <translation id="8756969031206844760">கடவுச்சொல்லைப் புதுப்பிக்கவா?</translation>
 <translation id="8775144690796719618">தவறான URL</translation>
-<translation id="8820817407110198400">புத்தகக்குறிகள்</translation>
+<translation id="8820817407110198400">புக்மார்க்குகள்</translation>
 <translation id="8840513115188359703">உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள்.</translation>
 <translation id="8870413625673593573">சமீபத்தில் மூடியவை</translation>
 <translation id="8881801611828450202">இந்தப் படத்தை <ph name="SEARCH_ENGINE" /> இல் தேடு</translation>
@@ -498,7 +496,7 @@
 <translation id="9188680907066685419">நிர்வகிக்கப்படும் கணக்கிலிருந்து வெளியேறு</translation>
 <translation id="9203116392574189331">ஹேண்ட்ஆஃப்</translation>
 <translation id="9223358826628549784">சிதைவு அறிக்கை அனுப்பப்பட்டது.</translation>
-<translation id="935490618240037774">புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படும் என்பதால் அவற்றை எல்லா சாதனங்களிலும் பயன்படுத்தலாம்.</translation>
+<translation id="935490618240037774">புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படும் என்பதால் அவற்றை எல்லா சாதனங்களிலும் பயன்படுத்தலாம்.</translation>
 <translation id="976982866697960176">ஒத்திசைத்த தரவை நிர்வகித்தல்...</translation>
 <translation id="988141524645182168">பிற சாதனங்கள்</translation>
 <translation id="989988560359834682">முகவரியைத் திருத்து</translation>

@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Atvērt jaunā cilnē</translation>
 <translation id="3024255823539804759">Iepriekšējā diena</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
-<translation id="3059750684806925578">Meklēt nokopēto attēlu</translation>
 <translation id="3112556859945124369">Atzīmēt…</translation>
 <translation id="3157684681743766797">Atzīmēt visus…</translation>
 <translation id="3175081911749765310">Tīm. pak.</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Nevarēja izveidot savienojumu ar serveri.</translation>
 <translation id="3335947283844343239">Vēlreiz atvērt aizvērto cilni</translation>
 <translation id="3393920035788932672">Uznir. logi atļauti</translation>
+<translation id="3424059454230285158">Jebkurā brīdī varat <ph name="BEGIN_LINK" />pielāgot šos iestatījumus<ph name="END_LINK" />.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Dalītais skats</translation>
 <translation id="345565170154308620">Pārvaldīt paroles…</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Pirmsiel. tīm. lapas</translation>
 <translation id="3691593122358196899">Grāmatzīme saglabāta mapē <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognito režīma cilnes</translation>
-<translation id="3771149149411027381">Meklēt kopēto tekstu</translation>
 <translation id="3779810277399252432">Nav interneta savienojuma.</translation>
 <translation id="3783017676699494206">Saglabāt attēlu</translation>
 <translation id="3789841737615482174">Instalēt</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Meklēt</translation>
 <translation id="4121993058175073134">Neto eksporta datu sūtīšanai konfigurējiet e-pasta kontu iestatījumos.</translation>
 <translation id="4124987746317609294">Laika periods</translation>
-<translation id="4155190233692914060">Apmeklēt kopēto saiti</translation>
 <translation id="4172051516777682613">Vienmēr rādīt</translation>
 <translation id="418156467088430727">Skatīt bezsaistes versiju jaunā cilnē</translation>
 <translation id="4237682350741091554">Pārvaldiet Chrome sinhronizāciju un personalizēšanu <ph name="BEGIN_LINK" />iestatījumos<ph name="END_LINK" /></translation>

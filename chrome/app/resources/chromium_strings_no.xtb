@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="407254336480250557">Velg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Oppdag flotte apper, spill, utvidelser og temaer for Chromium.</translation>
+<translation id="4216212958613226427">Dette språket brukes for UI-et i Chromium</translation>
 <translation id="4222580632002216401">Du er nå logget på Chromium. Synkronisering er deaktivert av administratoren din.</translation>
 <translation id="4224199872375172890">Chromium er oppdatert.</translation>
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette språket</translation>
 <translation id="5712253116097046984">Administratoren din ber deg om å starte Chromium OS på nytt for å ta i bruk denne oppdateringen</translation>
+<translation id="5756484659843248772">Dette språket brukes for UI-et i Chromium OS</translation>
 <translation id="5768914737813585044">Vis Chromium OS på dette språket</translation>
 <translation id="5796460469508169315">Chromium er nesten klar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -181,8 +183,8 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopiert til Chromium)</translation>
+<translation id="6877899728743402439">Systemadministratoren din har konfigurert Chromium til å åpne en annen nettleser.</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
-<translation id="692832138936263906">Chromium kan gjenkjenne bilder og tekst i bilder ved å sende bildene på sider til Googles tjenere, slik at du kan få en bedre forståelse av innholdet på de aktuelle sidene.</translation>
 <translation id="6964305034639999644">Åpne linken i et inko&amp;gnitovindu i Chromium</translation>
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>
 <translation id="6990124437352146030">Chromium trenger tilgang til mikrofonen din for dette nettstedet</translation>

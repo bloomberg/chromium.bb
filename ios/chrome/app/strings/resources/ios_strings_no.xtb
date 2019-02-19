@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Åpne i ny fane</translation>
 <translation id="3024255823539804759">Det siste døgnet</translation>
 <translation id="3037605927509011580">Æsj!</translation>
-<translation id="3059750684806925578">Søk etter det kopierte bildet</translation>
 <translation id="3112556859945124369">Merk…</translation>
 <translation id="3157684681743766797">Merk alle…</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
 <translation id="3393920035788932672">Tillat forgrunnsvinduer</translation>
+<translation id="3424059454230285158">Du kan <ph name="BEGIN_LINK" />tilpasse disse innstillingene<ph name="END_LINK" /> når som helst</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
 <translation id="345565170154308620">Administrer passord</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
-<translation id="3771149149411027381">Søk etter den kopierte teksten</translation>
 <translation id="3779810277399252432">Ingen internettilkobling.</translation>
 <translation id="3783017676699494206">Lagre bildet</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Søk</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4124987746317609294">Tidsperiode</translation>
-<translation id="4155190233692914060">Gå til den kopierte linken</translation>
 <translation id="4172051516777682613">Vis alltid</translation>
 <translation id="418156467088430727">Se versjonen uten nett i en ny fane</translation>
 <translation id="4237682350741091554">Administrer Chrome-synkronsering og personlig tilpasning i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" /></translation>

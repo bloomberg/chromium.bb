@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="407254336480250557">Válassza a <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> lehetőséget</translation>
 <translation id="421369550622382712">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Chromiumhoz.</translation>
+<translation id="4216212958613226427">A Chromium kezelőfelülete ezen a nyelven jelenik meg.</translation>
 <translation id="4222580632002216401">Bejelentkezett a Chromiumba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="4224199872375172890">A Chromium naprakész.</translation>
 <translation id="4230135487732243613">Társítja Chromium-adatait ezzel a fiókkal?</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">bejelentkezés a Chromiumba</translation>
 <translation id="5698481217667032250">A Chromium megjelenítése ezen a nyelven</translation>
 <translation id="5712253116097046984">Rendszergazdája arra kéri, hogy indítsa újra a Chromium OS-t a frissítés alkalmazásához</translation>
+<translation id="5756484659843248772">A Chromium OS kezelőfelülete ezen a nyelven jelenik meg.</translation>
 <translation id="5768914737813585044">A Chromium operációs rendszer megjelenítése ezen a nyelven</translation>
 <translation id="5796460469508169315">A Chromium majdnem készen áll.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -179,8 +181,8 @@
 <translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (a Chromiumba másolva)</translation>
+<translation id="6877899728743402439">Rendszergazdája úgy állította be a Chromiumot, hogy egy másik böngészőt nyisson meg.</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
-<translation id="692832138936263906">Azáltal, hogy az oldal képeit elküldi a Google szervereinek, a Chromium fel tudja ismerni a képeket és a képeken található szövegeket, így Ön jobban megértheti az oldal tartalmát.</translation>
 <translation id="6964305034639999644">Link megnyitása Chromium-inko&amp;gnitóablakban</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6990124437352146030">A Chromiumnak engedélyre van szüksége ahhoz, hogy hozzáférjen a mikrofonhoz ennél a webhelynél</translation>

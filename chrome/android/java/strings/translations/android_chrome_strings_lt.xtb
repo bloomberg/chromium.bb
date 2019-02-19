@@ -292,6 +292,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3166827708714933426">Skirtukų ir langų spartieji klavišai</translation>
 <translation id="3190152372525844641">Įjunkite „Chrome“ leidimus <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Išsaugota duomenų: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3205824638308738187">Beveik baigta!</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3211426585530211793">Ištrinta „<ph name="ITEM_TITLE" />“</translation>
 <translation id="321773570071367578">Jei pamiršote slaptafrazę arba norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB užima kitos programos</translation>
 <translation id="3744111561329211289">Fono sinchronizavimas</translation>
 <translation id="3745176700485982507">Šiame puslapyje galite rasti nuorodas į mėgstamiausias svetaines</translation>
+<translation id="3771001275138982843">Nepavyko atsisiųsti naujinio</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Įjunkite „Bluetooth“<ph name="END_LINK" />, kad būtų leidžiama susieti</translation>
 <translation id="3778956594442850293">Pridėta prie pagrindinio ekrano</translation>
 <translation id="3781011235031427080">Lapas „Daugiau panašių“ atidarytas (pusė aukščio)</translation>
@@ -535,6 +537,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="497421865427891073">Eiti pirmyn</translation>
 <translation id="4988210275050210843">Atsisiunčiamas failas (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Psl.</translation>
+<translation id="4994033804516042629">Kontaktų nerasta</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
 <translation id="5004416275253351869">„Google“ veiklos valdikliai</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
@@ -759,6 +762,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6643649862576733715">Rūšiuoti pagal išsaugotų duomenų kiekį</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
+<translation id="6649642165559792194">Peržiūrėti vaizdą <ph name="BEGIN_NEW" />Naujas<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">„Chrome“ reikalinga prieiga prie vietos, kad galėtų nuskaityti įrenginius. <ph name="BEGIN_LINK" />Atnaujinkite leidimus<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="6659594942844771486">Skirtukas</translation>
@@ -776,7 +780,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6746124502594467657">Perkelti žemyn</translation>
 <translation id="6766622839693428701">Perbraukite žemyn, kad uždarytumėte.</translation>
 <translation id="6766758767654711248">Palieskite, kad apsilankytumėte svetainėje</translation>
-<translation id="6776813977906306442">Naudodami atsisiuntimo mygtuką atsisiųskite vaizdo įrašą, kad galėtumėte jį peržiūrėti vėliau.</translation>
 <translation id="6782111308708962316">Neleisti trečiosios šalies svetainėms išsaugoti ir skaityti slapukų duomenų</translation>
 <translation id="6790428901817661496">Žaisti</translation>
 <translation id="679325081238418596">Gaukite žymes, istoriją, slaptažodžius ir kitus nustatymus visuose įrenginiuose</translation>
@@ -934,7 +937,9 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7929962904089429003">Atidaryti meniu</translation>
 <translation id="7942131818088350342">„<ph name="PRODUCT_NAME" />“ pasenęs.</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
+<translation id="7960977077911686065">Tęsdami sutinkate, kad „Chrome“ siųs „Chrome“ automatinio pildymo funkcijos, svetainės URL ir jos turinio duomenis sistemai „Google“, kad galėtų teikti minėtas paslaugas. Taip pat sutinkate, kad „Chrome“ siųs pasirinktus asmens duomenis svetainei, kai naudojama „Chrome“ automatinio pildymo funkcija. \n\nJei norite išjungti „Google“ padėjėją sistemoje „Chrome“ ir „Chrome“ automatinio pildymo funkcijoje, apsilankykite „Chrome“ skiltyje „Nustatymai“.  <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>
+<translation id="7975379999046275268">Peržiūrėti puslapį <ph name="BEGIN_NEW" />Naujas<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Iš anksto įkelti puslapius, kad naršymo ir paieškos procesai vyktų greičiau</translation>
 <translation id="79859296434321399">Norėdami peržiūrėti išplėstosios realybės turinį įdiekite „ARCore“</translation>
 <translation id="7986741934819883144">Pasirinkite kontaktą</translation>
@@ -1069,7 +1074,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8959122750345127698">Naršymas nepasiekiamas: <ph name="URL" /></translation>
 <translation id="8965591936373831584">laukiama</translation>
 <translation id="8972098258593396643">Atsisiųsti į numatytąjį aplanką?</translation>
-<translation id="8979405271719829084">Atsisiųskite vaizdo įrašus ir peržiūrėkite juos vėliau</translation>
 <translation id="8981454092730389528">„Google“ veiklos valdikliai</translation>
 <translation id="8983677657449185470">Padėti tobulinti Saugų naršymą</translation>
 <translation id="8986494364107987395">Automatiškai siųsti naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
@@ -1091,6 +1095,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9133703968756164531">„<ph name="ITEM_NAME" />“ (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
+<translation id="9138504265731110181">„Google“ padėjėjas padeda sutaupyti laiko padėdamas apdoroti mokėjimą žiniatinklyje</translation>
 <translation id="9139068048179869749">Klausti prieš leidžiant svetainėms siųsti pranešimus (rekomenduojama)</translation>
 <translation id="9139318394846604261">Apsipirkimas</translation>
 <translation id="9155898266292537608">Taip pat galite ieškoti greitai paliesdami žodį</translation>

@@ -136,7 +136,6 @@
 <translation id="2989805286512600854">Ava uuel vahelehel</translation>
 <translation id="3024255823539804759">Viimane päev</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
-<translation id="3059750684806925578">Otsi kopeeritud pilti</translation>
 <translation id="3112556859945124369">Märgi …</translation>
 <translation id="3157684681743766797">Märgi kõik …</translation>
 <translation id="3175081911749765310">Teenused</translation>
@@ -153,6 +152,7 @@
 <translation id="3329904751041170572">Serveriga ei saanud ühendust.</translation>
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
 <translation id="3393920035788932672">Hüpikud on lubatud</translation>
+<translation id="3424059454230285158"><ph name="BEGIN_LINK" />Neid seadeid saab igal ajal kohandada<ph name="END_LINK" />.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Poolitatud vaade</translation>
 <translation id="345565170154308620">Halda paroole …</translation>
@@ -177,7 +177,6 @@
 <translation id="3638472932233958418">Lehtede eellaadimine</translation>
 <translation id="3691593122358196899">Lisatud järjehoidjana kausta <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkogn. vahelehed</translation>
-<translation id="3771149149411027381">Otsi kopeeritud teksti</translation>
 <translation id="3779810277399252432">Interneti-ühendus puudub.</translation>
 <translation id="3783017676699494206">Salvesta kujutis</translation>
 <translation id="3789841737615482174">Installi</translation>
@@ -202,7 +201,6 @@
 <translation id="4112644173421521737">Otsi</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4124987746317609294">Ajavahemik</translation>
-<translation id="4155190233692914060">Ava kopeeritud link</translation>
 <translation id="4172051516777682613">Kuva alati</translation>
 <translation id="418156467088430727">Kuva uuel vahelehel võrguühenduseta versioon</translation>
 <translation id="4237682350741091554">Chrome'i sünkroonimist ja isikupärastamist saate hallata jaotises <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" /></translation>

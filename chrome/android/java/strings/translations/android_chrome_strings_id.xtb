@@ -292,6 +292,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3166827708714933426">Pintasan tab dan jendela</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data tersimpan</translation>
+<translation id="3205824638308738187">Hampir selesai!</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> dihapus</translation>
 <translation id="321773570071367578">Jika lupa frasa sandi atau ingin mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB aplikasi lain</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
 <translation id="3745176700485982507">Link ke situs favorit Anda dapat ditemukan di halaman ini</translation>
+<translation id="3771001275138982843">Tidak dapat mendownload update</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktifkan Bluetooth<ph name="END_LINK" /> untuk mengizinkan penyandingan</translation>
 <translation id="3778956594442850293">Ditambahkan ke Layar utama</translation>
 <translation id="3781011235031427080">Lainnya, yang seperti ini dibuka dalam setengah layar</translation>
@@ -535,6 +537,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="497421865427891073">Maju</translation>
 <translation id="4988210275050210843">Mendownload file (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Halaman</translation>
+<translation id="4994033804516042629">Kontak tidak ditemukan</translation>
 <translation id="4996978546172906250">Bagikan dengan</translation>
 <translation id="5004416275253351869">Kontrol aktivitas Google</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
@@ -759,6 +762,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6643649862576733715">Urutkan menurut jumlah kuota yang dihemat</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}other{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}}</translation>
+<translation id="6649642165559792194">Lihat pratinjau gambar <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -776,7 +780,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6746124502594467657">Berpindah ke bawah</translation>
 <translation id="6766622839693428701">Geser ke bawah untuk menutup.</translation>
 <translation id="6766758767654711248">Tap untuk membuka situs</translation>
-<translation id="6776813977906306442">Download video untuk ditonton nanti menggunakan tombol Download</translation>
 <translation id="6782111308708962316">Cegah situs web pihak ketiga agar tidak menyimpan dan membaca data cookie</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="679325081238418596">Dapatkan bookmark, histori, sandi, dan setelan lainnya di semua perangkat Anda</translation>
@@ -934,7 +937,9 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7929962904089429003">Membuka menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> sudah usang.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
+<translation id="7960977077911686065">Dengan melanjutkan, Anda setuju bahwa Chrome akan mengirimkan data dari IsiOtomatis Chrome, URL situs, dan kontennya ke Google untuk menyediakan layanan ini. Anda juga setuju bahwa Chrome akan mengirimkan data pribadi yang Anda pilih ke situs melalui IsiOtomatis Chrome. \n\nBuka setelan Chrome untuk menonaktifkan Asisten Google di Chrome dan IsiOtomatis Chrome.  <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7975379999046275268">Pratinjau halaman <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pramuat halaman agar browsing dan menelusuri lebih cepat</translation>
 <translation id="79859296434321399">Untuk melihat konten augmented reality, instal ARCore</translation>
 <translation id="7986741934819883144">Pilih kontak</translation>
@@ -1069,7 +1074,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
 <translation id="8965591936373831584">ditunda</translation>
 <translation id="8972098258593396643">Download ke folder default?</translation>
-<translation id="8979405271719829084">Download video untuk ditonton nanti</translation>
 <translation id="8981454092730389528">Kontrol Aktivitas Google</translation>
 <translation id="8983677657449185470">Bantu sempurnakan Safe Browsing</translation>
 <translation id="8986494364107987395">Kirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis</translation>
@@ -1091,6 +1095,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>
+<translation id="9138504265731110181">Asisten Google menghemat waktu Anda dengan membantu melakukan pembayaran di web</translation>
 <translation id="9139068048179869749">Tanya terlebih dahulu sebelum mengizinkan situs mengirimkan notifikasi (disarankan)</translation>
 <translation id="9139318394846604261">Belanja</translation>
 <translation id="9155898266292537608">Anda juga dapat menelusuri dengan menge-tap kata secara cepat</translation>

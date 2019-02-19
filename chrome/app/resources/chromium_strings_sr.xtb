@@ -95,6 +95,7 @@
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="407254336480250557">Изаберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>
+<translation id="4216212958613226427">Овај језик се користи за приказивање корисничког интерфејса Chromium-а</translation>
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
@@ -139,6 +140,7 @@
 <translation id="5680901439334282664">пријавите се на Chromium</translation>
 <translation id="5698481217667032250">Приказуј Chromium на овом језику</translation>
 <translation id="5712253116097046984">Администратор тражи да рестартујете Chromium ОС да бисте применили ово ажурирање</translation>
+<translation id="5756484659843248772">Овај језик се користи за приказивање корисничког интерфејса Chromium ОС-а</translation>
 <translation id="5768914737813585044">Приказуј Chromium ОС на овом језику</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
@@ -183,8 +185,8 @@
 <translation id="6810143991807788455">Помозите да побољшамо Chromium тако што ћете послати извештај о актуелним подешавањима</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано у Chromium)</translation>
+<translation id="6877899728743402439">Администратор система је конфигурисао Chromium за отварање алтернативног прегледача.</translation>
 <translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
-<translation id="692832138936263906">Chromium може да препозна слике и текст на слици јер шаље слике Google серверима, што вам омогућава да лакше разумете садржај странице.</translation>
 <translation id="6964305034639999644">Отвори линк у Chromium прозору без архи&amp;вирања</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
 <translation id="6990124437352146030">Chromium тражи дозволу да приступи микрофону за овај сајт</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1005145902654145231">Η μετονομασία της περιόδου λειτουργίας απέτυχε.</translation>
 <translation id="1008557486741366299">Όχι τώρα</translation>
 <translation id="1010200102790553230">Φόρτωση σελίδας αργότερα</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
@@ -36,7 +35,6 @@
 <translation id="1158211211994409885">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> τερμάτισε απροσδόκητα τη σύνδεση.</translation>
 <translation id="1161325031994447685">Επανασυνδεθείτε στο Wi-Fi</translation>
 <translation id="1165039591588034296">Σφάλμα</translation>
-<translation id="1173894706177603556">Μετονομασία</translation>
 <translation id="1175364870820465910">&amp;Εκτύπωση...</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1197088940767939838">Πορτοκαλί</translation>
@@ -69,7 +67,6 @@
 <translation id="1294154142200295408">Παραλλαγές γραμμής εντολών</translation>
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Δοκιμάστε να διαγράψετε τα cookie σας<ph name="END_LINK" /></translation>
-<translation id="1314614906530272393">Η επιλεγμένη περίοδος λειτουργίας δεν υπάρχει.</translation>
 <translation id="1320233736580025032">Prc1 (Φάκελος)</translation>
 <translation id="132301787627749051">Αναζήτηση εικόνας στο πρόχειρο</translation>
 <translation id="1323433172918577554">Εμφάνιση περισσότερων</translation>
@@ -131,7 +128,6 @@
 <translation id="1592005682883173041">Πρόσβαση σε τοπικά δεδομένα</translation>
 <translation id="1594030484168838125">Επιλογή</translation>
 <translation id="161042844686301425">Κυανό</translation>
-<translation id="1618822247301510817">Εικόνα που αντιγράψατε</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
 <translation id="16338877384480380">Architecture-B</translation>
@@ -339,7 +335,6 @@
 <translation id="2742870351467570537">Κατάργηση επιλεγμένων στοιχείων</translation>
 <translation id="277133753123645258">Τρόπος αποστολής</translation>
 <translation id="277499241957683684">Λείπει κάποιο αρχείο συσκευής</translation>
-<translation id="2781030394888168909">Εξαγωγή για MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Έγινε επαναφορά της σύνδεσης.</translation>
 <translation id="2788784517760473862">Αποδεκτές πιστωτικές κάρτες</translation>
@@ -410,7 +405,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> στο <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Ακύρωση πληρωμής</translation>
 <translation id="3207960819495026254">Προστέθηκε στους σελιδοδείκτες</translation>
-<translation id="3209375525920864198">Εισαγάγετε ένα έγκυρο όνομα περιόδου λειτουργίας.</translation>
 <translation id="321912867715453276">Προειδοποίηση: Υπάρχουν πάνω από μία πηγές για την πολιτική, αλλά οι τιμές είναι ίδιες.</translation>
 <translation id="3225919329040284222">Ο διακομιστής παρουσίασε ένα πιστοποιητικό που δεν αντιστοιχεί στις ενσωματωμένες προϋποθέσεις. Αυτές οι προϋποθέσεις συμπεριλαμβάνονται σε συγκεκριμένους ιστότοπους υψηλής ασφάλειας για την προστασία σας.</translation>
 <translation id="3226128629678568754">Πατήστε το κουμπί της επανάληψης φόρτωσης για να υποβάλετε ξανά τα δεδομένα που απαιτούνται για τη φόρτωση της σελίδας.</translation>
@@ -509,7 +503,6 @@
 <translation id="372429172604983730">Οι εφαρμογές που μπορούν να προκαλέσουν αυτό το σφάλμα περιλαμβάνουν λογισμικό προστασίας από ιούς, τείχος προστασίας και λογισμικό φιλτραρίσματος ιστού ή λογισμικό διακομιστή μεσολάβησης.</translation>
 <translation id="373042150751172459">B4 (Φάκελος)</translation>
 <translation id="3736520371357197498">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον μη ασφαλή ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
-<translation id="3739623965217189342">Σύνδεσμος που αντιγρ.</translation>
 <translation id="3744899669254331632">Δεν μπορείτε να επισκεφτείτε τον ιστότοπο <ph name="SITE" /> αυτήν τη στιγμή, επειδή ο ιστότοπος έστειλε κωδικοποιημένα διαπιστευτήρια τα οποία δεν είναι δυνατό να επεξεργαστεί το Chromium. Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά φαινόμενα, συνεπώς η σελίδα πιθανότατα θα λειτουργήσει αργότερα.</translation>
 <translation id="3745099705178523657">Μετά την επιβεβαίωση, τα στοιχεία της κάρτας από τον Λογαριασμό Google θα κοινοποιηθούν σε αυτόν τον ιστότοπο.</translation>
 <translation id="3748148204939282805">Οι εισβολείς σε αυτόν τον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> μπορεί να σας εξαπατήσουν και να κάνετε κάτι επικίνδυνο, όπως να εγκαταστήσετε κάποιο λογισμικό ή να αποκαλύψετε προσωπικά σας στοιχεία (για παράδειγμα, κωδικούς πρόσβασης, αριθμούς τηλεφώνου ή στοιχεία πιστωτικών καρτών). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -545,7 +538,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Κανένα}=1{Από 1 ιστότοπο }other{Από # ιστοτόπους }}</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="3973234410852337861">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> είναι αποκλεισμένος</translation>
-<translation id="3984550557525787191">Αυτό το όνομα περιόδου λειτουργίας υπάρχει ήδη.</translation>
 <translation id="3987940399970879459">Λιγότερα από 1 MB</translation>
 <translation id="4008849406247176967">Προειδοποίηση: Υπάρχουν πάνω από μία πηγές με τιμές σε διένεξη για αυτήν την πολιτική!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ιστοσελίδα σε κοντινή απόσταση}other{# ιστοσελίδες σε κοντινή απόσταση}}</translation>
@@ -684,7 +676,6 @@
 <translation id="4764776831041365478">Η ιστοσελίδα στη διεύθυνση <ph name="URL" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="4771973620359291008">Παρουσιάστηκε άγνωστο σφάλμα.</translation>
 <translation id="4785689107224900852">Εναλλαγή σε αυτήν την καρτέλα</translation>
-<translation id="4792143361752574037">Παρουσιάστηκε κάποιο πρόβλημα κατά την πρόσβαση στα αρχεία περιόδου λειτουργίας. Η αποθήκευση στον δίσκο είναι προς το παρόν απενεργοποιημένη. Επαναλάβετε τη φόρτωση της σελίδας για να δοκιμάσετε ξανά.</translation>
 <translation id="4798078619018708837">Καταχωρίστε την ημερομηνία λήξης και τον κωδικό CVC για την πιστωτική κάρτα <ph name="CREDIT_CARD" />, προκειμένου να ενημερώσετε τα στοιχεία της κάρτας σας. Μετά την επιβεβαίωση, τα στοιχεία της κάρτας από τον Λογαριασμό Google θα κοινοποιηθούν σε αυτόν τον ιστότοπο.</translation>
 <translation id="4800132727771399293">Ελέγξτε την ημερομηνία λήξης και τον κωδικό σας CVC και δοκιμάστε ξανά</translation>
 <translation id="480334179571489655">Σφάλμα πολιτικής προέλευσης</translation>
@@ -745,7 +736,6 @@
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
-<translation id="5128122789703661928">Η περίοδος σύνδεσης με αυτό το όνομα δεν είναι έγκυρη για διαγραφή.</translation>
 <translation id="5135404736266831032">Διαχείριση διευθύνσεων…</translation>
 <translation id="5141240743006678641">Κρυπτογραφήστε συγχρονισμένους κωδικούς πρόσβασης με τα διαπιστευτήριά σας Google.</translation>
 <translation id="5145883236150621069">Βρέθηκε κωδικός σφάλματος στην απόκριση πολιτικής</translation>
@@ -858,7 +848,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Αποθήκευση κάρτας στον Λογαριασμό Google}other{Αποθήκευση καρτών στον Λογαριασμό Google}}</translation>
 <translation id="5763042198335101085">Εισαγάγετε μια έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5765072501007116331">Για να δείτε τρόπους και απαιτήσεις παράδοσης, επιλέξτε μια διεύθυνση</translation>
-<translation id="5770114862687765385">Το αρχείο φαίνεται να είναι κατεστραμμένο. Κάντε κλικ στο κουμπί "Επαναφορά" για να επαναφέρετε την περίοδο λειτουργίας.</translation>
 <translation id="5778550464785688721">Πλήρης έλεγχος συσκευών MIDI</translation>
 <translation id="578305955206182703">Καφεκίτρινο</translation>
 <translation id="57838592816432529">Σίγαση</translation>
@@ -884,7 +873,6 @@
 <translation id="5921639886840618607">Αποθήκευση κάρτας στον Λογαριασμό Google;</translation>
 <translation id="5922853866070715753">Σχεδόν ολοκληρώθηκε</translation>
 <translation id="5932224571077948991">Ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
-<translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5946937721014915347">Άνοιγμα <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Δεν είναι δυνατή η εγγραφή με λογαριασμό καταναλωτή (διατίθεται σχετική άδεια).</translation>
 <translation id="5967592137238574583">Επεξεργασία στοιχείων επικοινωνίας</translation>
@@ -914,7 +902,6 @@
 <translation id="6051221802930200923">Δεν μπορείτε να επισκεφτείτε το <ph name="SITE" /> αυτήν τη στιγμή επειδή ο ιστότοπος χρησιμοποιεί certificate pinning (κλείδωμα πιστοποιητικών). Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά, συνεπώς αυτή η σελίδα πιθανότατα θα λειτουργήσει αργότερα.</translation>
 <translation id="6058977677006700226">Χρήση των καρτών σας σε όλες τις συσκευές σας;</translation>
 <translation id="6059925163896151826">Συσκευές USB</translation>
-<translation id="6071091556643036997">Ο τύπος πολιτικής δεν είναι έγκυρος.</translation>
 <translation id="6080696365213338172">Η πρόσβασή σας στο περιεχόμενο πραγματοποιήθηκε με τη χρήση ενός πιστοποιητικού που παρασχέθηκε από διαχειριστή. Τα δεδομένα που παρέχετε στο <ph name="DOMAIN" /> μπορεί να ελέγχονται από το διαχειριστή σας.</translation>
 <translation id="6094273045989040137">Σχολιασμός</translation>
 <translation id="610911394827799129">Ο Λογαριασμός Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1111,7 +1098,6 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Γραμμή εντολών</translation>
-<translation id="7365061714576910172">Εξαγωγή Linux</translation>
 <translation id="7372973238305370288">αποτέλεσμα αναζήτησης</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Όχι</translation>
@@ -1165,7 +1151,6 @@
 <translation id="7552846755917812628">Δοκιμάστε τις παρακάτω συμβουλές:</translation>
 <translation id="7554791636758816595">Νέα καρτέλα</translation>
 <translation id="7564049878696755256">Μπορεί να χάσετε την πρόσβαση στον λογαριασμό σας <ph name="ORG_NAME" /> ή να πέσετε θύμα κλοπής στοιχείων ταυτότητας. Το Chrome συνιστά να αλλάξετε τον κωδικό πρόσβασής σας τώρα.</translation>
-<translation id="7566125604157659769">Κείμενο που αντιγράψατε</translation>
 <translation id="7567204685887185387">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του μπορεί να εκδόθηκε παράνομα. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="7569952961197462199">Κατάργηση πιστωτικής κάρτας από το Chrome;</translation>
 <translation id="7569983096843329377">Μαύρο</translation>
@@ -1220,7 +1205,6 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Κατάργηση πρότασης φόρμας από το Chrome;</translation>
 <translation id="7815407501681723534">Βρέθηκαν <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> για τον όρο αναζήτησης "<ph name="SEARCH_STRING" />"</translation>
-<translation id="7818867226424560206">Διαχείριση πολιτικών</translation>
 <translation id="782886543891417279">Το Wi-Fi που χρησιμοποιείτε (<ph name="WIFI_NAME" />) ενδέχεται να σας ζητήσει να επισκεφτείτε τη σελίδα σύνδεσής του.</translation>
 <translation id="7836231406687464395">Postfix (Φάκελος)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Κανένα}=1{1 εφαρμογή (<ph name="EXAMPLE_APP_1" />)}=2{2 εφαρμογές (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# εφαρμογές (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
@@ -1231,7 +1215,6 @@
 <translation id="7878562273885520351">Ο κωδικός πρόσβασής σας μπορεί να έχει παραβιαστεί</translation>
 <translation id="7882421473871500483">Καφέ</translation>
 <translation id="7887683347370398519">Ελέγξτε τον κωδικό σας CVC και δοκιμάστε ξανά</translation>
-<translation id="7893255318348328562">Όνομα περιόδου λειτουργίας</translation>
 <translation id="7904208859782148177">C3 (Φάκελος)</translation>
 <translation id="79338296614623784">Εισαγάγετε έναν έγκυρο αριθμό τηλεφώνου</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -1306,7 +1289,6 @@
 <translation id="8298115750975731693">Το Wi-Fi που χρησιμοποιείτε (<ph name="WIFI_NAME" />) ενδέχεται να σας ζητήσει να επισκεφτείτε τη διεύθυνση <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Η μετάφραση απέτυχε λόγω προβλήματος με τη σύνδεση δικτύου.</translation>
-<translation id="8311129316111205805">Φόρτωση περιόδου λειτουργίας</translation>
 <translation id="8332188693563227489">Απορρίφθηκε η πρόσβαση στο κεντρικό υπολογιστή <ph name="HOST_NAME" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>

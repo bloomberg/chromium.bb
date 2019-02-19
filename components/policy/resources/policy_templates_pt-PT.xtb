@@ -176,10 +176,25 @@
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
 <translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
+<translation id="1383493480903114193">Esta política força a execução do código de rede no processo do navegador.
+
+      Esta política está desativada por predefinição e, se for ativada, deixa os utilizadores sujeitos aos problemas de segurança quando o processo de rede tiver isolamento de processos.
+
+      O objetivo desta política é dar às empresas a possibilidade de migrarem para software de terceiros que não dependa de criar hooks para as APIs de rede. Recomendam-se servidores proxy em detrimento de patches de LSPs e Win32 API.
+
+      Se esta política não for definida, o código de rede poderá ser executado fora do processo do navegador, dependendo dos testes de campo da experiência NetworkService.</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Permitir que os utilizadores efetuem a gestão dos certificados instalados.</translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
+<translation id="1404043648050567997">O serviço de Navegação segura apresenta uma página de aviso quando os utilizadores navegam para sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo malicioso.
+
+      Esta política apenas impede que os utilizadores prossigam em avisos da Navegação segura (por exemplo, software malicioso e phishing), não para problemas relacionados com certificados SSL, como certificados inválidos ou expirados.
+
+      Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
+
+      Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="1413936351612032792">Comunicar informações acerca da utilização de aplicações Linux</translation>
 <translation id="142346659686073702">Permitir que utilizadores não afiliados utilizem o Crostini</translation>
 <translation id="1426410128494586442">Sim</translation>
@@ -1104,6 +1119,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
 <translation id="3577251398714997599">Definição dos anúncios para sites com anúncios intrusivos</translation>
+<translation id="357917253161699596">Permitir que os utilizadores efetuem a gestão de certificados do utilizador</translation>
 <translation id="3583230441447348508">Especifica uma lista de partilhas de ficheiros de rede pré-configuradas.
 
       Cada item de lista da política é um objeto com dois membros: "share_url" e "mode". "share_url" deve ser o URL da partilha e "mode" deve ser "drop_down" ou "pre_mount". O modo "drop_down" indica que "share_url" será adicionado à lista pendente da deteção de partilhas. O modo "pre_mount" indica que "share_url" será montado.</translation>
@@ -1436,6 +1452,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4372704773119750918">Não permitir que o utilizador empresarial faça parte do multiperfil (principal ou secundário)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
 <translation id="437791893267799639">Política não definida, não permitir a migração de dados nem ARC</translation>
+<translation id="4389073105055031853">Permitir que os utilizadores efetuem a gestão de todos os certificados</translation>
 <translation id="4389091865841123886">Configura a comprovação remota através do mecanismo TPM.</translation>
 <translation id="4408428864159735559">Lista de partilhas de ficheiros de rede pré-configuradas.</translation>
 <translation id="4410236409016356088">Permitir controlar a largura de banda da rede</translation>
@@ -1673,6 +1690,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política for definida como 0, a alteração da palavra-passe da conta da máquina é desativada.
 
       Tenha em atenção que as palavras-passe poderão ultrapassar o número de dias especificado se o cliente estiver offline por um período de tempo mais longo.</translation>
+<translation id="510196893779239086">Esta política controla se o Chrome é fechado completamente quando o último separador muda para outro navegador.
+
+      Se esta política não for definida ou for definida como verdadeira, o Chrome mantém pelo menos um separador aberto depois de mudar para um navegador alternativo.
+
+      Se esta política for definida como falsa, o Chrome fecha o separador depois de mudar para um navegador alternativo, mesmo que seja o último separador. Isto faz com que o Chrome se feche completamente.</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais de dispositivos desativadas</translation>
 <translation id="5113732180192599620">Esta política controla a lista de Websites que nunca irão provocar uma mudança de navegador.
@@ -2243,6 +2265,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permitir que os sites naveguem e abram pop-ups em simultâneo</translation>
 <translation id="6447948611083700881">A cópia de segurança e o restauro estão desativados.</translation>
+<translation id="6449476513004303784">Não permitir que os utilizadores efetuem a gestão dos certificados</translation>
 <translation id="645425387487868471">Ativar o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Ativar o Preenchimento automático para endereços</translation>
 <translation id="6473623140202114570">Configure a lista de domínios em que a Navegação segura não acionará avisos.</translation>
@@ -2304,6 +2327,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores podem substituí-la temporariamente através da ativação ou da desativação do teclado no ecrã. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for apresentado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+<translation id="6570691255874112762">Esta política controla se o utilizador pode importar e remover certificados através do Gestor de certificados.
+
+      Se esta política estiver definida como "Permitir que os utilizadores efetuem a gestão de todos os certificados" ou não for definida, os utilizadores poderão gerir os certificados.
+
+      Se esta política estiver definida como "Permitir que os utilizadores efetuem a gestão dos certificados de utilizador", os utilizadores poderão gerir os certificados de utilizador, mas não os certificados ao nível do dispositivo.
+
+      Se esta política estiver definida como "Não permitir que os utilizadores efetuem a gestão dos certificados", os utilizadores não poderão gerir os certificados, só os podem ver.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="6603004149426829878">Enviar sempre quaisquer sinais de localização disponíveis para o servidor durante a resolução do fuso horário</translation>
@@ -2626,6 +2656,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, a lupa é desativada quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar a lupa em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
+<translation id="7252681704926980614">Enviar o nome de utilizador e o nome de ficheiro para o servidor das impressoras nativas com cada tarefa de impressão. A predefinição é não enviar.
+
+      Definir esta política como verdadeira também desativa as impressoras que utilizam outros protocolos que não IPPS, USB ou IPP-over-USB, uma vez que o nome de utilizador e o nome de ficheiro não devem ser enviados através da rede em aberto.</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de fundo do dispositivo</translation>
@@ -2689,6 +2722,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Controla as definições do relógio e do fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
+<translation id="7339315111520512972">Forçar a execução do código de rede no processo do navegador</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7343497214039883642">Ficheiro de configuração de impressoras empresariais para dispositivos</translation>
 <translation id="7349338075015720646">Especifica uma lista de Websites que são instalados silenciosamente, sem interação do utilizador, e que não podem ser desinstalados nem desativados pelo utilizador.
@@ -2910,22 +2944,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Para obter exemplos detalhados, aceda a:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Manter o último separador aberto no Chrome</translation>
 <translation id="793134539373873765">Especifica se o p2p será utilizado para cargas úteis de atualização do SO. Se estiver definido como Verdadeiro, os dispositivos irão partilhar e tentar consumir cargas úteisde atualização na LAN, reduzindo potencialmente a utilização e o congestionamento da largura de banda da Internet. Se a carga útil de atualização não estiver disponível na LAN, o dispositivo irá regressar à transferência a partir de um servidor de atualização. Se estiver definido como Falso ou se não estiver configurado, o p2p não será utilizado.</translation>
 <translation id="7933141401888114454">Permitir a criação de utilizadores supervisionados</translation>
 <translation id="793473937901685727">Definir a disponibilidade de certificados para aplicações ARC</translation>
 <translation id="7937766917976512374">Permitir ou impedir a captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações de rede em nenhuma ligação de rede</translation>
-<translation id="7952002811557367112">Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
-
-      Um padrão de URL tem de ser formatado de acordo com as indicações em https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
-
-      Tenha em atenção que não é recomendado bloquear URLs "'chrome://*" internos, uma vez que isso pode causar erros inesperados.
-
-      Tenha em atenção que esta política não impede a atualização dinâmica da página através de JavaScript. Por exemplo, se bloquear "example.com/abc", é possível que os utilizadores continuem a poder aceder a "example.com" e clicar num link para aceder a "example.com/abc", desde que a página não seja atualizada.
-
-      Se esta política não estiver definida, nenhum URL será incluído na lista negra no navegador.</translation>
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência de certificados para uma lista de autoridades de certificação antigas</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>

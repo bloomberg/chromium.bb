@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1290982764014248209"><ph name="FOLDER_NAME" /> ಫೋಲ್ಡರ್‌ಗೆ <ph name="DRAGGED_APP" /> ಅನ್ನು ಸರಿಸಿ.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ಶಿಫಾರಸು ಮಾಡಲಾದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="1368832886055348810">ಎಡದಿಂದ ಬಲಕ್ಕೆ</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="3036649622769666520">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">ಪರದೆಯ ಎಡಭಾಗದಲ್ಲಿ ಶೆಲ್ಫ್ ಇದೆ</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">ಮರುಸ್ಥಾಪನೆ</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ದಿನ}one{# ದಿನಗಳು}other{# ದಿನಗಳು}}</translation>
 <translation id="335581015389089642">ಧ್ವನಿ</translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
+<translation id="348799646910989694">ಶೆಲ್ಫ್ ಸ್ವಯಂ ಮರೆಯಾಗಿದೆ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ದಿನ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” ನೋಡಿ</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">ಮಾತನಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4316910396681052118">ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="4588090240171750605">ಬಲಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿ</translation>
+<translation id="4690510401873698237">ಪರದೆಯ ಕೆಳಭಾಗದಲ್ಲಿ ಶೆಲ್ಫ್ ಇದೆ</translation>
 <translation id="4724120544754982507">ಅಧಿಸೂಚನೆ ಕೇಂದ್ರ, <ph name="UNREAD_NOTIFICATION_COUNT" /> ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು</translation>
 <translation id="4730374152663651037">ಪದೇ ಪದೇ ಬಳಸಿರುವುದು</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ತಿಂಗಳು ಉಳಿದಿದೆ}one{# ತಿಂಗಳುಗಳು ಉಳಿದಿವೆ}other{# ತಿಂಗಳುಗಳು ಉಳಿದಿವೆ}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">ತ್ರಿಕೋನ ಪ್ರಕಟಣೆ</translation>
 <translation id="528468243742722775">ಅಂತ್ಯ</translation>
 <translation id="5329858601952122676">&amp;ಅಳಿಸು</translation>
+<translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> ನ ಮೇಲ್ಭಾಗದಲ್ಲಿ <ph name="DRAGGED_APP_NAME" />, ಫೋಲ್ಡರ್ ರಚಿಸಲು ಬಿಡುಗಡೆ ಮಾಡಿ.</translation>
 <translation id="5463830097259460683">ಎಮೋಜಿ ಮತ್ತು ಸಂಕೇತಗಳು</translation>
 <translation id="5476505524087279545">ಪರೀಕ್ಷಿಸಬೇಡಿ</translation>
+<translation id="547979256943495781">ಪರದೆಯ ಬಲಭಾಗದಲ್ಲಿ ಶೆಲ್ಫ್ ಇದೆ</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಸಿಸ್ಟಂ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ಎಡ ಬಾಣದ ಗುರುತು</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ</translation>
 <translation id="815598010540052116">ಕೆಳಗೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
+<translation id="8170087467028567933">ಈ ಸಲಹೆಯನ್ನು ತೆಗೆದುಹಾಕಿದರೆ, ಅದನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಮರೆಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">ಪುಟ ಕೆಳಗೆ</translation>
 <translation id="8245914219290430011">ಟ್ಯಾಬ್</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">ಈ ಸಲಹೆಯನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1ವ}one{#ವ}other{#ವ}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ಫೈಲ್ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">ಶೆಲ್ಪ್ ಯಾವಾಗಲೂ ತೋರಿಸಲಾಗಿದೆ</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s </translation>
 <translation id="8725488761726303204">+ <ph name="NUMBER" /> ಇನ್ನಷ್ಟು</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">ಚಿತ್ರವನ್ನು ಟಿಪ್ಪಣಿ ಮಾಡಿ</translation>
 <translation id="8841375032071747811">ಹಿಂದೆ ಬಟನ್</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">ಶೆಲ್ಫ್ ಯಾವಾಗಲೂ ಮರೆಯಾಗಿದೆ</translation>
 <translation id="9002566407876343676">ತೆರೆ</translation>
+<translation id="9039076430527029379">ಪುಟ <ph name="PAGE_NUMBER" />, ಅಡ್ಡಸಾಲು <ph name="ROW_NUMBER" />, ಕಾಲಮ್ <ph name="COLUMN_NUMBER" /> ಗೆ ಸರಿಸಿ.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್}one{# ಸೆಕೆಂಡುಗಳು}other{# ಸೆಕೆಂಡುಗಳು}}</translation>
 <translation id="9059834730836941392">ಕುಗ್ಗಿಸುವ ಅಧಿಸೂಚನೆ</translation>
 <translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>

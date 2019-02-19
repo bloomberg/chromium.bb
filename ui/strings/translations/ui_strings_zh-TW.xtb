@@ -8,6 +8,7 @@
 <translation id="1181037720776840403">移除</translation>
 <translation id="1243314992276662751">上傳</translation>
 <translation id="1269641567813814718">Windows 鍵</translation>
+<translation id="1290982764014248209">將「<ph name="DRAGGED_APP" />」移到「<ph name="FOLDER_NAME" />」資料夾。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推薦應用程式</translation>
 <translation id="1368832886055348810">由左至右</translation>
@@ -57,6 +58,7 @@
 <translation id="2931838996092594335">點選</translation>
 <translation id="3036649622769666520">開啟檔案</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3068711042108640621">在左側顯示檔案櫃</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">還原</translation>
@@ -65,6 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="335581015389089642">語音</translation>
 <translation id="3479552764303398839">現在不要</translation>
+<translation id="348799646910989694">自動隱藏檔案櫃</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{還剩 1 天}other{還剩 # 天}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">查詢「<ph name="LOOKUP_STRING" />」</translation>
@@ -85,6 +88,7 @@
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4588090240171750605">向右捲動</translation>
+<translation id="4690510401873698237">在底部顯示檔案櫃</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 則未讀通知</translation>
 <translation id="4730374152663651037">常用的應用程式</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{還剩 1 個月}other{還剩 # 個月}}</translation>
@@ -98,8 +102,10 @@
 <translation id="5266161281976477809">顯示/隱藏三角標記</translation>
 <translation id="528468243742722775">結束</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
+<translation id="5395308026110844773">「<ph name="DRAGGED_APP_NAME" />」已拖曳到「<ph name="IN_PLACE_APP" />」上方，放開滑鼠即可建立資料夾。</translation>
 <translation id="5463830097259460683">表情符號和符號</translation>
 <translation id="5476505524087279545">取消選取</translation>
+<translation id="547979256943495781">在右側顯示檔案櫃</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace 鍵</translation>
 <translation id="5613020302032141669">向左鍵</translation>
@@ -164,6 +170,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
 <translation id="815598010540052116">向下捲動</translation>
+<translation id="8170087467028567933">如果移除這項建議，你的帳戶會在所有裝置上隱藏該建議。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻頁</translation>
 <translation id="8245914219290430011">Tab 鍵</translation>
@@ -177,6 +184,7 @@
 <translation id="8420205633584771378">要移除這項建議嗎？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 檔案 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8649597172973390955">一律顯示檔案櫃</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>
 <translation id="8725488761726303204">還有另外 <ph name="NUMBER" /> 個清單項目</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -186,7 +194,9 @@
 <translation id="883911313571074303">為圖片加註</translation>
 <translation id="8841375032071747811">返回按鈕</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8926951137623668982">一律隱藏檔案櫃</translation>
 <translation id="9002566407876343676">開啟</translation>
+<translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 頁，第 <ph name="ROW_NUMBER" /> 列，第 <ph name="COLUMN_NUMBER" /> 欄。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9059834730836941392">收合通知</translation>
 <translation id="9150735707954472829">分頁</translation>

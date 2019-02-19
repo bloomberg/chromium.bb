@@ -163,10 +163,25 @@
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, pārlūkā <ph name="PRODUCT_NAME" /> nevar izveidot viesu profilus.</translation>
 <translation id="1363275621236827384">Iespējot Quirks servera vaicājumus aparatūras profiliem</translation>
+<translation id="1383493480903114193">Šī politika liek tīkla kodam darboties pārlūka procesā.
+
+      Pēc noklusējuma šī politika ir atspējota, un, ja tā tiek iespējota, lietotāju drošība ir apdraudēta, tiklīdz tīkla process tiek iekļauts smilškastē.
+
+      Šī politika ir paredzēta, lai uzņēmumi varētu pāriet uz trešās puses programmatūru, kas nav atkarīga no tīkla API pievienošanas. Ieteicams izmantot starpniekserverus, nevis LSP un Win32 API ielāpus.
+
+      Ja šī politika nav iestatīta, tīkla kods var nedarboties pārlūka procesā atkarībā no NetworkService eksperimenta izmēģinājuma versijām.</translation>
 <translation id="1384459581748403878">Informācija: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Ļauj lietotājiem pārvaldīt instalētos sertifikātus.</translation>
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
+<translation id="1404043648050567997">Kad lietotāji pāriet uz vietnēm, kas ir atzīmētas kā iespējami ļaunprātīgas, funkcijā Droša pārlūkošana tiek rādīta brīdinājuma lapa. Ja šis iestatījums ir iespējots, lietotāji nevar pāriet no brīdinājuma lapas uz ļaunprātīgo vietni.
+
+      Šī politika kavē lietotājus turpināt darbu tikai no Drošas pārlūkošanas brīdinājumiem (piemēram, ļaunprātīgas programmatūras un pikšķerēšanas gadījumos), nevis gadījumos ar SSL sertifikātu saistītām problēmām, piemēram, ja sertifikāts ir nederīgs vai tam beidzies termiņš.
+
+      Ja šis iestatījums ir atspējots vai nav konfigurēts, lietotāji pēc brīdinājuma saņemšanas var pāriet uz vietni, kas atzīmēta kā nevēlama.
+
+      Plašāku informāciju par Drošu pārlūkošanu skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Sniegt informāciju par Linux lietotņu izmantošanu</translation>
 <translation id="142346659686073702">Ļauj nesaistītiem lietotājiem izmantot Crostini</translation>
 <translation id="1426410128494586442">Jā</translation>
@@ -1114,6 +1129,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="355118380775352753">Vietnes, kas atveramas citā pārlūkprogrammā</translation>
 <translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
+<translation id="357917253161699596">Ļauj lietotājiem pārvaldīt lietotāja sertifikātus</translation>
 <translation id="3583230441447348508">Norāda iepriekš konfigurētu tīkla failu kopīgošanas sarakstu.
 
       Katrs politikas saraksta vienums ir objekts ar diviem elementiem: “share_url” un “mode”. Elementam “share_url” ir jābūt kopīgošanas vietrādim URL, un elementam “mode” ir jābūt “drop_down” vai “pre_mount”. Režīms “drop_down” (nolaižams) norāda, ka elements “share_url” tiks pievienots kopīgoto failu meklēšanas nolaižamajai izvēlnei. Režīms “pre_mount” (iepriekš iekļauts) norāda, ka elements “share_url” tiks iekļauts.</translation>
@@ -1446,6 +1462,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
 <translation id="437791893267799639">Politika nav iestatīta, aizliegt datu migrēšanu un ARC</translation>
+<translation id="4389073105055031853">Ļaut lietotājiem pārvaldīt visus sertifikātus</translation>
 <translation id="4389091865841123886">Konfigurē attālināto apstiprināšanu, izmantojot TPM mehānismu.</translation>
 <translation id="4408428864159735559">Iepriekš konfigurētu tīkla failu kopīgošanas saraksts.</translation>
 <translation id="4410236409016356088">Tīkla joslas platuma ierobežošanas iespējošana</translation>
@@ -1695,6 +1712,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja politikai tiek iestatīta vērtība 0, datora konta paroles maiņa tiek atspējota.
 
       Ņemiet vērā, ka paroļu vecums var pārsniegt norādīto dienu skaitu, ja klientdators ilgstoši ir bijis bezsaistē.</translation>
+<translation id="510196893779239086">Šī politika kontrolē, vai Chrome tiks pilnībā aizvērta, kad pēdējā cilne pārslēgsies uz citu pārlūkprogrammu.
+
+      Ja šī politika netiek iestatīta vai tai ir iestatīta vērtība “True”, pārlūks Chrome pēc pārslēgšanās uz citu pārlūku saglabās vismaz vienu cilni.
+
+      Ja šai politikai ir iestatīta vērtība “False”, pārlūks Chrome aizvērs cilni pēc pārslēgšanās uz citu pārlūku, pat ja tā ir pēdējā cilne. Tas pilnībā aizvērs pārlūku Chrome.</translation>
 <translation id="5105313908130842249">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="5108031557082757679">Atspējoti uzņēmuma ierīču printeri</translation>
 <translation id="5113732180192599620">Šī politika kontrolē to vietņu sarakstu, kuras nekad nepārslēgs pārlūkprogrammu.
@@ -2286,6 +2308,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6430366557948788869">Chrome pārskatu paplašinājums</translation>
 <translation id="6440051664870270040">Atļauja vietnēs vienlaicīgi izmantot navigāciju un atvērt uznirstošos logus</translation>
 <translation id="6447948611083700881">Dublēšana un atjaunošana ir atspējota</translation>
+<translation id="6449476513004303784">Neļaut lietotājiem pārvaldīt sertifikātus</translation>
 <translation id="645425387487868471">Piespiedu pierakstīšanās iespējošana pārlūkā <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Automātiskās aizpildes iespējošana adresēm</translation>
 <translation id="6473623140202114570">Konfigurēt to domēnu sarakstu, kuros funkcija “Droša pārlūkošana” neaktivizē brīdinājumus.</translation>
@@ -2347,6 +2370,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja iestatīsiet šo politiku, lietotāji varēs īslaicīgi to ignorēt, iespējojot vai atspējojot ekrāna tastatūru. Tomēr lietotāja izvēle nav pastāvīga. Ja vēlreiz tiek atvērts pieteikšanās ekrāns vai lietotājs pieteikšanās ekrānā ir neaktīvs vienu minūti, tiek atjaunota noklusējuma vērtība.
 
           Ja šī politika netiek iestatīta, ekrāna tastatūra ir atspējota, pirmoreiz atverot pieteikšanās ekrānu. Lietotāji jebkurā laikā var iespējot vai atspējot ekrāna tastatūru, un tastatūras statuss pieteikšanās ekrānā tiek saglabāts arī citiem lietotājiem.</translation>
+<translation id="6570691255874112762">Šī politika nosaka, vai lietotājs var importēt un noņemt sertifikātus, izmantojot sertifikātu pārvaldnieku.
+
+      Ja šī politika ir iestatīta uz vērtību “Atļaut lietotājiem pārvaldīt visus sertifikātus” vai nav iestatīta, lietotāji varēs pārvaldīt sertifikātus.
+
+      Ja šī politika ir iestatīta uz vērtību “Atļaut lietotājiem pārvaldīt lietotāju sertifikātus”, lietotāji varēs pārvaldīt lietotāju sertifikātus, bet ne sertifikātus, kas attiecas uz ierīci.
+
+      Ja šī politika ir iestatīta uz vērtību “Neatļaut lietotājiem pārvaldīt sertifikātus”, lietotāji nevarēs pārvaldīt sertifikātus, viņi varēs tikai tos skatīt.</translation>
 <translation id="6573305661369899995">Ārēja URL ierobežojumu avota iestatīšana</translation>
 <translation id="6598235178374410284">Lietotāja iemiesojuma attēls</translation>
 <translation id="6603004149426829878">Vienmēr sūtīt visus signālus par atrašanās vietu serverim laika joslas noteikšanas laikā</translation>
@@ -2687,6 +2717,9 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Ja šī politika nav iestatīta, ekrāna lupa tiek atspējota, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotāji var jebkurā laikā iespējot vai atspējot ekrāna lupu, un tās statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
 <translation id="7249828445670652637">Iespējot <ph name="PRODUCT_OS_NAME" /> CA sertifikātus ARC lietotnēm</translation>
+<translation id="7252681704926980614">Lietotājvārda un faila nosaukums tiek nosūtīts uz vietējo printeri, drukājot katru reizi. Pēc noklusējuma dati netiek sūtīti.
+
+      Ja ir iestatīta vērtība “True”, tas atspējo arī printerus, kas neizmanto protokolus IPPS, USB vai IPP-over-USB, jo lietotājvārdu un faila nosaukumu nevajadzētu sūtīt tīklā nešifrēti.</translation>
 <translation id="7258823566580374486">Aizsegšanas režīma iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="7260277299188117560">Ir iespējota P2P automātiska atjaunināšana</translation>
 <translation id="7261252191178797385">Ierīces fona attēls</translation>
@@ -2752,6 +2785,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta, automātiskajai tīrīšanai tiks izmantota noklusējuma tīrīšanas stratēģija. Pašlaik tā ir stratēģija “RemoveLRUIfDormant”.</translation>
 <translation id="7336785017449297672">Kontrolē pulksteņa un laika joslas iestatījumus.</translation>
 <translation id="7336878834592315572">Sīkfailu saglabāšana sesijas laikā</translation>
+<translation id="7339315111520512972">Piespiedu tīkla koda politika, lai darbotos pārlūka procesā</translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="7343497214039883642">Uzņēmuma printeru konfigurācijas fails ierīcēm</translation>
 <translation id="7349338075015720646">Saraksts ar vietnēm, kas tika instalētas neuzraudzīti (bez lietotāja mijiedarbības) un ko lietotājs nevar atinstalēt vai atspējot.
@@ -2979,22 +3013,12 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Detalizētus piemērus skatiet šeit:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7922358664346625612">Saglabāt pēdējo cilni atvērtu pārlūkā Chrome.</translation>
 <translation id="793134539373873765">Norāda, vai operētājsistēmas atjaunināšanas vērtumiem izmantot P2P. Ja ir iestatīta vērtība “True”, ierīces kopīgos un mēģinās izmantot atjaunināšanas vērtumus LAN tīklā, tādējādi, iespējams, samazinot interneta joslas platuma lietojumu un pārblīvi. Ja LAN tīklā nav pieejams atjaunināšanas vērtums, ierīce izmantos lejupielādi no atjaunināšanas servera. Ja ir iestatīta vērtība “False” vai šis iestatījums nav konfigurēts, P2P netiks lietots.</translation>
 <translation id="7933141401888114454">Iespējot uzraudzīto lietotāju kontu izveidi</translation>
 <translation id="793473937901685727">Iestatīt sertifikātu pieejamību ARC lietotnēm</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
-<translation id="7952002811557367112">Šī politika neļauj lietotājam ielādēt tīmekļa lapas no vietrāžu URL melnā saraksta. Melnajā sarakstā ir URL modeļi, kas norāda, kuri URL tiks ievietoti melnajā sarakstā.
-
-      URL modelim ir jābūt formatētam atbilstoši šiem norādījumiem: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Izņēmumus var norādīt URL baltā saraksta politikā. Šajās politikās var iekļaut ne vairāk kā 1000 ierakstu; nākamie ieraksti tiks ignorēti.
-
-      Ņemiet vērā, ka nav ieteicams bloķēt iekšējos vietrāžus URL “chrome://*”, jo tādējādi var rasties neparedzētas kļūdas.
-
-      Ņemiet vērā, ka šī politika nenovērš lapu dinamisko atjaunināšanu, izmantojot JavaScript. Piemēram, ja bloķēsiet vietrādi URL example.com/abc, lietotāji, iespējams, joprojām varēs apmeklēt vietni example.com un noklikšķināt uz saites, lai apmeklētu lapu example.com/abc, kamēr šī lapa netiks atsvaidzināta.
-
-      Ja šī politika nav iestatīta, pārlūkprogrammas melnajā sarakstā netiek ievietots neviens URL.</translation>
 <translation id="7953256619080733119">Pārvaldīto lietotāju manuālo izņēmumu saimniekdatori</translation>
 <translation id="7961779417826583251">Certificate Transparency piemērošanas atspējošana mantotajām sertificēšanas iestādēm</translation>
 <translation id="7974114691960514888">Šī politika vairs netiek atbalstīta.

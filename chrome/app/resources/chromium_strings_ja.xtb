@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> を選択します</translation>
 <translation id="421369550622382712">Chromium の優れたアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
+<translation id="4216212958613226427">この言語が Chromium UI の表示に使用されます</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="4224199872375172890">Chromium は最新版です。</translation>
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5712253116097046984">管理者が、このアップデートを適用するために Chromium OS を再起動するよう求めています</translation>
+<translation id="5756484659843248772">この言語が Chromium OS UI の表示に使用されます</translation>
 <translation id="5768914737813585044">Chromium OS をこの言語で表示</translation>
 <translation id="5796460469508169315">もうすぐ Chromium を使用できます。</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -181,8 +183,8 @@
 <translation id="6810143991807788455">現在の設定を送信して Chromium の品質向上にご協力ください</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（Chromium にコピー）</translation>
+<translation id="6877899728743402439">システム管理者が、代替ブラウザを開くように Chromium を設定しています。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
-<translation id="692832138936263906">Chromium では、ページの画像を Google のサーバーに送信することで、画像内に含まれる画像とテキストを認識できるようになり、これによって、ユーザーはページのコンテンツをより理解できるようになります。</translation>
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="6990124437352146030">このサイトを利用するには、Chromium でマイクの使用を許可する必要があります</translation>

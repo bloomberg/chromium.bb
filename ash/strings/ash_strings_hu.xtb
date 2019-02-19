@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Párosított eszközök</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
 <translation id="119944043368869598">Összes törlése</translation>
+<translation id="123828989343052515">Új asztal</translation>
 <translation id="1247372569136754018">Mikrofon (belső)</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Milyen idő van?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Írja be az üzenetet</translation>
 <translation id="2050339315714019657">Álló</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
+<translation id="209965399369889474">Nincs hálózati kapcsolat</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="2135456203358955318">Dokkolt nagyító</translation>
 <translation id="2144487987174258011">Az Adobe Flash Player frissítéséhez újraindítás szükséges</translation>
@@ -436,6 +438,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8297006494302853456">Gyenge</translation>
 <translation id="8308637677604853869">Előző menü</translation>
+<translation id="8332664326438198339">Vissza az indítóhoz</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8375916635258623388">A(z) <ph name="DEVICE_NAME" /> eszköz és a telefon automatikusan csatlakozik majd egymáshoz</translation>

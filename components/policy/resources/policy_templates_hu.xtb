@@ -172,10 +172,25 @@
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
+<translation id="1383493480903114193">Ez a házirend arra kényszeríti a hálózati kódot, hogy a böngészőfolyamatban fusson.
+
+      Ez a házirend alapértelmezés szerint le van tiltva, engedélyezése esetén pedig a felhasználók védtelenek maradnak a hálózati problémákkal szemben, amint a hálózati folyamat a sandboxba kerül.
+
+      A házirend a nagyvállalatoknak készült abból a célból, hogy át tudjanak állni olyan, harmadik féltől származó szoftverekre, amelyeket nem szükséges a hálózati API-khoz horgonyozni. Proxyszerverek használata ajánlott a réteges szolgáltatókkal (LSP-kkel) és a Win32 API javításával szemben.
+
+      Ha a házirend nincs beállítva, a hálózati kód – a NetworkService kísérlet üzemi tesztjeinek eredményeitől függően – futhat a böngészőfolyamaton kívül is.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">A felhasználók kezelhetik a telepített tanúsítványokat.</translation>
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
+<translation id="1404043648050567997">A Biztonságos Böngészés szolgáltatás figyelmeztető oldalt jelenít meg, ha a felhasználó egy esetlegesen rosszindulatúként megjelölt oldalra lép. A beállítás engedélyezése megakadályozza, hogy a felhasználó a figyelmeztető oldalról továbblépjen a rosszindulatú webhelyre.
+
+      Ez a házirend csak a Biztonságos Böngészés figyelmeztetései (pl. rosszindulatú program vagy adathalászat) esetén akadályozza meg a felhasználó továbblépését, az SSL-tanúsítvánnyal kapcsolatos problémák (pl. érvénytelen vagy lejárt tanúsítvány) esetén nem.
+
+      Ha a beállítás le van tiltva vagy nincs megadva, akkor a felhasználó döntheti el, hogy a figyelmeztetés megtekintése után továbblép-e a megjelölt webhelyre.
+
+      További információ a Biztonságos Böngészésről: https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">A Linux-alkalmazások használatával kapcsolatos információk jelentése</translation>
 <translation id="142346659686073702">Crostini használatának engedélyezése nem társult felhasználók számára</translation>
 <translation id="1426410128494586442">Igen</translation>
@@ -1092,6 +1107,7 @@
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="355118380775352753">Az alternatív böngészőben megnyíló webhelyek</translation>
 <translation id="3577251398714997599">Hirdetésbeállítások a tolakodó hirdetéseket tartalmazó webhelyekre vonatkozóan</translation>
+<translation id="357917253161699596">A felhasználók kezelhetik a felhasználói tanúsítványokat</translation>
 <translation id="3583230441447348508">Előre konfigurált hálózati fájlmegosztásokat határoz meg.
 
       A házirend minden listaeleme kéttagú objektum: „share_url” és „mode”. A „share_url” a megosztás URL-je, a „mode” pedig „drop_down” vagy „pre_mount”. A „drop_down” módszerrel a „share_url” a megosztásfelfedező legördülő menüben jelenik meg. A „pre_mount” módszerrel a rendszer felcsatolja a „share_url” útvonalon található megosztást.</translation>
@@ -1421,6 +1437,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4372704773119750918">A vállalati felhasználó ne használhassa a többprofilos módot (elsődleges vagy másodlagos)</translation>
 <translation id="4377599627073874279">Az összes kép megjelenítésének engedélyezése valamennyi webhely számára</translation>
 <translation id="437791893267799639">Házirend nincs beállítva, adatmigráció és ARC letiltása</translation>
+<translation id="4389073105055031853">A felhasználók kezelhetik az összes tanúsítványt.</translation>
 <translation id="4389091865841123886">TPM mechanizmussal történő távoli tanúsítás konfigurálása.</translation>
 <translation id="4408428864159735559">Előre beállított hálózati fájlmegosztások listája.</translation>
 <translation id="4410236409016356088">Hálózati sávszélesség szabályozásának engedélyezése</translation>
@@ -1658,6 +1675,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke 0, le van tiltva a gépi fiókjelszó módosítása.
 
       Fontos megjegyezni, hogy a jelszavak régebbiek lehetnek a megadott napok számánál, ha a kliens annál hosszabb időn át offline állapotban volt.</translation>
+<translation id="510196893779239086">Ez a házirend szabályozza, hogy a Chrome teljesen bezáródik-e, amikor az utolsó lap másik böngészőre váltana át.
+
+      Ha a házirend nincs beállítva, vagy ha igazra van állítva, a Chrome legalább egy lapot megnyitva hagy, miután másik böngészőre vált át.
+
+      Ha a házirend hamis értékre van állítva, a Chrome bezárja a lapot a másik böngészőre való átváltás után (még akkor is, ha ez volt az utolsó lap). Ez azt eredményezi, hogy a Chrome teljesen bezárul.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
 <translation id="5113732180192599620">Ez a házirend szabályozza azon webhelyek listáját, amelyek nem vezetnek böngészőváltáshoz.
@@ -2233,6 +2255,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Annak engedélyezése a webhelyek számára, hogy egyszerre navigáljanak és nyissanak meg előugró ablakokat</translation>
 <translation id="6447948611083700881">Biztonsági mentés és helyreállítás letiltva</translation>
+<translation id="6449476513004303784">A felhasználók nem kezelhetik a tanúsítványokat</translation>
 <translation id="645425387487868471">A kényszerített bejelentkezés engedélyezése a <ph name="PRODUCT_NAME" /> használatához</translation>
 <translation id="6464074037294098618">Automatikus kitöltés engedélyezése címekhez</translation>
 <translation id="6473623140202114570">Azon domainek listájának beállítása, amelyeken nem aktivál figyelmeztetéseket a Biztonságos Böngészés.</translation>
@@ -2294,6 +2317,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha beállítja ezt a házirendet, a felhasználók ideiglenesen felülbírálhatják a képernyő-billentyűzet engedélyezésével vagy letiltásával. A felhasználó választása azonban nem tartós, és ha újra megjelenik a bejelentkezési képernyő, vagy ha a felhasználó egy percig tétlen marad azon, akkor a rendszer visszaállítja az alapértelmezett beállítást.
 
           Ha nem állítja be ezt a házirendet, akkor a képernyő-billentyűzet le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a képernyő-billentyűzetet, és annak állapota a bejelentkezési képernyőn megmarad a felhasználók között.</translation>
+<translation id="6570691255874112762">Ez a házirend azt szabályozza, hogy képes-e a felhasználó a tanúsítványok importálására és eltávolítására a Tanúsítványkezelő használatával.
+
+      Ha a házirend beállítása „A felhasználók kezelhetik az összes tanúsítványt”, vagy ha nincs beállítva, akkor a felhasználók kezelhetik a tanúsítványokat.
+
+      Ha a házirend beállítása „A felhasználók kezelhetik a felhasználói tanúsítványokat”, akkor a felhasználók a felhasználói tanúsítványokat kezelhetik, az eszközszintű tanúsítványokat azonban nem.
+
+      Ha a házirend beállítása „A felhasználók nem kezelhetik a tanúsítványokat”, akkor a felhasználók kezelni nem, csak megtekinteni tudják a tanúsítványokat.</translation>
 <translation id="6573305661369899995">Külső URL-korlátozási forrás beállítása</translation>
 <translation id="6598235178374410284">Felhasználó avatarképe</translation>
 <translation id="6603004149426829878">Mindig elküldi a rendelkezésre álló helyjeleket a szervernek az időzóna meghatározása során</translation>
@@ -2621,6 +2651,9 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Ha nem állítja be ezt a házirendet, akkor a nagyító le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a nagyítót, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
 <translation id="7249828445670652637">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok engedélyezése</translation>
+<translation id="7252681704926980614">Felhasználónév és fájlnév küldése a natív nyomtatók szerverének minden nyomtatási munkánál. Alapértelmezés szerint a rendszer nem küldi el ezeket az adatokat.
+
+      A házirend igazra állításával letiltja azokat a nyomtatókat, amelyek nem IPPS, USB vagy IPP-over-USB protokollt használnak, ugyanis a felhasználónevet és a fájlnevet nem szabad titkosítás nélkül elküldeni a hálózaton.</translation>
 <translation id="7258823566580374486">Távoli hozzáférésű gazdagépek lefüggönyözésének engedélyezése</translation>
 <translation id="7260277299188117560">Az egyenrangú kapcsolatok automatikus frissítésének engedélyezése</translation>
 <translation id="7261252191178797385">Eszköz háttérképe</translation>
@@ -2684,6 +2717,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend nincs beállítva, akkor az automatikus tisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
 <translation id="7336785017449297672">Az óra és az időzóna beállításainak módosítására szolgál.</translation>
 <translation id="7336878834592315572">Cookie-k megtartása a munkamenet idejére</translation>
+<translation id="7339315111520512972">A hálózati kód kényszerítése a böngészőfolyamatban történő futásra.</translation>
 <translation id="7340034977315324840">Az eszköz aktív idejének jelentése</translation>
 <translation id="7343497214039883642">Vállalati nyomtató eszközökre vonatkozó konfigurációs fájlja</translation>
 <translation id="7349338075015720646">Megadja a „csendesen”, felhasználói beavatkozás nélkül telepített webhelyek listáját. Ezeket a webhelyeket a felhasználó nem távolíthatja el és nem tilthatja le.
@@ -2906,22 +2940,12 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           További részletes példák megtekintéséhez keresse fel a következő oldalt:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">A Chrome utolsó lapjának megnyitva tartása.</translation>
 <translation id="793134539373873765">Megadja, hogy a rendszer egyenrangú kapcsolatot használjon-e az operációs rendszer frissítési tartalmai esetében. Ha „igaz” értékre van állítva, az eszközök megosztják és megpróbálják felhasználni a frissítési tartalmat a helyi hálózaton, és lehetőség szerint csökkentik a felhasznált internetes sávszélességet, valamint a túlterhelést. Ha a frissítési tartalom nem érhető el a helyi hálózaton, az eszköz inkább egy frissítési szerverről végzi el a letöltést. Ha „hamis” értékre van állítva, vagy nincs beállítva, a rendszer nem használ egyenrangú kapcsolatot.</translation>
 <translation id="7933141401888114454">Felügyelt felhasználók létrehozásának engedélyezése</translation>
 <translation id="793473937901685727">Tanúsítvány rendelkezésre állásának beállítása az ARC-alkalmazások számára</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
-<translation id="7952002811557367112">Ez a házirend megakadályozza, hogy a felhasználó a tiltólistán szereplő URL-t töltsön be. A tiltólistán lévő URL-eket a böngésző letiltja.
-
-      Az URL-eket a következő oldalon leírtak szerint kell formázni: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Kivételeket az URL-ek engedélyezőlistájára vonatkozó házirendben lehet megadni. Ebben a házirendekben legfeljebb ezer bejegyzés szerepelhet. A további bejegyzéseket a böngésző figyelmen kívül hagyja.
-
-      A belső használatú „chrome://*” URL-séma letiltása nem javasolt, ez ugyanis váratlan hibákhoz vezethet.
-
-      Felhívjuk figyelmét, hogy ez a házirend nem akadályozza meg az oldal dinamikus módon történő frissítését JavaScripten keresztül. Ha például letiltja az „example.com/abc” oldalt, a felhasználók az „example.com” oldalt felkeresve, majd egy linkre kattintva továbbra is meglátogathatják az „example.com/abc” oldalt, amennyiben az oldal nem frissül.
-
-      Ha a házirend nincs beállítva, egyik URL sem kerül tiltólistára a böngészőben.</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7961779417826583251">A tanúsítványok átláthatósága keretrendszer betartatásának kikapcsolása a régi tanúsítványkibocsátók adott listájánál</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>

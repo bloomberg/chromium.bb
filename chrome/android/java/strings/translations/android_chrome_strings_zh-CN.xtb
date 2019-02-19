@@ -292,6 +292,7 @@
 <translation id="3166827708714933426">标签页和窗口快捷键</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
+<translation id="3205824638308738187">即将完成！</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3211426585530211793">已删除“<ph name="ITEM_TITLE" />”</translation>
 <translation id="321773570071367578">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
@@ -362,6 +363,7 @@
 <translation id="3744111309925758534">其他应用已占用的空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3745176700485982507">您可在此页面中找到您喜欢的网站的链接</translation>
+<translation id="3771001275138982843">无法下载此项更新</translation>
 <translation id="3773755127849930740">请<ph name="BEGIN_LINK" />开启蓝牙<ph name="END_LINK" />以允许配对</translation>
 <translation id="3778956594442850293">已添加到主屏幕</translation>
 <translation id="3781011235031427080">已半屏打开“更多类似内容”列表</translation>
@@ -535,6 +537,7 @@
 <translation id="497421865427891073">前进</translation>
 <translation id="4988210275050210843">正在下载文件（<ph name="MEGABYTES" /> MB）。</translation>
 <translation id="4988526792673242964">页码</translation>
+<translation id="4994033804516042629">找不到任何联系人</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5004416275253351869">Google 活动控件</translation>
 <translation id="5005498671520578047">复制密码</translation>
@@ -759,6 +762,7 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="6643649862576733715">按已节省的数据流量排序</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}other{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}}</translation>
+<translation id="6649642165559792194">预览图片<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -776,7 +780,6 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6766758767654711248">点按即可转到网站</translation>
-<translation id="6776813977906306442">您可使用“下载”按钮下载视频以供日后观看</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>
@@ -934,7 +937,9 @@
 <translation id="7929962904089429003">打开菜单</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
+<translation id="7960977077911686065">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。您也同意：Chrome 可通过 Chrome 自动填充功能将您选择的个人数据发送给相应网站。\n\n若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">供应商：</translation>
+<translation id="7975379999046275268">预览网页<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>
 <translation id="7986741934819883144">选择联系人</translation>
@@ -1069,7 +1074,6 @@
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8965591936373831584">待下载</translation>
 <translation id="8972098258593396643">是否下载到默认文件夹？</translation>
-<translation id="8979405271719829084">您可下载视频以供日后观看</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>
 <translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
@@ -1091,6 +1095,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
+<translation id="9138504265731110181">Google 助理可帮助您在网络上进行结算，从而节省您的时间</translation>
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
 <translation id="9139318394846604261">购物</translation>
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>

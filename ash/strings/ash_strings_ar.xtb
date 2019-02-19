@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
+<translation id="123828989343052515">مكتب جديد</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ما حالة الطقس؟</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">كتابة رسالة</translation>
 <translation id="2050339315714019657">رأسي</translation>
 <translation id="2067602449040652523">سطوع لوحة المفاتيح</translation>
+<translation id="209965399369889474">لا يتوفّر اتصال بالشبكة</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="2135456203358955318">المكبّر الذي تم إرساؤه</translation>
 <translation id="2144487987174258011">‏إعادة التشغيل لتحديث Adobe Flash Player</translation>
@@ -436,6 +438,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8297006494302853456">ضعيفة</translation>
 <translation id="8308637677604853869">القائمة السابقة</translation>
+<translation id="8332664326438198339">الرجوع إلى مشغِّل التطبيقات</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8375916635258623388">سيتم الربط تلقائيًا بين جهاز <ph name="DEVICE_NAME" /> هذا وهاتفك.</translation>
