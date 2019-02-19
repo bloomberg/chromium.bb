@@ -17,6 +17,7 @@ cca.sound = cca.sound || {};
 /**
  * Plays a sound.
  * @param {string} selector Selector of the sound.
+ * @return {boolean} Whether the sound should be played.
  */
 cca.sound.play = function(selector) {
   // TODO(yuli): Don't play sounds if the speaker settings is muted.

@@ -150,6 +150,9 @@ module.exports = {
     'ImageCapture': 'readable',
     'webkitRequestFileSystem': 'readable',
   },
+  // Generally, the rules should be compatible to both bundled and the newest
+  // stable eslint, so it's easier to upgrade and develop without the full
+  // Chromium tree.
   'rules': Object.assign({}, googleRules, {
     'curly': [2, 'multi-line', 'consistent'],
     'no-console': [2, {allow: ['warn', 'error']}],
@@ -158,10 +161,12 @@ module.exports = {
     // |ignoreEOLComments| is not supported yet in the bundled eslint.
     'no-multi-spaces': 0,
 
+    // The bundled eslint is not smart enough for this. Indentation in the new
+    // code should be formatted properly by clang-format, as we required
+    // `git cl format --js` before uploading.
+    'indent': 0,
+
     // TODO(shik): temporarily disable the rules we violate (b/117810572).
-    'indent': 0,                        // 5 errors
-    'valid-jsdoc': 0,                   // 1 error
-    'max-len': 0,                       // 2 errors
     'no-redeclare': 0,                  // 5 errors
     'no-var': 0,                        // 273 errors
     'prefer-rest-params': 0,            // 3 errors
