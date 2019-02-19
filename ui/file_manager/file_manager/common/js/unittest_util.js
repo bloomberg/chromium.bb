@@ -10,7 +10,7 @@
  * @param {!Array<!FileEntry>} actual
  */
 function assertFileEntryListEquals(expected, actual) {
-  const entryToPath = function(entry) {
+  const entryToPath = entry => {
     assertTrue(entry.isFile);
     return entry.fullPath;
   };
@@ -27,7 +27,7 @@ function assertFileEntryListEquals(expected, actual) {
 function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
   assertEquals(expectedPaths.length, fileEntries.length);
 
-  const entryToPath = function(entry) {
+  const entryToPath = entry => {
     assertTrue(entry.isFile);
     return entry.fullPath;
   };
