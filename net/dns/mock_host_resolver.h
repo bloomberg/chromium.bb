@@ -138,6 +138,12 @@ class MockHostResolverBase
                  HostCache::EntryStaleness* stale_out) const override;
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
 
+  // Preloads the cache with what would currently be the result of a request
+  // with the given parameters. Returns the net error of the cached result.
+  int LoadIntoCache(
+      const HostPortPair& host,
+      const base::Optional<ResolveHostParameters>& optional_parameters);
+
   // Returns true if there are pending requests that can be resolved by invoking
   // ResolveAllPending().
   bool has_pending_requests() const { return !requests_.empty(); }
