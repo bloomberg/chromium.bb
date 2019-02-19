@@ -3103,11 +3103,6 @@ const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
 
-const char kEnableExplicitDmaFencesName[] = "Enable explicit dma-fences";
-const char kEnableExplicitDmaFencesDescription[] =
-    "Use dma-fences explicitly for synchronization between GPU and display "
-    "controller when available.";
-
 const char kDisableSystemTimezoneAutomaticDetectionName[] =
     "SystemTimezoneAutomaticDetection policy support";
 const char kDisableSystemTimezoneAutomaticDetectionDescription[] =
@@ -3180,15 +3175,15 @@ const char kEnableDriveFsName[] = "Enable DriveFS";
 const char kEnableDriveFsDescription[] =
     "Enables use of the new DriveFS-based Drive sync client.";
 
-const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
-const char kEnableMyFilesVolumeDescription[] =
-    "Enables use of MyFiles as a read/write volume. This should be only "
-    "used for testing or for trying to restore the previous Downloads content.";
-
 const char kEnableEhvInputName[] =
     "Emoji, handwriting and voice input on opt-in IME menu";
 const char kEnableEhvInputDescription[] =
     "Enable access to emoji, handwriting and voice input form opt-in IME menu.";
+
+const char kEnableExplicitDmaFencesName[] = "Enable explicit dma-fences";
+const char kEnableExplicitDmaFencesDescription[] =
+    "Use dma-fences explicitly for synchronization between GPU and display "
+    "controller when available.";
 
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";
@@ -3227,6 +3222,11 @@ const char kEnableHomeLauncherDescription[] =
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
+
+const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
+const char kEnableMyFilesVolumeDescription[] =
+    "Enables use of MyFiles as a read/write volume. This should be only "
+    "used for testing or for trying to restore the previous Downloads content.";
 
 const char kEnableOobeRecommendAppsScreenName[] =
     "Enable OOBE Recommend Apps Screen";
@@ -3287,19 +3287,26 @@ const char kForceEnableStylusToolsDescription[] =
     "Forces display of the stylus tools menu in the shelf and the stylus "
     "section in settings, even if there is no attached stylus device.";
 
+const char kFsNosymfollowName[] =
+    "Prevent symlink traversal on user-supplied filesystems.";
+const char kFsNosymfollowDescription[] =
+    "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
+    " option, so the chromuimos LSM denies symlink traversal on the"
+    " filesystem.";
+
 const char kGestureTypingName[] = "Gesture typing for the virtual keyboard.";
 const char kGestureTypingDescription[] =
     "Enable/Disable gesture typing option in the settings page for the virtual "
     "keyboard.";
 
+const char kImeServiceName[] = "Enable IME service";
+const char kImeServiceDescription[] =
+    "Enable IME service to provide the IME functionality instead of NaCl";
+
 const char kInputViewName[] = "Input views";
 const char kInputViewDescription[] =
     "Enable IME extensions to supply custom views for user input such as "
     "virtual keyboards.";
-
-const char kImeServiceName[] = "Enable IME service";
-const char kImeServiceDescription[] =
-    "Enable IME service to provide the IME functionality instead of NaCl";
 
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
@@ -3381,6 +3388,17 @@ const char kQuickUnlockFingerprintDescription[] =
     "fingerprint to unlock your Chromebook on the lock screen after you have "
     "signed into your device.";
 
+const char kSchedulerConfigurationName[] = "Scheduler Configuration";
+const char kSchedulerConfigurationDescription[] =
+    "Instructs the OS to use a specific scheduler configuration setting.";
+const char kSchedulerConfigurationConservative[] = "Conservative";
+const char kSchedulerConfigurationPerformance[] = "Performance";
+
+const char kShillSandboxingName[] =
+    "Run shill, the ChromeOS network manager, in a sandbox.";
+const char kShillSandboxingDescription[] =
+    "Causes shill to be run as user/group 'shill', instead of 'root'.";
+
 const char kShowTapsName[] = "Show taps";
 const char kShowTapsDescription[] =
     "Draws a circle at each touch point, which makes touch points more obvious "
@@ -3426,18 +3444,6 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
-const char kUiShowCompositedLayerBordersName[] =
-    "Show UI composited layer borders";
-const char kUiShowCompositedLayerBordersDescription[] =
-    "Show border around composited layers created by UI.";
-const char kUiShowCompositedLayerBordersRenderPass[] = "RenderPass";
-const char kUiShowCompositedLayerBordersSurface[] = "Surface";
-const char kUiShowCompositedLayerBordersLayer[] = "Layer";
-const char kUiShowCompositedLayerBordersAll[] = "All";
-
-const char kUiSlowAnimationsName[] = "Slow UI animations";
-const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
-
 // Force UI Mode
 const char kUiModeName[] = "Force Ui Mode";
 const char kUiModeDescription[] =
@@ -3451,11 +3457,17 @@ const char kUiModeTablet[] = "Tablet";
 const char kUiModeClamshell[] = "Clamshell";
 const char kUiModeAuto[] = "Auto (default)";
 
-const char kSchedulerConfigurationName[] = "Scheduler Configuration";
-const char kSchedulerConfigurationDescription[] =
-    "Instructs the OS to use a specific scheduler configuration setting.";
-const char kSchedulerConfigurationConservative[] = "Conservative";
-const char kSchedulerConfigurationPerformance[] = "Performance";
+const char kUiShowCompositedLayerBordersName[] =
+    "Show UI composited layer borders";
+const char kUiShowCompositedLayerBordersDescription[] =
+    "Show border around composited layers created by UI.";
+const char kUiShowCompositedLayerBordersRenderPass[] = "RenderPass";
+const char kUiShowCompositedLayerBordersSurface[] = "Surface";
+const char kUiShowCompositedLayerBordersLayer[] = "Layer";
+const char kUiShowCompositedLayerBordersAll[] = "All";
+
+const char kUiSlowAnimationsName[] = "Slow UI animations";
+const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
 const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
 const char kUnfilteredBluetoothDevicesDescription[] =
@@ -3466,18 +3478,6 @@ const char kUsbguardDescription[] =
     "Prevents newly connected USB devices from operating at the lock screen"
     " until Chrome OS is unlocked to protect against malicious USB devices."
     " Already connected USB devices will continue to function.";
-
-const char kShillSandboxingName[] =
-    "Run shill, the ChromeOS network manager, in a sandbox.";
-const char kShillSandboxingDescription[] =
-    "Causes shill to be run as user/group 'shill', instead of 'root'.";
-
-const char kFsNosymfollowName[] =
-    "Prevent symlink traversal on user-supplied filesystems.";
-const char kFsNosymfollowDescription[] =
-    "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
-    " option, so the chromuimos LSM denies symlink traversal on the"
-    " filesystem.";
 
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
