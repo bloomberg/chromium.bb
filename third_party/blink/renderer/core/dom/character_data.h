@@ -40,7 +40,7 @@ class CORE_EXPORT CharacterData : public Node {
   // Makes the data either Parkable or Atomic. This enables de-duplication in
   // both cases, the first one allowing compression as well.
   void MakeParkableOrAtomize();
-  String data() const {
+  const String& data() const {
     return is_parkable_ ? parkable_data_.ToString() : data_;
   }
   void setData(const String&);
