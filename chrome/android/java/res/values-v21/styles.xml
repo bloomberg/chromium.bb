@@ -11,6 +11,9 @@
     <!-- Preferences -->
     <style name="Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
         <item name="android:divider">@null</item>
+        <!-- Overriding alertDialogTheme pre-v21 with our custom AlertDialog theme causes bad visual
+             states on ListPreference because we don't use the support library ListPreference. -->
+        <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
     </style>
     <style name="PreferenceCategoryWithButtonStyle">
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
