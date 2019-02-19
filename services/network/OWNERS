@@ -26,3 +26,5 @@ per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
 per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
 per-file network_sandbox_win.*=file://sandbox/win/OWNERS
+
+per-file resource_scheduler*=tbansal@chromium.org
