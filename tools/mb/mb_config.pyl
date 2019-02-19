@@ -289,7 +289,6 @@
       'VR Linux': 'vr_release_bot',
       'linux-tcmalloc-rel': 'tcmalloc_release_bot',
       'Win 10 Fast Ring': 'release_trybot',
-      'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
       'win-annotator-rel': 'release_bot',
       'win-autofill-captured-sites-rel': 'release_bot',
       'win32-arm64-rel': 'win32_arm64_release_bot',
@@ -1178,10 +1177,6 @@
     'clang_code_coverage_trybot': [
       'gpu_tests', 'use_dummy_lastchange', 'release_trybot', 'clang', 'use_clang_coverage', 'no_symbols',
       'libfuzzer', 'partial_clang_instrumentation'
-    ],
-
-    'clang_release_bot_minimal_symbols_x86': [
-      'clang', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
     'clang_tot_asan_lsan_static_release': [
