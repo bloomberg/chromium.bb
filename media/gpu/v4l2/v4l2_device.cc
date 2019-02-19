@@ -827,7 +827,7 @@ scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
   scoped_refptr<V4L2Queue> queue = V4L2QueueFactory::CreateQueue(
       this, type,
       media::BindToCurrentLoop(
-          base::Bind(&V4L2Device::OnQueueDestroyed, this, type)));
+          base::BindOnce(&V4L2Device::OnQueueDestroyed, this, type)));
 
   queues_[type] = queue.get();
   return queue;

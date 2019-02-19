@@ -2664,8 +2664,8 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
           FROM_HERE, base::BindOnce(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
           // alive. Destroy() will wait the decode thread to finish.
-          base::Bind(&V4L2VideoDecodeAccelerator::PictureCleared,
-                     base::Unretained(this)));
+          base::BindOnce(&V4L2VideoDecodeAccelerator::PictureCleared,
+                         base::Unretained(this)));
       picture_clearing_count_++;
       pending_picture_ready_.pop();
     } else {

@@ -538,9 +538,9 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(
   DCHECK(encoder_thread_.IsRunning());
   DCHECK(!weak_this_.WasInvalidated());
 
-  frame->AddDestructionObserver(BindToCurrentLoop(
-      base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,
-                 weak_this_, output_buffer_index)));
+  frame->AddDestructionObserver(BindToCurrentLoop(base::BindOnce(
+      &V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer, weak_this_,
+      output_buffer_index)));
 
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
