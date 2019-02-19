@@ -126,6 +126,8 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
                                    DWORD* error) {
   USES_CONVERSION;
 
+  DCHECK(sid);
+
   if (error)
     *error = 0;
 
@@ -150,16 +152,23 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
   }
 
   *sid = ::SysAllocString(W2COLE(sidstr));
-  username_to_info_.emplace(username,
-                            UserInfo(password, fullname, comment, sidstr));
+  username_to_info_.emplace(
+      username, UserInfo(OSUserManager::GetLocalDomain().c_str(), password,
+                         fullname, comment, sidstr));
   ::LocalFree(sidstr);
 
   return S_OK;
 }
 
-HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* username,
+HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* domain,
+                                              const wchar_t* username,
                                               const wchar_t* old_password,
                                               const wchar_t* new_password) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(old_password);
+  DCHECK(new_password);
+
   if (username_to_info_.count(username) > 0) {
     if (username_to_info_[username].password != old_password)
       return HRESULT_FROM_WIN32(ERROR_INVALID_PASSWORD);
@@ -171,24 +180,42 @@ HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* username,
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
-HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* username,
+HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
+                                                  const wchar_t* username,
                                                   const wchar_t* password) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(password);
+
   if (username_to_info_.count(username) > 0) {
-    return username_to_info_[username].password == password ? S_OK : S_FALSE;
+    const UserInfo& info = username_to_info_[username];
+    if (info.domain != domain)
+      return HRESULT_FROM_WIN32(NERR_UserNotFound);
+
+    return info.password == password ? S_OK : S_FALSE;
   }
 
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
-HRESULT FakeOSUserManager::CreateLogonToken(const wchar_t* username,
+HRESULT FakeOSUserManager::CreateLogonToken(const wchar_t* domain,
+                                            const wchar_t* username,
                                             const wchar_t* password,
                                             bool /*interactive*/,
                                             base::win::ScopedHandle* token) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(password);
+
   if (username_to_info_.count(username) == 0) {
     return HRESULT_FROM_WIN32(NERR_BadUsername);
   } else if (username_to_info_[username].password != password) {
     return HRESULT_FROM_WIN32(NERR_UserExists);
   }
+
+  const UserInfo& info = username_to_info_[username];
+  if (info.domain != domain)
+    return HRESULT_FROM_WIN32(NERR_BadUsername);
 
   // Create a token with a dummy handle value.
   base::FilePath path;
@@ -202,12 +229,20 @@ HRESULT FakeOSUserManager::CreateLogonToken(const wchar_t* username,
   return token->IsValid() ? S_OK : HRESULT_FROM_WIN32(::GetLastError());
 }
 
-HRESULT FakeOSUserManager::GetUserSID(const wchar_t* username, PSID* sid) {
+HRESULT FakeOSUserManager::GetUserSID(const wchar_t* domain,
+                                      const wchar_t* username,
+                                      PSID* sid) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(sid);
   if (username_to_info_.count(username) > 0) {
-    if (!::ConvertStringSidToSid(username_to_info_[username].sid.c_str(), sid))
-      return HRESULT_FROM_WIN32(NERR_ProgNeedsExtraMem);
+    const UserInfo& info = username_to_info_[username];
+    if (info.domain == domain) {
+      if (!::ConvertStringSidToSid(info.sid.c_str(), sid))
+        return HRESULT_FROM_WIN32(NERR_ProgNeedsExtraMem);
 
-    return S_OK;
+      return S_OK;
+    }
   }
 
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
@@ -215,11 +250,15 @@ HRESULT FakeOSUserManager::GetUserSID(const wchar_t* username, PSID* sid) {
 
 HRESULT FakeOSUserManager::FindUserBySID(const wchar_t* sid,
                                          wchar_t* username,
-                                         DWORD length) {
+                                         DWORD username_size,
+                                         wchar_t* domain,
+                                         DWORD domain_size) {
   for (auto& kv : username_to_info_) {
     if (kv.second.sid == sid) {
       if (username)
-        wcscpy_s(username, length, kv.first.c_str());
+        wcscpy_s(username, username_size, kv.first.c_str());
+      if (domain)
+        wcscpy_s(domain, domain_size, kv.second.domain.c_str());
       return S_OK;
     }
   }
@@ -233,11 +272,16 @@ HRESULT FakeOSUserManager::RemoveUser(const wchar_t* username,
   return S_OK;
 }
 
-FakeOSUserManager::UserInfo::UserInfo(const wchar_t* password,
+FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
+                                      const wchar_t* password,
                                       const wchar_t* fullname,
                                       const wchar_t* comment,
                                       const wchar_t* sid)
-    : password(password), fullname(fullname), comment(comment), sid(sid) {}
+    : domain(domain),
+      password(password),
+      fullname(fullname),
+      comment(comment),
+      sid(sid) {}
 
 FakeOSUserManager::UserInfo::UserInfo() {}
 
@@ -246,8 +290,9 @@ FakeOSUserManager::UserInfo::UserInfo(const UserInfo& other) = default;
 FakeOSUserManager::UserInfo::~UserInfo() {}
 
 bool FakeOSUserManager::UserInfo::operator==(const UserInfo& other) const {
-  return password == other.password && fullname == other.fullname &&
-         comment == other.comment && sid == other.sid;
+  return domain == other.domain && password == other.password &&
+         fullname == other.fullname && comment == other.comment &&
+         sid == other.sid;
 }
 
 const FakeOSUserManager::UserInfo FakeOSUserManager::GetUserInfo(
@@ -274,13 +319,13 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
     return hr;
 
   if (!gaia_id.empty()) {
-    hr = SetUserProperty(OLE2CW(*sid), base::UTF8ToUTF16(kKeyId), gaia_id);
+    hr = SetUserProperty(OLE2CW(*sid), kUserId, gaia_id);
     if (FAILED(hr))
       return hr;
   }
 
   if (!email.empty()) {
-    hr = SetUserProperty(OLE2CW(*sid), base::UTF8ToUTF16(kKeyEmail), email);
+    hr = SetUserProperty(OLE2CW(*sid), kUserEmail, email);
     if (FAILED(hr))
       return hr;
   }
@@ -364,17 +409,19 @@ FakeScopedUserProfileFactory::~FakeScopedUserProfileFactory() {
 
 std::unique_ptr<ScopedUserProfile> FakeScopedUserProfileFactory::Create(
     const base::string16& sid,
+    const base::string16& domain,
     const base::string16& username,
     const base::string16& password) {
   return std::unique_ptr<ScopedUserProfile>(
-      new FakeScopedUserProfile(sid, username, password));
+      new FakeScopedUserProfile(sid, domain, username, password));
 }
 
 FakeScopedUserProfile::FakeScopedUserProfile(const base::string16& sid,
+                                             const base::string16& domain,
                                              const base::string16& username,
                                              const base::string16& password) {
   is_valid_ = OSUserManager::Get()->IsWindowsPasswordValid(
-                  username.c_str(), password.c_str()) == S_OK;
+                  domain.c_str(), username.c_str(), password.c_str()) == S_OK;
 }
 
 FakeScopedUserProfile::~FakeScopedUserProfile() {}

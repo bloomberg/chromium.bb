@@ -58,24 +58,32 @@ class FakeOSUserManager : public OSUserManager {
                   bool add_to_users_group,
                   BSTR* sid,
                   DWORD* error) override;
-  HRESULT ChangeUserPassword(const wchar_t* username,
+  HRESULT ChangeUserPassword(const wchar_t* domain,
+                             const wchar_t* username,
                              const wchar_t* password,
                              const wchar_t* old_password) override;
-  HRESULT IsWindowsPasswordValid(const wchar_t* username,
+  HRESULT IsWindowsPasswordValid(const wchar_t* domain,
+                                 const wchar_t* username,
                                  const wchar_t* password) override;
 
-  HRESULT CreateLogonToken(const wchar_t* username,
+  HRESULT CreateLogonToken(const wchar_t* domain,
+                           const wchar_t* username,
                            const wchar_t* password,
                            bool interactive,
                            base::win::ScopedHandle* token) override;
-  HRESULT GetUserSID(const wchar_t* username, PSID* sid) override;
+  HRESULT GetUserSID(const wchar_t* domain,
+                     const wchar_t* username,
+                     PSID* sid) override;
   HRESULT FindUserBySID(const wchar_t* sid,
                         wchar_t* username,
-                        DWORD length) override;
+                        DWORD username_size,
+                        wchar_t* domain,
+                        DWORD domain_size) override;
   HRESULT RemoveUser(const wchar_t* username, const wchar_t* password) override;
 
   struct UserInfo {
-    UserInfo(const wchar_t* password,
+    UserInfo(const wchar_t* domain,
+             const wchar_t* password,
              const wchar_t* fullname,
              const wchar_t* comment,
              const wchar_t* sid);
@@ -85,6 +93,7 @@ class FakeOSUserManager : public OSUserManager {
 
     bool operator==(const UserInfo& other) const;
 
+    base::string16 domain;
     base::string16 password;
     base::string16 fullname;
     base::string16 comment;
@@ -175,6 +184,7 @@ class FakeScopedUserProfileFactory {
 
  private:
   std::unique_ptr<ScopedUserProfile> Create(const base::string16& sid,
+                                            const base::string16& domain,
                                             const base::string16& username,
                                             const base::string16& password);
 
@@ -189,6 +199,7 @@ class FakeScopedUserProfile : public ScopedUserProfile {
   friend class FakeScopedUserProfileFactory;
 
   FakeScopedUserProfile(const base::string16& sid,
+                        const base::string16& domain,
                         const base::string16& username,
                         const base::string16& password);
   ~FakeScopedUserProfile() override;

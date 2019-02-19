@@ -36,6 +36,26 @@
 
 namespace credential_provider {
 
+namespace {
+
+HRESULT GetDomainControllerServerForDomain(const wchar_t* domain,
+                                           LPBYTE* server) {
+  DCHECK(domain);
+  base::string16 local_domain = OSUserManager::GetLocalDomain();
+  // If the domain is the local domain, then there is no domain controller.
+  if (wcsicmp(local_domain.c_str(), domain) == 0) {
+    return S_OK;
+  }
+
+  NET_API_STATUS nsts = ::NetGetDCName(nullptr, domain, server);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetGetDCName nsts=" << nsts;
+  }
+  return HRESULT_FROM_WIN32(nsts);
+}
+
+}  // namespace
+
 // static
 OSUserManager** OSUserManager::GetInstanceStorage() {
   static OSUserManager* instance = new OSUserManager();
@@ -50,6 +70,17 @@ OSUserManager* OSUserManager::Get() {
 // static
 void OSUserManager::SetInstanceForTesting(OSUserManager* instance) {
   *GetInstanceStorage() = instance;
+}
+
+// static
+base::string16 OSUserManager::GetLocalDomain() {
+  // If the domain is the current computer, then there is no domain controller.
+  wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1];
+  DWORD length = base::size(computer_name);
+  if (!::GetComputerNameW(computer_name, &length))
+    return base::string16();
+
+  return base::string16(computer_name, length);
 }
 
 OSUserManager::~OSUserManager() {}
@@ -175,7 +206,6 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
                                DWORD* error) {
   DCHECK(sid);
 
-  bool user_found = false;
   USER_INFO_1 info;
   memset(&info, 0, sizeof(info));
   info.usri1_comment = _wcsdup(comment);
@@ -199,11 +229,6 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     if (nsts != NERR_Success) {
       LOGFN(ERROR) << "NetUserSetInfo(set full name) nsts=" << nsts;
     }
-  } else if (nsts == NERR_UserExists) {
-    // TODO: If adding the special "gaia" account might want to check that
-    // account permissions are not too permissive.
-    LOGFN(INFO) << "Using existing user '" << username << "'";
-    user_found = true;
   } else {
     LOGFN(ERROR) << "NetUserAdd nsts=" << nsts;
     return HRESULT_FROM_WIN32(nsts);
@@ -242,18 +267,30 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     ::NetApiBufferFree(buffer);
   }
 
-  return (nsts == NERR_Success && user_found)
-             ? HRESULT_FROM_WIN32(NERR_UserExists)
-             : (nsts == NERR_Success ? S_OK : HRESULT_FROM_WIN32(nsts));
+  return (nsts == NERR_Success ? S_OK : HRESULT_FROM_WIN32(nsts));
 }
 
-HRESULT OSUserManager::ChangeUserPassword(const wchar_t* username,
+HRESULT OSUserManager::ChangeUserPassword(const wchar_t* domain,
+                                          const wchar_t* username,
                                           const wchar_t* old_password,
                                           const wchar_t* new_password) {
+  LPBYTE domain_server_buffer = nullptr;
+  HRESULT hr =
+      GetDomainControllerServerForDomain(domain, &domain_server_buffer);
+  if (FAILED(hr))
+    return hr;
+
+  std::unique_ptr<wchar_t, void (*)(wchar_t*)> domain_to_query(
+      reinterpret_cast<wchar_t*>(domain_server_buffer), [](wchar_t* p) {
+        if (p)
+          ::NetApiBufferFree(p);
+      });
+
   // Remove the UF_PASSWD_CANT_CHANGE flag temporarily so that the password can
   // be changed.
   LPBYTE buffer = nullptr;
-  NET_API_STATUS nsts = ::NetUserGetInfo(nullptr, username, 4, &buffer);
+  NET_API_STATUS nsts =
+      ::NetUserGetInfo(domain_to_query.get(), username, 4, &buffer);
   if (nsts != NERR_Success) {
     LOGFN(ERROR) << "NetUserGetInfo(get password change flag) nsts=" << nsts;
     return HRESULT_FROM_WIN32(nsts);
@@ -262,25 +299,37 @@ HRESULT OSUserManager::ChangeUserPassword(const wchar_t* username,
   USER_INFO_4* user_info = reinterpret_cast<USER_INFO_4*>(buffer);
   DWORD original_user_flags = user_info->usri4_flags;
 
-  user_info->usri4_flags &= ~UF_PASSWD_CANT_CHANGE;
-  nsts = ::NetUserSetInfo(nullptr, username, 4, buffer, nullptr);
-  if (nsts != NERR_Success) {
-    LOGFN(ERROR) << "NetUserSetInfo(allow password change) nsts=" << nsts;
-    ::NetApiBufferFree(buffer);
-    return HRESULT_FROM_WIN32(nsts);
+  bool flags_changed = false;
+  if ((user_info->usri4_flags & UF_PASSWD_CANT_CHANGE) != 0) {
+    user_info->usri4_flags &= ~UF_PASSWD_CANT_CHANGE;
+    nsts =
+        ::NetUserSetInfo(domain_to_query.get(), username, 4, buffer, nullptr);
+    if (nsts != NERR_Success) {
+      LOGFN(ERROR) << "NetUserSetInfo(allow password change) nsts=" << nsts;
+      ::NetApiBufferFree(buffer);
+      return HRESULT_FROM_WIN32(nsts);
+    }
+
+    flags_changed = true;
   }
 
-  NET_API_STATUS changepassword_nsts =
-      ::NetUserChangePassword(L"\\\\.", username, old_password, new_password);
+  base::string16 password_domain = base::StringPrintf(L"\\\\%ls", domain);
+
+  NET_API_STATUS changepassword_nsts = ::NetUserChangePassword(
+      password_domain.c_str(), username, old_password, new_password);
   if (changepassword_nsts != NERR_Success) {
     LOGFN(ERROR) << "Unable to change password for '" << username
                  << "' nsts=" << changepassword_nsts;
   }
 
-  user_info->usri4_flags = original_user_flags;
-  nsts = ::NetUserSetInfo(nullptr, username, 4, buffer, nullptr);
-  if (nsts != NERR_Success) {
-    LOGFN(ERROR) << "NetUserSetInfo(reset password change flag) nsts=" << nsts;
+  if (flags_changed) {
+    user_info->usri4_flags = original_user_flags;
+    nsts =
+        ::NetUserSetInfo(domain_to_query.get(), username, 4, buffer, nullptr);
+    if (nsts != NERR_Success) {
+      LOGFN(ERROR) << "NetUserSetInfo(reset password change flag) nsts="
+                   << nsts;
+    }
   }
 
   ::NetApiBufferFree(buffer);
@@ -288,58 +337,75 @@ HRESULT OSUserManager::ChangeUserPassword(const wchar_t* username,
   return HRESULT_FROM_WIN32(changepassword_nsts);
 }
 
-HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* username,
+HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
+                                              const wchar_t* username,
                                               const wchar_t* password) {
   // Check if the user exists before trying to log them on, because an error
   // of ERROR_LOGON_FAILURE will be returned if the user does not exist
   // or if the password is invalid. This function only wants to return
   // S_FALSE on an ERROR_LOGON_FAILURE if the user exists.
   PSID sid;
-  HRESULT hr = GetUserSID(username, &sid);
+  HRESULT hr = GetUserSID(domain, username, &sid);
 
   if (SUCCEEDED(hr)) {
     ::LocalFree(sid);
     base::win::ScopedHandle handle;
-    hr = CreateLogonToken(username, password, /*interactive=*/true, &handle);
+    hr = CreateLogonToken(domain, username, password, /*interactive=*/true,
+                          &handle);
     return hr == HRESULT_FROM_WIN32(ERROR_LOGON_FAILURE) ? S_FALSE : hr;
   }
 
   return hr;
 }
 
-HRESULT OSUserManager::CreateLogonToken(const wchar_t* username,
+HRESULT OSUserManager::CreateLogonToken(const wchar_t* domain,
+                                        const wchar_t* username,
                                         const wchar_t* password,
                                         bool interactive,
                                         base::win::ScopedHandle* token) {
-  return ::credential_provider::CreateLogonToken(username, password,
+  return ::credential_provider::CreateLogonToken(domain, username, password,
                                                  interactive, token);
 }
 
-HRESULT OSUserManager::GetUserSID(const wchar_t* username, PSID* sid) {
+HRESULT OSUserManager::GetUserSID(const wchar_t* domain,
+                                  const wchar_t* username,
+                                  PSID* sid) {
   DCHECK(username);
   DCHECK(sid);
 
-  LPBYTE buffer = nullptr;
-  NET_API_STATUS nsts = ::NetUserGetInfo(nullptr, username, 4, &buffer);
-  if (nsts == NERR_Success) {
-    const USER_INFO_4* user_info = reinterpret_cast<const USER_INFO_4*>(buffer);
-    if (::IsValidSid(user_info->usri4_user_sid)) {
-      DWORD sid_length = GetLengthSid(user_info->usri4_user_sid);
-      *sid = ::LocalAlloc(LMEM_FIXED, sid_length);
-      ::CopySid(sid_length, *sid, user_info->usri4_user_sid);
-    } else {
-      LOGFN(ERROR) << "Invalid SID for username=" << username;
-    }
-    ::NetApiBufferFree(buffer);
-  } else {
-    LOGFN(ERROR) << "NetUserGetInfo nsts=" << nsts;
+  char sid_buffer[256];
+  DWORD sid_length = base::size(sid_buffer);
+  wchar_t user_domain_buffer[kWindowsDomainBufferLength];
+  DWORD domain_length = base::size(user_domain_buffer);
+  SID_NAME_USE use;
+  base::string16 username_with_domain =
+      base::string16(domain) + L"\\" + username;
+
+  if (!::LookupAccountName(nullptr, username_with_domain.c_str(), sid_buffer,
+                           &sid_length, user_domain_buffer, &domain_length,
+                           &use)) {
+    return HRESULT_FROM_WIN32(::GetLastError());
   }
-  return HRESULT_FROM_WIN32(nsts);
+
+  // Check that the domain of the user found with LookupAccountName matches what
+  // is requested.
+  if (wcsicmp(domain, user_domain_buffer) != 0) {
+    LOGFN(ERROR) << "Domain mismatch " << domain << " " << user_domain_buffer;
+
+    return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+  }
+
+  *sid = ::LocalAlloc(LMEM_FIXED, sid_length);
+  ::CopySid(sid_length, *sid, sid_buffer);
+
+  return S_OK;
 }
 
 HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
                                      wchar_t* username,
-                                     DWORD length) {
+                                     DWORD username_size,
+                                     wchar_t* domain,
+                                     DWORD domain_size) {
   PSID psid;
   if (!::ConvertStringSidToSidW(sid, &psid)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -347,26 +413,32 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
     return hr;
   }
 
-  // Maximum domain length is 256 characters including null.
-  // https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
   HRESULT hr = S_OK;
-  DWORD name_length = username ? length : 0;
-  wchar_t nt_domain[256];
-  DWORD domain_length = base::size(nt_domain);
+  DWORD name_length = username ? username_size : 0;
+  wchar_t local_domain_buffer[kWindowsDomainBufferLength];
+  DWORD domain_length = base::size(local_domain_buffer);
   SID_NAME_USE use;
-  if (!::LookupAccountSid(nullptr, psid, username, &name_length, nt_domain,
-                          &domain_length, &use)) {
+  if (!::LookupAccountSid(nullptr, psid, username, &name_length,
+                          local_domain_buffer, &domain_length, &use)) {
     hr = HRESULT_FROM_WIN32(::GetLastError());
     if (hr != HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
-      if (length == 0 && hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
-        hr = S_OK;
-      } else {
-        LOGFN(ERROR) << "LookupAccountSid hr=" << putHR(hr);
+      if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
+        if ((username_size > 0 && name_length >= username_size))
+          hr = S_OK;
       }
     }
   }
 
-  LOGFN(INFO) << "username=" << username << " ntdomain=" << nt_domain;
+  if (domain_size) {
+    if (domain_size <= domain_length)
+      return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+    wcscpy_s(domain, domain_size, local_domain_buffer);
+  }
+
+  if (hr != S_OK && hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER))
+    LOGFN(ERROR) << "LookupAccountSid hr=" << putHR(hr);
+
+  LOGFN(INFO) << "username=" << username << " ntdomain=" << domain;
   ::LocalFree(psid);
   return hr;
 }
@@ -380,12 +452,15 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
   base::win::ScopedHandle token;
   wchar_t profiledir[MAX_PATH + 1];
 
+  base::string16 local_domain = OSUserManager::GetLocalDomain();
+
   // Get the user's profile directory.  Try a batch logon first, and if that
   // fails then try an interactive logon.
-  HRESULT hr =
-      CreateLogonToken(username, password, /*interactive=*/false, &token);
+  HRESULT hr = CreateLogonToken(local_domain.c_str(), username, password,
+                                /*interactive=*/false, &token);
   if (FAILED(hr))
-    hr = CreateLogonToken(username, password, /*interactive=*/true, &token);
+    hr = CreateLogonToken(local_domain.c_str(), username, password,
+                          /*interactive=*/true, &token);
 
   if (SUCCEEDED(hr)) {
     // Get the gaia user's profile directory so that it can be deleted.

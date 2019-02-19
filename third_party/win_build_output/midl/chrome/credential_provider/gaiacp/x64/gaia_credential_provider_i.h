@@ -109,6 +109,9 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
     IGaiaCredentialProvider : public IUnknown
     {
     public:
+        virtual HRESULT STDMETHODCALLTYPE GetUsageScenario( 
+            /* [out] */ DWORD *cpus) = 0;
+        
         virtual HRESULT STDMETHODCALLTYPE OnUserAuthenticated( 
             /* [in] */ IUnknown *credential,
             /* [in] */ BSTR username,
@@ -138,6 +141,10 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IGaiaCredentialProvider * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetUsageScenario )( 
+            IGaiaCredentialProvider * This,
+            /* [out] */ DWORD *cpus);
         
         HRESULT ( STDMETHODCALLTYPE *OnUserAuthenticated )( 
             IGaiaCredentialProvider * This,
@@ -172,6 +179,9 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 #define IGaiaCredentialProvider_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
+
+#define IGaiaCredentialProvider_GetUsageScenario(This,cpus)	\
+    ( (This)->lpVtbl -> GetUsageScenario(This,cpus) ) 
 
 #define IGaiaCredentialProvider_OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed)	\
     ( (This)->lpVtbl -> OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed) ) 
@@ -420,6 +430,7 @@ EXTERN_C const IID IID_IReauthCredential;
         
         virtual HRESULT STDMETHODCALLTYPE SetOSUserInfo( 
             /* [in] */ BSTR sid,
+            /* [in] */ BSTR domain,
             /* [in] */ BSTR username) = 0;
         
     };
@@ -450,6 +461,7 @@ EXTERN_C const IID IID_IReauthCredential;
         HRESULT ( STDMETHODCALLTYPE *SetOSUserInfo )( 
             IReauthCredential * This,
             /* [in] */ BSTR sid,
+            /* [in] */ BSTR domain,
             /* [in] */ BSTR username);
         
         END_INTERFACE
@@ -478,8 +490,8 @@ EXTERN_C const IID IID_IReauthCredential;
 #define IReauthCredential_SetEmailForReauth(This,email)	\
     ( (This)->lpVtbl -> SetEmailForReauth(This,email) ) 
 
-#define IReauthCredential_SetOSUserInfo(This,sid,username)	\
-    ( (This)->lpVtbl -> SetOSUserInfo(This,sid,username) ) 
+#define IReauthCredential_SetOSUserInfo(This,sid,domain,username)	\
+    ( (This)->lpVtbl -> SetOSUserInfo(This,sid,domain,username) ) 
 
 #endif /* COBJMACROS */
 
@@ -506,7 +518,7 @@ EXTERN_C const CLSID CLSID_GaiaCredentialProvider;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("0b5bfdf0-4594-47ac-940a-cfc69abc561c")
+class DECLSPEC_UUID("89adae71-aee5-4ee2-bffb-e8424e06f519")
 GaiaCredentialProvider;
 #endif
 #endif /* __GaiaCredentialProviderLib_LIBRARY_DEFINED__ */

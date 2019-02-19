@@ -22,6 +22,7 @@ class ScopedUserProfile {
  public:
   static std::unique_ptr<ScopedUserProfile> Create(
       const base::string16& sid,
+      const base::string16& domain,
       const base::string16& username,
       const base::string16& password);
 
@@ -62,6 +63,7 @@ class ScopedUserProfile {
   // directory and registry hive to be loaded by the system itself.  This
   // code must be run after the credprov tells winlogon to log the user in.
   ScopedUserProfile(const base::string16& sid,
+                    const base::string16& domain,
                     const base::string16& username,
                     const base::string16& password);
 

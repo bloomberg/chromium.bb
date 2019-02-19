@@ -63,6 +63,7 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
 }
 
 HRESULT CReauthCredential::ValidateExistingUser(const base::string16& username,
+                                                const base::string16& domain,
                                                 const base::string16& sid,
                                                 BSTR* error_text) {
   DCHECK(os_username_.Length());
@@ -70,10 +71,12 @@ HRESULT CReauthCredential::ValidateExistingUser(const base::string16& username,
 
   // SID, domain and username found must match what is stored in this
   // credential.
-  if ((os_username_ != W2COLE(username.c_str()))) {
-    LOGFN(ERROR) << "Username calculated '" << username
+  if ((os_username_ != W2COLE(username.c_str())) ||
+      (os_user_domain_.Length() && os_user_domain_ != W2COLE(domain.c_str()))) {
+    LOGFN(ERROR) << "Username calculated '" << domain << "\\" << username
                  << "' does not match the "
-                 << "username that is set '" << os_username_ << "'";
+                 << "username that is set '" << os_user_domain_ << "\\"
+                 << os_username_ << "'";
     *error_text = AllocErrorString(IDS_ACCOUNT_IN_USE_BASE);
     return E_UNEXPECTED;
   }
@@ -100,10 +103,12 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
 
 // IReauthCredential ///////////////////////////////////////////////////////////
 
-HRESULT CReauthCredential::SetOSUserInfo(BSTR sid, BSTR username) {
+HRESULT CReauthCredential::SetOSUserInfo(BSTR sid, BSTR domain, BSTR username) {
   DCHECK(sid);
+  DCHECK(domain);
   DCHECK(username);
 
+  os_user_domain_ = domain;
   os_user_sid_ = sid;
   os_username_ = username;
   return S_OK;

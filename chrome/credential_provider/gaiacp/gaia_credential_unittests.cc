@@ -215,7 +215,7 @@ TEST_P(GcpAssociatedUserRunnableGaiaCredentialTest,
                       base_username.c_str(), L"password", L"name", L"comment",
                       should_associate ? base_gaia_id : base::string16(),
                       base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), A2CW(kKeyId), base_gaia_id));
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserId, base_gaia_id));
 
   for (int i = 0; i < last_user_index; ++i) {
     base::string16 user_suffix =

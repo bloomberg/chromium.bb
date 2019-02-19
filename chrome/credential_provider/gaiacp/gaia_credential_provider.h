@@ -57,6 +57,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   static unsigned __stdcall CheckReauthStatus(void* param);
 
   // IGaiaCredentialProvider
+  IFACEMETHODIMP GetUsageScenario(DWORD* cpus) override;
   IFACEMETHODIMP OnUserAuthenticated(IUnknown* credential,
                                      BSTR username,
                                      BSTR password,
