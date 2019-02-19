@@ -133,11 +133,8 @@ void ExportedObject::SendSignal(Signal* signal) {
     SendSignalInternal(start_time, signal_message);
   } else {
     bus_->GetDBusTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExportedObject::SendSignalInternal,
-                   this,
-                   start_time,
-                   signal_message));
+        FROM_HERE, base::BindOnce(&ExportedObject::SendSignalInternal, this,
+                                  start_time, signal_message));
   }
 }
 
@@ -161,13 +158,10 @@ void ExportedObject::ExportMethodInternal(
   const bool success = ExportMethodAndBlock(interface_name,
                                             method_name,
                                             method_call_callback);
-  bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                        base::Bind(&ExportedObject::OnExported,
-                                                   this,
-                                                   on_exported_calback,
-                                                   interface_name,
-                                                   method_name,
-                                                   success));
+  bus_->GetOriginTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExportedObject::OnExported, this, on_exported_calback,
+                     interface_name, method_name, success));
 }
 
 void ExportedObject::UnexportMethodInternal(
@@ -179,8 +173,8 @@ void ExportedObject::UnexportMethodInternal(
   const bool success = UnexportMethodAndBlock(interface_name, method_name);
   bus_->GetOriginTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&ExportedObject::OnUnexported, this, on_unexported_calback,
-                 interface_name, method_name, success));
+      base::BindOnce(&ExportedObject::OnUnexported, this, on_unexported_calback,
+                     interface_name, method_name, success));
 }
 
 void ExportedObject::OnExported(OnExportedCallback on_exported_callback,

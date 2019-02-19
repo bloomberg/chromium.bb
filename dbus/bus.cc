@@ -122,7 +122,7 @@ class Timeout {
   void StartMonitoring(Bus* bus) {
     bus->GetDBusTaskRunner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&Timeout::HandleTimeout, weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&Timeout::HandleTimeout, weak_ptr_factory_.GetWeakPtr()),
         GetInterval());
   }
 
@@ -237,9 +237,8 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
     object_proxy_table_.erase(iter);
     // Object is present. Remove it now and Detach on the DBus thread.
     GetDBusTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&Bus::RemoveObjectProxyInternal,
-                   this, object_proxy, callback));
+        FROM_HERE, base::BindOnce(&Bus::RemoveObjectProxyInternal, this,
+                                  object_proxy, callback));
     return true;
   }
   return false;
@@ -288,9 +287,8 @@ void Bus::UnregisterExportedObject(const ObjectPath& object_path) {
   // SequencedTaskRunner, there is a guarantee that this will happen before any
   // future registration call.
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::UnregisterExportedObjectInternal,
-                 this, exported_object));
+      FROM_HERE, base::BindOnce(&Bus::UnregisterExportedObjectInternal, this,
+                                exported_object));
 }
 
 void Bus::UnregisterExportedObjectInternal(
@@ -334,9 +332,8 @@ bool Bus::RemoveObjectManager(const std::string& service_name,
   object_manager_table_.erase(iter);
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::RemoveObjectManagerInternal,
-                 this, object_manager, callback));
+      FROM_HERE, base::BindOnce(&Bus::RemoveObjectManagerInternal, this,
+                                object_manager, callback));
 
   return true;
 }
@@ -352,9 +349,8 @@ void Bus::RemoveObjectManagerInternal(
   // The ObjectManager has to be deleted on the origin thread since it was
   // created there.
   GetOriginTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::RemoveObjectManagerInternalHelper,
-                 this, object_manager, callback));
+      FROM_HERE, base::BindOnce(&Bus::RemoveObjectManagerInternalHelper, this,
+                                object_manager, callback));
 }
 
 void Bus::RemoveObjectManagerInternalHelper(
@@ -498,7 +494,7 @@ void Bus::ShutdownOnDBusThreadAndBlock() {
 
   GetDBusTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&Bus::ShutdownOnDBusThreadAndBlockInternal, this));
+      base::BindOnce(&Bus::ShutdownOnDBusThreadAndBlockInternal, this));
 
   // http://crbug.com/125222
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
@@ -517,9 +513,8 @@ void Bus::RequestOwnership(const std::string& service_name,
   AssertOnOriginThread();
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::RequestOwnershipInternal,
-                 this, service_name, options, on_ownership_callback));
+      FROM_HERE, base::BindOnce(&Bus::RequestOwnershipInternal, this,
+                                service_name, options, on_ownership_callback));
 }
 
 void Bus::RequestOwnershipInternal(const std::string& service_name,
@@ -531,10 +526,8 @@ void Bus::RequestOwnershipInternal(const std::string& service_name,
   if (success)
     success = RequestOwnershipAndBlock(service_name, options);
 
-  GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                  base::Bind(on_ownership_callback,
-                                             service_name,
-                                             success));
+  GetOriginTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(on_ownership_callback, service_name, success));
 }
 
 bool Bus::RequestOwnershipAndBlock(const std::string& service_name,
@@ -892,8 +885,8 @@ void Bus::GetServiceOwner(const std::string& service_name,
   AssertOnOriginThread();
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::GetServiceOwnerInternal, this, service_name, callback));
+      FROM_HERE, base::BindOnce(&Bus::GetServiceOwnerInternal, this,
+                                service_name, callback));
 }
 
 void Bus::GetServiceOwnerInternal(const std::string& service_name,
@@ -904,7 +897,7 @@ void Bus::GetServiceOwnerInternal(const std::string& service_name,
   if (Connect())
     service_owner = GetServiceOwnerAndBlock(service_name, SUPPRESS_ERRORS);
   GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                  base::Bind(callback, service_owner));
+                                  base::BindOnce(callback, service_owner));
 }
 
 void Bus::ListenForServiceOwnerChange(
@@ -915,9 +908,8 @@ void Bus::ListenForServiceOwnerChange(
   DCHECK(!callback.is_null());
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::ListenForServiceOwnerChangeInternal,
-                 this, service_name, callback));
+      FROM_HERE, base::BindOnce(&Bus::ListenForServiceOwnerChangeInternal, this,
+                                service_name, callback));
 }
 
 void Bus::ListenForServiceOwnerChangeInternal(
@@ -969,9 +961,8 @@ void Bus::UnlistenForServiceOwnerChange(
   DCHECK(!callback.is_null());
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Bus::UnlistenForServiceOwnerChangeInternal,
-                 this, service_name, callback));
+      FROM_HERE, base::BindOnce(&Bus::UnlistenForServiceOwnerChangeInternal,
+                                this, service_name, callback));
 }
 
 void Bus::UnlistenForServiceOwnerChangeInternal(
@@ -1093,9 +1084,8 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
   // dbus_connection_dispatch() inside DBusDispatchStatusFunction is
   // prohibited by the D-Bus library. Hence, we post a task here instead.
   // See comments for dbus_connection_set_dispatch_status_function().
-  GetDBusTaskRunner()->PostTask(FROM_HERE,
-                                base::Bind(&Bus::ProcessAllIncomingDataIfAny,
-                                           this));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&Bus::ProcessAllIncomingDataIfAny, this));
 }
 
 void Bus::OnServiceOwnerChanged(DBusMessage* message) {
@@ -1132,7 +1122,7 @@ void Bus::OnServiceOwnerChanged(DBusMessage* message) {
   const std::vector<GetServiceOwnerCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
     GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                    base::Bind(callbacks[i], new_owner));
+                                    base::BindOnce(callbacks[i], new_owner));
   }
 }
 
