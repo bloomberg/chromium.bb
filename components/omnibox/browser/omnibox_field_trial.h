@@ -146,426 +146,417 @@ struct HUPScoringParams {
   ScoreBuckets visited_count_buckets;
 };
 
-// This class manages the Omnibox field trials.
-class OmniboxFieldTrial {
- public:
-  // A mapping that contains multipliers indicating that matches of the
-  // specified type should have their relevance score multiplied by the
-  // given number.  Omitted types are assumed to have multipliers of 1.0.
-  typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
-
-  // A vector that maps from the number of matching pages to the document
-  // specificity score used in HistoryQuick provider / ScoredHistoryMatch
-  // scoring. The vector is sorted by the size_t (the number of matching pages).
-  // If an entry is omitted, the appropriate value is assumed to be the one in
-  // the later bucket.  For example, with a vector containing {{1, 2.0},
-  // {3, 1.5}}, the score for 2 is inferred to be 1.5.  Values beyond the
-  // end of the vector are assumed to have scores of 1.0.
-  typedef std::vector<std::pair<size_t, double>> NumMatchesScores;
-
-  // Do not change these values as they need to be in sync with values
-  // specified in experiment configs on the variations server.
-  enum EmphasizeTitlesCondition {
-    EMPHASIZE_WHEN_NONEMPTY = 0,
-    EMPHASIZE_WHEN_TITLE_MATCHES = 1,
-    EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
-    EMPHASIZE_NEVER = 3
-  };
-
-  // ---------------------------------------------------------
-  // For any experiment that's part of the bundled omnibox field trial.
-
-  // Returns a bitmap containing AutocompleteProvider::Type values
-  // that should be disabled in AutocompleteController.
-  static int GetDisabledProviderTypes();
-
-  // Returns whether the user is in any dynamic field trial where the
-  // group has a the prefix |group_prefix|.
-  static bool HasDynamicFieldTrialGroupPrefix(const char *group_prefix);
-
-  // ---------------------------------------------------------
-  // For the suggest field trial.
-
-  // Populates |field_trial_hash| with hashes of the active suggest field trial
-  // names, if any.
-  static void GetActiveSuggestFieldTrialHashes(
-      std::vector<uint32_t>* field_trial_hash);
-
-  // ---------------------------------------------------------
-  // For the AutocompleteController "stop timer" field trial.
-
-  // Returns the duration to be used for the AutocompleteController's stop
-  // timer.  Returns the default value of 1.5 seconds if the stop timer
-  // override experiment isn't active or if parsing the experiment-provided
-  // duration fails.
-  static base::TimeDelta StopTimerFieldTrialDuration();
-
-  // ---------------------------------------------------------
-  // For the ZeroSuggestProvider field trial.
-
-  // Returns whether the user is in a ZeroSuggest field trial, which shows
-  // most visited URLs. This is true for both "MostVisited" and
-  // "MostVisitedWithoutSERP" trials.
-  static bool InZeroSuggestMostVisitedFieldTrial();
-
-  // Returns whether the user is in ZeroSuggest field trial showing most
-  // visited URLs except it doesn't show suggestions on Google search result
-  // pages.
-  static bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
-
-  // Returns whether the user is in a ZeroSuggest field trial, but should
-  // show recently searched-for queries instead.
-  static bool InZeroSuggestPersonalizedFieldTrial();
-
-  // ---------------------------------------------------------
-  // For the Zero Suggest Redirect to Chrome field trial.
-
-  // Returns the server-side experiment ID to use for contextual suggestions.
-  // Returns -1 if there is no associated experiment ID.
-  static int GetZeroSuggestRedirectToChromeExperimentId();
-
-  // Returns the server address associated with the current field trial.
-  static std::string GetZeroSuggestRedirectToChromeServerAddress();
-
-  // ---------------------------------------------------------
-  // For the ShortcutsScoringMaxRelevance experiment that's part of the
-  // bundled omnibox field trial.
-
-  // If the user is in an experiment group that, given the provided
-  // |current_page_classification| context, changes the maximum relevance
-  // ShortcutsProvider::CalculateScore() is supposed to assign, extract
-  // that maximum relevance score and put in in |max_relevance|.  Returns
-  // true on a successful extraction.  CalculateScore()'s return value is
-  // a product of this maximum relevance score and some attenuating factors
-  // that are all between 0 and 1.  (Note that Shortcuts results may have
-  // their scores reduced later if the assigned score is higher than allowed
-  // for non-inlineable results.  Shortcuts results are not allowed to be
-  // inlined.)
-  static bool ShortcutsScoringMaxRelevance(
-      metrics::OmniboxEventProto::PageClassification
-          current_page_classification,
-      int* max_relevance);
-
-  // ---------------------------------------------------------
-  // For the SearchHistory experiment that's part of the bundled omnibox
-  // field trial.
-
-  // Returns true if the user is in the experiment group that, given the
-  // provided |current_page_classification| context, scores search history
-  // query suggestions less aggressively so that they don't inline.
-  static bool SearchHistoryPreventInlining(
-      metrics::OmniboxEventProto::PageClassification
-          current_page_classification);
-
-  // Returns true if the user is in the experiment group that, given the
-  // provided |current_page_classification| context, disables all query
-  // suggestions from search history.
-  static bool SearchHistoryDisable(
-      metrics::OmniboxEventProto::PageClassification
-          current_page_classification);
-
-  // ---------------------------------------------------------
-  // For the DemoteByType experiment that's part of the bundled omnibox field
-  // trial.
-
-  // If the user is in an experiment group that, in the provided
-  // |current_page_classification| context, demotes the relevance scores
-  // of certain types of matches, populates the |demotions_by_type| map
-  // appropriately.  Otherwise, sets |demotions_by_type| to its default
-  // value based on the context.
-  static void GetDemotionsByType(
-      metrics::OmniboxEventProto::PageClassification
-          current_page_classification,
-      DemotionMultipliers* demotions_by_type);
-
-  // ---------------------------------------------------------
-  // For the HistoryURL provider new scoring experiment that is part of the
-  // bundled omnibox field trial.
-
-  // Initializes the HUP |scoring_params| based on the active HUP scoring
-  // experiment.
-  static void GetDefaultHUPScoringParams(HUPScoringParams* scoring_params);
-  static void GetExperimentalHUPScoringParams(HUPScoringParams* scoring_params);
-
-  // ---------------------------------------------------------
-  // For the HQPBookmarkValue experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns the value an untyped visit to a bookmark should receive.
-  // Compare this value with the default of 1 for non-bookmarked untyped
-  // visits to pages and the default of 20 for typed visits.  Returns
-  // 10 if the bookmark value experiment isn't active.
-  static float HQPBookmarkValue();
-
-  // ---------------------------------------------------------
-  // For the HQPAllowMatchInTLD experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if HQP should allow an input term to match in the
-  // top level domain (e.g., .com) of a URL.  Returns false if the
-  // allow match in TLD experiment isn't active.
-  static bool HQPAllowMatchInTLDValue();
-
-  // ---------------------------------------------------------
-  // For the HQPAllowMatchInScheme experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if HQP should allow an input term to match in the
-  // scheme (e.g., http://) of a URL.  Returns false if the allow
-  // match in scheme experiment isn't active.
-  static bool HQPAllowMatchInSchemeValue();
-
-  // ---------------------------------------------------------
-  // For SearchProvider related experiments.
-
-  // Returns true if the search provider should not be caching results.
-  static bool DisableResultsCaching();
-
-  // Returns how the search provider should poll Suggest. Currently, we support
-  // measuring polling delay from the last keystroke or last suggest request.
-  static void GetSuggestPollingStrategy(bool* from_last_keystroke,
-                                        int* polling_delay_ms);
-
-  // ---------------------------------------------------------
-  // For HQP scoring related experiments to control the topicality and scoring
-  // ranges of relevancy scores.
-
-  // Returns the scoring buckets for HQP experiments. Returns an empty string
-  // if scoring buckets are not specified in the field trial. Scoring buckets
-  // are stored in string form giving mapping from (topicality_score,
-  // frequency_score) to final relevance score. Please see GetRelevancyScore()
-  // under chrome/browser/history::ScoredHistoryMatch for details.
-  static std::string HQPExperimentalScoringBuckets();
-
-  // Returns the topicality threshold for HQP experiments. Returns a default
-  // value of 0.5 if no threshold is specified in the field trial.
-  static float HQPExperimentalTopicalityThreshold();
-
-  // ---------------------------------------------------------
-  // For experiment to limit HQP url indexing that's part of the bundled
-  // omnibox field trial.
-
-  // Returns the maximum number of history urls to index for HQP at the startup.
-  // Note: this limit is only applied at startup and more urls can be indexed
-  // during the session. Returns -1 if limit is not set by trials.
-  static int MaxNumHQPUrlsIndexedAtStartup();
-
-  // ---------------------------------------------------------
-  // For the HQPFixFrequencyScoring experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns the number of visits HQP should use when computing frequency
-  // scores.  Returns 10 if the epxeriment isn't active.
-  static size_t HQPMaxVisitsToScore();
-
-  // Returns the score that should be given to typed transitions.  (The score
-  // of non-typed transitions is 1.)  Returns 1.5 if the experiment isn't
-  // active.
-  static float HQPTypedValue();
-
-  // Returns NumMatchesScores; see comment by the declaration of it.
-  // If the experiment isn't active, returns an NumMatchesScores of
-  // {{1, 3}, {2, 2.5}, {3, 2}, {4, 1.5}}.
-  static NumMatchesScores HQPNumMatchesScores();
-
-  // ---------------------------------------------------------
-  // For the HQPNumTitleWords experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns the number of title words that are allowed to contribute
-  // to the topicality score.  Words later in the title are ignored.
-  // Returns 20 as a default if the experiment isn't active.
-  static size_t HQPNumTitleWordsToAllow();
-
-  // ---------------------------------------------------------
-  // For the replace HUP experiment that's part of the bundled omnibox field
-  // trial.
-
-  // Returns whether HistoryQuick provider (HQP) should attempt to score
-  // suggestions also with a HistoryURL-provider-like (HUP-like) mode, and
-  // assign suggestions the max of this score and the normal score.
-  // Returns false if the experiment isn't active.
-  static bool HQPAlsoDoHUPLikeScoring();
-
-  // Returns whether HistoryURL provider (HUP) should search its database for
-  // URLs and suggest them.  If false, HistoryURL provider merely creates the
-  // URL-what-you-typed match when appropriate.  Return true if the experiment
-  // isn't active.
-  static bool HUPSearchDatabase();
-
-  // ---------------------------------------------------------
-  // For the aggressive keyword matching experiment that's part of the bundled
-  // omnibox field trial.
-
-  // One function is missing from here to avoid a cyclic dependency
-  // between search_engine and omnibox. In the search_engine component
-  // there is a OmniboxFieldTrialKeywordRequiresRegistry function
-  // that logically should be here.
-  //
-  // It returns whether KeywordProvider should consider the registry portion
-  // (e.g., co.uk) of keywords that look like hostnames as an important part of
-  // the keyword name for matching purposes.  Returns true if the experiment
-  // isn't active.
-
-  // For keywords that look like hostnames, returns whether KeywordProvider
-  // should require users to type a prefix of the hostname to match against
-  // them, rather than just the domain name portion.  In other words, returns
-  // whether the prefix before the domain name should be considered important
-  // for matching purposes.  Returns true if the experiment isn't active.
-  static bool KeywordRequiresPrefixMatch();
-
-  // Returns the relevance score that KeywordProvider should assign to keywords
-  // with sufficiently-complete matches, i.e., the user has typed all of the
-  // important part of the keyword.  Returns -1 if the experiment isn't active.
-  static int KeywordScoreForSufficientlyCompleteMatch();
-
-  // ---------------------------------------------------------
-  // For the EmphasizeTitles experiment that's part of the bundled omnibox
-  // field trial.
-
-  // Returns the conditions under which the UI code should display the title
-  // of a URL more prominently than the URL for input |input|. Normally the URL
-  // is displayed more prominently. Returns NEVER_EMPHASIZE if the experiment
-  // isn't active.
-  static EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
-      const AutocompleteInput& input);
-
-  // ---------------------------------------------------------
-  // For UI experiments.
-
-  // Returns true if the rich entities flag is enabled.
-  static bool IsRichEntitySuggestionsEnabled();
-
-  // Returns true if either the reverse answers flag or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsReverseAnswersEnabled();
-
-  // Returns true if either the tab switch suggestions flag or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsTabSwitchSuggestionsEnabled();
-
-  // Returns true if the feature of reversing the tab switch logic is enabled.
-  static bool IsTabSwitchLogicReversed();
-
-  // Returns true if the #omnibox-pedal-suggestions feature is enabled.
-  static bool IsPedalSuggestionsEnabled();
-
-  // Returns true if either the steady-state elision flag for scheme or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsHideSteadyStateUrlSchemeEnabled();
-
-  // Returns true if either the steady-state elision flag for trivial
-  // subdomains or the #upcoming-ui-features flag is enabled.
-  static bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
-
-  // Returns the size of the vertical margin that should be used in the
-  // suggestion view.
-  static int GetSuggestionVerticalMargin();
-
-  // Simply a convenient wrapper for testing a flag. Used downstream for an
-  // assortment of keyword mode experiments.
-  static bool IsExperimentalKeywordModeEnabled();
-
-  // ---------------------------------------------------------
-  // Clipboard URL suggestions:
-
-  // The parameter "ClipboardURLMaximumAge" doesn't live in this file; instead
-  // it lives in
-  // components/open_from_clipboard/clipboard_recent_content.cc.
-  // Please see ClipboardRecentContent::MaximumAgeOfClipboard() for the usage
-  // of it.  The parameter cannot live here because that component cannot
-  // include this component, else there would be a circular dependency.
-
-  // ---------------------------------------------------------
-  // Exposed publicly for the sake of unittests.
-  static const char kBundledExperimentFieldTrialName[];
-  // Rule names used by the bundled experiment.
-  static const char kDisableProvidersRule[];
-  static const char kShortcutsScoringMaxRelevanceRule[];
-  static const char kSearchHistoryRule[];
-  static const char kDemoteByTypeRule[];
-  static const char kHQPBookmarkValueRule[];
-  static const char kHQPTypedValueRule[];
-  static const char kHQPAllowMatchInTLDRule[];
-  static const char kHQPAllowMatchInSchemeRule[];
-  static const char kZeroSuggestVariantRule[];
-  static const char kDisableResultsCachingRule[];
-  static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
-  static const char kSuggestPollingDelayMsRule[];
-  static const char kHQPMaxVisitsToScoreRule[];
-  static const char kHQPNumMatchesScoresRule[];
-  static const char kHQPNumTitleWordsRule[];
-  static const char kHQPAlsoDoHUPLikeScoringRule[];
-  static const char kHUPSearchDatabaseRule[];
-  static const char kPreventUWYTDefaultForNonURLInputsRule[];
-  static const char kKeywordRequiresRegistryRule[];
-  static const char kKeywordRequiresPrefixMatchRule[];
-  static const char kKeywordScoreForSufficientlyCompleteMatchRule[];
-  static const char kHQPAllowDupMatchesForScoringRule[];
-  static const char kEmphasizeTitlesRule[];
-
-  // Parameter names used by the HUP new scoring experiments.
-  static const char kHUPNewScoringTypedCountRelevanceCapParam[];
-  static const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
-  static const char kHUPNewScoringTypedCountScoreBucketsParam[];
-  static const char kHUPNewScoringTypedCountUseDecayFactorParam[];
-  static const char kHUPNewScoringVisitedCountRelevanceCapParam[];
-  static const char kHUPNewScoringVisitedCountHalfLifeTimeParam[];
-  static const char kHUPNewScoringVisitedCountScoreBucketsParam[];
-  static const char kHUPNewScoringVisitedCountUseDecayFactorParam[];
-
-  // Parameter names used by the HQP experimental scoring experiments.
-  static const char kHQPExperimentalScoringBucketsParam[];
-  static const char kHQPExperimentalScoringTopicalityThresholdParam[];
-
-  // Parameter names used by the experiment that limits the number of history
-  // urls indexed for suggestions.
-  static const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
-  static const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
-
-  // Parameter names used by UI experiments.
-  static const char kUIMaxAutocompleteMatchesParam[];
-  static const char kUIVerticalMarginParam[];
-
-  // Parameter name and values used by the Simplify HTTPS experiment.
-  static const char kSimplifyHttpsIndicatorParameterName[];
-  static const char kSimplifyHttpsIndicatorParameterEvToSecure[];
-  static const char kSimplifyHttpsIndicatorParameterSecureToLock[];
-  static const char kSimplifyHttpsIndicatorParameterBothToLock[];
-  static const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
-
-  // Parameter names used by Zero Suggest Redirect to Chrome.
-  static const char kZeroSuggestRedirectToChromeExperimentIdParam[];
-  static const char kZeroSuggestRedirectToChromeServerAddressParam[];
-
-  // The amount of time to wait before sending a new suggest request after the
-  // previous one unless overridden by a field trial parameter.
-  // Non-const because some unittests modify this value.
-  static int kDefaultMinimumTimeBetweenSuggestQueriesMs;
-
- private:
-  friend class OmniboxFieldTrialTest;
-
-  // The bundled omnibox experiment comes with a set of parameters
-  // (key-value pairs).  Each key indicates a certain rule that applies in
-  // a certain context.  The value indicates what the consequences of
-  // applying the rule are.  For example, the value of a SearchHistory rule
-  // in the context of a search results page might indicate that we should
-  // prevent search history matches from inlining.
-  //
-  // This function returns the value associated with the |rule| that applies
-  // in the current context (which currently consists of |page_classification|
-  // and whether Instant Extended is enabled).  If no such rule exists in the
-  // current context, fall back to the rule in various wildcard contexts and
-  // return its value if found.  If the rule remains unfound in the global
-  // context, returns the empty string.  For more details, including how we
-  // prioritize different wildcard contexts, see the implementation.  How to
-  // interpret the value is left to the caller; this is rule-dependent.
-  static std::string GetValueForRuleInContext(
-      const std::string& rule,
-      metrics::OmniboxEventProto::PageClassification page_classification);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
+namespace OmniboxFieldTrial {
+// A mapping that contains multipliers indicating that matches of the
+// specified type should have their relevance score multiplied by the
+// given number.  Omitted types are assumed to have multipliers of 1.0.
+typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
+
+// A vector that maps from the number of matching pages to the document
+// specificity score used in HistoryQuick provider / ScoredHistoryMatch
+// scoring. The vector is sorted by the size_t (the number of matching pages).
+// If an entry is omitted, the appropriate value is assumed to be the one in
+// the later bucket.  For example, with a vector containing {{1, 2.0},
+// {3, 1.5}}, the score for 2 is inferred to be 1.5.  Values beyond the
+// end of the vector are assumed to have scores of 1.0.
+typedef std::vector<std::pair<size_t, double>> NumMatchesScores;
+
+// Do not change these values as they need to be in sync with values
+// specified in experiment configs on the variations server.
+enum EmphasizeTitlesCondition {
+  EMPHASIZE_WHEN_NONEMPTY = 0,
+  EMPHASIZE_WHEN_TITLE_MATCHES = 1,
+  EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
+  EMPHASIZE_NEVER = 3
 };
+
+// ---------------------------------------------------------
+// For any experiment that's part of the bundled omnibox field trial.
+
+// Returns a bitmap containing AutocompleteProvider::Type values
+// that should be disabled in AutocompleteController.
+int GetDisabledProviderTypes();
+
+// Returns whether the user is in any dynamic field trial where the
+// group has a the prefix |group_prefix|.
+bool HasDynamicFieldTrialGroupPrefix(const char* group_prefix);
+
+// ---------------------------------------------------------
+// For the suggest field trial.
+
+// Populates |field_trial_hash| with hashes of the active suggest field trial
+// names, if any.
+void GetActiveSuggestFieldTrialHashes(std::vector<uint32_t>* field_trial_hash);
+
+// ---------------------------------------------------------
+// For the AutocompleteController "stop timer" field trial.
+
+// Returns the duration to be used for the AutocompleteController's stop
+// timer.  Returns the default value of 1.5 seconds if the stop timer
+// override experiment isn't active or if parsing the experiment-provided
+// duration fails.
+base::TimeDelta StopTimerFieldTrialDuration();
+
+// ---------------------------------------------------------
+// For the ZeroSuggestProvider field trial.
+
+// Returns whether the user is in a ZeroSuggest field trial, which shows
+// most visited URLs. This is true for both "MostVisited" and
+// "MostVisitedWithoutSERP" trials.
+bool InZeroSuggestMostVisitedFieldTrial();
+
+// Returns whether the user is in ZeroSuggest field trial showing most
+// visited URLs except it doesn't show suggestions on Google search result
+// pages.
+bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
+
+// Returns whether the user is in a ZeroSuggest field trial, but should
+// show recently searched-for queries instead.
+bool InZeroSuggestPersonalizedFieldTrial();
+
+// ---------------------------------------------------------
+// For the Zero Suggest Redirect to Chrome field trial.
+
+// Returns the server-side experiment ID to use for contextual suggestions.
+// Returns -1 if there is no associated experiment ID.
+int GetZeroSuggestRedirectToChromeExperimentId();
+
+// Returns the server address associated with the current field trial.
+std::string GetZeroSuggestRedirectToChromeServerAddress();
+
+// ---------------------------------------------------------
+// For the ShortcutsScoringMaxRelevance experiment that's part of the
+// bundled omnibox field trial.
+
+// If the user is in an experiment group that, given the provided
+// |current_page_classification| context, changes the maximum relevance
+// ShortcutsProvider::CalculateScore() is supposed to assign, extract
+// that maximum relevance score and put in in |max_relevance|.  Returns
+// true on a successful extraction.  CalculateScore()'s return value is
+// a product of this maximum relevance score and some attenuating factors
+// that are all between 0 and 1.  (Note that Shortcuts results may have
+// their scores reduced later if the assigned score is higher than allowed
+// for non-inlineable results.  Shortcuts results are not allowed to be
+// inlined.)
+bool ShortcutsScoringMaxRelevance(
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
+    int* max_relevance);
+
+// ---------------------------------------------------------
+// For the SearchHistory experiment that's part of the bundled omnibox
+// field trial.
+
+// Returns true if the user is in the experiment group that, given the
+// provided |current_page_classification| context, scores search history
+// query suggestions less aggressively so that they don't inline.
+bool SearchHistoryPreventInlining(
+    metrics::OmniboxEventProto::PageClassification current_page_classification);
+
+// Returns true if the user is in the experiment group that, given the
+// provided |current_page_classification| context, disables all query
+// suggestions from search history.
+bool SearchHistoryDisable(
+    metrics::OmniboxEventProto::PageClassification current_page_classification);
+
+// ---------------------------------------------------------
+// For the DemoteByType experiment that's part of the bundled omnibox field
+// trial.
+
+// If the user is in an experiment group that, in the provided
+// |current_page_classification| context, demotes the relevance scores
+// of certain types of matches, populates the |demotions_by_type| map
+// appropriately.  Otherwise, sets |demotions_by_type| to its default
+// value based on the context.
+void GetDemotionsByType(
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
+    DemotionMultipliers* demotions_by_type);
+
+// ---------------------------------------------------------
+// For the HistoryURL provider new scoring experiment that is part of the
+// bundled omnibox field trial.
+
+// Initializes the HUP |scoring_params| based on the active HUP scoring
+// experiment.
+void GetDefaultHUPScoringParams(HUPScoringParams* scoring_params);
+void GetExperimentalHUPScoringParams(HUPScoringParams* scoring_params);
+
+// ---------------------------------------------------------
+// For the HQPBookmarkValue experiment that's part of the
+// bundled omnibox field trial.
+
+// Returns the value an untyped visit to a bookmark should receive.
+// Compare this value with the default of 1 for non-bookmarked untyped
+// visits to pages and the default of 20 for typed visits.  Returns
+// 10 if the bookmark value experiment isn't active.
+float HQPBookmarkValue();
+
+// ---------------------------------------------------------
+// For the HQPAllowMatchInTLD experiment that's part of the
+// bundled omnibox field trial.
+
+// Returns true if HQP should allow an input term to match in the
+// top level domain (e.g., .com) of a URL.  Returns false if the
+// allow match in TLD experiment isn't active.
+bool HQPAllowMatchInTLDValue();
+
+// ---------------------------------------------------------
+// For the HQPAllowMatchInScheme experiment that's part of the
+// bundled omnibox field trial.
+
+// Returns true if HQP should allow an input term to match in the
+// scheme (e.g., http://) of a URL.  Returns false if the allow
+// match in scheme experiment isn't active.
+bool HQPAllowMatchInSchemeValue();
+
+// ---------------------------------------------------------
+// For SearchProvider related experiments.
+
+// Returns true if the search provider should not be caching results.
+bool DisableResultsCaching();
+
+// Returns how the search provider should poll Suggest. Currently, we support
+// measuring polling delay from the last keystroke or last suggest request.
+void GetSuggestPollingStrategy(bool* from_last_keystroke,
+                               int* polling_delay_ms);
+
+// ---------------------------------------------------------
+// For HQP scoring related experiments to control the topicality and scoring
+// ranges of relevancy scores.
+
+// Returns the scoring buckets for HQP experiments. Returns an empty string
+// if scoring buckets are not specified in the field trial. Scoring buckets
+// are stored in string form giving mapping from (topicality_score,
+// frequency_score) to final relevance score. Please see GetRelevancyScore()
+// under chrome/browser/history::ScoredHistoryMatch for details.
+std::string HQPExperimentalScoringBuckets();
+
+// Returns the topicality threshold for HQP experiments. Returns a default
+// value of 0.5 if no threshold is specified in the field trial.
+float HQPExperimentalTopicalityThreshold();
+
+// ---------------------------------------------------------
+// For experiment to limit HQP url indexing that's part of the bundled
+// omnibox field trial.
+
+// Returns the maximum number of history urls to index for HQP at the startup.
+// Note: this limit is only applied at startup and more urls can be indexed
+// during the session. Returns -1 if limit is not set by trials.
+int MaxNumHQPUrlsIndexedAtStartup();
+
+// ---------------------------------------------------------
+// For the HQPFixFrequencyScoring experiment that's part of the
+// bundled omnibox field trial.
+
+// Returns the number of visits HQP should use when computing frequency
+// scores.  Returns 10 if the epxeriment isn't active.
+size_t HQPMaxVisitsToScore();
+
+// Returns the score that should be given to typed transitions.  (The score
+// of non-typed transitions is 1.)  Returns 1.5 if the experiment isn't
+// active.
+float HQPTypedValue();
+
+// Returns NumMatchesScores; see comment by the declaration of it.
+// If the experiment isn't active, returns an NumMatchesScores of
+// {{1, 3}, {2, 2.5}, {3, 2}, {4, 1.5}}.
+NumMatchesScores HQPNumMatchesScores();
+
+// ---------------------------------------------------------
+// For the HQPNumTitleWords experiment that's part of the
+// bundled omnibox field trial.
+
+// Returns the number of title words that are allowed to contribute
+// to the topicality score.  Words later in the title are ignored.
+// Returns 20 as a default if the experiment isn't active.
+size_t HQPNumTitleWordsToAllow();
+
+// ---------------------------------------------------------
+// For the replace HUP experiment that's part of the bundled omnibox field
+// trial.
+
+// Returns whether HistoryQuick provider (HQP) should attempt to score
+// suggestions also with a HistoryURL-provider-like (HUP-like) mode, and
+// assign suggestions the max of this score and the normal score.
+// Returns false if the experiment isn't active.
+bool HQPAlsoDoHUPLikeScoring();
+
+// Returns whether HistoryURL provider (HUP) should search its database for
+// URLs and suggest them.  If false, HistoryURL provider merely creates the
+// URL-what-you-typed match when appropriate.  Return true if the experiment
+// isn't active.
+bool HUPSearchDatabase();
+
+// ---------------------------------------------------------
+// For the aggressive keyword matching experiment that's part of the bundled
+// omnibox field trial.
+
+// One function is missing from here to avoid a cyclic dependency
+// between search_engine and omnibox. In the search_engine component
+// there is a OmniboxFieldTrialKeywordRequiresRegistry function
+// that logically should be here.
+//
+// It returns whether KeywordProvider should consider the registry portion
+// (e.g., co.uk) of keywords that look like hostnames as an important part of
+// the keyword name for matching purposes.  Returns true if the experiment
+// isn't active.
+
+// For keywords that look like hostnames, returns whether KeywordProvider
+// should require users to type a prefix of the hostname to match against
+// them, rather than just the domain name portion.  In other words, returns
+// whether the prefix before the domain name should be considered important
+// for matching purposes.  Returns true if the experiment isn't active.
+bool KeywordRequiresPrefixMatch();
+
+// Returns the relevance score that KeywordProvider should assign to keywords
+// with sufficiently-complete matches, i.e., the user has typed all of the
+// important part of the keyword.  Returns -1 if the experiment isn't active.
+int KeywordScoreForSufficientlyCompleteMatch();
+
+// ---------------------------------------------------------
+// For the EmphasizeTitles experiment that's part of the bundled omnibox
+// field trial.
+
+// Returns the conditions under which the UI code should display the title
+// of a URL more prominently than the URL for input |input|. Normally the URL
+// is displayed more prominently. Returns NEVER_EMPHASIZE if the experiment
+// isn't active.
+EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
+    const AutocompleteInput& input);
+
+// ---------------------------------------------------------
+// For UI experiments.
+
+// Returns true if the rich entities flag is enabled.
+bool IsRichEntitySuggestionsEnabled();
+
+// Returns true if either the reverse answers flag or the
+// #upcoming-ui-features flag is enabled.
+bool IsReverseAnswersEnabled();
+
+// Returns true if either the tab switch suggestions flag or the
+// #upcoming-ui-features flag is enabled.
+bool IsTabSwitchSuggestionsEnabled();
+
+// Returns true if the feature of reversing the tab switch logic is enabled.
+bool IsTabSwitchLogicReversed();
+
+// Returns true if the #omnibox-pedal-suggestions feature is enabled.
+bool IsPedalSuggestionsEnabled();
+
+// Returns true if either the steady-state elision flag for scheme or the
+// #upcoming-ui-features flag is enabled.
+bool IsHideSteadyStateUrlSchemeEnabled();
+
+// Returns true if either the steady-state elision flag for trivial
+// subdomains or the #upcoming-ui-features flag is enabled.
+bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
+
+// Returns the size of the vertical margin that should be used in the
+// suggestion view.
+int GetSuggestionVerticalMargin();
+
+// Simply a convenient wrapper for testing a flag. Used downstream for an
+// assortment of keyword mode experiments.
+bool IsExperimentalKeywordModeEnabled();
+
+// ---------------------------------------------------------
+// Clipboard URL suggestions:
+
+// The parameter "ClipboardURLMaximumAge" doesn't live in this file; instead
+// it lives in
+// components/open_from_clipboard/clipboard_recent_content.cc.
+// Please see ClipboardRecentContent::MaximumAgeOfClipboard() for the usage
+// of it.  The parameter cannot live here because that component cannot
+// include this component, else there would be a circular dependency.
+
+// ---------------------------------------------------------
+// Exposed publicly for the sake of unittests.
+extern const char kBundledExperimentFieldTrialName[];
+// Rule names used by the bundled experiment.
+extern const char kDisableProvidersRule[];
+extern const char kShortcutsScoringMaxRelevanceRule[];
+extern const char kSearchHistoryRule[];
+extern const char kDemoteByTypeRule[];
+extern const char kHQPBookmarkValueRule[];
+extern const char kHQPTypedValueRule[];
+extern const char kHQPAllowMatchInTLDRule[];
+extern const char kHQPAllowMatchInSchemeRule[];
+extern const char kZeroSuggestVariantRule[];
+extern const char kDisableResultsCachingRule[];
+extern const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
+extern const char kSuggestPollingDelayMsRule[];
+extern const char kHQPMaxVisitsToScoreRule[];
+extern const char kHQPNumMatchesScoresRule[];
+extern const char kHQPNumTitleWordsRule[];
+extern const char kHQPAlsoDoHUPLikeScoringRule[];
+extern const char kHUPSearchDatabaseRule[];
+extern const char kPreventUWYTDefaultForNonURLInputsRule[];
+extern const char kKeywordRequiresRegistryRule[];
+extern const char kKeywordRequiresPrefixMatchRule[];
+extern const char kKeywordScoreForSufficientlyCompleteMatchRule[];
+extern const char kHQPAllowDupMatchesForScoringRule[];
+extern const char kEmphasizeTitlesRule[];
+
+// Parameter names used by the HUP new scoring experiments.
+extern const char kHUPNewScoringTypedCountRelevanceCapParam[];
+extern const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
+extern const char kHUPNewScoringTypedCountScoreBucketsParam[];
+extern const char kHUPNewScoringTypedCountUseDecayFactorParam[];
+extern const char kHUPNewScoringVisitedCountRelevanceCapParam[];
+extern const char kHUPNewScoringVisitedCountHalfLifeTimeParam[];
+extern const char kHUPNewScoringVisitedCountScoreBucketsParam[];
+extern const char kHUPNewScoringVisitedCountUseDecayFactorParam[];
+
+// Parameter names used by the HQP experimental scoring experiments.
+extern const char kHQPExperimentalScoringBucketsParam[];
+extern const char kHQPExperimentalScoringTopicalityThresholdParam[];
+
+// Parameter names used by the experiment that limits the number of history
+// urls indexed for suggestions.
+extern const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
+extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
+
+// Parameter names used by UI experiments.
+extern const char kUIMaxAutocompleteMatchesParam[];
+extern const char kUIVerticalMarginParam[];
+
+// Parameter name and values used by the Simplify HTTPS experiment.
+extern const char kSimplifyHttpsIndicatorParameterName[];
+extern const char kSimplifyHttpsIndicatorParameterEvToSecure[];
+extern const char kSimplifyHttpsIndicatorParameterSecureToLock[];
+extern const char kSimplifyHttpsIndicatorParameterBothToLock[];
+extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
+
+// Parameter names used by Zero Suggest Redirect to Chrome.
+extern const char kZeroSuggestRedirectToChromeExperimentIdParam[];
+extern const char kZeroSuggestRedirectToChromeServerAddressParam[];
+
+// The amount of time to wait before sending a new suggest request after the
+// previous one unless overridden by a field trial parameter.
+// Non-const because some unittests modify this value.
+extern int kDefaultMinimumTimeBetweenSuggestQueriesMs;
+
+namespace internal {
+// The bundled omnibox experiment comes with a set of parameters
+// (key-value pairs).  Each key indicates a certain rule that applies in
+// a certain context.  The value indicates what the consequences of
+// applying the rule are.  For example, the value of a SearchHistory rule
+// in the context of a search results page might indicate that we should
+// prevent search history matches from inlining.
+//
+// This function returns the value associated with the |rule| that applies
+// in the current context (which currently consists of |page_classification|
+// and whether Instant Extended is enabled).  If no such rule exists in the
+// current context, fall back to the rule in various wildcard contexts and
+// return its value if found.  If the rule remains unfound in the global
+// context, returns the empty string.  For more details, including how we
+// prioritize different wildcard contexts, see the implementation.  How to
+// interpret the value is left to the caller; this is rule-dependent.
+std::string GetValueForRuleInContext(
+    const std::string& rule,
+    metrics::OmniboxEventProto::PageClassification page_classification);
+}  // namespace internal
+
+}  // namespace OmniboxFieldTrial
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_FIELD_TRIAL_H_

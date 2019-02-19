@@ -483,7 +483,7 @@ bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
   // The value of the rule is a string that encodes an integer containing
   // the max relevance.
   const std::string& max_relevance_str =
-      OmniboxFieldTrial::GetValueForRuleInContext(
+      OmniboxFieldTrial::internal::GetValueForRuleInContext(
           kShortcutsScoringMaxRelevanceRule, current_page_classification);
   if (max_relevance_str.empty())
     return false;
@@ -494,22 +494,24 @@ bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
 
 bool OmniboxFieldTrial::SearchHistoryPreventInlining(
     OmniboxEventProto::PageClassification current_page_classification) {
-  return OmniboxFieldTrial::GetValueForRuleInContext(
-      kSearchHistoryRule, current_page_classification) == "PreventInlining";
+  return OmniboxFieldTrial::internal::GetValueForRuleInContext(
+             kSearchHistoryRule, current_page_classification) ==
+         "PreventInlining";
 }
 
 bool OmniboxFieldTrial::SearchHistoryDisable(
     OmniboxEventProto::PageClassification current_page_classification) {
-  return OmniboxFieldTrial::GetValueForRuleInContext(
-      kSearchHistoryRule, current_page_classification) == "Disable";
+  return OmniboxFieldTrial::internal::GetValueForRuleInContext(
+             kSearchHistoryRule, current_page_classification) == "Disable";
 }
 
 void OmniboxFieldTrial::GetDemotionsByType(
     OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type) {
   demotions_by_type->clear();
-  std::string demotion_rule = OmniboxFieldTrial::GetValueForRuleInContext(
-      kDemoteByTypeRule, current_page_classification);
+  std::string demotion_rule =
+      OmniboxFieldTrial::internal::GetValueForRuleInContext(
+          kDemoteByTypeRule, current_page_classification);
   // If there is no demotion rule for this context, then use the default
   // value for that context.
   if (demotion_rule.empty()) {
@@ -997,7 +999,7 @@ int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 // |rule|:*:|instant_extended|, failing that it looks up
 // |rule|:|page_classification|:*, failing that it looks up |rule|:*:*,
 // and failing that it returns the empty string.
-std::string OmniboxFieldTrial::GetValueForRuleInContext(
+std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
   VariationParams params;
