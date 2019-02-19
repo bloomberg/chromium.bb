@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -682,6 +683,16 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
       if (hit_bounds_in_screen[i].Contains(location))
         return true;
     }
+    return false;
+  }
+
+  // Don't perform an immersive reveal when gesture scrolls from the top ought
+  // to be dragging the window.
+  aura::Window* window = widget_->GetNativeWindow();
+  if (window->env()->mode() == aura::Env::Mode::MUS)
+    window = window->GetRootWindow();
+  if (window->GetProperty(
+          aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
     return false;
   }
 
