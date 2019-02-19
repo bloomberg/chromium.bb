@@ -4,7 +4,7 @@
 
 /**
  * @constructor
- * @extends {md_history.BrowserService}
+ * @extends {history.BrowserService}
  */
 const TestMetricsBrowserService = function() {
   this.histogramMap = {};
@@ -21,7 +21,7 @@ suite('Metrics', function() {
     disableLinkClicks();
 
     TestMetricsBrowserService.prototype = {
-      __proto__: md_history.BrowserService.prototype,
+      __proto__: history.BrowserService.prototype,
 
       /** @override */
       recordHistogram: function(histogram, value, max) {
@@ -55,8 +55,8 @@ suite('Metrics', function() {
   });
 
   setup(function() {
-    md_history.BrowserService.instance_ = new TestMetricsBrowserService();
-    service = md_history.BrowserService.getInstance();
+    history.BrowserService.instance_ = new TestMetricsBrowserService();
+    service = history.BrowserService.getInstance();
 
     actionMap = service.actionMap;
     histogramMap = service.histogramMap;

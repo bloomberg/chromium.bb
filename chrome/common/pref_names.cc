@@ -924,8 +924,8 @@ const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 
 #if !defined(OS_ANDROID)
 // Whether the "Click here to clear your browsing data" tooltip promo has been
-// shown on the Material Design History page.
-const char kMdHistoryMenuPromoShown[] = "history.menu_promo_shown";
+// shown on the History page.
+const char kHistoryMenuPromoShown[] = "history.menu_promo_shown";
 #endif
 
 // Boolean controlling whether SafeSearch is mandatory for Google Web Searches.

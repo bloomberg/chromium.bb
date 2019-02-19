@@ -323,7 +323,7 @@ void EnsureReminderHasButton(XmlWriter* xml_writer,
   // TODO(finnur): Add our own string here (we're past string-freeze so we're
   // re-using the already translated "Close" from elsewhere).
   xml_writer->AddAttribute(
-      kContent, l10n_util::GetStringUTF8(IDS_MD_HISTORY_CLOSE_MENU_PROMO));
+      kContent, l10n_util::GetStringUTF8(IDS_HISTORY_CLOSE_MENU_PROMO));
   copied_launch_id.set_is_for_dismiss_button();
   xml_writer->AddAttribute(kArguments, copied_launch_id.Serialize());
   xml_writer->EndElement();

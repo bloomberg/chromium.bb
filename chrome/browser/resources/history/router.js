@@ -41,7 +41,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // Redirect legacy search URLs to URLs compatible with material history.
+    // Redirect legacy search URLs to URLs compatible with History.
     if (window.location.hash) {
       window.location.href = window.location.href.split('#')[0] + '?' +
           window.location.hash.substr(1);

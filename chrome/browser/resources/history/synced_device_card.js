@@ -72,7 +72,7 @@ Polymer({
    */
   openTab_: function(e) {
     const tab = /** @type {ForeignSessionTab} */ (e.model.tab);
-    const browserService = md_history.BrowserService.getInstance();
+    const browserService = history.BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_CLICKED,
         SyncedTabsHistogram.LIMIT);
@@ -89,7 +89,7 @@ Polymer({
         SyncedTabsHistogram.COLLAPSE_SESSION :
         SyncedTabsHistogram.EXPAND_SESSION;
 
-    md_history.BrowserService.getInstance().recordHistogram(
+    history.BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, histogramValue, SyncedTabsHistogram.LIMIT);
 
     this.$.collapse.toggle();
@@ -157,7 +157,7 @@ Polymer({
   },
 
   onLinkRightClick_: function() {
-    md_history.BrowserService.getInstance().recordHistogram(
+    history.BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_RIGHT_CLICKED,
         SyncedTabsHistogram.LIMIT);
   },

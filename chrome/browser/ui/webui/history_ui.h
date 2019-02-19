@@ -17,24 +17,20 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class MdHistoryUI : public content::WebUIController {
+class HistoryUI : public content::WebUIController {
  public:
-  explicit MdHistoryUI(content::WebUI* web_ui);
-  ~MdHistoryUI() override;
+  explicit HistoryUI(content::WebUI* web_ui);
+  ~HistoryUI() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ContinueWhereILeftOffTest, MDHistoryUpgrade);
-
-  static bool use_test_title_;
-
   void UpdateDataSource();
 
   // Handler for the "menuPromoShown" message from the page. No arguments.
   void HandleMenuPromoShown(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(MdHistoryUI);
+  DISALLOW_COPY_AND_ASSIGN(HistoryUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Tests for MD History which are run as interactive ui tests.
+ * @fileoverview Tests for History which are run as interactive ui tests.
  * Should be used for tests which care about focus.
  */
 
@@ -12,9 +12,9 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
-function MaterialHistoryFocusTest() {}
+function HistoryFocusTest() {}
 
-MaterialHistoryFocusTest.prototype = {
+HistoryFocusTest.prototype = {
   __proto__: PolymerInteractiveUITest.prototype,
 
   browsePreload: 'chrome://history',
@@ -29,7 +29,7 @@ MaterialHistoryFocusTest.prototype = {
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.
       return waitForAppUpgrade()
-          .then(() => md_history.ensureLazyLoaded())
+          .then(() => history.ensureLazyLoaded())
           .then(() => {
             $('history-app').queryState_.queryingDisabled = true;
           });
@@ -37,7 +37,7 @@ MaterialHistoryFocusTest.prototype = {
   },
 };
 
-TEST_F('MaterialHistoryFocusTest', 'All', function() {
+TEST_F('HistoryFocusTest', 'All', function() {
   suite('<history-toolbar>', function() {
     let app;
     let toolbar;

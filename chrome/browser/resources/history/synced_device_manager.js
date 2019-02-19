@@ -83,7 +83,7 @@ Polymer({
 
     // Update the sign in state.
     chrome.send('otherDevicesInitialized');
-    md_history.BrowserService.getInstance().recordHistogram(
+    history.BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED,
         SyncedTabsHistogram.LIMIT);
   },
@@ -157,7 +157,7 @@ Polymer({
     const menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
     this.actionMenuModel_ = e.detail.tag;
     menu.showAt(e.detail.target);
-    md_history.BrowserService.getInstance().recordHistogram(
+    history.BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
         SyncedTabsHistogram.LIMIT);
   },
@@ -165,7 +165,7 @@ Polymer({
   /** @private */
   onOpenAllTap_: function() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = md_history.BrowserService.getInstance();
+    const browserService = history.BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
         SyncedTabsHistogram.LIMIT);
@@ -195,7 +195,7 @@ Polymer({
   /** @private */
   onDeleteSessionTap_: function() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = md_history.BrowserService.getInstance();
+    const browserService = history.BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW,
         SyncedTabsHistogram.LIMIT);
@@ -235,7 +235,7 @@ Polymer({
   showSignInGuide: function(signInState, guestSession) {
     const show = !signInState && !guestSession;
     if (show) {
-      md_history.BrowserService.getInstance().recordAction(
+      history.BrowserService.getInstance().recordAction(
           'Signin_Impression_FromRecentTabs');
     }
 
@@ -272,7 +272,7 @@ Polymer({
 
     if (sessionList.length > 0 && !this.hasSeenForeignData_) {
       this.hasSeenForeignData_ = true;
-      md_history.BrowserService.getInstance().recordHistogram(
+      history.BrowserService.getInstance().recordHistogram(
           SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
           SyncedTabsHistogram.LIMIT);
     }
