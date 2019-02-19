@@ -151,8 +151,9 @@ class MonitoredProcessClient {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     ASSERT_TRUE(message_window_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&MonitoredProcessClient::CreateMessageWindowInWorkerThread,
-                   base::Unretained(this), &succeeded, &created)));
+        base::BindOnce(
+            &MonitoredProcessClient::CreateMessageWindowInWorkerThread,
+            base::Unretained(this), &succeeded, &created)));
     created.Wait();
     ASSERT_TRUE(succeeded);
   }
@@ -160,8 +161,8 @@ class MonitoredProcessClient {
   // Creates a thread then creates the message window on it.
   void HangMessageWindow() {
     message_window_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Wait, base::Unretained(&hang_event_)));
+        FROM_HERE, base::BindOnce(&base::WaitableEvent::Wait,
+                                  base::Unretained(&hang_event_)));
   }
 
   bool SendSignalToParent(IPCSignal ipc_signal) {
@@ -201,8 +202,9 @@ class MonitoredProcessClient {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     message_window_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&MonitoredProcessClient::DeleteMessageWindowInWorkerThread,
-                   base::Unretained(this), &deleted));
+        base::BindOnce(
+            &MonitoredProcessClient::DeleteMessageWindowInWorkerThread,
+            base::Unretained(this), &deleted));
     deleted.Wait();
 
     message_window_thread_.Stop();
@@ -293,8 +295,8 @@ class HangMonitorThread {
   // operation completes.
   void DestroyWatcher() {
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HangMonitorThread::ShutdownOnThread,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&HangMonitorThread::ShutdownOnThread,
+                                  base::Unretained(this)));
     // This will block until the above-posted task completes.
     thread_.Stop();
   }

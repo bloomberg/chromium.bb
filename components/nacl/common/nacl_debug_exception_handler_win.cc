@@ -43,7 +43,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     } else {
       LOG(ERROR) << "Invalid process handle";
     }
-    task_runner_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(on_connected_, attached));
 
     if (attached) {
       NaClDebugExceptionHandlerRun(

@@ -845,17 +845,18 @@ void WiFiServiceImpl::OnWlanNotification(
           reinterpret_cast<PWLAN_CONNECTION_NOTIFICATION_DATA>(
               wlan_notification_data->pData);
       event_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&WiFiServiceImpl::NotifyNetworkChanged,
-                                base::Unretained(this),
-                                GUIDFromSSID(wlan_connection_data->dot11Ssid)));
+          FROM_HERE,
+          base::BindOnce(&WiFiServiceImpl::NotifyNetworkChanged,
+                         base::Unretained(this),
+                         GUIDFromSSID(wlan_connection_data->dot11Ssid)));
       break;
     }
     case wlan_notification_acm_scan_complete:
     case wlan_notification_acm_interface_removal:
       event_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&WiFiServiceImpl::OnNetworkScanCompleteOnMainThread,
-                     base::Unretained(this)));
+          base::BindOnce(&WiFiServiceImpl::OnNetworkScanCompleteOnMainThread,
+                         base::Unretained(this)));
       break;
   }
 }
@@ -941,10 +942,8 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     // Continue waiting for network connection state change.
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&WiFiServiceImpl::WaitForNetworkConnect,
-                   base::Unretained(this),
-                   network_guid,
-                   ++attempt),
+        base::BindOnce(&WiFiServiceImpl::WaitForNetworkConnect,
+                       base::Unretained(this), network_guid, ++attempt),
         base::TimeDelta::FromMilliseconds(kAttemptDelayMs));
   }
 }
@@ -1806,7 +1805,8 @@ void WiFiServiceImpl::NotifyNetworkListChanged(const NetworkList& networks) {
   }
 
   event_task_runner_->PostTask(
-      FROM_HERE, base::Bind(network_list_changed_observer_, current_networks));
+      FROM_HERE,
+      base::BindOnce(network_list_changed_observer_, current_networks));
 }
 
 void WiFiServiceImpl::NotifyNetworkChanged(const std::string& network_guid) {
@@ -1814,7 +1814,8 @@ void WiFiServiceImpl::NotifyNetworkChanged(const std::string& network_guid) {
     DVLOG(1) << "NotifyNetworkChanged: " << network_guid;
     NetworkGuidList changed_networks(1, network_guid);
     event_task_runner_->PostTask(
-        FROM_HERE, base::Bind(networks_changed_observer_, changed_networks));
+        FROM_HERE,
+        base::BindOnce(networks_changed_observer_, changed_networks));
   }
 }
 

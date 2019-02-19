@@ -114,7 +114,7 @@ void GCMDriverAndroid::ValidateRegistration(
     const ValidateRegistrationCallback& callback) {
   // gcm_driver doesn't store registration IDs on Android, so assume it's valid.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true /* is_valid */));
+      FROM_HERE, base::BindOnce(callback, true /* is_valid */));
 }
 
 void GCMDriverAndroid::OnSignedIn() {
