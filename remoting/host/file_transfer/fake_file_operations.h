@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_FILE_TRANSFER_FAKE_FILE_OPERATIONS_H_
 #define REMOTING_HOST_FILE_TRANSFER_FAKE_FILE_OPERATIONS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,7 @@ class FakeFileOperations : public FileOperations {
     OutputFile(const OutputFile& other);
     ~OutputFile();
 
-    // The filename provided to WriteFile.
+    // The filename provided to Open.
     base::FilePath filename;
 
     // True if the file was canceled or returned an error due to io_error being
@@ -55,14 +56,11 @@ class FakeFileOperations : public FileOperations {
   ~FakeFileOperations() override;
 
   // FileOperations implementation.
-  void WriteFile(const base::FilePath& filename,
-                 WriteFileCallback callback) override;
-  void ReadFile(ReadFileCallback) override;
+  std::unique_ptr<Reader> CreateReader() override;
+  std::unique_ptr<Writer> CreateWriter() override;
 
  private:
   class FakeFileWriter;
-
-  void DoWriteFile(const base::FilePath& filename, WriteFileCallback callback);
 
   TestIo* test_io_;
 };

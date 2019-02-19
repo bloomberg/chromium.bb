@@ -38,21 +38,20 @@ class IpcFileOperations : public FileOperations {
   // Handles responses to file operations requests.
   class ResultHandler {
    public:
+    using Result = protocol::FileTransferResult<Monostate>;
+
     virtual ~ResultHandler() = default;
-    virtual void OnResult(std::uint64_t file_id,
-                          protocol::FileTransferResult<Monostate> result) = 0;
+    virtual void OnResult(std::uint64_t file_id, Result result) = 0;
   };
 
   ~IpcFileOperations() override;
 
   // FileOperations implementation.
-  void WriteFile(const base::FilePath& filename,
-                 WriteFileCallback callback) override;
-  void ReadFile(ReadFileCallback) override;
+  std::unique_ptr<Reader> CreateReader() override;
+  std::unique_ptr<Writer> CreateWriter() override;
 
  private:
-  using ResultCallback =
-      base::OnceCallback<void(protocol::FileTransferResult<Monostate>)>;
+  using ResultCallback = base::OnceCallback<void(ResultHandler::Result)>;
 
   class IpcWriter;
 
@@ -79,10 +78,6 @@ class IpcFileOperations : public FileOperations {
 
   explicit IpcFileOperations(base::WeakPtr<SharedState> shared_state);
 
-  static void OnWriteFileResult(std::unique_ptr<IpcWriter> writer,
-                                WriteFileCallback callback,
-                                protocol::FileTransferResult<Monostate> result);
-
   // Contains shared state used by all instances tied to a given
   // RequestHandler.
   base::WeakPtr<SharedState> shared_state_;
@@ -105,8 +100,7 @@ class IpcFileOperationsFactory : public IpcFileOperations::ResultHandler {
   std::unique_ptr<FileOperations> CreateFileOperations();
 
   // ResultHandler implementation.
-  void OnResult(std::uint64_t file_id,
-                protocol::FileTransferResult<Monostate> result) override;
+  void OnResult(std::uint64_t file_id, Result result) override;
 
  private:
   IpcFileOperations::SharedState shared_state_;

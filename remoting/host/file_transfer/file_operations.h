@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "remoting/protocol/file_transfer_helpers.h"
 
@@ -24,71 +25,87 @@ namespace remoting {
 class FileOperations {
  public:
   enum State {
+    // The Reader/Writer has been newly created. No file is open, yet.
+    kCreated = 0,
+
     // The file has been opened. WriteChunk(), ReadChunk(), and Close() can be
     // called.
-    kReady = 0,
+    kReady = 1,
 
     // A file operation is currently being processed. WriteChunk(), ReadChunk(),
     // and Close() cannot be called until the state changes back to kReady.
-    kBusy = 1,
+    kBusy = 2,
 
-    // Close() has been called and succeeded.
-    kClosed = 2,
+    // EOF has been reached (when reading) or Close() has been called and
+    // succeeded (when writing).
+    kComplete = 3,
 
-    // Cancel() has been called or an error occured.
-    kFailed = 3,
-  };
-
-  class Writer {
-   public:
-    using Callback = base::OnceCallback<void(
-        protocol::FileTransferResult<Monostate> result)>;
-
-    // Destructing FileWriter before calling Close will implicitly call Cancel.
-    virtual ~Writer() {}
-    // Writes a chuck to the file. Chunks cannot be queued; the caller must
-    // wait until callback is called before calling WriteChunk again or calling
-    // Close.
-    virtual void WriteChunk(std::string data, Callback callback) = 0;
-    // Closes the file, flushing any data still in the OS buffer and moving the
-    // the file to its final location.
-    virtual void Close(Callback callback) = 0;
-    // Cancels writing the file. The partially written file will be deleted. May
-    // be called at any time (including when an operation is pending).
-    virtual void Cancel() = 0;
-    virtual State state() = 0;
+    // An error has occurred.
+    kFailed = 4,
   };
 
   class Reader {
    public:
-    // On success, |result| will contain the read data.
-    using Callback = base::OnceCallback<void(
-        protocol::FileTransferResult<std::string> result)>;
+    using OpenResult = protocol::FileTransferResult<Monostate>;
+    using OpenCallback = base::OnceCallback<void(OpenResult result)>;
 
-    virtual ~Reader() {}
+    // On success, |result| will contain the read data, or an empty string on
+    // EOF. Once EOF is reached, the state will transition to kComplete and no
+    // more operations may be performed. The reader will attempt to read as much
+    // data as requested, but there may be cases where less data is returned.
+    using ReadResult = protocol::FileTransferResult<std::string>;
+    using ReadCallback = base::OnceCallback<void(ReadResult result)>;
+
+    // Once destroyed, no further callbacks will be invoked.
+    virtual ~Reader() = default;
+
+    // Prompt the user to select a file and open it for reading.
+    virtual void Open(OpenCallback callback) = 0;
+
     // Reads a chunk of the given size from the file.
-    virtual void ReadChunk(std::size_t size, Callback callback) = 0;
-    virtual void Close() = 0;
-    virtual State state() = 0;
+    virtual void ReadChunk(std::size_t size, ReadCallback callback) = 0;
+
+    virtual const base::FilePath& filename() const = 0;
+    virtual std::uint64_t size() const = 0;
+    virtual State state() const = 0;
   };
 
-  // On success, |result| will contain a Writer that can be used to write data
-  // to the file.
-  using WriteFileCallback = base::OnceCallback<void(
-      protocol::FileTransferResult<std::unique_ptr<Writer>> result)>;
-  // On success, |result| will contain a Reader that can be used to read data
-  // from the file.
-  using ReadFileCallback = base::OnceCallback<void(
-      protocol::FileTransferResult<std::unique_ptr<Reader>> result)>;
+  class Writer {
+   public:
+    using Result = protocol::FileTransferResult<Monostate>;
+    using Callback = base::OnceCallback<void(Result result)>;
 
-  virtual ~FileOperations() {}
+    // Destructing before the file is completely written and closed will
+    // automatically delete the partial file. If the Writer is destroyed after
+    // calling Close but before the associated callback is invoked, the file may
+    // either be complete or deleted, depending on the exact timing. In any
+    // event, no further callbacks will be invoked once the object is destroyed.
+    virtual ~Writer() = default;
 
-  // Starts writing a new file to the default location. This will create a temp
-  // file at the location, which will be renamed when writing is complete.
-  virtual void WriteFile(const base::FilePath& filename,
-                         WriteFileCallback callback) = 0;
-  // Prompt the user to select a file and start reading it.
-  virtual void ReadFile(ReadFileCallback) = 0;
+    // Starts writing a new file to the default location. This will create a
+    // temp file at the location, which will be renamed when writing is
+    // complete.
+    virtual void Open(const base::FilePath& filename, Callback callback) = 0;
+
+    // Writes a chuck to the file. Chunks cannot be queued; the caller must
+    // wait until callback is called before calling WriteChunk again or calling
+    // Close.
+    virtual void WriteChunk(std::string data, Callback callback) = 0;
+
+    // Closes the file, flushing any data still in the OS buffer and moving the
+    // the file to its final location.
+    virtual void Close(Callback callback) = 0;
+
+    virtual State state() const = 0;
+  };
+
+  FileOperations() = default;
+  virtual ~FileOperations() = default;
+
+  virtual std::unique_ptr<Reader> CreateReader() = 0;
+  virtual std::unique_ptr<Writer> CreateWriter() = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FileOperations);
 };
 }  // namespace remoting
 

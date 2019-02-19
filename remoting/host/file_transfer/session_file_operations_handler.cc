@@ -12,14 +12,26 @@ SessionFileOperationsHandler::SessionFileOperationsHandler(
     IpcFileOperations::ResultHandler* result_handler,
     std::unique_ptr<FileOperations> file_operations)
     : result_handler_(result_handler),
-      file_operations_(std::move(file_operations)),
-      weak_ptr_factory_(this) {}
+      file_operations_(std::move(file_operations)) {}
 
 void SessionFileOperationsHandler::WriteFile(uint64_t file_id,
                                              const base::FilePath& filename) {
-  file_operations_->WriteFile(
-      filename, base::BindOnce(&SessionFileOperationsHandler::OnWriteFileResult,
-                               weak_ptr_factory_.GetWeakPtr(), file_id));
+  auto location = writers_.emplace(file_id, file_operations_->CreateWriter());
+  if (!location.second) {
+    // Strange, we've already received a WriteFile message for this ID. Cancel
+    // it and send an error to be safe.
+    writers_.erase(location.first);
+    result_handler_->OnResult(
+        file_id,
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR));
+    return;
+  }
+  // Unretained is sound because no Writer callbacks will be invoked after the
+  // Writer is destroyed.
+  location.first->second->Open(
+      filename, base::BindOnce(&SessionFileOperationsHandler::OnOperationResult,
+                               base::Unretained(this), file_id));
 }
 
 void SessionFileOperationsHandler::WriteChunk(uint64_t file_id,
@@ -34,8 +46,8 @@ void SessionFileOperationsHandler::WriteChunk(uint64_t file_id,
   }
   writer_iter->second->WriteChunk(
       std::move(data),
-      base::BindOnce(&SessionFileOperationsHandler::OnWriteChunkResult,
-                     weak_ptr_factory_.GetWeakPtr(), file_id));
+      base::BindOnce(&SessionFileOperationsHandler::OnOperationResult,
+                     base::Unretained(this), file_id));
 }
 
 void SessionFileOperationsHandler::Close(uint64_t file_id) {
@@ -49,7 +61,7 @@ void SessionFileOperationsHandler::Close(uint64_t file_id) {
   }
   writer_iter->second->Close(
       base::BindOnce(&SessionFileOperationsHandler::OnCloseResult,
-                     weak_ptr_factory_.GetWeakPtr(), file_id));
+                     base::Unretained(this), file_id));
 }
 
 void SessionFileOperationsHandler::Cancel(uint64_t file_id) {
@@ -64,27 +76,9 @@ void SessionFileOperationsHandler::Cancel(uint64_t file_id) {
   writers_.erase(writer_iter);
 }
 
-void SessionFileOperationsHandler::OnWriteFileResult(
+void SessionFileOperationsHandler::OnOperationResult(
     uint64_t file_id,
-    protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
-        result) {
-  if (!result_handler_) {
-    return;
-  }
-
-  result_handler_->OnResult(file_id, std::move(result).Map([&](auto writer) {
-    writers_.emplace(file_id, std::move(writer));
-    return kMonostate;
-  }));
-}
-
-void SessionFileOperationsHandler::OnWriteChunkResult(
-    uint64_t file_id,
-    protocol::FileTransferResult<Monostate> result) {
-  if (!result_handler_) {
-    return;
-  }
-
+    FileOperations::Writer::Result result) {
   if (!result) {
     writers_.erase(file_id);
   }
@@ -93,11 +87,7 @@ void SessionFileOperationsHandler::OnWriteChunkResult(
 
 void SessionFileOperationsHandler::OnCloseResult(
     uint64_t file_id,
-    protocol::FileTransferResult<Monostate> result) {
-  if (!result_handler_) {
-    return;
-  }
-
+    FileOperations::Writer::Result result) {
   writers_.erase(file_id);
   result_handler_->OnResult(file_id, std::move(result));
 }

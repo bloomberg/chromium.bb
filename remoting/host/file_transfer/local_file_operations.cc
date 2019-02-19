@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -44,35 +45,27 @@ remoting::protocol::FileTransfer_Error_Type FileErrorToResponseErrorType(
 
 class LocalFileWriter : public FileOperations::Writer {
  public:
+  LocalFileWriter();
   ~LocalFileWriter() override;
 
-  // FileOperations::FileWriter implementation
+  // FileOperations::Writer implementation
+  void Open(const base::FilePath& filename, Callback callback) override;
   void WriteChunk(std::string data, Callback callback) override;
   void Close(Callback callback) override;
-  void Cancel() override;
-  FileOperations::State state() override;
-
-  static void WriteFile(const base::FilePath& filename,
-                        FileOperations::WriteFileCallback callback);
+  FileOperations::State state() const override;
 
  private:
-  LocalFileWriter(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-                  std::unique_ptr<base::FileProxy> file_proxy,
-                  const base::FilePath& destination_filepath);
+  void Cancel();
 
-  // Callbacks for WriteFile(). These are static because they're used in the
-  // construction of LocalFileWriter.
-  static void OnGetTargetDirectoryResult(
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+  // Callbacks for Open().
+  void OnGetTargetDirectoryResult(
       base::FilePath filename,
-      FileOperations::WriteFileCallback callback,
+      Callback callback,
       protocol::FileTransferResult<base::FilePath> target_directory_result);
-  static void CreateTempFile(std::unique_ptr<LocalFileWriter> writer,
-                             FileOperations::WriteFileCallback callback,
-                             int unique_path_number);
-  static void OnCreateResult(std::unique_ptr<LocalFileWriter> writer,
-                             FileOperations::WriteFileCallback callback,
-                             base::File::Error error);
+  void CreateTempFile(Callback callback,
+                      base::FilePath temp_filepath,
+                      int unique_path_number);
+  void OnCreateResult(Callback callback, base::File::Error error);
 
   void OnWriteResult(std::string data,
                      Callback callback,
@@ -86,33 +79,51 @@ class LocalFileWriter : public FileOperations::Writer {
 
   void SetState(FileOperations::State state);
 
-  FileOperations::State state_ = FileOperations::kReady;
+  FileOperations::State state_ = FileOperations::kCreated;
 
   base::FilePath destination_filepath_;
   base::FilePath temp_filepath_;
   std::uint64_t bytes_written_ = 0;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  std::unique_ptr<base::FileProxy> file_proxy_;
+  base::Optional<base::FileProxy> file_proxy_;
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LocalFileWriter> weak_factory_;
+  base::WeakPtrFactory<LocalFileWriter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileWriter);
 };
 
-LocalFileWriter::LocalFileWriter(
-    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    std::unique_ptr<base::FileProxy> file_proxy,
-    const base::FilePath& destination_filepath)
-    : destination_filepath_(std::move(destination_filepath)),
-      temp_filepath_(
-          destination_filepath_.AddExtensionASCII(kTempFileExtension)),
-      file_task_runner_(std::move(file_task_runner)),
-      file_proxy_(std::move(file_proxy)),
-      weak_factory_(this) {}
+LocalFileWriter::LocalFileWriter() : weak_ptr_factory_(this) {}
 
 LocalFileWriter::~LocalFileWriter() {
   Cancel();
+}
+
+void LocalFileWriter::Open(const base::FilePath& filename, Callback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(FileOperations::kCreated, state_);
+  SetState(FileOperations::kBusy);
+#if defined(OS_WIN)
+  // On Windows, we use user impersonation to write files as the currently
+  // logged-in user, while the process as a whole runs as SYSTEM. Since user
+  // impersonation is per-thread on Windows, we need a dedicated thread to
+  // ensure that no other code is accidentally run with the wrong privileges.
+  file_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+#else
+  file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+#endif
+  file_proxy_.emplace(file_task_runner_.get());
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE, base::BindOnce([] {
+        return EnsureUserContext().AndThen(
+            [](Monostate) { return GetDesktopDirectory(); });
+      }),
+      base::BindOnce(&LocalFileWriter::OnGetTargetDirectoryResult,
+                     weak_ptr_factory_.GetWeakPtr(), filename,
+                     std::move(callback)));
 }
 
 void LocalFileWriter::WriteChunk(std::string data, Callback callback) {
@@ -129,8 +140,8 @@ void LocalFileWriter::WriteChunk(std::string data, Callback callback) {
   const std::size_t size = data.size();
   file_proxy_->Write(bytes_written_, buffer, size,
                      base::BindOnce(&LocalFileWriter::OnWriteResult,
-                                    weak_factory_.GetWeakPtr(), std::move(data),
-                                    std::move(callback)));
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(data), std::move(callback)));
 }
 
 void LocalFileWriter::Close(Callback callback) {
@@ -138,134 +149,119 @@ void LocalFileWriter::Close(Callback callback) {
   DCHECK_EQ(FileOperations::kReady, state_);
   SetState(FileOperations::kBusy);
   file_proxy_->Close(base::BindOnce(&LocalFileWriter::OnCloseResult,
-                                    weak_factory_.GetWeakPtr(),
+                                    weak_ptr_factory_.GetWeakPtr(),
                                     std::move(callback)));
 }
 
 void LocalFileWriter::Cancel() {
-  if (state_ == FileOperations::kClosed || state_ == FileOperations::kFailed) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state_ == FileOperations::kCreated ||
+      state_ == FileOperations::kComplete ||
+      state_ == FileOperations::kFailed) {
     return;
   }
 
   // Ensure we don't receive further callbacks.
-  weak_factory_.InvalidateWeakPtrs();
-  // Drop FileProxy, which will close the underlying file on the file sequence
-  // after any possible pending operation is complete.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  // Drop FileProxy, which will close the underlying file on the file
+  // sequence after any possible pending operation is complete.
   file_proxy_.reset();
-  // And finally delete the temp file.
-  file_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                temp_filepath_, false /* recursive */));
+  // And finally, queue deletion of the temp file.
+  if (!temp_filepath_.empty()) {
+    file_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                  temp_filepath_, false /* recursive */));
+  }
   SetState(FileOperations::kFailed);
 }
 
-FileOperations::State LocalFileWriter::state() {
+FileOperations::State LocalFileWriter::state() const {
   return state_;
 }
 
-void LocalFileWriter::WriteFile(const base::FilePath& filename,
-                                FileOperations::WriteFileCallback callback) {
-#if defined(OS_WIN)
-  // On Windows, we use user impersonation to write files as the currently
-  // logged-in user, while the process as a whole runs as SYSTEM. Since user
-  // impersonation is per-thread on Windows, we need a dedicated thread to
-  // ensure that no other code is accidentally run with the wrong privileges.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-#else
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-#endif
-  base::PostTaskAndReplyWithResult(
-      file_task_runner.get(), FROM_HERE, base::BindOnce([] {
-        return EnsureUserContext().AndThen(
-            [](Monostate) { return GetDesktopDirectory(); });
-      }),
-      base::BindOnce(&OnGetTargetDirectoryResult, file_task_runner, filename,
-                     std::move(callback)));
-}
-
 void LocalFileWriter::OnGetTargetDirectoryResult(
-    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     base::FilePath filename,
-    FileOperations::WriteFileCallback callback,
-    protocol::FileTransferResult<base::FilePath> target_directory_result) {
-  DCHECK(file_task_runner);
-  if (!target_directory_result) {
-    std::move(callback).Run(std::move(target_directory_result.error()));
+    Callback callback,
+    protocol::FileTransferResult<base::FilePath> target_directory) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!target_directory) {
+    LOG(ERROR) << "Failed to get target directory.";
+    SetState(FileOperations::kFailed);
+    std::move(callback).Run(std::move(target_directory.error()));
     return;
   }
 
-  base::FilePath target_directory =
-      std::move(target_directory_result.success());
-  base::SequencedTaskRunner* file_task_runner_ptr = file_task_runner.get();
-  auto file_proxy = std::make_unique<base::FileProxy>(file_task_runner_ptr);
-  base::FilePath destination_filepath =
-      target_directory.Append(filename.BaseName());
+  destination_filepath_ =
+      target_directory.success().Append(filename.BaseName());
+  // Don't store in temp_filepath_ until we have the final path to make sure
+  // Cancel can never delete the wrong file.
+  base::FilePath temp_filepath =
+      destination_filepath_.AddExtensionASCII(kTempFileExtension);
 
-  auto writer = base::WrapUnique(
-      new LocalFileWriter(std::move(file_task_runner), std::move(file_proxy),
-                          destination_filepath));
-
-  // Ensure path reference is obtained before writer is moved.
-  const base::FilePath& temp_filepath = writer->temp_filepath_;
-
-  // Passing file_task_runner_ptr and temp_filepath is safe because they are
-  // kept alive by writer, which is bound to the callback.
   PostTaskAndReplyWithResult(
-      file_task_runner_ptr, FROM_HERE,
+      file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::GetUniquePathNumber, temp_filepath,
                      base::FilePath::StringType()),
-      base::BindOnce(&CreateTempFile, std::move(writer), std::move(callback)));
+      base::BindOnce(&LocalFileWriter::CreateTempFile,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     temp_filepath));
 }
 
-void LocalFileWriter::CreateTempFile(std::unique_ptr<LocalFileWriter> writer,
-                                     FileOperations::WriteFileCallback callback,
+void LocalFileWriter::CreateTempFile(Callback callback,
+                                     base::FilePath temp_filepath,
                                      int unique_path_number) {
-  if (unique_path_number > 0) {
-    writer->temp_filepath_ = writer->temp_filepath_.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", unique_path_number));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (unique_path_number < 0) {
+    LOG(ERROR) << "Failed to get unique path number.";
+    SetState(FileOperations::kFailed);
+    std::move(callback).Run(protocol::MakeFileTransferError(
+        FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR));
+    return;
   }
 
-  // Ensure needed pointers/references are obtained before writer is moved.
-  base::FileProxy* file_proxy_ptr = writer->file_proxy_.get();
-  const base::FilePath& temp_filepath = writer->temp_filepath_;
+  if (unique_path_number == 0) {
+    temp_filepath_ = std::move(temp_filepath);
+  } else {
+    temp_filepath_ = temp_filepath.InsertBeforeExtensionASCII(
+        base::StringPrintf(" (%d)", unique_path_number));
+  }
 
   // FLAG_SHARE_DELETE allows the file to be marked as deleted on Windows while
   // the handle is still open. (Other OS's allow this by default.) This allows
   // Cancel to clean up the temporary file even if there are writes pending.
-  file_proxy_ptr->CreateOrOpen(
-      temp_filepath,
+  file_proxy_->CreateOrOpen(
+      temp_filepath_,
       base::File::FLAG_CREATE | base::File::FLAG_WRITE |
           base::File::FLAG_SHARE_DELETE,
-      base::BindOnce(&OnCreateResult, std::move(writer), std::move(callback)));
+      base::BindOnce(&LocalFileWriter::OnCreateResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void LocalFileWriter::OnCreateResult(std::unique_ptr<LocalFileWriter> writer,
-                                     FileOperations::WriteFileCallback callback,
+void LocalFileWriter::OnCreateResult(Callback callback,
                                      base::File::Error error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error != base::File::FILE_OK) {
     LOG(ERROR) << "Creating temp file failed with error: " << error;
+    SetState(FileOperations::kFailed);
     std::move(callback).Run(protocol::MakeFileTransferError(
         FROM_HERE, FileErrorToResponseErrorType(error), error));
-  } else {
-    // Now that the temp file has been created successfully, we could lock it
-    // using base::File::Lock(), but this would not prevent the file from being
-    // deleted. When the file is deleted, WriteChunk() will continue to write to
-    // the file as if the file was still there, and an error will occur when
-    // calling base::Move() to move the temp file. Chrome exhibits the same
-    // behavior with its downloads.
-    std::move(callback).Run(std::move(writer));
   }
+
+  SetState(FileOperations::kReady);
+  // Now that the temp file has been created successfully, we could lock it
+  // using base::File::Lock(), but this would not prevent the file from being
+  // deleted. When the file is deleted, WriteChunk() will continue to write to
+  // the file as if the file was still there, and an error will occur when
+  // calling base::Move() to move the temp file. Chrome exhibits the same
+  // behavior with its downloads.
+  std::move(callback).Run(kSuccessTag);
 }
 
 void LocalFileWriter::OnWriteResult(std::string data,
                                     Callback callback,
                                     base::File::Error error,
                                     int bytes_written) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error != base::File::FILE_OK) {
     LOG(ERROR) << "Write failed with error: " << error;
     Cancel();
@@ -292,6 +288,7 @@ void LocalFileWriter::OnWriteResult(std::string data,
 
 void LocalFileWriter::OnCloseResult(Callback callback,
                                     base::File::Error error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error != base::File::FILE_OK) {
     LOG(ERROR) << "Close failed with error: " << error;
     Cancel();
@@ -305,25 +302,36 @@ void LocalFileWriter::OnCloseResult(Callback callback,
       base::BindOnce(&base::GetUniquePathNumber, destination_filepath_,
                      base::FilePath::StringType()),
       base::BindOnce(&LocalFileWriter::MoveToDestination,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LocalFileWriter::MoveToDestination(Callback callback,
                                         int unique_path_number) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (unique_path_number < 0) {
+    LOG(ERROR) << "Failed to get unique path number.";
+    SetState(FileOperations::kFailed);
+    std::move(callback).Run(protocol::MakeFileTransferError(
+        FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR));
+    return;
+  }
+
   if (unique_path_number > 0) {
     destination_filepath_ = destination_filepath_.InsertBeforeExtensionASCII(
         base::StringPrintf(" (%d)", unique_path_number));
   }
+
   PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::Move, temp_filepath_, destination_filepath_),
-      base::BindOnce(&LocalFileWriter::OnMoveResult, weak_factory_.GetWeakPtr(),
-                     std::move(callback)));
+      base::BindOnce(&LocalFileWriter::OnMoveResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LocalFileWriter::OnMoveResult(Callback callback, bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (success) {
-    SetState(FileOperations::kClosed);
+    SetState(FileOperations::kComplete);
     std::move(callback).Run(kSuccessTag);
   } else {
     LOG(ERROR) << "Failed to move file to final destination.";
@@ -335,13 +343,17 @@ void LocalFileWriter::OnMoveResult(Callback callback, bool success) {
 
 void LocalFileWriter::SetState(FileOperations::State state) {
   switch (state) {
+    case FileOperations::kCreated:
+      NOTREACHED();  // Can never return to initial state.
+      break;
     case FileOperations::kReady:
       DCHECK(state_ == FileOperations::kBusy);
       break;
     case FileOperations::kBusy:
-      DCHECK_EQ(state_, FileOperations::kReady);
+      DCHECK(state_ == FileOperations::kCreated ||
+             state_ == FileOperations::kReady);
       break;
-    case FileOperations::kClosed:
+    case FileOperations::kComplete:
       DCHECK(state_ == FileOperations::kBusy);
       break;
     case FileOperations::kFailed:
@@ -354,14 +366,13 @@ void LocalFileWriter::SetState(FileOperations::State state) {
 
 }  // namespace
 
-void LocalFileOperations::WriteFile(
-    const base::FilePath& filename,
-    FileOperations::WriteFileCallback callback) {
-  LocalFileWriter::WriteFile(filename, std::move(callback));
+std::unique_ptr<FileOperations::Reader> LocalFileOperations::CreateReader() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
-void LocalFileOperations::ReadFile(FileOperations::ReadFileCallback) {
-  NOTIMPLEMENTED();
+std::unique_ptr<FileOperations::Writer> LocalFileOperations::CreateWriter() {
+  return std::make_unique<LocalFileWriter>();
 }
 
 }  // namespace remoting

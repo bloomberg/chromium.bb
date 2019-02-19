@@ -20,18 +20,16 @@ class IpcFileOperations::IpcWriter : public FileOperations::Writer {
   ~IpcWriter() override;
 
   // FileOperations::Writer implementation.
+  void Open(const base::FilePath& filename, Callback callback) override;
   void WriteChunk(std::string data, Callback callback) override;
   void Close(Callback callback) override;
-  void Cancel() override;
-  State state() override;
+  State state() const override;
 
  private:
-  void OnWriteChunkResult(Callback callback,
-                          protocol::FileTransferResult<Monostate> result);
-  void OnCloseResult(Callback callback,
-                     protocol::FileTransferResult<Monostate> result);
+  void OnOperationResult(Callback callback, ResultHandler::Result result);
+  void OnCloseResult(Callback callback, ResultHandler::Result result);
 
-  State state_ = kReady;
+  State state_ = kCreated;
   std::uint64_t file_id_;
   base::WeakPtr<SharedState> shared_state_;
 
@@ -40,22 +38,18 @@ class IpcFileOperations::IpcWriter : public FileOperations::Writer {
 
 IpcFileOperations::~IpcFileOperations() = default;
 
-void IpcFileOperations::WriteFile(const base::FilePath& filename,
-                                  WriteFileCallback callback) {
-  if (!shared_state_) {
-    return;
-  }
-
-  std::uint64_t file_id = shared_state_->next_file_id++;
-  auto writer = std::make_unique<IpcWriter>(file_id, shared_state_);
-  shared_state_->result_callbacks.emplace(
-      file_id, base::BindOnce(OnWriteFileResult, std::move(writer),
-                              std::move(callback)));
-  shared_state_->request_handler->WriteFile(file_id, filename);
+std::unique_ptr<FileOperations::Reader> IpcFileOperations::CreateReader() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
-void IpcFileOperations::ReadFile(ReadFileCallback) {
-  NOTIMPLEMENTED();
+std::unique_ptr<FileOperations::Writer> IpcFileOperations::CreateWriter() {
+  // If shared_state_ is invalid, it means the connection is being torn down.
+  // We can still return an IpcWriter, it just won't do anything due to its own
+  // checks of shared_state_. That should be okay, because our caller should be
+  // torn down soon, too.
+  std::uint64_t file_id = shared_state_ ? shared_state_->next_file_id++ : 0;
+  return std::make_unique<IpcWriter>(file_id, shared_state_);
 }
 
 IpcFileOperations::SharedState::SharedState(RequestHandler* request_handler)
@@ -65,14 +59,6 @@ IpcFileOperations::SharedState::~SharedState() = default;
 
 IpcFileOperations::IpcFileOperations(base::WeakPtr<SharedState> shared_state)
     : shared_state_(std::move(shared_state)) {}
-
-void IpcFileOperations::OnWriteFileResult(
-    std::unique_ptr<IpcWriter> writer,
-    WriteFileCallback callback,
-    protocol::FileTransferResult<Monostate> result) {
-  std::move(callback).Run(
-      std::move(result).Map([&](Monostate) { return std::move(writer); }));
-}
 
 IpcFileOperationsFactory::IpcFileOperationsFactory(
     IpcFileOperations::RequestHandler* request_handler)
@@ -86,9 +72,7 @@ IpcFileOperationsFactory::CreateFileOperations() {
       new IpcFileOperations(shared_state_.weak_ptr_factory.GetWeakPtr()));
 }
 
-void IpcFileOperationsFactory::OnResult(
-    uint64_t file_id,
-    protocol::FileTransferResult<Monostate> result) {
+void IpcFileOperationsFactory::OnResult(uint64_t file_id, Result result) {
   auto callback_iter = shared_state_.result_callbacks.find(file_id);
   if (callback_iter != shared_state_.result_callbacks.end()) {
     IpcFileOperations::ResultCallback callback =
@@ -103,16 +87,32 @@ IpcFileOperations::IpcWriter::IpcWriter(std::uint64_t file_id,
     : file_id_(file_id), shared_state_(std::move(shared_state)) {}
 
 IpcFileOperations::IpcWriter::~IpcWriter() {
-  if (!shared_state_) {
+  if (!shared_state_ || state_ == kCreated || state_ == kComplete ||
+      state_ == kFailed) {
     return;
   }
 
-  Cancel();
+  shared_state_->request_handler->Cancel(file_id_);
+
   // Destroy any pending callbacks.
   auto callback_iter = shared_state_->result_callbacks.find(file_id_);
   if (callback_iter != shared_state_->result_callbacks.end()) {
     shared_state_->result_callbacks.erase(callback_iter);
   }
+}
+
+void IpcFileOperations::IpcWriter::Open(const base::FilePath& filename,
+                                        Callback callback) {
+  DCHECK_EQ(kCreated, state_);
+  if (!shared_state_) {
+    return;
+  }
+
+  state_ = kBusy;
+  shared_state_->result_callbacks.emplace(
+      file_id_, base::BindOnce(&IpcWriter::OnOperationResult,
+                               base::Unretained(this), std::move(callback)));
+  shared_state_->request_handler->WriteFile(file_id_, filename);
 }
 
 void IpcFileOperations::IpcWriter::WriteChunk(std::string data,
@@ -127,7 +127,7 @@ void IpcFileOperations::IpcWriter::WriteChunk(std::string data,
   // Unretained is sound because IpcWriter will destroy any outstanding callback
   // in its destructor.
   shared_state_->result_callbacks.emplace(
-      file_id_, base::BindOnce(&IpcWriter::OnWriteChunkResult,
+      file_id_, base::BindOnce(&IpcWriter::OnOperationResult,
                                base::Unretained(this), std::move(callback)));
 }
 
@@ -146,21 +146,13 @@ void IpcFileOperations::IpcWriter::Close(Callback callback) {
                                base::Unretained(this), std::move(callback)));
 }
 
-void IpcFileOperations::IpcWriter::Cancel() {
-  if (!shared_state_ || state_ == kClosed || state_ == kFailed) {
-    return;
-  }
-
-  shared_state_->request_handler->Cancel(file_id_);
-}
-
-FileOperations::State IpcFileOperations::IpcWriter::state() {
+FileOperations::State IpcFileOperations::IpcWriter::state() const {
   return state_;
 }
 
-void IpcFileOperations::IpcWriter::OnWriteChunkResult(
+void IpcFileOperations::IpcWriter::OnOperationResult(
     Callback callback,
-    protocol::FileTransferResult<Monostate> result) {
+    ResultHandler::Result result) {
   if (result) {
     state_ = kReady;
   } else {
@@ -169,11 +161,10 @@ void IpcFileOperations::IpcWriter::OnWriteChunkResult(
   std::move(callback).Run(std::move(result));
 }
 
-void IpcFileOperations::IpcWriter::OnCloseResult(
-    Callback callback,
-    protocol::FileTransferResult<Monostate> result) {
+void IpcFileOperations::IpcWriter::OnCloseResult(Callback callback,
+                                                 ResultHandler::Result result) {
   if (result) {
-    state_ = kClosed;
+    state_ = kComplete;
   } else {
     state_ = kFailed;
   }

@@ -444,9 +444,8 @@ void DesktopSessionAgent::ProcessAudioPacket(
       serialized_packet));
 }
 
-void DesktopSessionAgent::OnResult(
-    uint64_t file_id,
-    protocol::FileTransferResult<Monostate> result) {
+void DesktopSessionAgent::OnResult(uint64_t file_id,
+                                   ResultHandler::Result result) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_FileResult>(

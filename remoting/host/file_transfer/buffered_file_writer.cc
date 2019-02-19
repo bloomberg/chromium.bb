@@ -10,21 +10,25 @@
 namespace remoting {
 
 BufferedFileWriter::BufferedFileWriter(
+    std::unique_ptr<FileOperations::Writer> file_writer,
     base::OnceClosure on_complete,
     base::OnceCallback<void(protocol::FileTransfer_Error)> on_error)
-    : on_complete_(std::move(on_complete)),
-      on_error_(std::move(on_error)),
-      weak_ptr_factory_(this) {}
+    : writer_(std::move(file_writer)),
+      on_complete_(std::move(on_complete)),
+      on_error_(std::move(on_error)) {
+  DCHECK(writer_);
+  DCHECK(writer_->state() == FileOperations::kCreated);
+}
 
 BufferedFileWriter::~BufferedFileWriter() = default;
 
-void BufferedFileWriter::Start(FileOperations* file_operations,
-                               const base::FilePath& filename) {
+void BufferedFileWriter::Start(const base::FilePath& filename) {
   DCHECK_EQ(kNotStarted, state_);
   SetState(kWorking);
-  file_operations->WriteFile(
-      filename, base::BindOnce(&BufferedFileWriter::OnWriteFileResult,
-                               weak_ptr_factory_.GetWeakPtr()));
+  // Unretained is sound because no Writer callbacks will be invoked after the
+  // Writer is destroyed.
+  writer_->Open(filename, base::BindOnce(&BufferedFileWriter::OnOperationResult,
+                                         base::Unretained(this)));
 }
 
 void BufferedFileWriter::Write(std::string data) {
@@ -53,35 +57,20 @@ void BufferedFileWriter::Close() {
   }
 }
 
-void BufferedFileWriter::Cancel() {
-  SetState(kFailed);
-  // Will implicitly cancel if still in progress.
-  writer_.reset();
-}
-
-void BufferedFileWriter::OnWriteFileResult(
-    protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
-        result) {
-  OnWriteResult(std::move(result).Map([&](auto writer) {
-    writer_ = std::move(writer);
-    return kMonostate;
-  }));
-}
-
 void BufferedFileWriter::WriteNextChunk() {
   DCHECK(!chunks_.empty());
   DCHECK(state_ == kWorking || state_ == kClosing);
   std::string data = std::move(chunks_.front());
   chunks_.pop();
   writer_->WriteChunk(std::move(data),
-                      base::BindOnce(&BufferedFileWriter::OnWriteResult,
-                                     weak_ptr_factory_.GetWeakPtr()));
+                      base::BindOnce(&BufferedFileWriter::OnOperationResult,
+                                     base::Unretained(this)));
 }
 
-// Handles the result from both WriteFile and WriteChunk. For the former, it is
+// Handles the result from both Open and WriteChunk. For the former, it is
 // called by OnWriteFileResult after setting writer_.
-void BufferedFileWriter::OnWriteResult(
-    protocol::FileTransferResult<Monostate> result) {
+void BufferedFileWriter::OnOperationResult(
+    FileOperations::Writer::Result result) {
   if (!result) {
     SetState(kFailed);
     std::move(on_error_).Run(std::move(result.error()));
@@ -101,11 +90,10 @@ void BufferedFileWriter::DoClose() {
   DCHECK(chunks_.empty());
   DCHECK_EQ(kClosing, state_);
   writer_->Close(base::BindOnce(&BufferedFileWriter::OnCloseResult,
-                                weak_ptr_factory_.GetWeakPtr()));
+                                base::Unretained(this)));
 }
 
-void BufferedFileWriter::OnCloseResult(
-    protocol::FileTransferResult<Monostate> result) {
+void BufferedFileWriter::OnCloseResult(FileOperations::Writer::Result result) {
   if (!result) {
     SetState(kFailed);
     std::move(on_error_).Run(std::move(result.error()));
