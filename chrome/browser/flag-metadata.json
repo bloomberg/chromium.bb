@@ -2249,11 +2249,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "keyboard-lock-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "language-settings",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2949,8 +2944,8 @@
   },
   {
     "name": "system-keyboard-lock",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "joedow", "garykac", "jamiewalch" ],
+    "expiry_milestone": 79
   },
   {
     "name": "tab-for-desktop-share",

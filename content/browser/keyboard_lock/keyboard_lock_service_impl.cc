@@ -64,11 +64,6 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   else
     LogKeyboardLockMethodCalled(KeyboardLockMethods::kRequestSomeKeys);
 
-  if (!base::FeatureList::IsEnabled(features::kKeyboardLockAPI)) {
-    std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
-    return;
-  }
-
   if (!render_frame_host_->IsCurrent()) {
     std::move(callback).Run(KeyboardLockRequestResult::kFrameDetachedError);
     return;
@@ -118,9 +113,7 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
 
 void KeyboardLockServiceImpl::CancelKeyboardLock() {
   LogKeyboardLockMethodCalled(KeyboardLockMethods::kCancelLock);
-
-  if (base::FeatureList::IsEnabled(features::kKeyboardLockAPI))
-    render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
+  render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
 }
 
 void KeyboardLockServiceImpl::GetKeyboardLayoutMap(

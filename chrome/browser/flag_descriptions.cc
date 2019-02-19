@@ -1201,12 +1201,6 @@ const char kKeepAliveRendererForKeepaliveRequestsDescription[] =
     "Keep a render process alive when the process has a pending fetch request "
     "with `keepalive' specified.";
 
-const char kKeyboardLockApiName[] = "Experimental keyboard lock API.";
-const char kKeyboardLockApiDescription[] =
-    "Enables websites to use the new keyboard{Lock|Unlock} API to intercept "
-    "specific key events and have them routed directly to the webpage when in "
-    "fullscreen mode.  Implies #experimental-keyboard-lock-ui.";
-
 const char kLcdTextName[] = "LCD text antialiasing";
 const char kLcdTextDescription[] =
     "If disabled, text is rendered with grayscale antialiasing instead of LCD "

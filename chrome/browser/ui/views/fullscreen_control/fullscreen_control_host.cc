@@ -91,13 +91,9 @@ FullscreenControlHost::~FullscreenControlHost() = default;
 
 // static
 bool FullscreenControlHost::IsFullscreenExitUIEnabled() {
-  // FullscreenControlHost provides visual feedback for press-and-hold escape
-  // gesture to exit fullscreen.  If keyboard lock API is enabled, then we want
-  // ensure the control is created and listening to keyboard input.  Otherwise
-  // we will only create the control if we need it for touch/mouse events on
-  // non-MacOS platforms.
-  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI) ||
-         IsExitUiEnabled();
+  // TODO(joedow): Remove this function and all uses of it. The fullscreen exit
+  // UI is now always enabled because the keyboard lock UI is always enabled.
+  return true;
 }
 
 void FullscreenControlHost::OnEvent(const ui::Event& event) {

@@ -64,12 +64,10 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   FullscreenControlViewTest() = default;
 
   void SetUp() override {
-    // Ensure the KeyboardLockAPI is enabled and system keyboard lock is
-    // disabled. It is important to disable system keyboard lock as low-level
-    // test utilities may install a keyboard hook to listen for keyboard events
-    // and having an active system hook may cause issues with that mechanism.
-    scoped_feature_list_.InitWithFeatures({features::kKeyboardLockAPI},
-                                          {features::kSystemKeyboardLock});
+    // It is important to disable system keyboard lock as low-level test
+    // utilities may install a keyboard hook to listen for keyboard events and
+    // having an active system hook may cause issues with that mechanism.
+    scoped_feature_list_.InitWithFeatures({}, {features::kSystemKeyboardLock});
     InProcessBrowserTest::SetUp();
   }
 

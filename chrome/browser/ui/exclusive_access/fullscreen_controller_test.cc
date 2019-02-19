@@ -40,12 +40,10 @@ const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
     "/fullscreen_mouselock/fullscreen_mouselock.html";
 
 FullscreenControllerTest::FullscreenControllerTest() : weak_ptr_factory_(this) {
-  // Ensure the KeyboardLockAPI is enabled and system keyboard lock is disabled.
   // It is important to disable system keyboard lock as low-level test utilities
   // may install a keyboard hook to listen for keyboard events and having an
   // active system hook may cause issues with that mechanism.
-  scoped_feature_list_.InitWithFeatures({features::kKeyboardLockAPI},
-                                        {features::kSystemKeyboardLock});
+  scoped_feature_list_.InitWithFeatures({}, {features::kSystemKeyboardLock});
 }
 
 FullscreenControllerTest::~FullscreenControllerTest() = default;

@@ -229,8 +229,6 @@ class KeyboardLockBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  virtual void SetUpFeatureList();
-
   // Helper methods for common tasks.
   bool KeyboardLockApiExists();
   void NavigateToTestURL(const GURL& gurl);
@@ -281,7 +279,6 @@ void KeyboardLockBrowserTest::SetUp() {
   // Assume we have focus to start with.
   SetWindowFocusForKeyboardLockBrowserTests(true);
   InstallCreateHooksForKeyboardLockBrowserTests();
-  SetUpFeatureList();
   ContentBrowserTest::SetUp();
 }
 
@@ -302,10 +299,6 @@ void KeyboardLockBrowserTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(https_test_server());
   ASSERT_TRUE(https_test_server()->Start());
-}
-
-void KeyboardLockBrowserTest::SetUpFeatureList() {
-  feature_list()->InitAndEnableFeature(features::kKeyboardLockAPI);
 }
 
 bool KeyboardLockBrowserTest::KeyboardLockApiExists() {
@@ -417,20 +410,6 @@ void KeyboardLockBrowserTest::VerifyKeyboardLockState(
   ASSERT_EQ(keyboard_lock_active,
             ux_conditions_satisfied && keyboard_lock_requested)
       << "Location: " << from_here.ToString();
-}
-
-class KeyboardLockDisabledBrowserTest : public KeyboardLockBrowserTest {
- public:
-  KeyboardLockDisabledBrowserTest() = default;
-  ~KeyboardLockDisabledBrowserTest() override = default;
-
- protected:
-  // KeyboardLockBrowserTest override.
-  void SetUpFeatureList() override;
-};
-
-void KeyboardLockDisabledBrowserTest::SetUpFeatureList() {
-  feature_list()->InitAndDisableFeature(features::kKeyboardLockAPI);
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, SingleLockCall) {
@@ -667,23 +646,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   ASSERT_TRUE(result);
 
   // An invalid call will cancel any previous lock request.
-  ASSERT_FALSE(web_contents()->GetKeyboardLockWidget());
-}
-
-IN_PROC_BROWSER_TEST_F(KeyboardLockDisabledBrowserTest,
-                       NoKeyboardLockWhenDisabled) {
-  ASSERT_TRUE(NavigateToURL(shell(), https_fullscreen_frame()));
-  ASSERT_TRUE(KeyboardLockApiExists());
-
-  // KeyboardLockServiceImpl returns success from the RequestKeyboardLock()
-  // call when the Chrome side of the feature is disabled.  This prevents
-  // problems running the Blink web tests.
-  bool result = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(web_contents()->GetMainFrame(),
-                                          kKeyboardLockMethodCallWithAllKeys,
-                                          &result));
-  ASSERT_TRUE(result);
-
   ASSERT_FALSE(web_contents()->GetKeyboardLockWidget());
 }
 
