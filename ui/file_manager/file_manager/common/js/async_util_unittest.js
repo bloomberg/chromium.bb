@@ -5,12 +5,12 @@
 /**
  * @type {?string} Result
  */
-var result;
+let result;
 
 /**
  * @type {!PromiseSlot} Test target.
  */
-var slot;
+let slot;
 
 function setUp() {
   slot = new PromiseSlot(function(value) {
@@ -22,8 +22,8 @@ function setUp() {
 }
 
 function testPromiseSlot(callback) {
-  var fulfilledPromise = Promise.resolve('fulfilled');
-  var rejectedPromise = Promise.reject('rejected');
+  const fulfilledPromise = Promise.resolve('fulfilled');
+  const rejectedPromise = Promise.reject('rejected');
   slot.setPromise(fulfilledPromise);
   reportPromise(fulfilledPromise.then(function() {
     assertEquals('fulfilled:fulfilled', result);
@@ -38,11 +38,11 @@ function testPromiseSlot(callback) {
 }
 
 function testPromiseSlotReassignBeforeCompletion(callback) {
-  var fulfillComputation;
-  var computingPromise = new Promise(function(fulfill, reject) {
+  let fulfillComputation;
+  const computingPromise = new Promise(function(fulfill, reject) {
     fulfillComputation = fulfill;
   });
-  var fulfilledPromise = Promise.resolve('fulfilled');
+  const fulfilledPromise = Promise.resolve('fulfilled');
 
   slot.setPromise(computingPromise);
   // Reassign promise.
@@ -59,14 +59,14 @@ function testPromiseSlotReassignBeforeCompletion(callback) {
 }
 
 function testPromiseSlotReassignBeforeCompletionWithCancel(callback) {
-  var rejectComputation;
-  var computingPromise = new Promise(function(fulfill, reject) {
+  let rejectComputation;
+  const computingPromise = new Promise(function(fulfill, reject) {
     rejectComputation = reject;
   });
   computingPromise.cancel = function() {
     rejectComputation('cancelled');
   };
-  var fulfilledPromise = Promise.resolve('fulfilled');
+  const fulfilledPromise = Promise.resolve('fulfilled');
 
   slot.setPromise(computingPromise);
   slot.setPromise(fulfilledPromise);
@@ -84,8 +84,8 @@ function testPromiseSlotReassignBeforeCompletionWithCancel(callback) {
 }
 
 function testPromiseSlotReassignNullBeforeCompletion(callback) {
-  var fulfillComputation;
-  var computingPromise = new Promise(function(fulfill, reject) {
+  let fulfillComputation;
+  const computingPromise = new Promise(function(fulfill, reject) {
     fulfillComputation = fulfill;
   });
 

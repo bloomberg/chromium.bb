@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function testLRUCache() {
-  var cache = new LRUCache(3);
+  const cache = new LRUCache(3);
 
   // Querying by non-existent key will get null.
   assertEquals(null, cache.get('a'));
@@ -73,7 +73,7 @@ function testLRUCache() {
 }
 
 function testLRUCacheWithIndividualSizes() {
-  var cache = new LRUCache(10);
+  const cache = new LRUCache(10);
 
   // Querying by non-existent key will get null.
   assertEquals(null, cache.get('a'));
@@ -127,45 +127,45 @@ RandomNumberGenerator.prototype.random = function() {
 };
 
 function generateRandom3letters(generator) {
-  var ALPHA = 'abcdefghijklmnopqrstuvwxyz';
-  var res = '';
-  for (var i = 0; i < 3; i++) {
+  const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+  let res = '';
+  for (let i = 0; i < 3; i++) {
     res += ALPHA[generator.random() % ALPHA.length];
   }
   return res;
 }
 
 function testSizeCalculationByRandomInput() {
-  var cache = new LRUCache(10000);
+  const cache = new LRUCache(10000);
 
   // We need fixed random number sequence to avoid test flakiness, so
   // RandomeNumberGenerator is used instead of Math.random() here.
-  var generator = new RandomNumberGenerator(123456);
+  const generator = new RandomNumberGenerator(123456);
 
   // Make fixed set of keys.
-  var keys = [];
-  for (var i = 0; i < 1000; i++) {
+  const keys = [];
+  for (let i = 0; i < 1000; i++) {
     keys.push(generateRandom3letters(generator));
   }
 
   // Adding items won't make the cache's size exceed the max size.
-  for (var i = 0; i < 10000; i++) {
-    var size = generator.random() % 100 + 1;
-    var key = keys[generator.random() % keys.length];
+  for (let i = 0; i < 10000; i++) {
+    const size = generator.random() % 100 + 1;
+    const key = keys[generator.random() % keys.length];
     cache.put(key, 'random item', size);
 
     assertTrue(cache.size() <= 10000);
   }
 
   // Removing all keys will make the cache's size exactly 0.
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     cache.remove(keys[i]);
   }
   assertEquals(0, cache.size());
 }
 
 function testSetMaxSize() {
-  var cache = new LRUCache(10);
+  const cache = new LRUCache(10);
   cache.put('a', 'valueA');
   cache.put('b', 'valueB');
   cache.put('c', 'valueC');

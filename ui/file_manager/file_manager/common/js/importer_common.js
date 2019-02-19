@@ -95,7 +95,7 @@ importer.isEligibleType = function(entry) {
  * @return {!Array<string>}
  */
 importer.splitPath_ = function(entry) {
-  var splitPath =  entry.fullPath.toUpperCase().split('/');
+  const splitPath =  entry.fullPath.toUpperCase().split('/');
   // Remove the empty string caused by the leading '/'.
   splitPath.splice(0, 1);
   // If there is a trailing empty string, remove it.
@@ -113,7 +113,7 @@ importer.splitPath_ = function(entry) {
  */
 importer.isEligiblePath_ = function(splitPath) {
   /** @const {number} */
-  var MISSING = -264512121;
+  const MISSING = -264512121;
   return splitPath.some(
       /** @param {string} dirname */
       function(dirname) {
@@ -121,8 +121,8 @@ importer.isEligiblePath_ = function(splitPath) {
         if (dirname.length == 0) {
           return false;
         }
-        var no = 0;
-        for (var i = 0; i < dirname.length; i++) {
+        let no = 0;
+        for (let i = 0; i < dirname.length; i++) {
           no = ((no << 5) - no) + dirname.charCodeAt(i);
           no = no & no;
         }
@@ -141,7 +141,7 @@ importer.isBeneathMediaDir = function(entry, volumeManager) {
   if (!entry || !entry.fullPath) {
     return false;
   }
-  var splitPath = importer.splitPath_(entry);
+  const splitPath = importer.splitPath_(entry);
   if (importer.isEligiblePath_(splitPath)) {
     return true;
   }
@@ -150,7 +150,7 @@ importer.isBeneathMediaDir = function(entry, volumeManager) {
     return false;
   }
 
-  var volumeInfo = volumeManager.getVolumeInfo(entry);
+  const volumeInfo = volumeManager.getVolumeInfo(entry);
   return importer.isEligibleVolume(volumeInfo);
 };
 
@@ -189,7 +189,7 @@ importer.isMediaDirectory = function(entry, volumeManager) {
   if (!entry || !entry.isDirectory || !entry.fullPath) {
     return false;
   }
-  var splitPath = importer.splitPath_(/** @type {Entry} */(entry));
+  const splitPath = importer.splitPath_(/** @type {Entry} */(entry));
   if (importer.isEligiblePath_(splitPath)) {
     return true;
   }
@@ -197,7 +197,7 @@ importer.isMediaDirectory = function(entry, volumeManager) {
   // This is a media root if there is only one element in the path, and it is a
   // valid import root.
   if (splitPath[0] in importer.ValidImportRoots_ && splitPath.length === 1) {
-    var volumeInfo = volumeManager.getVolumeInfo(entry);
+    const volumeInfo = volumeManager.getVolumeInfo(entry);
     return importer.isEligibleVolume(volumeInfo);
   }
   return false;
@@ -208,7 +208,7 @@ importer.isMediaDirectory = function(entry, volumeManager) {
  * @return {!Promise<!DirectoryEntry>} The found media directory (like 'DCIM').
  */
 importer.getMediaDirectory = function(directory) {
-  var dirNames = Object.keys(importer.ValidImportRoots_);
+  const dirNames = Object.keys(importer.ValidImportRoots_);
   return Promise.all(dirNames.map(importer.getDirectory_.bind(null, directory)))
       .then(
           /**
@@ -216,7 +216,7 @@ importer.getMediaDirectory = function(directory) {
            * @return {!Promise<!DirectoryEntry>}
            */
           function(results) {
-            for (var i = 0; i < results.length; i++) {
+            for (let i = 0; i < results.length; i++) {
               if (!!results[i] && results[i].isDirectory) {
                 return Promise.resolve(results[i]);
               }
@@ -298,7 +298,7 @@ importer.handlePhotosAppMessage = function(message) {
     return Promise.reject();
   }
 
-  var storage = importer.ChromeLocalStorage.getInstance();
+  const storage = importer.ChromeLocalStorage.getInstance();
   return storage.set(importer.Setting.PHOTOS_APP_ENABLED, message);
 };
 
@@ -307,7 +307,7 @@ importer.handlePhotosAppMessage = function(message) {
  *     is enabled.
  */
 importer.isPhotosAppImportEnabled = function() {
-  var storage = importer.ChromeLocalStorage.getInstance();
+  const storage = importer.ChromeLocalStorage.getInstance();
   return storage.get(importer.Setting.PHOTOS_APP_ENABLED, false);
 };
 
@@ -316,14 +316,14 @@ importer.isPhotosAppImportEnabled = function() {
  * @return {string} The current date, in YYYY-MM-DD format.
  */
 importer.getDirectoryNameForDate = function(date) {
-  var padAndConvert = function(i) {
+  const padAndConvert = function(i) {
     return (i < 10 ? '0' : '') + i.toString();
   };
 
-  var year = date.getFullYear().toString();
+  const year = date.getFullYear().toString();
   // Months are 0-based, but days aren't.
-  var month = padAndConvert(date.getMonth() + 1);
-  var day = padAndConvert(date.getDate());
+  const month = padAndConvert(date.getMonth() + 1);
+  const day = padAndConvert(date.getDate());
 
   // NOTE: We use YYYY-MM-DD since it sorts numerically.
   // Ideally this would be localized and appropriate sorting would
@@ -336,7 +336,7 @@ importer.getDirectoryNameForDate = function(date) {
  *     relatively unique to this machine (among a users machines).
  */
 importer.getMachineId = function() {
-  var storage = importer.ChromeLocalStorage.getInstance();
+  const storage = importer.ChromeLocalStorage.getInstance();
   return storage.get(importer.Setting.MACHINE_ID)
       .then(
           function(id) {
@@ -390,7 +390,7 @@ importer.generateId = function() {
  * @private
  */
 importer.getUnownedHistoryFiles_ = function(machineId) {
-  var historyFiles = [];
+  const historyFiles = [];
   return importer.ChromeSyncFilesystem.getRoot()
       .then(
           /** @param {!DirectoryEntry} root */
@@ -434,7 +434,7 @@ importer.getHistoryFiles = function() {
     ]).then(
         /** @param {!Array<!FileEntry|!Array<!FileEntry>>} entries */
         function(entries) {
-          var historyFiles = entries[1];
+          const historyFiles = entries[1];
           historyFiles.unshift(entries[0]);
           return historyFiles;
         });
@@ -451,9 +451,9 @@ importer.getHistoryFiles = function() {
 importer.listEntries_ = function(directory, callback) {
   return new Promise(
       function(resolve, reject) {
-        var reader = directory.createReader();
+        const reader = directory.createReader();
 
-        var readEntries = function() {
+        const readEntries = function() {
           reader.readEntries (
               /** @param {!Array<!Entry>} entries */
               function(entries) {
@@ -495,7 +495,7 @@ importer.Resolver = function() {
         this.reject_ = reject;
       }.bind(this));
 
-  var settler = function() {
+  const settler = function() {
     this.settled_ = true;
   }.bind(this);
 
@@ -647,7 +647,7 @@ importer.toSecondsFromEpoch = function(date) {
   // precision to the second, our last three digits
   // will always be 000. We strip them and end up
   // with seconds.
-  var milliseconds = String(Date.parse(date));
+  const milliseconds = String(Date.parse(date));
   return milliseconds.substring(0, milliseconds.length - 3);
 };
 
@@ -705,7 +705,7 @@ importer.ChromeSyncFilesystem.getRoot = function() {
  * @return {!Promise<!FileEntry>}
  */
 importer.ChromeSyncFilesystem.getOrCreateFileEntry = function(fileNamePromise) {
-  var promise = importer.ChromeSyncFilesystem.getRoot()
+  const promise = importer.ChromeSyncFilesystem.getRoot()
       .then(
           /**
            * @param {!DirectoryEntry} directory
@@ -794,11 +794,11 @@ importer.RuntimeLogger.prototype.error = function(content) {
 
 /** @override  */
 importer.RuntimeLogger.prototype.catcher = function(context) {
-  var prefix = '(' + context + ') ';
+  const prefix = '(' + context + ') ';
 
   return function(error) {
 
-    var message = prefix + 'Caught error in promise chain.';
+    let message = prefix + 'Caught error in promise chain.';
     // Append error info, if provided, then output the error.
     if (error) {
       message += ' Error: ' + (error.message || error);
@@ -838,7 +838,7 @@ importer.RuntimeLogger.prototype.write_ = function(type, message) {
  * @private
  */
 importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
-  var blob = new Blob(
+  const blob = new Blob(
       ['[' + type + ' @ ' + new Date().toString() + '] ' + line + '\n'],
       {type: 'text/plain; charset=UTF-8'});
   return new Promise(
@@ -867,10 +867,10 @@ importer.logger_ = null;
 importer.getLogger = function() {
   if (!importer.logger_) {
 
-    var nextLogId = importer.getNextDebugLogId_();
+    const nextLogId = importer.getNextDebugLogId_();
 
     /** @return {!Promise} */
-    var rotator = function() {
+    const rotator = function() {
       return importer.rotateLogs(
           nextLogId,
           importer.ChromeSyncFilesystem.getOrCreateFileEntry);
@@ -918,10 +918,10 @@ importer.getNextDebugLogId_ = function() {
  * @return {!Promise} Resolves when trimming is complete.
  */
 importer.rotateLogs = function(nextLogId, fileFactory) {
-  var storage = importer.ChromeLocalStorage.getInstance();
+  const storage = importer.ChromeLocalStorage.getInstance();
 
   /** @return {!Promise} */
-  var rememberLogId = function() {
+  const rememberLogId = function() {
     return storage.set(
         importer.Setting.LAST_KNOWN_LOG_ID,
         nextLogId);
@@ -968,7 +968,7 @@ importer.ChromeLocalStorage = function() {};
 importer.ChromeLocalStorage.prototype.set = function(key, value) {
   return new Promise(
       function(resolve, reject) {
-        var values = {};
+        const values = {};
         values[key] = value;
         chrome.storage.local.set(
             values,

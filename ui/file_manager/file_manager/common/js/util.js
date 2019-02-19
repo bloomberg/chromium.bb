@@ -11,15 +11,15 @@
 /**
  * Namespace for utility functions.
  */
-var util = {};
+const util = {};
 
 /**
  * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons.
  * @return {string} CSS value.
  */
 util.iconSetToCSSBackgroundImageValue = function(iconSet) {
-  var lowDpiPart = null;
-  var highDpiPart = null;
+  let lowDpiPart = null;
+  let highDpiPart = null;
   if (iconSet.icon16x16Url) {
     lowDpiPart = 'url(' + iconSet.icon16x16Url + ') 1x';
   }
@@ -43,7 +43,7 @@ util.iconSetToCSSBackgroundImageValue = function(iconSet) {
  * @return {string} Translated file error string.
  */
 util.getFileErrorString = function(name) {
-  var candidateMessageFragment;
+  let candidateMessageFragment;
   switch (name) {
     case 'NotFoundError':
       candidateMessageFragment = 'NOT_FOUND';
@@ -134,7 +134,7 @@ util.htmlUnescape = function(str) {
  */
 util.rename = function(entry, newName, successCallback, errorCallback) {
   entry.getParent(function(parentEntry) {
-    var parent = /** @type {!DirectoryEntry} */ (parentEntry);
+    const parent = /** @type {!DirectoryEntry} */ (parentEntry);
 
     // Before moving, we need to check if there is an existing entry at
     // parent/newName, since moveTo will overwrite it.
@@ -215,7 +215,7 @@ util.removeFileOrDirectory = function(entry, onSuccess, onError) {
  */
 util.bytesToString = function(bytes) {
   // Translation identifiers for size units.
-  var UNITS = ['SIZE_BYTES',
+  const UNITS = ['SIZE_BYTES',
                'SIZE_KB',
                'SIZE_MB',
                'SIZE_GB',
@@ -223,19 +223,19 @@ util.bytesToString = function(bytes) {
                'SIZE_PB'];
 
   // Minimum values for the units above.
-  var STEPS = [0,
+  const STEPS = [0,
                Math.pow(2, 10),
                Math.pow(2, 20),
                Math.pow(2, 30),
                Math.pow(2, 40),
                Math.pow(2, 50)];
 
-  var str = function(n, u) {
+  const str = function(n, u) {
     return strf(u, n.toLocaleString());
   };
 
-  var fmt = function(s, u) {
-    var rounded = Math.round(bytes / s * 10) / 10;
+  const fmt = function(s, u) {
+    const rounded = Math.round(bytes / s * 10) / 10;
     return str(rounded, u);
   };
 
@@ -246,13 +246,13 @@ util.bytesToString = function(bytes) {
 
   // Up to 1MB is displayed as rounded up number of KBs.
   if (bytes < STEPS[2]) {
-    var rounded = Math.ceil(bytes / STEPS[1]);
+    const rounded = Math.ceil(bytes / STEPS[1]);
     return str(rounded, UNITS[1]);
   }
 
   // This loop index is used outside the loop if it turns out |bytes|
   // requires the largest unit.
-  var i;
+  let i;
 
   for (i = 2 /* MB */; i < UNITS.length - 1; i++) {
     if (bytes < STEPS[i + 1]) {
@@ -306,10 +306,10 @@ util.applyTransform = function(element, transform) {
  * @return {?string} The path.
  */
 util.extractFilePath = function(url) {
-  var match =
+  const match =
       /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/.
       exec(url);
-  var path = match && match[2];
+  const path = match && match[2];
   if (!path) return null;
   return decodeURIComponent(path);
 };
@@ -323,7 +323,7 @@ util.extractFilePath = function(url) {
  * @return {!HTMLElement} Newly created element.
  */
 util.createChild = function(parent, opt_className, opt_tag) {
-  var child = parent.ownerDocument.createElement(opt_tag || 'div');
+  const child = parent.ownerDocument.createElement(opt_tag || 'div');
   if (opt_className) {
     child.className = opt_className;
   }
@@ -340,7 +340,7 @@ util.createChild = function(parent, opt_className, opt_tag) {
  * @return {!T} Decorated element.
  */
 util.queryDecoratedElement = function(query, type) {
-  var element = queryRequiredElement(query);
+  const element = queryRequiredElement(query);
   cr.ui.decorate(element, type);
   return element;
 };
@@ -384,7 +384,7 @@ util.runningInBrowser = function() {
  * Adds an isFocused method to the current window object.
  */
 util.addIsFocusedMethod = function() {
-  var focused = true;
+  let focused = true;
 
   window.addEventListener('focus', function() {
     focused = true;
@@ -501,7 +501,7 @@ util.isTeamDriveRoot = function(entry) {
   if (!entry.fullPath) {
     return false;
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   return tree.length == 3 && util.isTeamDriveEntry(entry);
 };
 
@@ -514,7 +514,7 @@ util.isTeamDrivesGrandRoot = function(entry) {
   if (!entry.fullPath) {
     return false;
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   return tree.length == 2 && util.isTeamDriveEntry(entry);
 };
 
@@ -527,7 +527,7 @@ util.isTeamDriveEntry = function(entry) {
   if (!entry.fullPath) {
     return false;
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   return tree[0] == '' &&
       tree[1] == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
 };
@@ -542,7 +542,7 @@ util.getTeamDriveName = function(entry) {
   if (!entry.fullPath || !util.isTeamDriveEntry(entry)) {
     return '';
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   if (tree.length < 3) {
     return '';
   }
@@ -571,7 +571,7 @@ util.isComputersRoot = function(entry) {
   if (!entry.fullPath) {
     return false;
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   return tree.length == 3 && util.isComputersEntry(entry);
 };
 
@@ -584,7 +584,7 @@ util.isComputersEntry = function(entry) {
   if (!entry.fullPath) {
     return false;
   }
-  var tree = entry.fullPath.split('/');
+  const tree = entry.fullPath.split('/');
   return tree[0] == '' &&
       tree[1] == VolumeManagerCommon.COMPUTERS_DIRECTORY_NAME;
 };
@@ -675,7 +675,7 @@ util.isSameEntries = function(entries1, entries2) {
   if (entries1.length !== entries2.length) {
     return false;
   }
-  for (var i = 0; i < entries1.length; i++) {
+  for (let i = 0; i < entries1.length; i++) {
     if (!util.isSameEntry(entries1[i], entries2[i])) {
       return false;
     }
@@ -707,12 +707,12 @@ util.isSameFileSystem = function(fileSystem1, fileSystem2) {
  * @return {boolean} True if given entries are in the same directory.
  */
 util.isSiblingEntry = function(entry1, entry2) {
-  var path1 = entry1.fullPath.split('/');
-  var path2 = entry2.fullPath.split('/');
+  const path1 = entry1.fullPath.split('/');
+  const path2 = entry2.fullPath.split('/');
   if (path1.length != path2.length) {
     return false;
   }
-  for (var i = 0; i < path1.length - 1; i++) {
+  for (let i = 0; i < path1.length - 1; i++) {
     if (path1[i] != path2[i]) {
       return false;
     }
@@ -874,7 +874,7 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
 
   // Check if the ancestor's path with trailing slash is a prefix of child's
   // path.
-  var ancestorPath = ancestorEntry.fullPath;
+  let ancestorPath = ancestorEntry.fullPath;
   if (ancestorPath.slice(-1) !== '/') {
     ancestorPath += '/';
   }
@@ -946,7 +946,7 @@ util.entriesToURLs = function(entries) {
  *     and failureUrls property. The promise is never rejected.
  */
 util.URLsToEntries = function(urls, opt_callback) {
-  var promises = urls.map(function(url) {
+  const promises = urls.map(function(url) {
     return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url)).
         then(function(entry) {
           return {entry: entry};
@@ -956,10 +956,10 @@ util.URLsToEntries = function(urls, opt_callback) {
           return {failureUrl: url};
         });
   });
-  var resultPromise = Promise.all(promises).then(function(results) {
-    var entries = [];
-    var failureUrls = [];
-    for (var i = 0; i < results.length; i++) {
+  const resultPromise = Promise.all(promises).then(function(results) {
+    const entries = [];
+    const failureUrls = [];
+    for (let i = 0; i < results.length; i++) {
       if ('entry' in results[i]) {
         entries.push(results[i].entry);
       }
@@ -1022,7 +1022,7 @@ util.isTeleported = function(window) {
  * @param {string} message Test message to send.
  */
 util.testSendMessage = function(message) {
-  var test = chrome.test || window.top.chrome.test;
+  const test = chrome.test || window.top.chrome.test;
   if (test) {
     test.sendMessage(message);
   }
@@ -1042,13 +1042,13 @@ util.testSendMessage = function(message) {
  * @return {Array<string>} Filename and extension of the given path.
  */
 util.splitExtension = function(path) {
-  var dotPosition = path.lastIndexOf('.');
+  let dotPosition = path.lastIndexOf('.');
   if (dotPosition <= path.lastIndexOf('/')) {
     dotPosition = -1;
   }
 
-  var filename = dotPosition != -1 ? path.substr(0, dotPosition) : path;
-  var extension = dotPosition != -1 ? path.substr(dotPosition) : '';
+  const filename = dotPosition != -1 ? path.substr(0, dotPosition) : path;
+  const extension = dotPosition != -1 ? path.substr(dotPosition) : '';
   return [filename, extension];
 };
 
@@ -1093,7 +1093,7 @@ util.getRootTypeLabel = function(locationInfo) {
     case VolumeManagerCommon.RootType.MY_FILES:
       return str('MY_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
-      var mediaViewRootType =
+      const mediaViewRootType =
           VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
               locationInfo.volumeInfo.volumeId);
       switch (mediaViewRootType) {
@@ -1166,7 +1166,7 @@ util.isPrintable = function(character) {
     return false;
   }
 
-  var charCode = character.charCodeAt(0);
+  const charCode = character.charCodeAt(0);
   return charCode >= 32 && charCode <= 126;
 };
 
@@ -1188,8 +1188,8 @@ util.isPrintable = function(character) {
  *     message.
  */
 util.validateFileName = function(parentEntry, name, filterHiddenOn) {
-  var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
-  var msg;
+  const testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
+  let msg;
   if (testResult) {
     return Promise.reject(strf('ERROR_INVALID_CHARACTER', testResult[0]));
   } else if (/^\s*$/i.test(name)) {
@@ -1230,8 +1230,8 @@ util.validateExternalDriveName = function(name, volumeInfo) {
   // Verify if entered name for external drive respects restrictions provided by
   // the target filesystem
 
-  var fileSystem = volumeInfo.diskFileSystemType;
-  var nameLength = name.length;
+  const fileSystem = volumeInfo.diskFileSystemType;
+  const nameLength = name.length;
 
   // Verify length for the target file system type
   if (fileSystem == VolumeManagerCommon.FileSystemType.VFAT &&
@@ -1250,14 +1250,14 @@ util.validateExternalDriveName = function(name, volumeInfo) {
   }
 
   // Checks if name contains only printable ASCII (from ' ' to '~')
-  for (var i = 0; i < nameLength; i++) {
+  for (let i = 0; i < nameLength; i++) {
     if (!util.isPrintable(name[i])) {
       return Promise.reject(
           strf('ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER', name[i]));
     }
   }
 
-  var containsForbiddenCharacters =
+  const containsForbiddenCharacters =
       /[\*\?\.\,\;\:\/\\\|\+\=\<\>\[\]\"\'\t]/.exec(name);
   if (containsForbiddenCharacters) {
     return Promise.reject(strf(
@@ -1352,10 +1352,10 @@ util.isTouchModeEnabled = function() {
 util.readEntriesRecursively = function(
     rootEntry, entriesCallback, successCallback, errorCallback, shouldStop,
     opt_maxDepth) {
-  var numRunningTasks = 0;
-  var error = null;
+  let numRunningTasks = 0;
+  let error = null;
   const maxDepth = opt_maxDepth === undefined ? -1 : opt_maxDepth;
-  var maybeRunCallback = function() {
+  const maybeRunCallback = function() {
     if (numRunningTasks === 0) {
       if (shouldStop()) {
         errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
@@ -1366,22 +1366,22 @@ util.readEntriesRecursively = function(
       }
     }
   };
-  var processEntry = function(entry, depth) {
-    var onError = function(fileError) {
+  const processEntry = function(entry, depth) {
+    const onError = function(fileError) {
       if (!error) {
         error = fileError;
       }
       numRunningTasks--;
       maybeRunCallback();
     };
-    var onSuccess = function(entries) {
+    const onSuccess = function(entries) {
       if (shouldStop() || error || entries.length === 0) {
         numRunningTasks--;
         maybeRunCallback();
         return;
       }
       entriesCallback(entries);
-      for (var i = 0; i < entries.length; i++) {
+      for (let i = 0; i < entries.length; i++) {
         if (entries[i].isDirectory && (maxDepth === -1 || depth < maxDepth)) {
           processEntry(entries[i], depth + 1);
         }
@@ -1391,7 +1391,7 @@ util.readEntriesRecursively = function(
     };
 
     numRunningTasks++;
-    var reader = entry.createReader();
+    const reader = entry.createReader();
     reader.readEntries(onSuccess, onError);
   };
 
