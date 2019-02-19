@@ -9,7 +9,6 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
 
 namespace base {
 template <typename T>
