@@ -75,6 +75,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   ~CGaiaCredentialBase();
 
   // Members to access user credentials.
+  const CComPtr<IGaiaCredentialProvider>& provider() const { return provider_; }
   const CComBSTR& get_username() const { return username_; }
   const CComBSTR& get_password() const { return password_; }
   const CComBSTR& get_sid() const { return user_sid_; }
@@ -84,8 +85,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const base::DictionaryValue* get_authentication_results() const {
     return authentication_results_.get();
   }
-  void set_username(BSTR username) { username_ = username; }
-  void set_user_sid(BSTR sid) { user_sid_ = sid; }
   void set_current_windows_password(BSTR password) {
     current_windows_password_ = password;
   }
@@ -232,25 +231,27 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   void TerminateLogonProcess();
 
   // Checks whether this credential can sign in the user specified by
-  // |username|, |sid|, For the default anonymous gaia credential this function
-  // will return S_OK. For implementers that are associated to a specific user,
-  // this function should verify if the |username| and |sid| matches the
-  // username and sid stored in the credential. If these verifications fail then
-  // the function should return an error code which will cause sign in to fail.
+  // |domain|, |username|, |sid|. For the default anonymous gaia credential this
+  // function will return S_OK. For implementers that are associated to a
+  // specific user, this function should verify if the |domain|\|username| and
+  // |sid| matches the domain\username and sid stored in the credential. If
+  // these verifications fail then the function should return an error code
+  // which will cause sign in to fail.
   virtual HRESULT ValidateExistingUser(const base::string16& username,
+                                       const base::string16& domain,
                                        const base::string16& sid,
                                        BSTR* error_text);
 
   // Checks the information given in |result| to determine if a user can be
   // created or re-used.
   // Returns S_OK if a valid was found or a new user was created. Also allocates
-  // and fills |username|, |password|, |sid| with the information for the user.
+  // and fills |domain|, |username|, |sid| with the information for the user.
   // The caller must take ownership of this memory.
   // On failure |error_text| will be allocated and filled with an error message.
   // The caller must take ownership of this memory.
   HRESULT ValidateOrCreateUser(const base::DictionaryValue* result,
+                               BSTR* domain,
                                BSTR* username,
-                               BSTR* password,
                                BSTR* sid,
                                BSTR* error_text);
 
@@ -263,6 +264,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Information about the just created or re-auth-ed user.
   CComBSTR username_;
+  CComBSTR domain_;
   CComBSTR password_;
   CComBSTR user_sid_;
 

@@ -50,13 +50,6 @@ namespace credential_provider {
 
 namespace {
 
-void InitUnicodeString(const wchar_t* string, UNICODE_STRING* uicode_string) {
-  uicode_string->Buffer = const_cast<wchar_t*>(string);
-  uicode_string->Length =
-      static_cast<USHORT>(wcslen(uicode_string->Buffer) * sizeof(wchar_t));
-  uicode_string->MaximumLength = uicode_string->Length + sizeof(wchar_t);
-}
-
 HRESULT GetTokenLogonSID(const base::win::ScopedHandle& token, PSID* sid) {
   LOGFN(INFO);
   DCHECK(sid);
@@ -208,7 +201,7 @@ HRESULT AllowLogonSIDOnLocalBasedNamedObjects(PSID sid) {
     _snwprintf_s(name_buffer, base::size(name_buffer),
                  L"\\Sessions\\%d\\BaseNamedObjects", session_id);
   }
-  InitUnicodeString(name_buffer, &name);
+  InitWindowsStringWithString(name_buffer, &name);
 
   OBJECT_ATTRIBUTES oa;
   oa.Length = sizeof(oa);

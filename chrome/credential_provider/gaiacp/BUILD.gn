@@ -56,6 +56,8 @@ config("common_config") {
 
 source_set("gaiacp_lib") {
   sources = [
+    "auth_utils.cc",
+    "auth_utils.h",
     "gaia_credential.cc",
     "gaia_credential.h",
     "gaia_credential_base.cc",

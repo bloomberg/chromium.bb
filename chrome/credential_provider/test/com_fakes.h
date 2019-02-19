@@ -101,6 +101,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
   void ResetCredentialsChangedFired() { credentials_changed_fired_ = FALSE; }
 
   // IGaiaCredentialProvider
+  IFACEMETHODIMP GetUsageScenario(DWORD* cpus) override;
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
   ULONG STDMETHODCALLTYPE AddRef() override;
   ULONG STDMETHODCALLTYPE Release(void) override;

@@ -19,6 +19,7 @@ const char kKeyAccessToken[] = "access_token";
 const char kKeySID[] = "sid";
 const char kKeyTokenHandle[] = "token_handle";
 const char kKeyUsername[] = "user_name";
+const char kKeyDomain[] = "domain";
 const char kKeyExitCode[] = "exit_code";
 
 // Name of registry value that holds user properties.

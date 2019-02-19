@@ -363,10 +363,12 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
   return S_OK;
 }
 
-HRESULT CreateLogonToken(const wchar_t* username,
+HRESULT CreateLogonToken(const wchar_t* domain,
+                         const wchar_t* username,
                          const wchar_t* password,
                          bool interactive,
                          base::win::ScopedHandle* token) {
+  DCHECK(domain);
   DCHECK(username);
   DCHECK(password);
   DCHECK(token);
@@ -374,7 +376,8 @@ HRESULT CreateLogonToken(const wchar_t* username,
   DWORD logon_type =
       interactive ? LOGON32_LOGON_INTERACTIVE : LOGON32_LOGON_BATCH;
   base::win::ScopedHandle::Handle handle;
-  if (!::LogonUserW(username, L".", password, logon_type,
+
+  if (!::LogonUserW(username, domain, password, logon_type,
                     LOGON32_PROVIDER_DEFAULT, &handle)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "LogonUserW hr=" << putHR(hr);
@@ -728,31 +731,6 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
                                             registration_data_str);
     LOGFN(INFO) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
   }
-
-  return hr;
-}
-
-HRESULT GetAuthenticationPackageId(ULONG* id) {
-  DCHECK(id);
-
-  HANDLE lsa;
-  NTSTATUS status = ::LsaConnectUntrusted(&lsa);
-  HRESULT hr = HRESULT_FROM_NT(status);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "LsaConnectUntrusted hr=" << putHR(hr);
-    return hr;
-  }
-
-  LSA_STRING name;
-  name.Buffer = const_cast<PCHAR>(NEGOSSP_NAME_A);
-  name.Length = static_cast<USHORT>(strlen(name.Buffer));
-  name.MaximumLength = name.Length + 1;
-
-  status = ::LsaLookupAuthenticationPackage(lsa, &name, id);
-  ::LsaDeregisterLogonProcess(lsa);
-  hr = HRESULT_FROM_NT(status);
-  if (FAILED(hr))
-    LOGFN(ERROR) << "LsaLookupAuthenticationPackage hr=" << putHR(hr);
 
   return hr;
 }

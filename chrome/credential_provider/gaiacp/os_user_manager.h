@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_OS_USER_MANAGER_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_OS_USER_MANAGER_H_
 
+#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 
@@ -38,37 +39,40 @@ class [[clang::lto_visibility_public]] OSUserManager {
                           DWORD* error);
 
   // Changes the password of the given OS user.
-  virtual HRESULT ChangeUserPassword(const wchar_t* username,
-                                     const wchar_t* old_password,
-                                     const wchar_t* new_password);
+  virtual HRESULT ChangeUserPassword(
+      const wchar_t* domain, const wchar_t* username,
+      const wchar_t* old_password, const wchar_t* new_password);
 
   // Checks if the given user's password matches |password|. Returns S_OK if it
   // matches, S_FALSE if not. Otherwise will return the windows error code.
-  virtual HRESULT IsWindowsPasswordValid(const wchar_t* username,
-                                         const wchar_t* password);
+  virtual HRESULT IsWindowsPasswordValid(
+      const wchar_t* domain, const wchar_t* username, const wchar_t* password);
 
   // Creates a logon token for the given user.  If |interactive| is true the
   // token is of type interactive otherwise it is of type batch.
-  virtual HRESULT CreateLogonToken(const wchar_t* username,
-                                   const wchar_t* password,
-                                   bool interactive,
-                                   base::win::ScopedHandle* token);
+  virtual HRESULT CreateLogonToken(
+      const wchar_t* domain, const wchar_t* username, const wchar_t* password,
+      bool interactive, base::win::ScopedHandle* token);
 
   // Gets the SID of the given OS user.  The caller owns the pointer |sid| and
   // should free it with a call to LocalFree().
-  virtual HRESULT GetUserSID(const wchar_t* username, PSID* sid);
+  virtual HRESULT GetUserSID(const wchar_t* domain, const wchar_t* username,
+                             PSID* sid);
 
   // Finds a user created from a gaia account by its SID.  Returns S_OK if a
   // user with the given SID exists, HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)
   // if not, or an arbitrary error otherwise.  If |username| is non-null and
-  // |length| is greater than zero, the username associated with the SID is
-  // returned.
-  virtual HRESULT FindUserBySID(const wchar_t* sid,
-                                wchar_t* username,
-                                DWORD length);
+  // |username_size| is greater than zero, the username associated with the
+  // SID is returned. If |domain| is non-null and |domain_size| is greater
+  // than zero, the domain associated with the SID is returned.
+  virtual HRESULT FindUserBySID(const wchar_t* sid, wchar_t* username,
+                                DWORD username_size, wchar_t* domain,
+                                DWORD domain_size);
 
   // Removes the user from the machine.
   virtual HRESULT RemoveUser(const wchar_t* username, const wchar_t* password);
+
+  static base::string16 GetLocalDomain();
 
   // This method is called from dllmain.cc when setting fakes from one modul
   // to another.

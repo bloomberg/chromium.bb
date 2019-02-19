@@ -54,15 +54,17 @@ class ATL_NO_VTABLE CReauthCredential
   // the user information that is being validated. Otherwise fills |error_text|
   // with an appropriate error message and returns an error.
   HRESULT ValidateExistingUser(const base::string16& username,
+                               const base::string16& domain,
                                const base::string16& sid,
                                BSTR* error_text) override;
   HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value) override;
 
   // IReauthCredential
-  IFACEMETHODIMP SetOSUserInfo(BSTR sid, BSTR username) override;
+  IFACEMETHODIMP SetOSUserInfo(BSTR sid, BSTR domain, BSTR username) override;
   IFACEMETHODIMP SetEmailForReauth(BSTR email) override;
 
   // Information about the OS user.
+  CComBSTR os_user_domain_;
   CComBSTR os_username_;
   CComBSTR os_user_sid_;
 

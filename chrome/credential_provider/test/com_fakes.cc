@@ -48,8 +48,7 @@ FakeCredentialProviderUser::GetStringValue(REFPROPERTYKEY key,
     return E_INVALIDARG;
 
   DWORD length = username_.length() + 1;
-  *value =
-      static_cast<wchar_t*>(::CoTaskMemAlloc(length * sizeof(wchar_t)));
+  *value = static_cast<wchar_t*>(::CoTaskMemAlloc(length * sizeof(wchar_t)));
   EXPECT_EQ(0, wcscpy_s(*value, length, username_.c_str()));
   return S_OK;
 }
@@ -110,6 +109,12 @@ IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderEvents);
 FakeGaiaCredentialProvider::FakeGaiaCredentialProvider() {}
 
 FakeGaiaCredentialProvider::~FakeGaiaCredentialProvider() {}
+
+HRESULT FakeGaiaCredentialProvider::GetUsageScenario(DWORD* cpus) {
+  DCHECK(cpus);
+  *cpus = static_cast<DWORD>(CPUS_LOGON);
+  return S_OK;
+}
 
 HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(
     IUnknown* credential,

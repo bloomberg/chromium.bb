@@ -225,23 +225,26 @@ ScopedUserProfile::GetCreatorFunctionStorage() {
 // static
 std::unique_ptr<ScopedUserProfile> ScopedUserProfile::Create(
     const base::string16& sid,
+    const base::string16& domain,
     const base::string16& username,
     const base::string16& password) {
   if (!GetCreatorFunctionStorage()->is_null())
-    return GetCreatorFunctionStorage()->Run(sid, username, password);
+    return GetCreatorFunctionStorage()->Run(sid, domain, username, password);
 
   std::unique_ptr<ScopedUserProfile> scoped(
-      new ScopedUserProfile(sid, username, password));
+      new ScopedUserProfile(sid, domain, username, password));
   return scoped->IsValid() ? std::move(scoped) : nullptr;
 }
 
 ScopedUserProfile::ScopedUserProfile(const base::string16& sid,
+                                     const base::string16& domain,
                                      const base::string16& username,
                                      const base::string16& password) {
   LOGFN(INFO);
   // Load the user's profile so that their regsitry hive is available.
   base::win::ScopedHandle::Handle handle;
-  if (!::LogonUserW(username.c_str(), L".", password.c_str(),
+
+  if (!::LogonUserW(username.c_str(), domain.c_str(), password.c_str(),
                     LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT,
                     &handle)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());

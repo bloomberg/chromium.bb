@@ -150,7 +150,9 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
 
   // Make sure a "foo" user was created.
   PSID sid;
-  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(kDefaultUsername, &sid));
+  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
+                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
+                      &sid));
   ::LocalFree(sid);
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
@@ -159,6 +161,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
   // State was reset.
   EXPECT_FALSE(test->AreCredentialsValid());
+
   EXPECT_EQ(S_OK, gaia_cred->Terminate());
 
   // New user should be created.

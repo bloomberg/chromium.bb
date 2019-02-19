@@ -27,6 +27,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
@@ -68,18 +69,22 @@ base::string16 GetEmailDomains() {
 
 // Tries to find a user associated to the gaia_id stored in |result| under the
 // key |kKeyId|. If one exists, then this function will fill out |gaia_id|,
-// |username| and |sid| with the user's information. If not
+// |username|, |domain| and |sid| with the user's information. If not
 // this function will try to generate a new username derived from the email
-// and fill out only |gaia_id| and |username|. |sid| will be empty until the
-// user is created later on.
+// and fill out only |gaia_id| and |username|. |domain| will always be empty
+// since only local users can be created and |sid| will also be empty until
+// the user is created later on.
 void MakeUsernameForAccount(const base::DictionaryValue* result,
                             base::string16* gaia_id,
                             wchar_t* username,
                             DWORD username_length,
+                            wchar_t* domain,
+                            DWORD domain_length,
                             wchar_t* sid,
                             DWORD sid_length) {
   DCHECK(gaia_id);
   DCHECK(username);
+  DCHECK(domain);
   DCHECK(sid);
 
   *gaia_id = GetDictString(result, kKeyId);
@@ -87,13 +92,16 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
   // user already.  If so, return the OS username of that user.
   HRESULT hr = GetSidFromId(*gaia_id, sid, sid_length);
   if (SUCCEEDED(hr)) {
-    hr = OSUserManager::Get()->FindUserBySID(sid, username, username_length);
+    hr = OSUserManager::Get()->FindUserBySID(sid, username, username_length,
+                                             domain, domain_length);
     if (SUCCEEDED(hr))
       return;
   }
   LOGFN(INFO) << "No existing user found associated to gaia id:" << *gaia_id;
+  wcscpy_s(domain, domain_length, OSUserManager::GetLocalDomain().c_str());
   username[0] = 0;
   sid[0] = 0;
+
   // Create a username based on the email address.  Usernames are more
   // restrictive than emails, so some transformations are needed.  This tries
   // to preserve the email as much as possible in the username while respecting
@@ -185,7 +193,7 @@ HRESULT WaitForLoginUIAndGetResult(
 // This function validates the response from GLS and makes sure it contained
 // all the fields required to proceed with logon.  This does not necessarily
 // guarantee that the logon will succeed, only that GLS response seems correct.
-HRESULT ValidateResult(base::DictionaryValue* result, BSTR* status_text) {
+HRESULT ValidateResult(const base::DictionaryValue* result, BSTR* status_text) {
   DCHECK(result);
   DCHECK(status_text);
 
@@ -271,74 +279,6 @@ HRESULT ValidateResult(base::DictionaryValue* result, BSTR* status_text) {
     return E_UNEXPECTED;
   }
 
-  return S_OK;
-}
-
-HRESULT BuildCredPackAuthenticationBuffer(
-    BSTR username,
-    BSTR password,
-    CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* cpcs) {
-  DCHECK(username);
-  DCHECK(password);
-  DCHECK(cpcs);
-
-  HRESULT hr = GetAuthenticationPackageId(&(cpcs->ulAuthenticationPackage));
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetAuthenticationPackageId hr=" << putHR(hr);
-    return hr;
-  }
-
-  // Build the full username as "domain\username".  The domain in this case
-  // is the computer name since this is a local account.
-
-  wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD length = base::size(computer_name);
-  if (!::GetComputerNameW(computer_name, &length)) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "GetComputerNameW hr=" << putHR(hr);
-    return hr;
-  }
-
-  length += 1 + SysStringLen(username) + 1;  // backslash, username, null
-  std::unique_ptr<wchar_t[]> domain_username(new wchar_t[length]);
-  swprintf_s(domain_username.get(), length, L"%s\\%s", computer_name,
-             OLE2CW(username));
-
-  // Create the buffer needed to pass back to winlogon.  Get length first.
-
-  cpcs->cbSerialization = 0;
-  if (!::CredPackAuthenticationBufferW(0, domain_username.get(),
-                                       OLE2W(password), nullptr,
-                                       &(cpcs->cbSerialization))) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
-    if (hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
-      LOGFN(ERROR) << "CredPackAuthenticationBufferW length"
-                   << " dn=" << domain_username.get() << " hr=" << putHR(hr);
-      return hr;
-    }
-  }
-
-  cpcs->rgbSerialization =
-      static_cast<LPBYTE>(::CoTaskMemAlloc(cpcs->cbSerialization));
-  if (cpcs->rgbSerialization == nullptr) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "can't alloc rgbSerialization "
-                 << " dn=" << domain_username.get() << " hr=" << putHR(hr)
-                 << " length=" << cpcs->cbSerialization;
-    return hr;
-  }
-
-  if (!::CredPackAuthenticationBufferW(0, domain_username.get(),
-                                       OLE2W(password), cpcs->rgbSerialization,
-                                       &(cpcs->cbSerialization))) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "CredPackAuthenticationBufferW "
-                 << " dn=" << domain_username.get() << " hr=" << putHR(hr);
-    return hr;
-  }
-
-  // Caller should fill this in.
-  cpcs->clsidCredentialProvider = GUID_NULL;
   return S_OK;
 }
 
@@ -448,12 +388,14 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
     HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
                                              base::size(password));
     if (SUCCEEDED(hr)) {
+      base::string16 local_domain = OSUserManager::GetLocalDomain();
       base::win::ScopedHandle token;
-      hr =
-          OSUserManager::Get()->CreateLogonToken(gaia_username, password,
-                                                 /*interactive=*/false, &token);
+      hr = OSUserManager::Get()->CreateLogonToken(
+          local_domain.c_str(), gaia_username, password,
+          /*interactive=*/false, &token);
       if (SUCCEEDED(hr)) {
-        hr = OSUserManager::Get()->GetUserSID(gaia_username, &sid);
+        hr = OSUserManager::Get()->GetUserSID(local_domain.c_str(),
+                                              gaia_username, &sid);
         if (FAILED(hr)) {
           LOGFN(ERROR) << "GetUserSID(sid from existing user '" << gaia_username
                        << "') hr=" << putHR(hr);
@@ -559,8 +501,9 @@ HRESULT CGaiaCredentialBase::OnDllUnregisterServer() {
 
     if (SUCCEEDED(hr)) {
       hr = policy->RemovePrivateData(kLsaKeyGaiaUsername);
+      base::string16 local_domain = OSUserManager::GetLocalDomain();
 
-      hr = manager->GetUserSID(gaia_username, &sid);
+      hr = manager->GetUserSID(local_domain.c_str(), gaia_username, &sid);
       if (FAILED(hr)) {
         LOGFN(ERROR) << "manager.GetUserSID hr=" << putHR(hr);
         sid = nullptr;
@@ -612,7 +555,7 @@ HRESULT CGaiaCredentialBase::IsWindowsPasswordValidForStoredUser(
   if (::SysStringLen(password) == 0)
     return S_FALSE;
   OSUserManager* manager = OSUserManager::Get();
-  return manager->IsWindowsPasswordValid(username_, password);
+  return manager->IsWindowsPasswordValid(domain_, username_, password);
 }
 
 HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
@@ -647,6 +590,7 @@ HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
 void CGaiaCredentialBase::ResetInternalState() {
   LOGFN(INFO);
   username_.Empty();
+  domain_.Empty();
   password_.Empty();
   current_windows_password_.Empty();
   authentication_results_.reset();
@@ -723,6 +667,7 @@ HRESULT CGaiaCredentialBase::GetUserGlsCommandline(
 
 HRESULT CGaiaCredentialBase::GetGlsCommandline(
     base::CommandLine* command_line) {
+  DCHECK(command_line);
   HRESULT hr = GetBaseGlsCommandline(command_line);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
@@ -739,6 +684,7 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
     LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
     return hr;
   }
+
   LOGFN(INFO) << "Command line: " << command_line->GetCommandLineString();
   return S_OK;
 }
@@ -762,7 +708,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   if (!CanAttemptWindowsLogon())
     return S_FALSE;
 
-  // If the credentials are not valid, check if the user entered their old
+  // If a password update is needed, check if the user entered their old
   // Windows password and it is valid. If it is, try to change the password
   // using the old password. If it isn't, return S_FALSE to state that the
   // login is not complete.
@@ -773,7 +719,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
       if (needs_to_update_windows_password_) {
         OSUserManager* manager = OSUserManager::Get();
         HRESULT changepassword_hr = manager->ChangeUserPassword(
-            username_, current_windows_password_, password_);
+            domain_, username_, current_windows_password_, password_);
         if (FAILED(changepassword_hr)) {
           if (changepassword_hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
             LOGFN(ERROR) << "ChangeUserPassword hr="
@@ -805,19 +751,20 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
 
   // The OS user has already been created, so return all the information
   // needed to log them in.
-  HRESULT hr =
-      BuildCredPackAuthenticationBuffer(get_username(), get_password(), cpcs);
+  DWORD cpus = 0;
+  provider()->GetUsageScenario(&cpus);
+  HRESULT hr = BuildCredPackAuthenticationBuffer(
+      domain_, get_username(), get_password(),
+      static_cast<CREDENTIAL_PROVIDER_USAGE_SCENARIO>(cpus), cpcs);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildCredPackAuthenticationBuffer hr=" << putHR(hr);
     return hr;
   }
 
   cpcs->clsidCredentialProvider = CLSID_GaiaCredentialProvider;
-
-  hr = S_OK;
   *cpgsr = CPGSR_RETURN_CREDENTIAL_FINISHED;
 
-  return hr;
+  return S_OK;
 }
 
 // static
@@ -1038,8 +985,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   *status_text = nullptr;
   *status_icon = CPSI_NONE;
 
-  // This may be a long running function so disable user input while
-  // processing.
+  // This may be a long running function so disable user input while processing.
   if (events_) {
     events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
     events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
@@ -1058,14 +1004,14 @@ HRESULT CGaiaCredentialBase::GetSerialization(
     *status_icon = CPSI_ERROR;
     *cpgsr = CPGSR_RETURN_NO_CREDENTIAL_FINISHED;
   } else if (hr == S_FALSE) {
-    // If HandleAutologon returns S_FALSE, then there was not enough
-    // information to log the user on or they need to update their password
-    // and gave an invalid old password.  Display the Gaia sign in page if
-    // there is not sufficient Gaia credentials or just return
+    // If HandleAutologon returns S_FALSE, then there was not enough information
+    // to log the user on or they need to update their password and gave an
+    // invalid old password.  Display the Gaia sign in page if there is not
+    // sufficient Gaia credentials or just return
     // CPGSR_NO_CREDENTIAL_NOT_FINISHED to wait for the user to try a new
     // password.
 
-    // Logon process is still running or windows password needs to be updated,
+    // Logon process is still running or windows password needs to be entered,
     // return that serialization is not finished so that a second logon stub
     // isn't started.
     if (logon_ui_process_ != INVALID_HANDLE_VALUE || needs_windows_password_) {
@@ -1090,6 +1036,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
         *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
         LOGFN(INFO) << "No internet connection";
         UpdateSubmitButtonInteractiveState();
+
         hr = S_OK;
       } else {
         // The account creation is async so we are not done yet.
@@ -1220,7 +1167,9 @@ HRESULT CGaiaCredentialBase::CreateGaiaLogonToken(
     return hr;
   }
 
-  hr = OSUserManager::Get()->CreateLogonToken(gaia_username, password,
+  base::string16 local_domain = OSUserManager::GetLocalDomain();
+  hr = OSUserManager::Get()->CreateLogonToken(local_domain.c_str(),
+                                              gaia_username, password,
                                               /*interactive=*/false, token);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateLogonToken hr=" << putHR(hr);
@@ -1284,8 +1233,8 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
 
   // Don't create a job here with UI restrictions, since win10 does not allow
   // nested jobs unless all jobs don't specify UI restrictions.  Since chrome
-  // will set a job with UI restrictions for renderer/gpu/etc processes,
-  // setting one here causes chrome to fail.
+  // will set a job with UI restrictions for renderer/gpu/etc processes, setting
+  // one here causes chrome to fail.
 
   // Environment is fully set up for UI, so let it go.
   if (::ResumeThread(uiprocinfo->procinfo.thread_handle()) ==
@@ -1443,8 +1392,10 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(
     return E_INVALIDARG;
   }
 
+  base::string16 domain = GetDictString(&properties, kKeyDomain);
+
   // Load the user's profile so that their registry hive is available.
-  auto profile = ScopedUserProfile::Create(sid, username, password);
+  auto profile = ScopedUserProfile::Create(sid, domain, username, password);
   if (!profile) {
     LOGFN(ERROR) << "Could not load user profile";
     return E_UNEXPECTED;
@@ -1466,11 +1417,14 @@ HRESULT CGaiaCredentialBase::ReportResult(
               << " substatus=" << putHR(substatus);
 
   if (status == STATUS_SUCCESS && authentication_results_) {
-    // Update the sid, username and password in |authentication_results_| with
-    // the real Windows information for the user so that the SaveAccountInfo
-    // process can correctly sign in to the user account.
+    // Update the sid, domain, username and password in
+    // |authentication_results_| with the real Windows information for the user
+    // so that the SaveAccountInfo process can correctly sign in to the user
+    // account.
     authentication_results_->SetKey(
         kKeySID, base::Value(base::UTF16ToUTF8((BSTR)user_sid_)));
+    authentication_results_->SetKey(
+        kKeyDomain, base::Value(base::UTF16ToUTF8((BSTR)domain_)));
     authentication_results_->SetKey(
         kKeyUsername, base::Value(base::UTF16ToUTF8((BSTR)username_)));
     authentication_results_->SetKey(
@@ -1522,13 +1476,13 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
 
 HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
     const base::DictionaryValue* result,
+    BSTR* domain,
     BSTR* username,
-    BSTR* password,
     BSTR* sid,
     BSTR* error_text) {
   LOGFN(INFO);
+  DCHECK(domain);
   DCHECK(username);
-  DCHECK(password);
   DCHECK(sid);
   DCHECK(error_text);
   DCHECK(sid);
@@ -1537,16 +1491,18 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
   base::string16 local_password = GetDictString(result, kKeyPassword);
 
   wchar_t found_username[kWindowsUsernameBufferLength];
+  wchar_t found_domain[kWindowsDomainBufferLength];
   wchar_t found_sid[kWindowsSidBufferLength];
   base::string16 gaia_id;
-  MakeUsernameForAccount(result, &gaia_id, found_username,
-                         base::size(found_username), found_sid,
-                         base::size(found_sid));
+  MakeUsernameForAccount(
+      result, &gaia_id, found_username, base::size(found_username),
+      found_domain, base::size(found_domain), found_sid, base::size(found_sid));
 
-  // If an existing user associated to the gaia id was found, make sure that
-  // it is valid for this credential.
+  // If an existing user associated to the gaia id was found, make sure that it
+  // is valid for this credential.
   if (found_sid[0]) {
-    HRESULT hr = ValidateExistingUser(found_username, found_sid, error_text);
+    HRESULT hr = ValidateExistingUser(found_username, found_domain, found_sid,
+                                      error_text);
 
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
@@ -1554,7 +1510,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
     }
 
     *username = ::SysAllocString(found_username);
-    *password = ::SysAllocString(local_password.c_str());
+    *domain = ::SysAllocString(found_domain);
     *sid = ::SysAllocString(found_sid);
 
     return S_OK;
@@ -1567,16 +1523,18 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
       local_fullname.c_str(), comment.c_str(),
       /*add_to_users_group=*/true, kMaxUsernameAttempts, username, sid);
 
-  // May return user exists if this is the anonymous credential and the
-  // maximum attempts to generate a new username has been reached.
+  // May return user exists if this is the anonymous credential and the maximum
+  // attempts to generate a new username has been reached.
   if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
     LOGFN(ERROR) << "Could not find a new username based on desired username '"
-                 << found_username << "'. Maximum attempts reached.";
+                 << found_domain << "\\" << found_username
+                 << "'. Maximum attempts reached.";
     *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 
-  *password = ::SysAllocString(local_password.c_str());
+  *domain = ::SysAllocString(found_domain);
+
   return hr;
 }
 
@@ -1585,9 +1543,9 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   USES_CONVERSION;
   DCHECK(status_text);
 
-  // Logon UI process is no longer needed and should already be finished by
-  // now so clear the handle so that calls to HandleAutoLogon do not block
-  // further processing thinking that there is still a logon process active.
+  // Logon UI process is no longer needed and should already be finished by now
+  // so clear the handle so that calls to HandleAutoLogon do not block further
+  // processing thinking that there is still a logon process active.
   logon_ui_process_ = INVALID_HANDLE_VALUE;
 
   // Convert the string to a base::Dictionary and add the calculated username
@@ -1611,10 +1569,11 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
     return hr;
   }
+
   // The value in |dict| is now known to contain everything that is needed
   // from the GLS. Try to validate the user that wants to sign in and then
   // add additional information into |dict| as needed.
-  hr = ValidateOrCreateUser(dict.get(), &username_, &password_, &user_sid_,
+  hr = ValidateOrCreateUser(dict.get(), &domain_, &username_, &user_sid_,
                             status_text);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
@@ -1622,6 +1581,9 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   }
 
   authentication_results_ = std::move(dict);
+
+  password_ = ::SysAllocString(
+      GetDictString(authentication_results_, kKeyPassword).c_str());
 
   result_status_ = STATUS_SUCCESS;
   result_substatus_ = STATUS_SUCCESS;
@@ -1634,8 +1596,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
 
   // Check if the credentials are valid for the user. If they aren't show the
-  // password update prompt and continue without authenticating on the
-  // provider.
+  // password update prompt and continue without authenticating on the provider.
   if (!AreCredentialsValid()) {
     needs_to_update_windows_password_ = true;
     DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
@@ -1669,10 +1630,6 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
   TerminateLogonProcess();
   UpdateSubmitButtonInteractiveState();
 
-  // TODO(rogerta): for some reason the error info saved by ReportError()
-  // never gets used because ReportResult() is never called by winlogon.exe
-  // when the logon fails.  Not sure what I'm doing wrong here.  This
-  // message box does show the error at the appropriate time though.
   DisplayErrorInUI(status, STATUS_SUCCESS, status_text);
 
   return provider_->OnUserAuthenticated(nullptr, CComBSTR(), CComBSTR(),
@@ -1704,6 +1661,7 @@ void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
 
 HRESULT CGaiaCredentialBase::ValidateExistingUser(
     const base::string16& username,
+    const base::string16& domain,
     const base::string16& sid,
     BSTR* error_text) {
   return S_OK;

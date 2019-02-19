@@ -51,6 +51,7 @@ extern const char kKeyAccessToken[];
 extern const char kKeySID[];
 extern const char kKeyTokenHandle[];
 extern const char kKeyUsername[];
+extern const char kKeyDomain[];
 extern const char kKeyExitCode[];
 
 // Name of registry value that holds user properties.
