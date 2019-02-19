@@ -211,7 +211,7 @@ TEST_F(FeatureListTest, FieldTrialAssociateUseDefault) {
   EXPECT_TRUE(FieldTrialList::IsTrialActive(trial2->trial_name()));
 }
 
-TEST_F(FeatureListTest, CommandLineTakesPrecedenceOverFieldTrial) {
+TEST_F(FeatureListTest, CommandLineEnableTakesPrecedenceOverFieldTrial) {
   ClearFeatureListInstance();
 
   FieldTrialList field_trial_list(nullptr);
@@ -229,6 +229,30 @@ TEST_F(FeatureListTest, CommandLineTakesPrecedenceOverFieldTrial) {
   EXPECT_FALSE(FieldTrialList::IsTrialActive(trial->trial_name()));
   // Command-line should take precedence.
   EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOffByDefault));
+  // Since the feature is on due to the command-line, and not as a result of the
+  // field trial, the field trial should not be activated (since the Associate*
+  // API wasn't used.)
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(trial->trial_name()));
+}
+
+TEST_F(FeatureListTest, CommandLineDisableTakesPrecedenceOverFieldTrial) {
+  ClearFeatureListInstance();
+
+  FieldTrialList field_trial_list(nullptr);
+  std::unique_ptr<FeatureList> feature_list(new FeatureList);
+
+  // The feature is explicitly disabled on the command-line.
+  feature_list->InitializeFromCommandLine("", kFeatureOffByDefaultName);
+
+  // But the FieldTrial would set the feature to enabled.
+  FieldTrial* trial = FieldTrialList::CreateFieldTrial("TrialExample2", "A");
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureOffByDefaultName, FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(trial->trial_name()));
+  // Command-line should take precedence.
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
   // Since the feature is on due to the command-line, and not as a result of the
   // field trial, the field trial should not be activated (since the Associate*
   // API wasn't used.)
