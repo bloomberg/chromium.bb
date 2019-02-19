@@ -225,11 +225,6 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
-// Enables an API which allows websites to capture reserved keys in fullscreen.
-// Defined by w3c here: https://w3c.github.io/keyboard-lock/
-const base::Feature kKeyboardLockAPI{"KeyboardLockAPI",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLayeredAPI{"LayeredAPI",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 

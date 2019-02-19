@@ -43,7 +43,7 @@ const base::Feature kSettingsShowsPerKeyboardSettings = {
 const base::Feature kInputMethodSettingsUiUpdate = {
     "InputMethodSettingsUiUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
+// Allows system keyboard event capture via the keyboard lock API.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 

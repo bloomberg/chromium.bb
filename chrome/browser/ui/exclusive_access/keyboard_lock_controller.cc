@@ -42,10 +42,6 @@ constexpr TimeDelta kDefaultEscRepeatWindow = TimeDelta::FromSeconds(1);
 // trigger the exit instructions to be shown again.
 constexpr int kEscRepeatCountToTriggerUiReshow = 3;
 
-bool IsExperimentalKeyboardLockApiEnabled() {
-  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI);
-}
-
 }  // namespace
 
 KeyboardLockController::KeyboardLockController(ExclusiveAccessManager* manager)
@@ -99,8 +95,7 @@ bool KeyboardLockController::RequiresPressAndHoldEscToExit() const {
 
 void KeyboardLockController::RequestKeyboardLock(WebContents* web_contents,
                                                  bool esc_key_locked) {
-  if (!IsExperimentalKeyboardLockApiEnabled() ||
-      !exclusive_access_manager()
+  if (!exclusive_access_manager()
            ->fullscreen_controller()
            ->IsFullscreenForTabOrPending(web_contents)) {
     return;
