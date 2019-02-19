@@ -219,8 +219,9 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
     return false;
-  return owner->GetLayoutObject()->Style()->PointerEvents() ==
-         EPointerEvents::kNone;
+  return owner->OwnerType() == FrameOwnerElementType::kPortal ||
+         (owner->GetLayoutObject()->Style()->PointerEvents() ==
+          EPointerEvents::kNone);
 }
 
 void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
