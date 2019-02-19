@@ -21,11 +21,125 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0e\x64\x65pgraph.proto\x12\x0c\x63hromite.api\x1a\x0f\x62uild_api.proto\x1a\x0c\x63ommon.proto\"Y\n\x1eGetBuildDependencyGraphRequest\x12\"\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x0c.BuildTarget\x12\x13\n\x0boutput_path\x18\x02 \x01(\t\"F\n\x1fGetBuildDependencyGraphResponse\x12#\n\x1b\x62uild_dependency_graph_file\x18\x01 \x01(\t2\xa9\x01\n\x11\x44\x65pendencyService\x12v\n\x17GetBuildDependencyGraph\x12,.chromite.api.GetBuildDependencyGraphRequest\x1a-.chromite.api.GetBuildDependencyGraphResponse\x1a\x1c\xc2\xed\x1a\x18\n\x16\x62oard_build_dependencyb\x06proto3')
+  serialized_pb=_b('\n\x0e\x64\x65pgraph.proto\x12\x0c\x63hromite.api\x1a\x0f\x62uild_api.proto\x1a\x0c\x63ommon.proto\"b\n\x08\x44\x65pGraph\x12\"\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x0c.BuildTarget\x12\x32\n\x0cpackage_deps\x18\x02 \x03(\x0b\x32\x1c.chromite.api.PackageDepInfo\"\x9a\x01\n\x0ePackageDepInfo\x12\"\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x0c.PackageInfo\x12)\n\x13\x64\x65pendency_packages\x18\x02 \x03(\x0b\x32\x0c.PackageInfo\x12\x39\n\x17\x64\x65pendency_source_paths\x18\x03 \x03(\x0b\x32\x18.chromite.api.SourcePath\"\x1a\n\nSourcePath\x12\x0c\n\x04path\x18\x01 \x01(\t\"Y\n\x1eGetBuildDependencyGraphRequest\x12\"\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x0c.BuildTarget\x12\x13\n\x0boutput_path\x18\x02 \x01(\t\"F\n\x1fGetBuildDependencyGraphResponse\x12#\n\x1b\x62uild_dependency_graph_file\x18\x01 \x01(\t2\xa9\x01\n\x11\x44\x65pendencyService\x12v\n\x17GetBuildDependencyGraph\x12,.chromite.api.GetBuildDependencyGraphRequest\x1a-.chromite.api.GetBuildDependencyGraphResponse\x1a\x1c\xc2\xed\x1a\x18\n\x16\x62oard_build_dependencyb\x06proto3')
   ,
   dependencies=[build__api__pb2.DESCRIPTOR,common__pb2.DESCRIPTOR,])
 
 
+
+
+_DEPGRAPH = _descriptor.Descriptor(
+  name='DepGraph',
+  full_name='chromite.api.DepGraph',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='build_target', full_name='chromite.api.DepGraph.build_target', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='package_deps', full_name='chromite.api.DepGraph.package_deps', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=63,
+  serialized_end=161,
+)
+
+
+_PACKAGEDEPINFO = _descriptor.Descriptor(
+  name='PackageDepInfo',
+  full_name='chromite.api.PackageDepInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='package_info', full_name='chromite.api.PackageDepInfo.package_info', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dependency_packages', full_name='chromite.api.PackageDepInfo.dependency_packages', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dependency_source_paths', full_name='chromite.api.PackageDepInfo.dependency_source_paths', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=164,
+  serialized_end=318,
+)
+
+
+_SOURCEPATH = _descriptor.Descriptor(
+  name='SourcePath',
+  full_name='chromite.api.SourcePath',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='chromite.api.SourcePath.path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=320,
+  serialized_end=346,
+)
 
 
 _GETBUILDDEPENDENCYGRAPHREQUEST = _descriptor.Descriptor(
@@ -61,8 +175,8 @@ _GETBUILDDEPENDENCYGRAPHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=63,
-  serialized_end=152,
+  serialized_start=348,
+  serialized_end=437,
 )
 
 
@@ -92,14 +206,43 @@ _GETBUILDDEPENDENCYGRAPHRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=154,
-  serialized_end=224,
+  serialized_start=439,
+  serialized_end=509,
 )
 
+_DEPGRAPH.fields_by_name['build_target'].message_type = common__pb2._BUILDTARGET
+_DEPGRAPH.fields_by_name['package_deps'].message_type = _PACKAGEDEPINFO
+_PACKAGEDEPINFO.fields_by_name['package_info'].message_type = common__pb2._PACKAGEINFO
+_PACKAGEDEPINFO.fields_by_name['dependency_packages'].message_type = common__pb2._PACKAGEINFO
+_PACKAGEDEPINFO.fields_by_name['dependency_source_paths'].message_type = _SOURCEPATH
 _GETBUILDDEPENDENCYGRAPHREQUEST.fields_by_name['build_target'].message_type = common__pb2._BUILDTARGET
+DESCRIPTOR.message_types_by_name['DepGraph'] = _DEPGRAPH
+DESCRIPTOR.message_types_by_name['PackageDepInfo'] = _PACKAGEDEPINFO
+DESCRIPTOR.message_types_by_name['SourcePath'] = _SOURCEPATH
 DESCRIPTOR.message_types_by_name['GetBuildDependencyGraphRequest'] = _GETBUILDDEPENDENCYGRAPHREQUEST
 DESCRIPTOR.message_types_by_name['GetBuildDependencyGraphResponse'] = _GETBUILDDEPENDENCYGRAPHRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+DepGraph = _reflection.GeneratedProtocolMessageType('DepGraph', (_message.Message,), dict(
+  DESCRIPTOR = _DEPGRAPH,
+  __module__ = 'depgraph_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.DepGraph)
+  ))
+_sym_db.RegisterMessage(DepGraph)
+
+PackageDepInfo = _reflection.GeneratedProtocolMessageType('PackageDepInfo', (_message.Message,), dict(
+  DESCRIPTOR = _PACKAGEDEPINFO,
+  __module__ = 'depgraph_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.PackageDepInfo)
+  ))
+_sym_db.RegisterMessage(PackageDepInfo)
+
+SourcePath = _reflection.GeneratedProtocolMessageType('SourcePath', (_message.Message,), dict(
+  DESCRIPTOR = _SOURCEPATH,
+  __module__ = 'depgraph_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.SourcePath)
+  ))
+_sym_db.RegisterMessage(SourcePath)
 
 GetBuildDependencyGraphRequest = _reflection.GeneratedProtocolMessageType('GetBuildDependencyGraphRequest', (_message.Message,), dict(
   DESCRIPTOR = _GETBUILDDEPENDENCYGRAPHREQUEST,
@@ -123,8 +266,8 @@ _DEPENDENCYSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\030\n\026board_build_dependency'),
-  serialized_start=227,
-  serialized_end=396,
+  serialized_start=512,
+  serialized_end=681,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetBuildDependencyGraph',

@@ -65,6 +65,7 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
+    'api/service/board_build_dependency_unittest': INSIDE,
     'cbuildbot/stages/sync_stages_unittest': INSIDE,
     'cbuildbot/stages/test_stages_unittest': INSIDE,
     'cli/cros/cros_build_unittest': INSIDE,

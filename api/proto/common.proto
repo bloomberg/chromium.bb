@@ -11,3 +11,16 @@ message BuildTarget {
   // The name of the build target (a.k.a. board name).
   string name = 1;
 }
+
+// Message describing a package, The corresponding variable names are from
+// https://devmanual.gentoo.org/ebuild-writing/variables/index.html
+message PackageInfo {
+  // The package name (PN variable)
+  string package_name = 1;
+
+  // The package category (CATEGORY variable)
+  string category = 2;
+
+  // The package version and revision (PVR variable)
+  string version = 3;
+}

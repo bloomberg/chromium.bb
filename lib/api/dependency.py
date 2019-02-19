@@ -157,8 +157,6 @@ def GetBuildDependency(board):
       (relative to the repo checkout root, i.e: ~/trunk/ in your cros_sdk) it
       depends on
   """
-  # TODO(crbug.com/917174): convert this to protobuf & serialize through proto
-  # JSON.
   results = {}
   results['target_board'] = board
   results['package_deps'] = GenerateDepsGraphForBoard(board)

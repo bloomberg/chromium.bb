@@ -5,7 +5,35 @@ import "build_api.proto";
 import "common.proto";
 
 
-// Autotest archive messages and service.
+// Depgraph messages and service.
+
+// Message contains data about the portage dependency graph and the packages'
+// dependency source paths.
+message DepGraph {
+  // The board whose dependency graph is being created for.
+  BuildTarget build_target = 1;
+  // List of packages in the dependency graph and their infos, which include
+  // dependency packages and the source paths.
+  repeated PackageDepInfo package_deps = 2;
+}
+
+// Message describing a package and its dependencies.
+message PackageDepInfo {
+
+  PackageInfo package_info = 1;
+
+  // List of packages this package depends on.
+  repeated PackageInfo dependency_packages = 2;
+
+  // List of source paths the package depends on.
+  repeated SourcePath dependency_source_paths = 3;
+}
+
+// Message describes a source path.
+message SourcePath {
+  string path = 1;
+}
+
 
 // Message for creating dependency graph json map.
 // Example Json:

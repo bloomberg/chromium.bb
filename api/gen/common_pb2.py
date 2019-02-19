@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0c\x63ommon.proto\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\tb\x06proto3')
 )
 
 
@@ -55,7 +55,53 @@ _BUILDTARGET = _descriptor.Descriptor(
   serialized_end=43,
 )
 
+
+_PACKAGEINFO = _descriptor.Descriptor(
+  name='PackageInfo',
+  full_name='PackageInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='package_name', full_name='PackageInfo.package_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='category', full_name='PackageInfo.category', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='version', full_name='PackageInfo.version', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=45,
+  serialized_end=115,
+)
+
 DESCRIPTOR.message_types_by_name['BuildTarget'] = _BUILDTARGET
+DESCRIPTOR.message_types_by_name['PackageInfo'] = _PACKAGEINFO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 BuildTarget = _reflection.GeneratedProtocolMessageType('BuildTarget', (_message.Message,), dict(
@@ -64,6 +110,13 @@ BuildTarget = _reflection.GeneratedProtocolMessageType('BuildTarget', (_message.
   # @@protoc_insertion_point(class_scope:BuildTarget)
   ))
 _sym_db.RegisterMessage(BuildTarget)
+
+PackageInfo = _reflection.GeneratedProtocolMessageType('PackageInfo', (_message.Message,), dict(
+  DESCRIPTOR = _PACKAGEINFO,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:PackageInfo)
+  ))
+_sym_db.RegisterMessage(PackageInfo)
 
 
 # @@protoc_insertion_point(module_scope)
