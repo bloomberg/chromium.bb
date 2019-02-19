@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <shlobj.h>
 
+#include <ios>
 #include <memory>
 #include <string>
 
@@ -14,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -193,33 +195,26 @@ PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
 }  // namespace
 
 // Launching a subprocess at normal priority class is a noop.
-// See crbug.com/930336: win-asap bots run unit tests using
-// BELOW_NORMAL_PRIORITY_CLASS (0x4000) which prevents running some tests.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_AdjustFromNormalPriority DISABLED_AdjustFromNormalPriority
-#else
-#define MAYBE_AdjustFromNormalPriority AdjustFromNormalPriority
-#endif
-TEST(SetupUtilTest, MAYBE_AdjustFromNormalPriority) {
-  ASSERT_EQ(static_cast<DWORD>(NORMAL_PRIORITY_CLASS),
-            ::GetPriorityClass(::GetCurrentProcess()));
+TEST(SetupUtilTest, AdjustFromNormalPriority) {
+  const DWORD priority_class = ::GetPriorityClass(::GetCurrentProcess());
+  if (priority_class != NORMAL_PRIORITY_CLASS) {
+    LOG(WARNING) << "Skipping SetupUtilTest.AdjustFromNormalPriority since "
+                    "the test harness is running at priority 0x"
+                 << std::hex << priority_class;
+    return;
+  }
   EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }
 
 // Launching a subprocess below normal priority class drops it to bg mode for
 // sufficiently recent operating systems.
-// See crbug.com/930336: win-asap bots run unit tests using
-// BELOW_NORMAL_PRIORITY_CLASS (0x4000) which prevents running some tests.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_AdjustFromBelowNormalPriority \
-  DISABLED_AdjustFromBelowNormalPriority
-#else
-#define MAYBE_AdjustFromBelowNormalPriority AdjustFromBelowNormalPriority
-#endif
-TEST(SetupUtilTest, MAYBE_AdjustFromBelowNormalPriority) {
-  std::unique_ptr<ScopedPriorityClass> below_normal =
-      ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
-  ASSERT_TRUE(below_normal);
+TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
+  std::unique_ptr<ScopedPriorityClass> below_normal;
+  if (::GetPriorityClass(::GetCurrentProcess()) !=
+      BELOW_NORMAL_PRIORITY_CLASS) {
+    below_normal = ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
+    ASSERT_TRUE(below_normal);
+  }
   EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }
 
