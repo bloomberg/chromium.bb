@@ -171,7 +171,6 @@
 -PlatformAppWithFileBrowserTest.*
 -PluginPowerSaverBrowserTest.*
 -PolicyTest.*
--PolicyToolUITest.*
 -PrefsFunctionalTest.*
 -PrefsTabHelperBrowserTest.*
 -PrerenderBrowserTest.*

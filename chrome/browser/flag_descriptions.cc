@@ -666,11 +666,6 @@ const char kEnableMediaSessionServiceDescription[] =
     "Enables the media session mojo service and internal media session "
     "support.";
 
-const char kEnablePolicyToolName[] = "Enable policy management page";
-const char kEnablePolicyToolDescription[] =
-    "If enabled, the chrome://policy-tool URL loads a page for managing "
-    "policies.";
-
 const char kEnableNavigationTracingName[] = "Enable navigation tracing";
 const char kEnableNavigationTracingDescription[] =
     "This is to be used in conjunction with the trace-upload-url flag. "
