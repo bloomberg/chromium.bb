@@ -29,7 +29,6 @@
 #ifndef FREEDRENO_RINGBUFFER_H_
 #define FREEDRENO_RINGBUFFER_H_
 
-#include <xf86atomic.h>
 #include <freedreno_drmif.h>
 
 /* the ringbuffer object is not opaque so that OUT_RING() type stuff
@@ -84,7 +83,9 @@ struct fd_ringbuffer {
 	 * be inlined for performance reasons.
 	 */
 	union {
+#ifdef HAS_ATOMIC_OPS
 		atomic_t refcnt;
+#endif
 		uint64_t __pad;
 	};
 };
