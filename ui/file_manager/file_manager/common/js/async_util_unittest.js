@@ -13,9 +13,9 @@ let result;
 let slot;
 
 function setUp() {
-  slot = new PromiseSlot(function(value) {
+  slot = new PromiseSlot(value => {
     result = 'fulfilled:' + value;
-  }, function(value) {
+  }, value => {
     result = 'rejected:' + value;
   });
   result = null;
@@ -25,21 +25,21 @@ function testPromiseSlot(callback) {
   const fulfilledPromise = Promise.resolve('fulfilled');
   const rejectedPromise = Promise.reject('rejected');
   slot.setPromise(fulfilledPromise);
-  reportPromise(fulfilledPromise.then(function() {
+  reportPromise(fulfilledPromise.then(() => {
     assertEquals('fulfilled:fulfilled', result);
     slot.setPromise(rejectedPromise);
     return rejectedPromise;
-  }).then(function() {
+  }).then(() => {
     // Should not reach here.
     assertTrue(false);
-  }, function() {
+  }, () => {
     assertEquals('rejected:rejected', result);
   }), callback);
 }
 
 function testPromiseSlotReassignBeforeCompletion(callback) {
   let fulfillComputation;
-  const computingPromise = new Promise(function(fulfill, reject) {
+  const computingPromise = new Promise((fulfill, reject) => {
     fulfillComputation = fulfill;
   });
   const fulfilledPromise = Promise.resolve('fulfilled');
@@ -47,11 +47,11 @@ function testPromiseSlotReassignBeforeCompletion(callback) {
   slot.setPromise(computingPromise);
   // Reassign promise.
   slot.setPromise(fulfilledPromise);
-  reportPromise(fulfilledPromise.then(function() {
+  reportPromise(fulfilledPromise.then(() => {
     assertEquals('fulfilled:fulfilled', result);
     fulfillComputation('fulfilled after detached');
     return computingPromise;
-  }).then(function(value) {
+  }).then(value => {
     assertEquals('fulfilled after detached', value);
     // The detached promise does not affect the slot.
     assertEquals('fulfilled:fulfilled', result);
@@ -60,23 +60,23 @@ function testPromiseSlotReassignBeforeCompletion(callback) {
 
 function testPromiseSlotReassignBeforeCompletionWithCancel(callback) {
   let rejectComputation;
-  const computingPromise = new Promise(function(fulfill, reject) {
+  const computingPromise = new Promise((fulfill, reject) => {
     rejectComputation = reject;
   });
-  computingPromise.cancel = function() {
+  computingPromise.cancel = () => {
     rejectComputation('cancelled');
   };
   const fulfilledPromise = Promise.resolve('fulfilled');
 
   slot.setPromise(computingPromise);
   slot.setPromise(fulfilledPromise);
-  reportPromise(fulfilledPromise.then(function() {
+  reportPromise(fulfilledPromise.then(() => {
     assertEquals('fulfilled:fulfilled', result);
     return computingPromise;
-  }).then(function() {
+  }).then(() => {
     // Should not reach here.
     assertTrue(false);
-  }, function(value) {
+  }, value => {
     assertEquals('cancelled', value);
     // The detached promise does not affect the slot.
     assertEquals('fulfilled:fulfilled', result);
@@ -85,7 +85,7 @@ function testPromiseSlotReassignBeforeCompletionWithCancel(callback) {
 
 function testPromiseSlotReassignNullBeforeCompletion(callback) {
   let fulfillComputation;
-  const computingPromise = new Promise(function(fulfill, reject) {
+  const computingPromise = new Promise((fulfill, reject) => {
     fulfillComputation = fulfill;
   });
 
@@ -94,7 +94,7 @@ function testPromiseSlotReassignNullBeforeCompletion(callback) {
   assertEquals(null, result);
 
   fulfillComputation('fulfilled');
-  reportPromise(computingPromise.then(function(value) {
+  reportPromise(computingPromise.then(value => {
     assertEquals('fulfilled', value);
     assertEquals(null, result);
   }), callback);

@@ -55,23 +55,23 @@ MockFileSystem.prototype.populate = function(entries, opt_clear) {
   if (opt_clear) {
     this.entries = {'/': new MockDirectoryEntry(this, '/')};
   }
-  entries.forEach(function(entry) {
+  entries.forEach(entry => {
     const path = entry.fullPath || entry;
     const metadata = entry.metadata || {size: 0};
     const content = entry.content;
     const pathElements = path.split('/');
-    pathElements.forEach(function(_, i) {
+    pathElements.forEach((_, i) => {
       const subpath = pathElements.slice(0, i).join('/');
       if (subpath && !(subpath in this.entries)) {
         this.entries[subpath] = new MockDirectoryEntry(this, subpath, metadata);
       }
-    }.bind(this));
+    });
 
     // If the path doesn't end in a slash, create a file.
     if (!/\/$/.test(path)) {
       this.entries[path] = new MockFileEntry(this, path, metadata, content);
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -106,7 +106,7 @@ function MockEntryInterface() {}
  * @param {FileSystem=} opt_filesystem New file system
  * @return {Entry} Cloned entry.
  */
-MockEntryInterface.prototype.clone = function(fullpath, opt_filesystem) {};
+MockEntryInterface.prototype.clone = (fullpath, opt_filesystem) => {};
 
 /**
  * Base class of mock entries.
@@ -261,7 +261,7 @@ MockEntry.prototype.assertRemoved = function() {
 };
 
 /** @override */
-MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
+MockEntry.prototype.clone = (fullpath, opt_filesystem) => {
   throw new Error('Not implemented.');
 };
 

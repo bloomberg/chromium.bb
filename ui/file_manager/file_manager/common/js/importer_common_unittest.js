@@ -85,7 +85,7 @@ function testResolver_Resolve(callback) {
   assertFalse(resolver.settled);
   resolver.resolve(1);
   resolver.promise.then(
-      function(value) {
+      value => {
         assertTrue(resolver.settled);
         assertEquals(1, value);
       });
@@ -100,7 +100,7 @@ function testResolver_Reject(callback) {
   resolver.promise
       .then(callback.bind(null, true))
       .catch(
-          function(error) {
+          error => {
             assertTrue(resolver.settled);
             assertEquals('ouch', error);
             callback(false);
@@ -109,10 +109,10 @@ function testResolver_Reject(callback) {
 
 function testGetMachineId_Persisted(callback) {
   const promise = importer.getMachineId().then(
-      function(firstMachineId) {
+      firstMachineId => {
         assertTrue(100000 <= firstMachineId <= 9999999);
         importer.getMachineId().then(
-            function(secondMachineId) {
+            secondMachineId => {
               assertEquals(firstMachineId, secondMachineId);
             });
       });
@@ -127,7 +127,7 @@ function testPhotosApp_DefaultDisabled(callback) {
 
 function testPhotosApp_ImportEnabled(callback) {
   const promise = importer.handlePhotosAppMessage(true).then(
-      function() {
+      () => {
         return importer.isPhotosAppImportEnabled().then(assertTrue);
       });
 
@@ -136,7 +136,7 @@ function testPhotosApp_ImportEnabled(callback) {
 
 function testPhotosApp_ImportDisabled(callback) {
   const promise = importer.handlePhotosAppMessage(false).then(
-      function() {
+      () => {
         return importer.isPhotosAppImportEnabled().then(assertFalse);
       });
 
@@ -145,10 +145,10 @@ function testPhotosApp_ImportDisabled(callback) {
 
 function testHistoryFilename(callback) {
   const promise = importer.getHistoryFilename().then(
-      function(firstName) {
+      firstName => {
         assertTrue(!!firstName && firstName.length > 10);
         importer.getHistoryFilename().then(
-            function(secondName) {
+            secondName => {
               assertEquals(firstName, secondName);
             });
       });
@@ -163,7 +163,7 @@ function testLocalStorageWrapper(callback) {
     storage.set('isPoodle', true),
     storage.set('age of grandma', 103)
   ]).then(
-      function() {
+      () => {
         return Promise.all([
           storage.get('lamb').then(assertEquals.bind(null, 'chop')),
           storage.get('isPoodle').then(assertEquals.bind(null, true)),
@@ -176,9 +176,9 @@ function testLocalStorageWrapper(callback) {
 
 function testRotateLogs(callback) {
   let fileName;
-  const fileFactory = function(namePromise) {
+  const fileFactory = namePromise => {
     return namePromise.then(
-        function(name) {
+        name => {
           fileName = name;
           return Promise.resolve(driveFileEntry);
         });
@@ -189,12 +189,12 @@ function testRotateLogs(callback) {
   const promise = importer.ChromeLocalStorage.getInstance()
       .set(importer.Setting.LAST_KNOWN_LOG_ID, lastLogId)
       .then(
-          function() {
+          () => {
             // Should delete the log with the nextLogId.
             return importer.rotateLogs(nextLogId, fileFactory);
           })
       .then(
-          function() {
+          () => {
             assertTrue(fileName !== undefined);
             // Verify the *active* log is deleted.
             assertEquals(0, fileName.search(/[0-9]{6}-import-debug-0.log/),
@@ -220,7 +220,7 @@ function testRotateLogs_RemembersInitialActiveLog(callback) {
 
   const promise =
       importer.rotateLogs(nextLogId, fileFactory)
-          .then(function() {
+          .then(() => {
             return importer.ChromeLocalStorage.getInstance()
                   .get(importer.Setting.LAST_KNOWN_LOG_ID)
                   .then(assertEquals.bind(null, nextLogId));

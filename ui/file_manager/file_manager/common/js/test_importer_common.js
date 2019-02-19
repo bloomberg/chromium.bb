@@ -11,7 +11,7 @@ var importer = importer || {};
  * @return {!importer.TestLogger}
  * @suppress{accessControls} For testing.
  */
-importer.setupTestLogger = function() {
+importer.setupTestLogger = () => {
   const logger = new importer.TestLogger();
   importer.logger_ = logger;
   return logger;
@@ -59,11 +59,11 @@ importer.TestLogger.prototype.error = function(content) {
 
 /** @override */
 importer.TestLogger.prototype.catcher = function(context) {
-  return function(error) {
+  return error => {
     this.error('Caught promise error. Context: ' + context +
         ' Error: ' + error.message);
     if (!this.quiet_) {
       console.error(error.stack);
     }
-  }.bind(this);
+  };
 };

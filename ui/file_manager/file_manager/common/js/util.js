@@ -17,7 +17,7 @@ const util = {};
  * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons.
  * @return {string} CSS value.
  */
-util.iconSetToCSSBackgroundImageValue = function(iconSet) {
+util.iconSetToCSSBackgroundImageValue = iconSet => {
   let lowDpiPart = null;
   let highDpiPart = null;
   if (iconSet.icon16x16Url) {
@@ -42,7 +42,7 @@ util.iconSetToCSSBackgroundImageValue = function(iconSet) {
  * @param {string} name File error name.
  * @return {string} Translated file error string.
  */
-util.getFileErrorString = function(name) {
+util.getFileErrorString = name => {
   let candidateMessageFragment;
   switch (name) {
     case 'NotFoundError':
@@ -99,8 +99,8 @@ Object.freeze(util.FileError);
  * @param {string} str String to escape.
  * @return {string} Escaped string.
  */
-util.htmlEscape = function(str) {
-  return str.replace(/[<>&]/g, function(entity) {
+util.htmlEscape = str => {
+  return str.replace(/[<>&]/g, entity => {
     switch (entity) {
       case '<': return '&lt;';
       case '>': return '&gt;';
@@ -113,8 +113,8 @@ util.htmlEscape = function(str) {
  * @param {string} str String to unescape.
  * @return {string} Unescaped string.
  */
-util.htmlUnescape = function(str) {
-  return str.replace(/&(lt|gt|amp);/g, function(entity) {
+util.htmlUnescape = str => {
+  return str.replace(/&(lt|gt|amp);/g, entity => {
     switch (entity) {
       case '&lt;': return '<';
       case '&gt;': return '>';
@@ -132,8 +132,8 @@ util.htmlUnescape = function(str) {
  * @param {function(DOMError)} errorCallback Callback invoked when an error
  *     is found.
  */
-util.rename = function(entry, newName, successCallback, errorCallback) {
-  entry.getParent(function(parentEntry) {
+util.rename = (entry, newName, successCallback, errorCallback) => {
+  entry.getParent(parentEntry => {
     const parent = /** @type {!DirectoryEntry} */ (parentEntry);
 
     // Before moving, we need to check if there is an existing entry at
@@ -144,11 +144,11 @@ util.rename = function(entry, newName, successCallback, errorCallback) {
     // assuming the unsafe period is very short.
     (entry.isFile ? parent.getFile : parent.getDirectory).call(
         parent, newName, {create: false},
-        function(entry) {
+        entry => {
           // The entry with the name already exists.
           errorCallback(util.createDOMError(util.FileError.PATH_EXISTS_ERR));
         },
-        function(error) {
+        error => {
           if (error.name != util.FileError.NOT_FOUND_ERR) {
             // Unexpected error is found.
             errorCallback(error);
@@ -168,7 +168,7 @@ util.rename = function(entry, newName, successCallback, errorCallback) {
  * @param {string} newName
  * @return {string}
  */
-util.getRenameErrorMessage = function(error, entry, newName) {
+util.getRenameErrorMessage = (error, entry, newName) => {
   if (error.name == util.FileError.PATH_EXISTS_ERR ||
       error.name == util.FileError.TYPE_MISMATCH_ERR) {
     // Check the existing entry is file or not.
@@ -198,7 +198,7 @@ util.getRenameErrorMessage = function(error, entry, newName) {
  * @param {function()} onSuccess The success callback.
  * @param {function(DOMError)} onError The error callback.
  */
-util.removeFileOrDirectory = function(entry, onSuccess, onError) {
+util.removeFileOrDirectory = (entry, onSuccess, onError) => {
   if (entry.isDirectory) {
     entry.removeRecursively(onSuccess, onError);
   } else {
@@ -213,7 +213,7 @@ util.removeFileOrDirectory = function(entry, onSuccess, onError) {
  * @param {number} bytes The number of bytes.
  * @return {string} Localized string.
  */
-util.bytesToString = function(bytes) {
+util.bytesToString = bytes => {
   // Translation identifiers for size units.
   const UNITS = ['SIZE_BYTES',
                'SIZE_KB',
@@ -230,11 +230,11 @@ util.bytesToString = function(bytes) {
                Math.pow(2, 40),
                Math.pow(2, 50)];
 
-  const str = function(n, u) {
+  const str = (n, u) => {
     return strf(u, n.toLocaleString());
   };
 
-  const fmt = function(s, u) {
+  const fmt = (s, u) => {
     const rounded = Math.round(bytes / s * 10) / 10;
     return str(rounded, u);
   };
@@ -270,7 +270,7 @@ util.bytesToString = function(bytes) {
  * @param {Event} event The keyboard event.
  * @return {string} Modifiers.
  */
-util.getKeyModifiers = function(event) {
+util.getKeyModifiers = event => {
   return (event.ctrlKey ? 'Ctrl-' : '') +
          (event.altKey ? 'Alt-' : '') +
          (event.shiftKey ? 'Shift-' : '') +
@@ -291,7 +291,7 @@ util.Transform;
  * @param {util.Transform} transform Transform object,
  *                           contains scaleX, scaleY and rotate90 properties.
  */
-util.applyTransform = function(element, transform) {
+util.applyTransform = (element, transform) => {
   // The order of rotate and scale matters.
   element.style.transform =
       transform ? 'rotate(' + transform.rotate90 * 90 + 'deg)' +
@@ -305,7 +305,7 @@ util.applyTransform = function(element, transform) {
  * @param {string} url Filesystem URL.
  * @return {?string} The path.
  */
-util.extractFilePath = function(url) {
+util.extractFilePath = url => {
   const match =
       /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/.
       exec(url);
@@ -322,7 +322,7 @@ util.extractFilePath = function(url) {
  * @param {string=} opt_tag Element tag, DIV is omitted.
  * @return {!HTMLElement} Newly created element.
  */
-util.createChild = function(parent, opt_className, opt_tag) {
+util.createChild = (parent, opt_className, opt_tag) => {
   const child = parent.ownerDocument.createElement(opt_tag || 'div');
   if (opt_className) {
     child.className = opt_className;
@@ -339,7 +339,7 @@ util.createChild = function(parent, opt_className, opt_tag) {
  * @template T
  * @return {!T} Decorated element.
  */
-util.queryDecoratedElement = function(query, type) {
+util.queryDecoratedElement = (query, type) => {
   const element = queryRequiredElement(query);
   cr.ui.decorate(element, type);
   return element;
@@ -376,28 +376,28 @@ function strf(id, var_args) {
  * @return {boolean} True if the Files app is running as an open files or a
  *     select folder dialog. False otherwise.
  */
-util.runningInBrowser = function() {
+util.runningInBrowser = () => {
   return !window.appID;
 };
 
 /**
  * Adds an isFocused method to the current window object.
  */
-util.addIsFocusedMethod = function() {
+util.addIsFocusedMethod = () => {
   let focused = true;
 
-  window.addEventListener('focus', function() {
+  window.addEventListener('focus', () => {
     focused = true;
   });
 
-  window.addEventListener('blur', function() {
+  window.addEventListener('blur', () => {
     focused = false;
   });
 
   /**
    * @return {boolean} True if focused.
    */
-  window.isFocused = function() {
+  window.isFocused = () => {
     return focused;
   };
 };
@@ -408,7 +408,7 @@ util.addIsFocusedMethod = function() {
  * @param {chrome.app.window.AppWindow} appWindow App window to be maximized.
  * @return {boolean} True if the full screen mode is enabled.
  */
-util.isFullScreen = function(appWindow) {
+util.isFullScreen = appWindow => {
   if (appWindow) {
     return appWindow.isFullscreen();
   } else {
@@ -424,7 +424,7 @@ util.isFullScreen = function(appWindow) {
  * @param {chrome.app.window.AppWindow} appWindow App window to be maximized.
  * @param {boolean} enabled True for enabling, false for disabling.
  */
-util.toggleFullScreen = function(appWindow, enabled) {
+util.toggleFullScreen = (appWindow, enabled) => {
   if (appWindow) {
     if (enabled) {
       appWindow.fullscreen();
@@ -483,7 +483,7 @@ Object.freeze(util.EntryChangedKind);
  * TODO(lucmult): Remove @suppress once all entries are sub-type of
  * FilesAppEntry.
  */
-util.isFakeEntry = function(entry) {
+util.isFakeEntry = entry => {
   return (
       entry.getParent === undefined ||
       (entry.isNativeType !== undefined && !entry.isNativeType));
@@ -494,7 +494,7 @@ util.isFakeEntry = function(entry) {
  * @param {Entry|FilesAppEntry} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is root of a Team Drive.
  */
-util.isTeamDriveRoot = function(entry) {
+util.isTeamDriveRoot = entry => {
   if (entry === null) {
     return false;
   }
@@ -510,7 +510,7 @@ util.isTeamDriveRoot = function(entry) {
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is the grand root of Team Drives.
  */
-util.isTeamDrivesGrandRoot = function(entry) {
+util.isTeamDrivesGrandRoot = entry => {
   if (!entry.fullPath) {
     return false;
   }
@@ -523,7 +523,7 @@ util.isTeamDrivesGrandRoot = function(entry) {
  * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is under Team Drives.
  */
-util.isTeamDriveEntry = function(entry) {
+util.isTeamDriveEntry = entry => {
   if (!entry.fullPath) {
     return false;
   }
@@ -538,7 +538,7 @@ util.isTeamDriveEntry = function(entry) {
  * @return {string} The name of Team Drive. Empty string if |entry| is not
  *     under Team Drives.
  */
-util.getTeamDriveName = function(entry) {
+util.getTeamDriveName = entry => {
   if (!entry.fullPath || !util.isTeamDriveEntry(entry)) {
     return '';
   }
@@ -554,7 +554,7 @@ util.getTeamDriveName = function(entry) {
  * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
  * @returns {boolean}
  */
-util.isRecentRoot = function(entry) {
+util.isRecentRoot = entry => {
   return util.isFakeEntry(entry) &&
       entry.rootType == VolumeManagerCommon.RootType.RECENT;
 };
@@ -564,7 +564,7 @@ util.isRecentRoot = function(entry) {
  * @param {Entry|FilesAppEntry} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is root of a Computer.
  */
-util.isComputersRoot = function(entry) {
+util.isComputersRoot = entry => {
   if (entry === null) {
     return false;
   }
@@ -580,7 +580,7 @@ util.isComputersRoot = function(entry) {
  * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is under My Computers.
  */
-util.isComputersEntry = function(entry) {
+util.isComputersEntry = entry => {
   if (!entry.fullPath) {
     return false;
   }
@@ -597,7 +597,7 @@ util.isComputersEntry = function(entry) {
  * @param {string=} opt_message optional message.
  * @return {DOMError} DOMError instance
  */
-util.createDOMError = function(name, opt_message) {
+util.createDOMError = (name, opt_message) => {
   return new util.UserDOMError(name, opt_message);
 };
 
@@ -648,7 +648,7 @@ util.UserDOMError.prototype = {
  * @return {boolean} True if the both entry represents a same file or
  *     directory. Returns true if both entries are null.
  */
-util.isSameEntry = function(entry1, entry2) {
+util.isSameEntry = (entry1, entry2) => {
   if (!entry1 && !entry2) {
     return true;
   }
@@ -665,7 +665,7 @@ util.isSameEntry = function(entry1, entry2) {
  * @return {boolean} True if the both arrays contain same files or directories
  *     in the same order. Returns true if both arrays are null.
  */
-util.isSameEntries = function(entries1, entries2) {
+util.isSameEntries = (entries1, entries2) => {
   if (!entries1 && !entries2) {
     return true;
   }
@@ -690,7 +690,7 @@ util.isSameEntries = function(entries1, entries2) {
  * @return {boolean} True if the both file systems are equal. Also, returns true
  *     if both file systems are null.
  */
-util.isSameFileSystem = function(fileSystem1, fileSystem2) {
+util.isSameFileSystem = (fileSystem1, fileSystem2) => {
   if (!fileSystem1 && !fileSystem2) {
     return true;
   }
@@ -706,7 +706,7 @@ util.isSameFileSystem = function(fileSystem1, fileSystem2) {
  * @param {!Entry} entry2
  * @return {boolean} True if given entries are in the same directory.
  */
-util.isSiblingEntry = function(entry1, entry2) {
+util.isSiblingEntry = (entry1, entry2) => {
   const path1 = entry1.fullPath.split('/');
   const path2 = entry2.fullPath.split('/');
   if (path1.length != path2.length) {
@@ -733,7 +733,7 @@ util.collator = new Intl.Collator(
  * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
-util.compareName = function(entry1, entry2) {
+util.compareName = (entry1, entry2) => {
   return util.collator.compare(entry1.name, entry2.name);
 };
 
@@ -744,7 +744,7 @@ util.compareName = function(entry1, entry2) {
  * @param {!Entry|!FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
-util.compareLabel = function(locationInfo, entry1, entry2) {
+util.compareLabel = (locationInfo, entry1, entry2) => {
   return util.collator.compare(
       util.getEntryLabel(locationInfo, entry1),
       util.getEntryLabel(locationInfo, entry2));
@@ -756,7 +756,7 @@ util.compareLabel = function(locationInfo, entry1, entry2) {
  * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
-util.comparePath = function(entry1, entry2) {
+util.comparePath = (entry1, entry2) => {
   return util.collator.compare(entry1.fullPath, entry2.fullPath);
 };
 
@@ -768,7 +768,7 @@ util.comparePath = function(entry1, entry2) {
  * return {function(Entry|FilesAppEntry, Entry|FilesAppEntry) to compare entries
  * by name.
  */
-util.compareLabelAndGroupBottomEntries = function(locationInfo, bottomEntries) {
+util.compareLabelAndGroupBottomEntries = (locationInfo, bottomEntries) => {
   const childrenMap = new Map();
   bottomEntries.forEach((entry) => {
     childrenMap.set(entry.toURL(), entry);
@@ -807,15 +807,15 @@ util.compareLabelAndGroupBottomEntries = function(locationInfo, bottomEntries) {
  * @return {!Promise<boolean>} Resolves with true if {@code directory} is
  *     parent of {@code entry}.
  */
-util.isChildEntry = function(entry, directory) {
+util.isChildEntry = (entry, directory) => {
   return new Promise(
-      function(resolve, reject) {
+      (resolve, reject) => {
         if (!entry || !directory) {
           resolve(false);
         }
 
         entry.getParent(
-            function(parent) {
+            parent => {
               resolve(util.isSameEntry(parent, directory));
             },
             reject);
@@ -831,7 +831,7 @@ util.isChildEntry = function(entry, directory) {
  * @param {!Entry|!FilesAppEntry} childEntry The child entry. Can be a fake.
  * @return {boolean} True if the child entry is contained in the ancestor path.
  */
-util.isDescendantEntry = function(ancestorEntry, childEntry) {
+util.isDescendantEntry = (ancestorEntry, childEntry) => {
   if (!ancestorEntry.isDirectory) {
     return false;
   }
@@ -897,7 +897,7 @@ util.lastVisitedURL;
  *
  * @param {!string} url URL to visit.
  */
-util.visitURL = function(url) {
+util.visitURL = url => {
   util.lastVisitedURL = url;
   window.open(url);
 };
@@ -907,7 +907,7 @@ util.visitURL = function(url) {
  *
  * @return {string} The last URL visited.
  */
-util.getLastVisitedURL = function() {
+util.getLastVisitedURL = () => {
   return util.lastVisitedURL;
 };
 
@@ -916,7 +916,7 @@ util.getLastVisitedURL = function() {
  * Returns normalized current locale, or default locale - 'en'.
  * @return {string} Current locale
  */
-util.getCurrentLocaleOrDefault = function() {
+util.getCurrentLocaleOrDefault = () => {
   // chrome.i18n.getMessage('@@ui_locale') can't be used in packed app.
   // Instead, we pass it from C++-side with strings.
   return str('UI_LOCALE') || 'en';
@@ -927,8 +927,8 @@ util.getCurrentLocaleOrDefault = function() {
  * @param {Array<Entry>} entries Input array of entries.
  * @return {!Array<string>} Output array of URLs.
  */
-util.entriesToURLs = function(entries) {
-  return entries.map(function(entry) {
+util.entriesToURLs = entries => {
+  return entries.map(entry => {
     // When building background.js, cachedUrl is not refered other than here.
     // Thus closure compiler raises an error if we refer the property like
     // entry.cachedUrl.
@@ -945,18 +945,18 @@ util.entriesToURLs = function(entries) {
  * @return {Promise} Promise fulfilled with the object that has entries property
  *     and failureUrls property. The promise is never rejected.
  */
-util.URLsToEntries = function(urls, opt_callback) {
-  const promises = urls.map(function(url) {
+util.URLsToEntries = (urls, opt_callback) => {
+  const promises = urls.map(url => {
     return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url)).
-        then(function(entry) {
+        then(entry => {
           return {entry: entry};
-        }, function(failureUrl) {
+        }, failureUrl => {
           // Not an error. Possibly, the file is not accessible anymore.
           console.warn('Failed to resolve the file with url: ' + url + '.');
           return {failureUrl: url};
         });
   });
-  const resultPromise = Promise.all(promises).then(function(results) {
+  const resultPromise = Promise.all(promises).then(results => {
     const entries = [];
     const failureUrls = [];
     for (let i = 0; i < results.length; i++) {
@@ -976,9 +976,9 @@ util.URLsToEntries = function(urls, opt_callback) {
   // Invoke the callback. If opt_callback is specified, resultPromise is still
   // returned and fulfilled with a result.
   if (opt_callback) {
-    resultPromise.then(function(result) {
+    resultPromise.then(result => {
       opt_callback(result.entries, result.failureUrls);
-    }).catch(function(error) {
+    }).catch(error => {
       console.error(
           'util.URLsToEntries is failed.',
           error.stack ? error.stack : error);
@@ -996,7 +996,7 @@ util.URLsToEntries = function(urls, opt_callback) {
  * @return {!Promise<!Entry>} Promise Resolves with the corresponding
  *     {!Entry} if possible, else rejects.
  */
-util.urlToEntry = function(url) {
+util.urlToEntry = url => {
   return new Promise(
       window.webkitResolveLocalFileSystemURL.bind(null, url));
 };
@@ -1006,10 +1006,10 @@ util.urlToEntry = function(url) {
  * @param {Window} window Window.
  * @return {Promise<boolean>} Whether the window is teleported or not.
  */
-util.isTeleported = function(window) {
-  return new Promise(function(onFulfilled) {
+util.isTeleported = window => {
+  return new Promise(onFulfilled => {
     window.chrome.fileManagerPrivate.getProfiles(
-        function(profiles, currentId, displayedId) {
+        (profiles, currentId, displayedId) => {
           onFulfilled(currentId !== displayedId);
         });
   });
@@ -1021,7 +1021,7 @@ util.isTeleported = function(window) {
  *
  * @param {string} message Test message to send.
  */
-util.testSendMessage = function(message) {
+util.testSendMessage = message => {
   const test = chrome.test || window.top.chrome.test;
   if (test) {
     test.sendMessage(message);
@@ -1041,7 +1041,7 @@ util.testSendMessage = function(message) {
  * @param {string} path Path to be extracted.
  * @return {Array<string>} Filename and extension of the given path.
  */
-util.splitExtension = function(path) {
+util.splitExtension = path => {
   let dotPosition = path.lastIndexOf('.');
   if (dotPosition <= path.lastIndexOf('/')) {
     dotPosition = -1;
@@ -1057,7 +1057,7 @@ util.splitExtension = function(path) {
  * @param {!EntryLocation} locationInfo Location info.
  * @return {string} The localized name.
  */
-util.getRootTypeLabel = function(locationInfo) {
+util.getRootTypeLabel = locationInfo => {
   switch (locationInfo.rootType) {
     case VolumeManagerCommon.RootType.DOWNLOADS:
       return locationInfo.volumeInfo.label;
@@ -1127,7 +1127,7 @@ util.getRootTypeLabel = function(locationInfo) {
  * @param {!Entry|!FilesAppEntry} entry The entry to be retrieve the name of.
  * @return {string} The localized name.
  */
-util.getEntryLabel = function(locationInfo, entry) {
+util.getEntryLabel = (locationInfo, entry) => {
   if (locationInfo && locationInfo.hasFixedLabel) {
     return util.getRootTypeLabel(locationInfo);
   }
@@ -1150,7 +1150,7 @@ util.getEntryLabel = function(locationInfo, entry) {
  * @param {string} dropEffect The effect to be checked.
  * @return {boolean} True if |dropEffect| is included in |effectAllowed|.
  */
-util.isDropEffectAllowed = function(effectAllowed, dropEffect) {
+util.isDropEffectAllowed = (effectAllowed, dropEffect) => {
   return effectAllowed === 'all' ||
       effectAllowed.toLowerCase().indexOf(dropEffect) !== -1;
 };
@@ -1161,7 +1161,7 @@ util.isDropEffectAllowed = function(effectAllowed, dropEffect) {
  * @param {string} character The input character.
  * @return {boolean} True if |character| is printable ASCII, else false.
  */
-util.isPrintable = function(character) {
+util.isPrintable = character => {
   if (character.length != 1) {
     return false;
   }
@@ -1187,7 +1187,7 @@ util.isPrintable = function(character) {
  * @return {Promise} Promise fulfilled on success, or rejected with the error
  *     message.
  */
-util.validateFileName = function(parentEntry, name, filterHiddenOn) {
+util.validateFileName = (parentEntry, name, filterHiddenOn) => {
   const testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
   let msg;
   if (testResult) {
@@ -1202,9 +1202,9 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
     return Promise.reject(str('ERROR_HIDDEN_NAME'));
   }
 
-  return new Promise(function(fulfill, reject) {
+  return new Promise((fulfill, reject) => {
     chrome.fileManagerPrivate.validatePathNameLength(
-        parentEntry, name, function(valid) {
+        parentEntry, name, valid => {
           if (valid) {
             fulfill(null);
           } else {
@@ -1226,7 +1226,7 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
  * @return {Promise} Promise fulfilled on success, or rejected with the error
  *     message.
  */
-util.validateExternalDriveName = function(name, volumeInfo) {
+util.validateExternalDriveName = (name, volumeInfo) => {
   // Verify if entered name for external drive respects restrictions provided by
   // the target filesystem
 
@@ -1275,9 +1275,9 @@ util.validateExternalDriveName = function(name, volumeInfo) {
  * @param {string} type
  * @param {Function} handler
  */
-util.addEventListenerToBackgroundComponent = function(target, type, handler) {
+util.addEventListenerToBackgroundComponent = (target, type, handler) => {
   target.addEventListener(type, handler);
-  window.addEventListener('pagehide', function() {
+  window.addEventListener('pagehide', () => {
     target.removeEventListener(type, handler);
   });
 };
@@ -1285,7 +1285,7 @@ util.addEventListenerToBackgroundComponent = function(target, type, handler) {
 /**
  * Checks if an API call returned an error, and if yes then prints it.
  */
-util.checkAPIError = function() {
+util.checkAPIError = () => {
   if (chrome.runtime.lastError) {
     console.error(chrome.runtime.lastError.message);
   }
@@ -1296,8 +1296,8 @@ util.checkAPIError = function() {
  * @param {number} ms The delay in milliseconds.
  * @return {!Promise}
  */
-util.delay = function(ms) {
-  return new Promise(function(resolve) {
+util.delay = ms => {
+  return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
 };
@@ -1310,10 +1310,10 @@ util.delay = function(ms) {
  * @param {string=} opt_message Error message for the timeout.
  * @return {!Promise} A promise which can be rejected by timeout.
  */
-util.timeoutPromise = function(promise, ms, opt_message) {
+util.timeoutPromise = (promise, ms, opt_message) => {
   return Promise.race([
     promise,
-    util.delay(ms).then(function() {
+    util.delay(ms).then(() => {
       throw new Error(opt_message || 'Operation timed out.');
     })
   ]);
@@ -1324,10 +1324,10 @@ util.timeoutPromise = function(promise, ms, opt_message) {
  * @return {Promise} Promise fulfilled with a boolean that indicate whether
       the touch-specific UI mode is enabled. The promise is never rejected.
  */
-util.isTouchModeEnabled = function() {
-  return new Promise(function(resolve) {
+util.isTouchModeEnabled = () => {
+  return new Promise(resolve => {
     chrome.commandLinePrivate.hasSwitch(
-        'disable-file-manager-touch-mode', function(isDisabled) {
+        'disable-file-manager-touch-mode', isDisabled => {
           // Enabled by default.
           resolve(!isDisabled);
         });
@@ -1349,13 +1349,18 @@ util.isTouchModeEnabled = function() {
  *     If 0 is specified, only the rootEntry will be read. If -1 is specified
  *     or opt_maxDepth is unspecified, the depth of recursion is unlimited.
  */
-util.readEntriesRecursively = function(
-    rootEntry, entriesCallback, successCallback, errorCallback, shouldStop,
-    opt_maxDepth) {
+util.readEntriesRecursively = (
+  rootEntry,
+  entriesCallback,
+  successCallback,
+  errorCallback,
+  shouldStop,
+  opt_maxDepth
+) => {
   let numRunningTasks = 0;
   let error = null;
   const maxDepth = opt_maxDepth === undefined ? -1 : opt_maxDepth;
-  const maybeRunCallback = function() {
+  const maybeRunCallback = () => {
     if (numRunningTasks === 0) {
       if (shouldStop()) {
         errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
@@ -1366,15 +1371,15 @@ util.readEntriesRecursively = function(
       }
     }
   };
-  const processEntry = function(entry, depth) {
-    const onError = function(fileError) {
+  const processEntry = (entry, depth) => {
+    const onError = fileError => {
       if (!error) {
         error = fileError;
       }
       numRunningTasks--;
       maybeRunCallback();
     };
-    const onSuccess = function(entries) {
+    const onSuccess = entries => {
       if (shouldStop() || error || entries.length === 0) {
         numRunningTasks--;
         maybeRunCallback();
@@ -1406,7 +1411,7 @@ util.readEntriesRecursively = function(
  * @param {!VolumeInfo} volumeInfo
  * @return {!Promise<Object<Entry>>} all entries keyed by fullPath.
  */
-util.getEntries = function(volumeInfo) {
+util.getEntries = volumeInfo => {
   const root = volumeInfo.fileSystem.root;
   return new Promise((resolve, reject) => {
     const allEntries = {'/': root};
@@ -1428,7 +1433,7 @@ util.getEntries = function(volumeInfo) {
  * regular session.
  * @param {function()} callback
  */
-util.doIfPrimaryContext = function(callback) {
+util.doIfPrimaryContext = callback => {
   chrome.fileManagerPrivate.getProfiles((profiles) => {
     if ((profiles[0] && profiles[0].profileId == '$guest') ||
         !chrome.extension.inIncognitoContext) {
@@ -1445,7 +1450,7 @@ util.doIfPrimaryContext = function(callback) {
  * @param {Entry|FilesAppEntry} entry
  * @return {FilesAppEntry}
  */
-util.toFilesAppEntry = function(entry) {
+util.toFilesAppEntry = entry => {
   return /** @type {FilesAppEntry} */ (entry);
 };
 
@@ -1455,7 +1460,7 @@ util.toFilesAppEntry = function(entry) {
  * @param {Entry|FilesAppEntry} entry
  * @return {EntryList}
  */
-util.toEntryList = function(entry) {
+util.toEntryList = entry => {
   return /** @type {EntryList} */ (entry);
 };
 
@@ -1467,7 +1472,7 @@ util.toEntryList = function(entry) {
  * @param {Entry|FilesAppEntry} entry
  * @return {boolean}
  */
-util.isNativeEntry = function(entry) {
+util.isNativeEntry = entry => {
   entry = util.toFilesAppEntry(entry);
   // Only FilesAppEntry types has |type_name| attribute.
   return entry.type_name === undefined;
@@ -1479,7 +1484,7 @@ util.isNativeEntry = function(entry) {
  * @param {Entry|FilesAppEntry} entry
  * @return {Entry|FilesAppEntry}
  */
-util.unwrapEntry = function(entry) {
+util.unwrapEntry = entry => {
   if (!entry) {
     return entry;
   }
@@ -1493,7 +1498,7 @@ util.unwrapEntry = function(entry) {
 };
 
 /** @return {boolean} */
-util.isMyFilesVolumeEnabled = function() {
+util.isMyFilesVolumeEnabled = () => {
   return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
       loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 };

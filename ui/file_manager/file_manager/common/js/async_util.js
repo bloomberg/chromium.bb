@@ -23,19 +23,18 @@ const AsyncUtil = {};
  * @param {Object=} opt_thisObject Bound to callback if given.
  * @template T
  */
-AsyncUtil.forEach = function(
-    array, callback, completionCallback, opt_thisObject) {
+AsyncUtil.forEach = (array, callback, completionCallback, opt_thisObject) => {
   if (opt_thisObject) {
     callback = callback.bind(opt_thisObject);
   }
 
   const queue = new AsyncUtil.Queue();
   for (let i = 0; i < array.length; i++) {
-    queue.run(function(element, index, iterationCompletionCallback) {
+    queue.run(((element, index, iterationCompletionCallback) => {
       callback(iterationCompletionCallback, element, index, array);
-    }.bind(null, array[i], i));
+    }).bind(null, array[i], i));
   }
-  queue.run(function(iterationCompletionCallback) {
+  queue.run(iterationCompletionCallback => {
     completionCallback();  // Don't pass iteration completion callback.
   });
 };
