@@ -77,27 +77,10 @@ ServiceWorkerNetworkProviderForFrame::Create(
     const CommitNavigationParams* commit_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
-  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
   // Determine if a provider should be created and properly initialized for the
   // navigation. A default provider will always be created since it is expected
   // in a certain number of places, however it will have an invalid id.
-  bool should_create_provider = false;
-  int provider_id = kInvalidServiceWorkerProviderId;
-  if (commit_params) {
-    should_create_provider = commit_params->should_create_service_worker;
-    provider_id = commit_params->service_worker_provider_id;
-  } else {
-    // It'd be convenient to check web_frame->GetSecurityOrigin().IsOpaque()
-    // here instead of just looking at the sandbox flags, but
-    // GetSecurityOrigin() crashes because the frame does not yet have a
-    // security context.
-    should_create_provider =
-        ((web_frame->EffectiveSandboxFlags() &
-          blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin);
-  }
-
-  // If we shouldn't create a real provider, return one with an invalid id.
-  if (!should_create_provider) {
+  if (!commit_params || !commit_params->should_create_service_worker) {
     return CreateInvalidInstance();
   }
 
@@ -108,8 +91,10 @@ ServiceWorkerNetworkProviderForFrame::Create(
   // is_parent_frame_secure to the browser process, so it can determine the
   // context security when deciding whether to allow a service worker to control
   // the document.
-  const bool is_parent_frame_secure = IsFrameSecure(web_frame->Parent());
+  const bool is_parent_frame_secure =
+      IsFrameSecure(frame->GetWebFrame()->Parent());
 
+  int provider_id = commit_params->service_worker_provider_id;
   // If the browser process did not assign a provider id already, assign one
   // now (see class comments for content::ServiceWorkerProviderHost).
   DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
