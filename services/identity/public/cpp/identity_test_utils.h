@@ -151,6 +151,11 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
 // Disables internal retries of failed access token fetches.
 void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
 
+#if defined(OS_ANDROID)
+// Disables interaction with system accounts, which requires special permission.
+void DisableInteractionWithSystemAccounts();
+#endif
+
 // Cancels all ongoing operations related to the accounts in the Gaia cookie.
 void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager);
 

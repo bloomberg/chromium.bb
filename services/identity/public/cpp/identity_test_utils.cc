@@ -15,6 +15,10 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
+#endif
+
 namespace identity {
 
 namespace {
@@ -416,6 +420,13 @@ void DisableAccessTokenFetchRetries(IdentityManager* identity_manager) {
   identity_manager->GetTokenService()
       ->set_max_authorization_token_fetch_retries_for_testing(0);
 }
+
+#if defined(OS_ANDROID)
+void DisableInteractionWithSystemAccounts() {
+  OAuth2TokenServiceDelegateAndroid::
+      set_disable_interaction_with_system_accounts();
+}
+#endif
 
 void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager) {
   identity_manager->GetGaiaCookieManagerService()->CancelAll();

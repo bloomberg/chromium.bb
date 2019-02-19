@@ -129,7 +129,8 @@ std::string AndroidAccessTokenFetcher::CombineScopes(
 
 }  // namespace
 
-bool OAuth2TokenServiceDelegateAndroid::is_testing_profile_ = false;
+bool OAuth2TokenServiceDelegateAndroid::
+    disable_interaction_with_system_accounts_ = false;
 
 OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
     AccountTrackerService* account_tracker_service)
@@ -158,7 +159,7 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
     Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
   }
 
-  if (!is_testing_profile_) {
+  if (!disable_interaction_with_system_accounts_) {
     Java_OAuth2TokenService_validateAccounts(AttachCurrentThread(), java_ref_,
                                              JNI_TRUE);
   }
