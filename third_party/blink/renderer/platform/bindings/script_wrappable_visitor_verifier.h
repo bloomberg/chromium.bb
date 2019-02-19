@@ -40,9 +40,6 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
         << "Write barrier missed for " << name;
   }
 
-  void Visit(DOMWrapperMap<ScriptWrappable>*,
-             const ScriptWrappable* key) final {}
-
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {}

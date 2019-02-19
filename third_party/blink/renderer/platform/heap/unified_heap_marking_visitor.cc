@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -32,7 +31,6 @@ UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
 }
 
 void UnifiedHeapMarkingVisitor::WriteBarrier(
-    v8::Isolate* isolate,
     const TraceWrapperV8Reference<v8::Value>& object) {
   if (object.IsEmpty() || !ThreadState::IsAnyIncrementalMarking())
     return;
@@ -42,20 +40,6 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
     return;
 
   thread_state->CurrentVisitor()->Trace(object);
-}
-
-void UnifiedHeapMarkingVisitor::WriteBarrier(
-    v8::Isolate* isolate,
-    DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    ScriptWrappable* key) {
-  if (!ThreadState::IsAnyIncrementalMarking())
-    return;
-
-  ThreadState* thread_state = ThreadState::Current();
-  if (!thread_state->IsIncrementalMarking())
-    return;
-
-  thread_state->CurrentVisitor()->Trace(wrapper_map, key);
 }
 
 void UnifiedHeapMarkingVisitor::WriteBarrier(
@@ -80,12 +64,6 @@ void UnifiedHeapMarkingVisitor::Visit(
     return;
   DCHECK(isolate_);
   controller_->RegisterEmbedderReference(v8_reference.Get());
-}
-
-void UnifiedHeapMarkingVisitor::Visit(
-    DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    const ScriptWrappable* key) {
-  wrapper_map->MarkWrapper(const_cast<ScriptWrappable*>(key));
 }
 
 }  // namespace blink

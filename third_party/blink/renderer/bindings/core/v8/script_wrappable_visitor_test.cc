@@ -18,8 +18,6 @@ class VerifyingScriptWrappableVisitor : public ScriptWrappableVisitor {
 
   // Visitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
-  void Visit(DOMWrapperMap<ScriptWrappable>*,
-             const ScriptWrappable* key) override {}
 
   void VisitWithWrappers(void*, TraceDescriptor desc) override {
     visited_objects_.push_back(desc.base_object_payload);

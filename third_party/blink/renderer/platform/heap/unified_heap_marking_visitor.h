@@ -25,18 +25,13 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor final : public MarkingVisitor {
                                                            MarkingMode,
                                                            v8::Isolate*);
   // Write barriers for annotating a write during incremental marking.
-  static void WriteBarrier(v8::Isolate*,
-                           const TraceWrapperV8Reference<v8::Value>&);
-  static void WriteBarrier(v8::Isolate*,
-                           DOMWrapperMap<ScriptWrappable>*,
-                           ScriptWrappable*);
+  static void WriteBarrier(const TraceWrapperV8Reference<v8::Value>&);
   static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
 
   ~UnifiedHeapMarkingVisitor() override = default;
 
   // Visitation methods that announce reachable wrappers to V8.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
-  void Visit(DOMWrapperMap<ScriptWrappable>*, const ScriptWrappable*) final;
 
  private:
   UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);

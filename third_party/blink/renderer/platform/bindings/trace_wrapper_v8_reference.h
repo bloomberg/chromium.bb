@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_
 
+#include <utility>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "v8/include/v8.h"
@@ -57,15 +60,36 @@ class TraceWrapperV8Reference {
         const_cast<const TraceWrapperV8Reference<T>&>(*this));
   }
 
- private:
-  inline void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
+  // Move support.
+  TraceWrapperV8Reference(TraceWrapperV8Reference&& other)
+      : handle_(std::move(other.handle_)) {
+    WriteBarrier();
+  }
+
+  template <class S>
+  TraceWrapperV8Reference& operator=(TraceWrapperV8Reference<S>&& rhs) {
+    handle_ = std::move(rhs.handle_);
+    WriteBarrier();
+    return *this;
+  }
+
+ protected:
+  ALWAYS_INLINE void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
     handle_.Reset(isolate, handle);
     ScriptWrappableMarkingVisitor::WriteBarrier(isolate,
                                                 UnsafeCast<v8::Value>());
-    UnifiedHeapMarkingVisitor::WriteBarrier(isolate, UnsafeCast<v8::Value>());
+    UnifiedHeapMarkingVisitor::WriteBarrier(UnsafeCast<v8::Value>());
+  }
+
+  ALWAYS_INLINE void WriteBarrier() const {
+    ScriptWrappableMarkingVisitor::WriteBarrier(v8::Isolate::GetCurrent(),
+                                                UnsafeCast<v8::Value>());
+    UnifiedHeapMarkingVisitor::WriteBarrier(UnsafeCast<v8::Value>());
   }
 
   v8::TracedGlobal<T> handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceWrapperV8Reference);
 };
 
 }  // namespace blink
