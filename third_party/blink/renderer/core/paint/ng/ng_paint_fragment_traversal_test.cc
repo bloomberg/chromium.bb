@@ -215,12 +215,12 @@ TEST_F(NGPaintFragmentTraversalTest, InlineDescendantsOf) {
   ASSERT_EQ(6u, descendants.size());
   // TODO(layout-dev): This list marker is not in any line box. Should it be
   // treated as inline?
-  EXPECT_TRUE(descendants[0].fragment->PhysicalFragment().IsListMarker());
-  EXPECT_TRUE(descendants[1].fragment->PhysicalFragment().IsLineBox());
-  EXPECT_TRUE(descendants[2].fragment->PhysicalFragment().IsText());  // "text"
-  EXPECT_TRUE(descendants[3].fragment->PhysicalFragment().IsText());  // "br"
-  EXPECT_TRUE(descendants[4].fragment->PhysicalFragment().IsLineBox());
-  EXPECT_TRUE(descendants[5].fragment->PhysicalFragment().IsAtomicInline());
+  EXPECT_TRUE(descendants[0]->PhysicalFragment().IsListMarker());
+  EXPECT_TRUE(descendants[1]->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[2]->PhysicalFragment().IsText());  // "text"
+  EXPECT_TRUE(descendants[3]->PhysicalFragment().IsText());  // "br"
+  EXPECT_TRUE(descendants[4]->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[5]->PhysicalFragment().IsAtomicInline());
 }
 
 }  // namespace blink

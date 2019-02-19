@@ -286,10 +286,10 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
   DCHECK(root_fragment) << "no paint fragment on layout object " << &context;
 
   NGCaretPosition candidate;
-  for (const auto& child :
+  for (const NGPaintFragment* child :
        NGPaintFragmentTraversal::InlineDescendantsOf(*root_fragment)) {
     const CaretPositionResolution resolution =
-        TryResolveCaretPositionWithFragment(*child.fragment, offset, affinity);
+        TryResolveCaretPositionWithFragment(*child, offset, affinity);
 
     if (resolution.type == ResolutionType::kFailed)
       continue;

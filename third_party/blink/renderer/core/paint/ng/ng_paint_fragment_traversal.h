@@ -147,8 +147,7 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   static AncestorRange InclusiveAncestorsOf(const NGPaintFragment&);
 
   // Returns inline descendants in preorder.
-  static Vector<NGPaintFragmentWithContainerOffset> InlineDescendantsOf(
-      const NGPaintFragment&);
+  static Vector<NGPaintFragment*> InlineDescendantsOf(const NGPaintFragment&);
 
   // Returns the line box paint fragment of |line|. |line| itself must be the
   // paint fragment of a line box.
