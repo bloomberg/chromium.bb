@@ -34,6 +34,8 @@ public class TracingNotificationManager {
 
     // Non-translated strings:
     private static final String MSG_ACTIVE_NOTIFICATION_TITLE = "Chrome trace is being recorded";
+    private static final String MSG_ACTIVE_NOTIFICATION_ACCESSIBILITY_MESSAGE =
+            "Tracing is active.";
     private static final String MSG_ACTIVE_NOTIFICATION_MESSAGE = "Trace buffer usage: %s%%";
     private static final String MSG_STOPPING_NOTIFICATION_TITLE = "Chrome trace is stopping";
     private static final String MSG_STOPPING_NOTIFICATION_MESSAGE =
@@ -102,6 +104,13 @@ public class TracingNotificationManager {
         sTracingActiveNotificationBufferPercentage = 0;
         String message = String.format(
                 MSG_ACTIVE_NOTIFICATION_MESSAGE, sTracingActiveNotificationBufferPercentage);
+
+        // We can't update the notification if accessibility is enabled as this may interfere with
+        // selecting the stop button, so choose a different message.
+        AccessibilityManager am =
+                (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (am.isEnabled() && am.isTouchExplorationEnabled())
+            message = MSG_ACTIVE_NOTIFICATION_ACCESSIBILITY_MESSAGE;
 
         sTracingActiveNotificationBuilder =
                 createNotificationBuilder()
