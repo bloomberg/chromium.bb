@@ -43,7 +43,7 @@ class CORE_EXPORT InteractiveDetector
   // InteractiveDetector.
   class CORE_EXPORT NetworkActivityChecker {
    public:
-    NetworkActivityChecker(Document* document) : document_(document) {}
+    explicit NetworkActivityChecker(Document* document) : document_(document) {}
 
     virtual int GetActiveConnections();
     virtual ~NetworkActivityChecker() = default;
