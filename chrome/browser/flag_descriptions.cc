@@ -1392,6 +1392,12 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
 
+const char kOmniboxUIShowSuffixOnAllSearchSuggestionsName[] =
+    "Omnibox UI Show Suffix On All Search Suggestions";
+const char kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription[] =
+    "Shows the search suffix (e.g. \" - Google Search\") on all search "
+    "suggestions in the omnibox.";
+
 const char kOmniboxUIShowSuggestionFaviconsName[] =
     "Omnibox UI Show Suggestion Favicons";
 const char kOmniboxUIShowSuggestionFaviconsDescription[] =
