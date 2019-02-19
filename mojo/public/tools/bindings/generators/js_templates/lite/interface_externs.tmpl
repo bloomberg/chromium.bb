@@ -45,20 +45,17 @@ goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
 /** @implements { {{module.namespace}}.{{interface.name}}Interface } */
 {{module.namespace}}.{{interface.name}}Proxy = class {
   constructor() {
+    /** @public {!{
+     *    createRequest: function(): !{{module.namespace}}.{{interface.name}}Request,
+     *    flushForTesting: function(): !Promise
+     *  }}
+     */
+    this.$;
+
     /** @public {!mojo.internal.ConnectionErrorEventRouter} */
     this.onConnectionError;
   }
 {{ generateInterfaceClassBody() }}
-
-  /**
-   * @return {!{{module.namespace}}.{{interface.name}}Request}
-   */
-  createRequest() {}
-
-  /**
-   * @return {Promise}
-   */
-  flushForTesting() {}
 };
 
 {{module.namespace}}.{{interface.name}} = class {

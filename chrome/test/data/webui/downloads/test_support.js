@@ -37,7 +37,7 @@ class TestDownloadsMojoHandler {
   /** @override */
   async remove(id) {
     this.pageRouterProxy_.removeItem(id);
-    await this.pageRouterProxy_.flushForTesting();
+    await this.pageRouterProxy_.$.flushForTesting();
     this.callTracker_.methodCalled('remove', id);
   }
 

@@ -101,6 +101,12 @@ cr.define('app_management', function() {
 
       /** @type {!Array<App>} */
       this.apps_ = [];
+
+      this.$ = {
+        flushForTesting: async () => {
+          await this.page.$.flushForTesting();
+        }
+      };
     }
 
     async getApps() {
@@ -169,7 +175,7 @@ cr.define('app_management', function() {
      */
     async addApp(id, optConfig) {
       this.page.onAppAdded(FakePageHandler.createApp(id, optConfig));
-      await this.flushForTesting();
+      await this.$.flushForTesting();
     }
 
     /**
@@ -181,11 +187,7 @@ cr.define('app_management', function() {
      */
     async changeApp(id, changes) {
       this.page.onAppChanged(FakePageHandler.createApp(id, changes));
-      await this.flushForTesting();
-    }
-
-    async flushForTesting() {
-      await this.page.flushForTesting();
+      await this.$.flushForTesting();
     }
   }
 

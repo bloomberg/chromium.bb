@@ -31,7 +31,7 @@ suite('manager tests', function() {
                                   sinceString: 'Today',
                                   url: 'a'.repeat(1000),
                                 })]);
-    return pageRouterProxy.flushForTesting().then(() => {
+    return pageRouterProxy.$.flushForTesting().then(() => {
       Polymer.dom.flush();
 
       const item = manager.$$('downloads-item');
@@ -52,20 +52,20 @@ suite('manager tests', function() {
     let download2 = createDownload();
 
     pageRouterProxy.insertItems(0, [download1, download2]);
-    return pageRouterProxy.flushForTesting()
+    return pageRouterProxy.$.flushForTesting()
         .then(() => {
           Polymer.dom.flush();
           assertEquals(1, countDates());
 
           pageRouterProxy.removeItem(0);
-          return pageRouterProxy.flushForTesting();
+          return pageRouterProxy.$.flushForTesting();
         })
         .then(() => {
           Polymer.dom.flush();
           assertEquals(1, countDates());
 
           pageRouterProxy.insertItems(0, [download1]);
-          return pageRouterProxy.flushForTesting();
+          return pageRouterProxy.$.flushForTesting();
         })
         .then(() => {
           Polymer.dom.flush();
@@ -79,7 +79,7 @@ suite('manager tests', function() {
       state: downloads.States.DANGEROUS,
     });
     pageRouterProxy.insertItems(0, [dangerousDownload]);
-    return pageRouterProxy.flushForTesting()
+    return pageRouterProxy.$.flushForTesting()
         .then(() => {
           Polymer.dom.flush();
           assertTrue(!!manager.$$('downloads-item').$$('.dangerous'));
@@ -89,7 +89,7 @@ suite('manager tests', function() {
             state: downloads.States.COMPLETE,
           });
           pageRouterProxy.updateItem(0, safeDownload);
-          return pageRouterProxy.flushForTesting();
+          return pageRouterProxy.$.flushForTesting();
         })
         .then(() => {
           Polymer.dom.flush();
@@ -104,7 +104,7 @@ suite('manager tests', function() {
                                   sinceString: 'Today',
                                   url: 'a'.repeat(1000),
                                 })]);
-    return pageRouterProxy.flushForTesting()
+    return pageRouterProxy.$.flushForTesting()
         .then(() => {
           Polymer.dom.flush();
           const item = manager.$$('downloads-item');
