@@ -4,8 +4,6 @@
 
 #include "ui/base/ui_base_features.h"
 
-#include "ui/base/ui_base_switches_util.h"
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
