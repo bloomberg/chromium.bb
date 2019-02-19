@@ -406,8 +406,9 @@ TEST_F(ObjectManagerTest, PropertiesChangedAsObjectsReceived) {
   // the PropertiesChanged event right after that. If we don't receive it within
   // 2 seconds, then fail the test.
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ObjectManagerTest::PropertiesChangedTestTimeout,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&ObjectManagerTest::PropertiesChangedTestTimeout,
+                     base::Unretained(this)),
       base::TimeDelta::FromSeconds(2));
 
   while (last_name_value_ != "ChangedTestServiceName" && !timeout_expired_) {

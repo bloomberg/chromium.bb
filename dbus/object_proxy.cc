@@ -551,12 +551,9 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     // Transfer the ownership of |signal| to RunMethod().
     // |released_signal| will be deleted in RunMethod().
     Signal* released_signal = signal.release();
-    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                          base::Bind(&ObjectProxy::RunMethod,
-                                                     this,
-                                                     start_time,
-                                                     iter->second,
-                                                     released_signal));
+    bus_->GetOriginTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&ObjectProxy::RunMethod, this, start_time,
+                                  iter->second, released_signal));
   } else {
     const base::TimeTicks start_time = base::TimeTicks::Now();
     // If the D-Bus thread is not used, just call the callback on the
@@ -582,8 +579,7 @@ void ObjectProxy::RunMethod(base::TimeTicks start_time,
   // Delete the message on the D-Bus thread. See comments in
   // RunResponseOrErrorCallback().
   bus_->GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&base::DeletePointer<Signal>, signal));
+      FROM_HERE, base::BindOnce(&base::DeletePointer<Signal>, signal));
 
   // Record time spent for handling the signal.
   UMA_HISTOGRAM_TIMES("DBus.SignalHandleTime",
@@ -725,16 +721,16 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
         name == service_name_) {
       service_name_owner_ = new_owner;
       bus_->GetOriginTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(&ObjectProxy::RunNameOwnerChangedCallback,
-                     this, old_owner, new_owner));
+          FROM_HERE, base::BindOnce(&ObjectProxy::RunNameOwnerChangedCallback,
+                                    this, old_owner, new_owner));
 
       const bool service_is_available = !service_name_owner_.empty();
       if (service_is_available) {
         bus_->GetOriginTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
-                       this, service_is_available));
+            base::BindOnce(
+                &ObjectProxy::RunWaitForServiceToBeAvailableCallbacks, this,
+                service_is_available));
       }
     }
   }

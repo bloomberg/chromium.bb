@@ -117,8 +117,8 @@ class SignalSenderVerificationTest : public testing::Test {
     // PostTask to quit the MessageLoop as this is called from D-Bus thread.
     message_loop_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SignalSenderVerificationTest::OnOwnershipInternal,
-                   base::Unretained(this)));
+        base::BindOnce(&SignalSenderVerificationTest::OnOwnershipInternal,
+                       base::Unretained(this)));
   }
 
   void OnOwnershipInternal() {
