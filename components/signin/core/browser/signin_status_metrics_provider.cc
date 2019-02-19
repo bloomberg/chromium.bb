@@ -28,8 +28,8 @@ SigninStatusMetricsProvider::SigninStatusMetricsProvider(
 
   // Postpone the initialization until all threads are created.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SigninStatusMetricsProvider::Initialize,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SigninStatusMetricsProvider::Initialize,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {}

@@ -95,13 +95,13 @@ void JNI_QuicTestServer_StartQuicTestServer(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&StartOnServerThread, test_files_root, test_data_dir));
+      base::BindOnce(&StartOnServerThread, test_files_root, test_data_dir));
 }
 
 void JNI_QuicTestServer_ShutdownQuicTestServer(JNIEnv* env) {
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ShutdownOnServerThread));
+      FROM_HERE, base::BindOnce(&ShutdownOnServerThread));
   delete g_quic_server_thread;
 }
 

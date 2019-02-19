@@ -261,8 +261,8 @@ void EjectDeviceInThreadPool(
       // transient disk lock.
       task_runner->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&EjectDeviceInThreadPool,
-                     device, callback, task_runner, iteration + 1),
+          base::BindOnce(&EjectDeviceInThreadPool, device, callback,
+                         task_runner, iteration + 1),
           kLockRetryInterval);
       return;
     }
@@ -362,9 +362,9 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
     pending_device_checks_.insert(removable_devices[i]);
     device_info_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd,
-                   removable_devices[i], GetDeviceDetailsCallback(),
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd,
+                       removable_devices[i], GetDeviceDetailsCallback(),
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -534,8 +534,8 @@ void VolumeMountWatcherWin::EjectDevice(
   }
 
   device_info_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&EjectDeviceInThreadPool, device, callback,
-                            device_info_task_runner_, 0));
+      FROM_HERE, base::BindOnce(&EjectDeviceInThreadPool, device, callback,
+                                device_info_task_runner_, 0));
 }
 
 }  // namespace storage_monitor

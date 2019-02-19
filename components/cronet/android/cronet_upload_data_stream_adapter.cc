@@ -86,18 +86,16 @@ void CronetUploadDataStreamAdapter::OnReadSucceeded(
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
 
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&CronetUploadDataStream::OnReadSuccess,
-                            upload_data_stream_, bytes_read, final_chunk));
+      FROM_HERE, base::BindOnce(&CronetUploadDataStream::OnReadSuccess,
+                                upload_data_stream_, bytes_read, final_chunk));
 }
 
 void CronetUploadDataStreamAdapter::OnRewindSucceeded(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-
   network_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&CronetUploadDataStream::OnRewindSuccess,
-                 upload_data_stream_));
+      FROM_HERE, base::BindOnce(&CronetUploadDataStream::OnRewindSuccess,
+                                upload_data_stream_));
 }
 
 void CronetUploadDataStreamAdapter::Destroy(JNIEnv* env,

@@ -28,7 +28,7 @@
 //
 //   LargeObjectList my_stuff;
 //   ... fill my_stuff with lots of LargeObjects ...
-//   some_loop->PostTask(FROM_HERE, base::Bind(&ProcessStuff, my_stuff));
+//   some_loop->PostTask(FROM_HERE, base::BindOnce(&ProcessStuff, my_stuff));
 //
 // The last line incurs the cost of copying my_stuff, which is
 // undesirable.  Here's the above code re-written using Immutable<T>:

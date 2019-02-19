@@ -190,7 +190,7 @@ void BounceMtabUpdateToStorageMonitorTaskRunner(
     const MtabWatcherLinux::UpdateMtabCallback& callback,
     const MtabWatcherLinux::MountPointDeviceMap& new_mtab) {
   storage_monitor_task_runner->PostTask(FROM_HERE,
-                                        base::Bind(callback, new_mtab));
+                                        base::BindOnce(callback, new_mtab));
 }
 
 MtabWatcherLinux* CreateMtabWatcherLinuxOnMtabWatcherTaskRunner(

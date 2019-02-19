@@ -42,9 +42,9 @@ TEST_F(KeyStorageLinuxTest, SkipPostingToSameTaskRunner) {
       new base::TestSimpleTaskRunner());
   FakeKeyStorageLinux key_storage(task_runner.get());
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(base::IgnoreResult(&KeyStorageLinux::GetKey),
-                                   base::Unretained(&key_storage)));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&KeyStorageLinux::GetKey),
+                                base::Unretained(&key_storage)));
 
   // This should not deadlock.
   task_runner->RunUntilIdle();

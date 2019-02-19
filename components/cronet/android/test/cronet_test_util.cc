@@ -65,8 +65,8 @@ void TestUtil::RunAfterContextInit(jlong jcontext_adapter,
                                    const base::Closure& task) {
   GetTaskRunner(jcontext_adapter)
       ->PostTask(FROM_HERE,
-                 base::Bind(&TestUtil::RunAfterContextInitOnNetworkThread,
-                            jcontext_adapter, task));
+                 base::BindOnce(&TestUtil::RunAfterContextInitOnNetworkThread,
+                                jcontext_adapter, task));
 }
 
 // static
@@ -92,8 +92,8 @@ void JNI_CronetTestUtil_PrepareNetworkThread(
     JNIEnv* env,
     jlong jcontext_adapter) {
   TestUtil::GetTaskRunner(jcontext_adapter)
-      ->PostTask(FROM_HERE, base::Bind(&PrepareNetworkThreadOnNetworkThread,
-                                       jcontext_adapter));
+      ->PostTask(FROM_HERE, base::BindOnce(&PrepareNetworkThreadOnNetworkThread,
+                                           jcontext_adapter));
 }
 
 static void CleanupNetworkThreadOnNetworkThread() {
