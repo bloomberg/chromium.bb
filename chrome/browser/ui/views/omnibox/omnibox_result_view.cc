@@ -73,6 +73,24 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
+  if (!AutocompleteMatch::IsSearchType(match_.type)) {
+    // These recoloring experiments affect all non-search matches.
+    bool color_titles_blue =
+        base::FeatureList::IsEnabled(
+            omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions) ||
+        base::FeatureList::IsEnabled(
+            omnibox::kUIExperimentBlueTitlesOnPageSuggestions);
+    bool color_urls_gray = base::FeatureList::IsEnabled(
+        omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions);
+
+    // If these recoloring experiments are enabled, change |part| to fetch an
+    // alternate color for this text.
+    if (color_titles_blue && part == OmniboxPart::RESULTS_TEXT_DEFAULT)
+      part = OmniboxPart::RESULTS_TEXT_URL;
+    else if (color_urls_gray && part == OmniboxPart::RESULTS_TEXT_URL)
+      part = OmniboxPart::RESULTS_TEXT_DIMMED;
+  }
+
   return GetOmniboxColor(part, GetTint(), GetThemeState());
 }
 

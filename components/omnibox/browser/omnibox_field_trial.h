@@ -52,6 +52,8 @@ extern const base::Feature kUIExperimentShowSuggestionFavicons;
 extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery;
+extern const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions;
+extern const base::Feature kUIExperimentBlueTitlesOnPageSuggestions;
 extern const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions;
 extern const base::Feature kUIExperimentWhiteBackgroundOnBlur;
 extern const base::Feature kUIExperimentUseGenericSearchEngineIcon;
