@@ -153,7 +153,8 @@ bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
 //    |url|. This means case 1 has already happened and nothing more needs to
 //    be done.
 // 3. The ETLD+1 of |url| is in |site_group_map| and is different to host of
-//    |url|.
+//    |url|. For a cookies url, if a https origin with same host exists,
+//    nothing more needs to be done.
 // In case 3, we try to add |url| to the set of origins for the ETLD+1. If an
 // existing origin is a placeholder, delete it, because the placeholder is no
 // longer needed.
@@ -178,6 +179,15 @@ void CreateOrAppendSiteGroupEntry(
   if (etld_plus1_cookie_url)
     return;
   // Case 3:
+  if (url_is_origin_with_cookies) {
+    // Cookies ignore schemes, so try and see if a https schemed version
+    // already exists in the origin list, if not, then add the http schemed
+    // version into the map.
+    std::string https_url = std::string(url::kHttpsScheme) +
+                            url::kStandardSchemeSeparator + url.host() + "/";
+    if (entry->second.find(https_url) != entry->second.end())
+      return;
+  }
   entry->second.insert(url.spec());
   auto placeholder = entry->second.find(kPlaceholder);
   if (placeholder != entry->second.end())
