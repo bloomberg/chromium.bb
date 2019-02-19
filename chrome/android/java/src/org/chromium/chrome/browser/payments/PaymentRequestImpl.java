@@ -856,6 +856,10 @@ public class PaymentRequestImpl
             mRawTotal = details.total;
         }
 
+        if (details.displayItems.length != 0) {
+            mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
+        }
+
         loadCurrencyFormattersForPaymentDetails(details);
 
         if (mRawTotal != null) {
@@ -864,11 +868,10 @@ public class PaymentRequestImpl
             LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
                     formatter.format(mRawTotal.amount.value), /* isPending */ false);
 
-            List<LineItem> uiLineItems = getLineItems(details.displayItems);
+            List<LineItem> uiLineItems = getLineItems(mRawLineItems);
 
             mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         }
-        mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
         if (mUiShippingOptions == null || details.shippingOptions != null) {
             mUiShippingOptions = getShippingOptions(details.shippingOptions);
@@ -915,8 +918,9 @@ public class PaymentRequestImpl
         CurrencyFormatter formatter = getOrCreateCurrencyFormatter(total.amount);
         mUiShoppingCart.setTotal(new LineItem(total.label, formatter.getFormattedCurrencyCode(),
                 formatter.format(total.amount.value), false /* isPending */));
-        mUiShoppingCart.setAdditionalContents(
-                modifier == null ? null : getLineItems(modifier.additionalDisplayItems));
+        mUiShoppingCart.setAdditionalContents(modifier == null
+                        ? null
+                        : getLineItems(Arrays.asList(modifier.additionalDisplayItems)));
         if (mUI != null) mUI.updateOrderSummarySection(mUiShoppingCart);
     }
 
@@ -945,13 +949,13 @@ public class PaymentRequestImpl
      * @param items The payment items to parse. Can be null.
      * @return A list of valid line items.
      */
-    private List<LineItem> getLineItems(@Nullable PaymentItem[] items) {
+    private List<LineItem> getLineItems(@Nullable List<PaymentItem> items) {
         // Line items are optional.
         if (items == null) return new ArrayList<>();
 
-        List<LineItem> result = new ArrayList<>(items.length);
-        for (int i = 0; i < items.length; i++) {
-            PaymentItem item = items[i];
+        List<LineItem> result = new ArrayList<>(items.size());
+        for (int i = 0; i < items.size(); i++) {
+            PaymentItem item = items.get(i);
             CurrencyFormatter formatter = getOrCreateCurrencyFormatter(item.amount);
             result.add(new LineItem(item.label,
                     isMixedOrChangedCurrency() ? formatter.getFormattedCurrencyCode() : "",

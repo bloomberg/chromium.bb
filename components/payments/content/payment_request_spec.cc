@@ -102,7 +102,8 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   DCHECK(details_);
   if (details->total)
     details_->total = std::move(details->total);
-  details_->display_items = std::move(details->display_items);
+  if (!details->display_items.empty())
+    details_->display_items = std::move(details->display_items);
   if (details->shipping_options)
     details_->shipping_options = std::move(details->shipping_options);
   details_->modifiers = std::move(details->modifiers);
