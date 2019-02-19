@@ -109,7 +109,7 @@ promise_test(() => {
   let clientRouter = new liteJsTest.mojom.SubinterfaceClientCallbackRouter;
   let subinterfaceProxy = new liteJsTest.mojom.SubinterfaceProxy;
   targetProxy.requestSubinterface(
-      subinterfaceProxy.createRequest(), clientRouter.createProxy());
+      subinterfaceProxy.$.createRequest(), clientRouter.createProxy());
   return new Promise(resolve => {
     clientRouter.didFlush.addListener(values => {
       assert_array_equals(values, kTestNumbers);
@@ -156,7 +156,7 @@ promise_test(() => {
   const kNumPokes = 100;
   for (let i = 0; i < kNumPokes; ++i)
     proxy.poke();
-  return proxy.flushForTesting().then(() => {
+  return proxy.$.flushForTesting().then(() => {
     assert_equals(impl.numPokes, kNumPokes);
   });
 }, 'can use generated flushForTesting API for synchronization in tests');

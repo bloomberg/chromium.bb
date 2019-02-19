@@ -32,22 +32,21 @@
 {{module.namespace}}.{{interface.name}}Proxy = class {
   /** @param {MojoHandle=} opt_handle */
   constructor(opt_handle) {
-    /** @private {!mojo.internal.interfaceSupport.InterfaceProxyBase} */
+    /**
+     * @private {!mojo.internal.interfaceSupport.InterfaceProxyBase<!{{module.namespace}}.{{interface.name}}Request>}
+     */
     this.proxy =
-        new mojo.internal.interfaceSupport.InterfaceProxyBase(opt_handle);
+        new mojo.internal.interfaceSupport.InterfaceProxyBase(
+          {{module.namespace}}.{{interface.name}}Request,
+          opt_handle);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper<!{{module.namespace}}.{{interface.name}}Request>>
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper(this.proxy);
 
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
     this.onConnectionError = this.proxy.getConnectionErrorEventRouter();
-  }
-
-  /**
-   * @return {!{{module.namespace}}.{{interface.name}}Request}
-   * @export
-   */
-  createRequest() {
-    let {handle0, handle1} = Mojo.createMessagePipe();
-    this.proxy.bindHandle(handle0);
-    return new {{module.namespace}}.{{interface.name}}Request(handle1);
   }
 
 {%- for method in interface.methods -%}
@@ -86,15 +85,6 @@
         ]);
   }
 {%-  endfor %}
-
-
-  /**
-   * @return {!Promise}
-   * @export
-   */
-  flushForTesting() {
-    return this.proxy.flushForTesting();
-  }
 };
 
 /**
@@ -147,7 +137,7 @@
   static getProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
     Mojo.bindInterface('{{mojom_namespace}}.{{interface.name}}',
-                       proxy.createRequest().handle);
+                       proxy.$.createRequest().handle);
     return proxy;
   }
 
@@ -160,7 +150,7 @@
    */
   createProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.target_.bindHandle(proxy.createRequest().handle);
+    this.target_.bindHandle(proxy.$.createRequest().handle);
     return proxy;
   }
 };
@@ -239,7 +229,7 @@
    */
   createProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.target_.bindHandle(proxy.createRequest().handle);
+    this.target_.bindHandle(proxy.$.createRequest().handle);
     return proxy;
   }
 

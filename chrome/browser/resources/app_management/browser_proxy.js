@@ -39,7 +39,7 @@ cr.define('app_management', function() {
         this.handler = new appManagement.mojom.PageHandlerProxy();
         const factory = appManagement.mojom.PageHandlerFactory.getProxy();
         factory.createPageHandler(
-            this.callbackRouter.createProxy(), this.handler.createRequest());
+            this.callbackRouter.createProxy(), this.handler.$.createRequest());
       }
     }
   }

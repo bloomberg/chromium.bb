@@ -151,18 +151,23 @@ mojo.internal.interfaceSupport.ConnectionErrorEventRouter = class {
  * Generic helper used to implement all generated proxy classes. Knows how to
  * serialize requests and deserialize their replies, both according to
  * declarative message structure specs.
+ * @template T
  * @export
  */
 mojo.internal.interfaceSupport.InterfaceProxyBase = class {
   /**
+   * @param {!function(new:T, !MojoHandle)} requestType
    * @param {MojoHandle=} opt_handle The message pipe handle to use as a proxy
    *     endpoint. If null, this object must be bound with bindHandle before
    *     it can be used to send any messages.
    * @public
    */
-  constructor(opt_handle) {
+  constructor(requestType, opt_handle) {
     /** @public {?MojoHandle} */
     this.handle = null;
+
+    /** @private {!function(new:T, !MojoHandle)} */
+    this.requestType_ = requestType;
 
     /** @private {?mojo.internal.interfaceSupport.HandleReader} */
     this.reader_ = null;
@@ -184,6 +189,15 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
 
     if (opt_handle instanceof MojoHandle)
       this.bindHandle(opt_handle);
+  }
+
+  /**
+   * @return {!T}
+   */
+  createRequest() {
+    let {handle0, handle1} = Mojo.createMessagePipe();
+    this.bindHandle(handle0);
+    return new this.requestType_(handle1);
   }
 
   /**
@@ -232,7 +246,7 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
   sendMessage(ordinal, paramStruct, responseStruct, args) {
     if (!this.handle) {
       throw new Error(
-          'Attempting to use an unbound proxy. Try createRequest() first.')
+          'Attempting to use an unbound proxy. Try $.createRequest() first.')
     }
 
     // The pipe has already been closed, so just drop the message.
@@ -313,6 +327,40 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
     this.connectionErrorEventRouter_.dispatchErrorEvent();
   }
 };
+
+/**
+ * Wrapper around mojo.internal.interfaceSupport.InterfaceProxyBase that
+ * exposes the subset of InterfaceProxyBase's method that users are allowed
+ * to use.
+ * @template T
+ * @export
+ */
+mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper = class {
+  /**
+   * @param {!mojo.internal.interfaceSupport.InterfaceProxyBase<T>} proxy
+   * @public
+   */
+  constructor(proxy) {
+    /** @private {!mojo.internal.interfaceSupport.InterfaceProxyBase<T>} */
+    this.proxy_ = proxy;
+  }
+
+  /**
+   * @return {!T}
+   * @export
+   */
+  createRequest() {
+    return this.proxy_.createRequest();
+  }
+
+  /**
+   * @return {!Promise}
+   * @export
+   */
+  flushForTesting() {
+    return this.proxy_.flushForTesting();
+  }
+}
 
 /**
  * Helper used by generated EventRouter types to dispatch incoming interface

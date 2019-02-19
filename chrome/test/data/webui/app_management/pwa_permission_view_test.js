@@ -23,7 +23,7 @@ suite('<app-management-pwa-permission-view>', function() {
 
   async function clickToggle(permissionItemId) {
     getToggleFromPermissionItem(permissionItemId).click();
-    await fakeHandler.flushForTesting();
+    await fakeHandler.$.flushForTesting();
   }
 
   setup(async function() {
