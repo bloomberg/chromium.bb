@@ -431,13 +431,12 @@ bool GLSurfaceGLX::InitializeOneOff() {
   }
 
   const XVisualInfo& visual_info =
-      gl::GLVisualPickerGLX::GetInstance()->system_visual();
+      gl::GLVisualPickerGLX::GetInstance()->rgba_visual();
   g_visual = visual_info.visual;
   g_depth = visual_info.depth;
   g_colormap =
       XCreateColormap(gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()),
                       visual_info.visual, AllocNone);
-
   // We create a dummy unmapped window for both the main Display and the video
   // sync Display so that the Nvidia driver can initialize itself before the
   // sandbox is set up.
@@ -571,7 +570,6 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
       window_(0),
       glx_window_(0),
       config_(nullptr),
-      visual_id_(CopyFromParent),
       has_swapped_buffers_(false) {}
 
 bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
@@ -582,19 +580,19 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     return false;
   }
   size_ = gfx::Size(attributes.width, attributes.height);
-  visual_id_ = XVisualIDFromVisual(attributes.visual);
-  // Create a child window, with a CopyFromParent visual (to avoid inducing
-  // extra blits in the driver), that we can resize exactly in Resize(),
-  // correctly ordered with GL, so that we don't have invalid transient states.
-  // See https://crbug.com/326995.
+
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.bit_gravity = NorthWestGravity;
-  window_ =
-      XCreateWindow(gfx::GetXDisplay(), parent_window_, 0, 0, size_.width(),
-                    size_.height(), 0, CopyFromParent, InputOutput,
-                    CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
+  swa.colormap = g_colormap;
+  swa.background_pixel = 0;
+  swa.border_pixel = 0;
+  window_ = XCreateWindow(
+      gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */, size_.width(),
+      size_.height(), 0 /* border_width */, g_depth, InputOutput, g_visual,
+      CWBackPixmap | CWBitGravity | CWColormap | CWBackPixel | CWBorderPixel,
+      &swa);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -722,7 +720,7 @@ GLSurfaceFormat NativeViewGLSurfaceGLX::GetFormat() {
 }
 
 unsigned long NativeViewGLSurfaceGLX::GetCompatibilityKey() {
-  return visual_id_;
+  return XVisualIDFromVisual(g_visual);
 }
 
 gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
