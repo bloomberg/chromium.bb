@@ -25,7 +25,7 @@ Polymer({
     header: String,
 
     /** Whether to hide the header at the top of the dropdown. */
-    hideHeader: Boolean,
+    hideHeader: {type: Boolean, value: false},
 
     /** Icon to display when the dropdown is closed. */
     closedIcon: String,
