@@ -486,6 +486,10 @@ def _CreateParser():
                           default=[],
                           help='Specify an explicit list of packages to build '
                                'for integration with Findit.')
+  group.add_remote_option('--cbb_snapshot_revision', type='string',
+                          dest='cbb_snapshot_revision', default=None,
+                          help='Snapshot manifest revision to sync to '
+                               'for building.')
 
   parser.add_argument_group(group)
 

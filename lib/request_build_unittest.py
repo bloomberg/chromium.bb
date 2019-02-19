@@ -68,7 +68,8 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
         build_config=self.POSTSUBMIT_CONFIG,
         display_label=self.DISPLAY_LABEL,
         branch='master',
-        extra_args=('--buildbot', '--cbb_build_packages',
+        extra_args=('--buildbot', '--cbb_snapshot_revision', 'hash1234',
+                    '--cbb_build_packages',
                     'sys-apps/mosys media-libs/cros-camera-libcbm'),
         user_email='default_email')
 
@@ -251,6 +252,8 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
             u'cbb_display_label': u'display',
             u'cbb_email': u'default_email',
             u'cbb_extra_args': [u'--buildbot',
+                                u'--cbb_snapshot_revision',
+                                u'hash1234',
                                 u'--cbb_build_packages',
                                 u'sys-apps/mosys media-libs/cros-camera-libcbm']
         }
