@@ -186,17 +186,6 @@ NSString* const kTabUrlKey = @"url";
 
 #pragma mark - Properties
 
-- (NSString*)tabId {
-  if (!self.webState) {
-    // Tab can outlive WebState, in which case Tab is not valid anymore and
-    // tabId should be nil.
-    return nil;
-  }
-  TabIdTabHelper* tab_id_helper = TabIdTabHelper::FromWebState(self.webState);
-  DCHECK(tab_id_helper);
-  return tab_id_helper->tab_id();
-}
-
 - (web::WebState*)webState {
   return _webStateImpl;
 }

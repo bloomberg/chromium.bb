@@ -265,7 +265,10 @@ const int kNumberOfURLsToSend = 1;
 
 - (void)closingDocument:(NSNotification*)notification {
   Tab* tab = notification.object;
-  [self closingDocumentInTab:[tab tabId]];
+  NSString* tabID = nil;
+  if (tab.webState)
+    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
+  [self closingDocumentInTab:tabID];
 }
 
 - (void)closingDocumentInTab:(NSString*)tabId {
@@ -300,13 +303,16 @@ const int kNumberOfURLsToSend = 1;
 
 - (void)showingExportableDocument:(NSNotification*)notification {
   Tab* tab = notification.object;
-  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:[tab tabId]];
+  NSString* tabID = nil;
+  if (tab.webState)
+    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
+  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:tabID];
   if ([oldMime isEqualToString:@"application/pdf"])
     return;
 
   std::string mime = [tab webState]->GetContentsMimeType();
   NSString* nsMime = base::SysUTF8ToNSString(mime);
-  [self setTabInfo:@"mime" withValue:nsMime forTab:[tab tabId]];
+  [self setTabInfo:@"mime" withValue:nsMime forTab:tabID];
   breakpad_helper::SetCurrentTabIsPDF(true);
 }
 

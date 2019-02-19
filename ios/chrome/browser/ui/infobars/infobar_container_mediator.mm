@@ -97,9 +97,9 @@
 
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(webState);
+  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
   [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
-                                             forTabId:[tab tabId]];
-
+                                             forTabId:tabID];
   if (!ReSignInInfoBarDelegate::Create(
           self.browserState, tab,
           self.signinPresenter /* id<SigninPresenter> */)) {
@@ -143,11 +143,11 @@
   WebStateList* webStateList = self.tabModel.webStateList;
   for (int index = 0; index < webStateList->count(); ++index) {
     web::WebState* webState = webStateList->GetWebStateAt(index);
-    NSString* tabId = TabIdTabHelper::FromWebState(webState)->tab_id();
+    NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
     infobars::InfoBarManager* infoBarManager =
         InfoBarManagerImpl::FromWebState(webState);
     DCHECK(infoBarManager);
-    [center addInfoBarToManager:infoBarManager forTabId:tabId];
+    [center addInfoBarToManager:infoBarManager forTabId:tabID];
   }
 }
 
