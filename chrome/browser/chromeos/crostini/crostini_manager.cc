@@ -30,8 +30,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -1631,6 +1634,8 @@ void CrostiniManager::ShowContainerTerminal(
     const GURL& vsh_in_crosh_url,
     Browser* browser) {
   ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser);
+  browser->window()->GetNativeWindow()->SetProperty(
+      kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }
 
 void CrostiniManager::LaunchContainerTerminal(
@@ -1640,7 +1645,9 @@ void CrostiniManager::LaunchContainerTerminal(
   GURL vsh_in_crosh_url =
       GenerateVshInCroshUrl(profile_, vm_name, container_name, terminal_args);
   AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile_);
-  OpenApplicationWindow(launch_params, vsh_in_crosh_url);
+
+  Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
+  ShowContainerTerminal(launch_params, vsh_in_crosh_url, browser);
 }
 
 void CrostiniManager::SearchApp(const std::string& vm_name,
