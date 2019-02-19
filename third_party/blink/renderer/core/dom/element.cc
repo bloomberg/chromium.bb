@@ -3203,6 +3203,7 @@ void Element::focus(const FocusParams& params) {
       return;
     }
   }
+  ActivateDisplayLockIfNeeded();
   DispatchActivateInvisibleEventIfNeeded();
   if (IsInsideInvisibleSubtree()) {
     // The element stays invisible because the default event action is
