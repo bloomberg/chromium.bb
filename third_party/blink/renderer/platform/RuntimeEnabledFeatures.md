@@ -14,17 +14,19 @@ Example:
 ```
 The status of the feature controls when it will be enabled in the Blink engine.
 
-| Status Value | Web feature enabled during web tests with content_shell [^1] | Web feature enabled as part of web experimental features [^2] | Web feature enabled in stable release | Non-web exposed feature enabled through a command line flag [^3]
+| Status Value | Web feature enabled during web tests with content_shell [1] | Web feature enabled as part of web experimental features [2] | Web feature enabled in stable release | Non-web exposed feature enabled through a command line flag [3]
 |:---:|:---:|:---:|:---:|:---:|
 | <missing\> | No | No | No | Yes |
 | `test` | Yes | No | No | No |
 | `experimental` | Yes | Yes | No | No |
 | `stable` | Yes | Yes | Yes | No |
 
-[^1]: content_shell will not enable experimental/test features by default, the `--run-web-tests` flag used as part of running web tests enables this behaviour.
-[^2]: Navigate to about:flags in the URL bar and turn on "Enable experimental web platform features" (formerly, "Enable experimental WebKit features") **or** run Chromium with `--enable-experimental-web-platform-features` (formerly, --enable-experimental-webkit-features).
+\[1]: content_shell will not enable experimental/test features by default, the `--run-web-tests` flag used as part of running web tests enables this behaviour.
+
+\[2]: Navigate to about:flags in the URL bar and turn on "Enable experimental web platform features" (formerly, "Enable experimental WebKit features") **or** run Chromium with `--enable-experimental-web-platform-features` (formerly, --enable-experimental-webkit-features).
 Works in all Chromium channels: canary, dev, beta, and stable.
-[^3]: For features that are not web exposed features but require code in Blink to be triggered. Such feature can have a about:flags entry or be toggled based on other signals. Such entries should be called out in a comment to differentiate them from stalled entries.
+
+\[3]: For features that are not web exposed features but require code in Blink to be triggered. Such feature can have a about:flags entry or be toggled based on other signals. Such entries should be called out in a comment to differentiate them from stalled entries.
 
 ### Platform-specific Feature Status
 For features that do not have the same status on every platform, you can specify their status using a dictionary value.
