@@ -24,7 +24,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -6066,33 +6065,6 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       !CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
     LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
-
-    // Temporary instrumentation to debug the root cause of
-    // https://crbug.com/931895.
-    auto bool_to_crash_key = [](bool b) { return b ? "true" : "false"; };
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("is_same_document",
-                                            base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(is_same_document_navigation));
-
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("is_subframe",
-                                            base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(!frame_tree_node_->IsMainFrame()));
-
-    if (navigation_request_ && navigation_request_->navigation_handle()) {
-      NavigationHandleImpl* handle = navigation_request_->navigation_handle();
-      base::debug::SetCrashKeyString(
-          base::debug::AllocateCrashKeyString(
-              "is_error_page", base::debug::CrashKeySize::Size32),
-          bool_to_crash_key(handle->IsErrorPage()));
-      if (handle->IsErrorPage()) {
-        base::debug::SetCrashKeyString(
-            base::debug::AllocateCrashKeyString(
-                "is_error_page", base::debug::CrashKeySize::Size32),
-            base::IntToString(handle->GetNetErrorCode()));
-      }
-    }
 
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
