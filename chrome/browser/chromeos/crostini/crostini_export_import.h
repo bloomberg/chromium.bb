@@ -50,6 +50,9 @@ class CrostiniExportImport : public KeyedService,
   // Import the crostini container.
   void ImportContainer(content::WebContents* web_contents);
 
+  // Called by the notification when it is closed so it can be destroyed.
+  void NotificationCompleted(CrostiniExportImportNotification* notification);
+
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
 

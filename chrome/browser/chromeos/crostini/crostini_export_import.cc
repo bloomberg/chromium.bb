@@ -103,7 +103,7 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
   switch (type) {
     case ExportImportType::EXPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
-      title = IDS_CROSTINI_EXPORT_TITLE;
+      title = IDS_SETTINGS_CROSTINI_EXPORT;
       base::Time::Exploded exploded;
       base::Time::Now().LocalExplode(&exploded);
       default_path = pref_service->GetFilePath(prefs::kDownloadDefaultDirectory)
@@ -113,7 +113,7 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
       break;
     case ExportImportType::IMPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_OPEN_FILE,
-      title = IDS_CROSTINI_IMPORT_TITLE;
+      title = IDS_SETTINGS_CROSTINI_IMPORT;
       default_path =
           pref_service->GetFilePath(prefs::kDownloadDefaultDirectory);
       break;
@@ -136,7 +136,7 @@ void CrostiniExportImport::FileSelected(const base::FilePath& path,
                            crostini::kCrostiniDefaultContainerName);
   notifications_[container_id] =
       std::make_unique<CrostiniExportImportNotification>(
-          profile_, type, GetUniqueNotificationId(), path);
+          profile_, this, type, GetUniqueNotificationId(), path);
 
   switch (type) {
     case ExportImportType::EXPORT:
@@ -191,7 +191,6 @@ void CrostiniExportImport::OnExportComplete(const ContainerId& container_id,
   } else {
     it->second->UpdateStatus(CrostiniExportImportNotification::Status::DONE, 0);
   }
-  notifications_.erase(it);
 }
 
 void CrostiniExportImport::OnExportContainerProgress(
@@ -257,7 +256,6 @@ void CrostiniExportImport::OnImportComplete(const ContainerId& container_id,
   } else {
     it->second->UpdateStatus(CrostiniExportImportNotification::Status::DONE, 0);
   }
-  notifications_.erase(it);
 }
 
 void CrostiniExportImport::OnImportContainerProgress(
@@ -292,6 +290,18 @@ void CrostiniExportImport::OnImportContainerProgress(
 std::string CrostiniExportImport::GetUniqueNotificationId() {
   return base::StringPrintf("crostini_export_import_%d",
                             next_notification_id_++);
+}
+
+void CrostiniExportImport::NotificationCompleted(
+    CrostiniExportImportNotification* notification) {
+  for (auto it = notifications_.begin(); it != notifications_.end(); ++it) {
+    if (it->second.get() == notification) {
+      notifications_.erase(it);
+      return;
+    }
+  }
+  // Notification should always exist when this is called.
+  NOTREACHED();
 }
 
 CrostiniExportImportNotification*

@@ -27,23 +27,30 @@ constexpr char kNotifierCrostiniExportImportOperation[] =
 
 CrostiniExportImportNotification::CrostiniExportImportNotification(
     Profile* profile,
+    CrostiniExportImport* service,
     ExportImportType type,
     const std::string& notification_id,
     const base::FilePath& path)
-    : profile_(profile), type_(type), path_(path), weak_ptr_factory_(this) {
+    : profile_(profile),
+      service_(service),
+      type_(type),
+      path_(path),
+      weak_ptr_factory_(this) {
   // Messages.
   switch (type) {
     case ExportImportType::EXPORT:
-      message_title_ = IDS_CROSTINI_EXPORT_TITLE;
-      message_running_ = IDS_CROSTINI_EXPORT_NOTIFICATION_IN_PROGRESS;
-      message_done_ = IDS_CROSTINI_EXPORT_NOTIFICATION_DONE;
-      message_failed_ = IDS_CROSTINI_EXPORT_NOTIFICATION_FAILED;
+      title_running_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING;
+      title_done_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE;
+      message_done_ = IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE;
+      title_failed_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_FAILED;
+      message_failed_ = IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED;
       break;
     case ExportImportType::IMPORT:
-      message_title_ = IDS_CROSTINI_IMPORT_TITLE;
-      message_running_ = IDS_CROSTINI_IMPORT_NOTIFICATION_IN_PROGRESS;
-      message_done_ = IDS_CROSTINI_IMPORT_NOTIFICATION_DONE;
-      message_failed_ = IDS_CROSTINI_IMPORT_NOTIFICATION_FAILED;
+      title_running_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING;
+      title_done_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE;
+      message_done_ = IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE;
+      title_failed_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_FAILED;
+      message_failed_ = IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED;
       break;
     default:
       NOTREACHED();
@@ -57,7 +64,8 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id,
       base::string16(), base::string16(),
       gfx::Image(),  // icon
-      l10n_util::GetStringUTF16(message_title_),
+      l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_IMPORT_NOTIFICATION_DISPLAY_SOURCE),
       GURL(),  // origin_url
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierCrostiniExportImportOperation),
@@ -80,11 +88,18 @@ void CrostiniExportImportNotification::UpdateStatus(Status status,
       }
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(progress_percent);
-      notification_->set_message(l10n_util::GetStringUTF16(message_running_));
+      notification_->set_title(l10n_util::GetStringUTF16(title_running_));
+      notification_->set_message(
+          GetTimeRemainingMessage(started_, progress_percent));
       notification_->set_never_timeout(true);
       break;
     case Status::DONE:
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+      if (type_ == ExportImportType::EXPORT) {
+        notification_->set_buttons({message_center::ButtonInfo(
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW))});
+      }
+      notification_->set_title(l10n_util::GetStringUTF16(title_done_));
       notification_->set_message(l10n_util::GetStringUTF16(message_done_));
       notification_->set_never_timeout(false);
       break;
@@ -92,20 +107,22 @@ void CrostiniExportImportNotification::UpdateStatus(Status status,
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
       notification_->set_accent_color(
           ash::kSystemNotificationColorCriticalWarning);
+      notification_->set_title(l10n_util::GetStringUTF16(title_failed_));
       notification_->set_message(l10n_util::GetStringUTF16(message_failed_));
       notification_->set_never_timeout(false);
       break;
     default:
       NOTREACHED();
   }
-  NotificationDisplayService* display_service =
-      NotificationDisplayService::GetForProfile(profile_);
-  display_service->Display(NotificationHandler::Type::TRANSIENT,
-                           *notification_);
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification_);
 }
 
 void CrostiniExportImportNotification::Close(bool by_user) {
   closed_ = true;
+  if (status_ != Status::RUNNING) {
+    service_->NotificationCompleted(this);
+  }
 }
 
 void CrostiniExportImportNotification::Click(
