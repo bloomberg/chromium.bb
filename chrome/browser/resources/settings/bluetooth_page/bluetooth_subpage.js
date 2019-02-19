@@ -193,6 +193,16 @@ Polymer({
     this.saveScroll(this.$.pairedDevices);
     this.saveScroll(this.$.unpairedDevices);
 
+    // In Polymer 1, default values for |pairedDeviceList_| and
+    // |unpairedDeviceList_| might not have been set yet by the time
+    // |deviceList_| changes.
+    if (this.pairedDeviceList_ === undefined) {
+      this.pairedDeviceList_ = [];
+    }
+    if (this.unpairedDeviceList_ === undefined) {
+      this.unpairedDeviceList_ = [];
+    }
+
     this.pairedDeviceList_ = this.getUpdatedDeviceList_(
       this.pairedDeviceList_,
       this.deviceList_.filter(d => d.paired || d.connecting));
