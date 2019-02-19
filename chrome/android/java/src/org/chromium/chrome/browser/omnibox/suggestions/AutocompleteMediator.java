@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.S
 import org.chromium.chrome.browser.omnibox.suggestions.basic.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;

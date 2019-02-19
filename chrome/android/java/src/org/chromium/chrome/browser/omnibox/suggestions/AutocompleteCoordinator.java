@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -206,7 +207,8 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ANSWER_SUGGESTION,
-                        () -> new AnswerSuggestionView(mListView.getContext()),
+                        () -> (AnswerSuggestionView) LayoutInflater.from(mListView.getContext())
+                                .inflate(R.layout.omnibox_answer_suggestion, null),
                         AnswerSuggestionViewBinder::bind);
                 // clang-format on
 
