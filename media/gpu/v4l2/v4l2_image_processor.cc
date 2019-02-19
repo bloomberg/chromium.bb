@@ -935,11 +935,11 @@ void V4L2ImageProcessor::StopDevicePoll() {
     return;
   }
 
-  if (input_queue_ && !input_queue_->Streamoff())
-    return;
+  if (input_queue_)
+    input_queue_->Streamoff();
 
-  if (output_queue_ && !output_queue_->Streamoff())
-    return;
+  if (output_queue_)
+    output_queue_->Streamoff();
 
   // Reset all our accounting info.
   while (!input_job_queue_.empty())
