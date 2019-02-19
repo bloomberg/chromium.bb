@@ -450,7 +450,7 @@ static inline internal::PassedWrapper<T> Passed(T* scoper) {
 //   cb->Run(1);  // Prints "1".
 //
 //   // Prints "1" on |ml|.
-//   ml->PostTask(FROM_HERE, Bind(IgnoreResult(&DoSomething), 1);
+//   ml->PostTask(FROM_HERE, BindOnce(IgnoreResult(&DoSomething), 1);
 template <typename T>
 static inline internal::IgnoreResultHelper<T> IgnoreResult(T data) {
   return internal::IgnoreResultHelper<T>(std::move(data));

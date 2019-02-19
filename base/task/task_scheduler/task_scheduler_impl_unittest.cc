@@ -571,7 +571,7 @@ TEST_F(TaskSchedulerImplTest, COMSTATaskRunnersRunWithCOMSTA) {
 
   WaitableEvent task_ran;
   com_sta_task_runner->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](WaitableEvent* task_ran) {
                        win::AssertComApartmentType(win::ComApartmentType::STA);
                        task_ran->Signal();

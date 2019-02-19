@@ -513,7 +513,7 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
       BindRepeating(&WaitableEvent::Signal, Unretained(&event));
 
   // Test that a non-main thread has the right cwd.
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, temp_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
@@ -525,8 +525,8 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
   // Change the cwd on the secondary thread. IgnoreResult is used when setting
   // because it is checked immediately after.
   task_runner->PostTask(FROM_HERE,
-                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, home_dir));
+                        BindOnce(IgnoreResult(&SetCurrentDirectory), home_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, home_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
@@ -539,14 +539,14 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
   CheckCwdIsExpected(temp_dir);
 
   // Ensure that the secondary thread sees the new cwd too.
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, temp_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
 
   // Change the cwd on the secondary thread one more time and join the thread.
   task_runner->PostTask(FROM_HERE,
-                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
+                        BindOnce(IgnoreResult(&SetCurrentDirectory), home_dir));
   thread.Stop();
 
   // Make sure that the main thread picked up the new cwd.
