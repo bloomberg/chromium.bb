@@ -8,6 +8,8 @@
 
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
+#include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
+#include "fuchsia/engine/browser/webrunner_browser_context.h"
 #include "fuchsia/engine/browser/webrunner_browser_main_parts.h"
 
 WebRunnerContentBrowserClient::WebRunnerContentBrowserClient(
@@ -22,6 +24,17 @@ WebRunnerContentBrowserClient::CreateBrowserMainParts(
   DCHECK(context_channel_);
   main_parts_ = new WebRunnerBrowserMainParts(std::move(context_channel_));
   return main_parts_;
+}
+
+content::DevToolsManagerDelegate*
+WebRunnerContentBrowserClient::GetDevToolsManagerDelegate() {
+  DCHECK(main_parts_);
+  DCHECK(main_parts_->browser_context());
+  return new WebEngineDevToolsManagerDelegate(main_parts_->browser_context());
+}
+
+std::string WebRunnerContentBrowserClient::GetProduct() const {
+  return version_info::GetProductNameAndVersionForUserAgent();
 }
 
 std::string WebRunnerContentBrowserClient::GetUserAgent() const {
