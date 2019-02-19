@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/core/style/grid_track_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -33,6 +34,8 @@ enum TrackSizeComputationPhase {
 };
 
 class GridTrack {
+  DISALLOW_NEW();
+
  public:
   GridTrack() : infinitely_growable_(false) {}
 

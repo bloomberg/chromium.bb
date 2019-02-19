@@ -100,6 +100,8 @@ class NGMappingUnitRange {
 // in the text content string of the context.
 // See design doc https://goo.gl/CJbxky for details.
 class CORE_EXPORT NGOffsetMapping {
+  USING_FAST_MALLOC(NGOffsetMapping);
+
  public:
   using UnitVector = Vector<NGOffsetMappingUnit>;
   using RangeMap =

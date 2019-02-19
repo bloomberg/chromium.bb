@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -1075,6 +1076,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // that search the ancestry for some sort of containing block. Used to
   // determine if we skipped certain objects while walking the ancestry.
   class AncestorSkipInfo {
+    STACK_ALLOCATED();
+
    public:
     AncestorSkipInfo(const LayoutObject* ancestor,
                      bool check_for_filters = false)
@@ -1967,6 +1970,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
+    STACK_ALLOCATED();
+
    public:
     // Convenience mutator that clears paint invalidation flags and this object
     // and its descendants' needs-paint-property-update flags.
@@ -2515,6 +2520,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   unsigned field_name_ : 1
 
   class LayoutObjectBitfields {
+    DISALLOW_NEW();
+
     enum PositionedState {
       kIsStaticallyPositioned = 0,
       kIsRelativelyPositioned = 1,

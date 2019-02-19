@@ -17,6 +17,8 @@ class LayoutObject;
 struct DepthOrderedLayoutObjectListData;
 
 class DepthOrderedLayoutObjectList {
+  DISALLOW_NEW();
+
  public:
   DepthOrderedLayoutObjectList();
   ~DepthOrderedLayoutObjectList();

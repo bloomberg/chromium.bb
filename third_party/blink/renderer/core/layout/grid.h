@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
@@ -30,6 +31,8 @@ class GridIterator;
 // instead of just traversing the DOM or Layout trees. The other user
 // of this class is the GridTrackSizingAlgorithm class.
 class CORE_EXPORT Grid {
+  USING_FAST_MALLOC(Grid);
+
  public:
   static std::unique_ptr<Grid> Create(const LayoutGrid*);
 
@@ -79,6 +82,8 @@ class CORE_EXPORT Grid {
 #endif
 
   class GridIterator {
+    USING_FAST_MALLOC(GridIterator);
+
    public:
     virtual LayoutBox* NextGridItem() = 0;
 

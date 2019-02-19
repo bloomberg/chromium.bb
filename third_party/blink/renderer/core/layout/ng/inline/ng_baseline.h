@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -24,6 +25,8 @@ enum class NGBaselineAlgorithmType {
 // Baselines are products of layout.
 // To compute baseline, add requests to NGConstraintSpace and run Layout().
 class CORE_EXPORT NGBaselineRequest {
+  DISALLOW_NEW();
+
  public:
   NGBaselineRequest(NGBaselineAlgorithmType algorithm_type,
                     FontBaseline baseline_type)
@@ -65,6 +68,8 @@ class CORE_EXPORT NGBaselineRequest {
 // A list of |NGBaselineRequest| in a packed format, with similar interface as
 // |Vector|.
 class CORE_EXPORT NGBaselineRequestList {
+  DISALLOW_NEW();
+
  public:
   NGBaselineRequestList() = default;
 
@@ -76,6 +81,8 @@ class CORE_EXPORT NGBaselineRequestList {
   void AppendVector(const NGBaselineRequestList& requests);
 
   class const_iterator {
+    DISALLOW_NEW();
+
    public:
     const_iterator() : type_id_(NGBaselineRequest::kTypeIdCount), mask_(0) {}
     explicit const_iterator(unsigned mask) : type_id_(0), mask_(mask) {
@@ -131,6 +138,8 @@ struct CORE_EXPORT NGBaseline {
 // A list of |NGBaseline| in a packed format, with similar interface as
 // |Vector|.
 class CORE_EXPORT NGBaselineList {
+  DISALLOW_NEW();
+
  public:
   NGBaselineList();
 

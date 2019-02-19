@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -65,6 +66,8 @@ enum class TransformedWritingMode {
 typedef Vector<FlexItem, 8> FlexItemVector;
 
 class FlexItem {
+  DISALLOW_NEW();
+
  public:
   // flex_base_content_size includes scrollbar width but not border or padding.
   // min_max_sizes is the min and max size in the main axis direction.
@@ -141,6 +144,8 @@ class FlexItem {
 };
 
 class FlexItemVectorView {
+  DISALLOW_NEW();
+
  public:
   FlexItemVectorView(FlexItemVector* flex_vector,
                      wtf_size_t start,
@@ -168,6 +173,8 @@ class FlexItemVectorView {
 };
 
 class FlexLine {
+  DISALLOW_NEW();
+
  public:
   typedef Vector<FlexItem*, 8> ViolationsVector;
 
@@ -275,6 +282,8 @@ class FlexLine {
 //     }
 //     // The final position of each flex item is in item.desired_location
 class FlexLayoutAlgorithm {
+  DISALLOW_NEW();
+
  public:
   FlexLayoutAlgorithm(const ComputedStyle*, LayoutUnit line_break_length);
 
