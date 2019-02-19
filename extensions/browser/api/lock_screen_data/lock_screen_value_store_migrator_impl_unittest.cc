@@ -319,7 +319,7 @@ class LockScreenValueStoreMigratorImplTest : public testing::Test {
                                             ValueStore::StatusCode code) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &LockScreenValueStoreMigratorImplTest::SetValueStoreReturnCodeImpl,
             base::Unretained(this), storage_type, extension_id, code));
   }

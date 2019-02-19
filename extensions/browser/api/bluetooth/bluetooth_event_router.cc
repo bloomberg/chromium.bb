@@ -331,8 +331,8 @@ void BluetoothEventRouter::AdapterDiscoveringChanged(
   // Release the adapter after dispatching the event.
   if (!discovering) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BluetoothEventRouter::MaybeReleaseAdapter,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&BluetoothEventRouter::MaybeReleaseAdapter,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

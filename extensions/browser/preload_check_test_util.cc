@@ -69,8 +69,8 @@ void PreloadCheckStub::Start(ResultCallback callback) {
     // once crbug.com/704027 is addressed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&PreloadCheckStub::RunCallback,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+        base::BindOnce(&PreloadCheckStub::RunCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
     std::move(callback).Run(errors_);
   }

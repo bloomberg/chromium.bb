@@ -86,8 +86,9 @@ void WiFiDisplayVideoEncoder::InsertRawVideoFrame(
   DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(!encoded_callback_.is_null());
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WiFiDisplayVideoEncoder::InsertFrameOnMediaThread,
-                            this, video_frame, reference_time, send_idr_));
+      FROM_HERE,
+      base::BindOnce(&WiFiDisplayVideoEncoder::InsertFrameOnMediaThread, this,
+                     video_frame, reference_time, send_idr_));
   send_idr_ = false;
 }
 

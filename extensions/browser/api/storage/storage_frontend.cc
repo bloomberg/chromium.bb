@@ -183,8 +183,8 @@ void StorageFrontend::RunWithStorage(
   CHECK(cache);
 
   GetBackendTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ValueStoreCache::RunWithValueStoreForExtension,
-                            base::Unretained(cache), callback, extension));
+      FROM_HERE, base::BindOnce(&ValueStoreCache::RunWithValueStoreForExtension,
+                                base::Unretained(cache), callback, extension));
 }
 
 void StorageFrontend::DeleteStorageSoon(const std::string& extension_id) {
@@ -192,8 +192,8 @@ void StorageFrontend::DeleteStorageSoon(const std::string& extension_id) {
   for (auto it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
     GetBackendTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ValueStoreCache::DeleteStorageSoon,
-                              base::Unretained(cache), extension_id));
+        FROM_HERE, base::BindOnce(&ValueStoreCache::DeleteStorageSoon,
+                                  base::Unretained(cache), extension_id));
   }
 }
 

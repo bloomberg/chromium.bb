@@ -214,7 +214,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     base::FilePath crx_path = GetCrxFullPath(crx_name);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SandboxedUnpacker::StartWithCrx, sandboxed_unpacker_,
             extensions::CRXFileInfo(std::string(), crx_path, package_hash,
                                     GetTestVerifierFormat())));
@@ -231,9 +231,9 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     std::string fake_public_key;
     base::Base64Encode(std::string(2048, 'k'), &fake_public_key);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&SandboxedUnpacker::StartWithDirectory, sandboxed_unpacker_,
-                   fake_id, fake_public_key, temp_dir.Take()));
+        FROM_HERE, base::BindOnce(&SandboxedUnpacker::StartWithDirectory,
+                                  sandboxed_unpacker_, fake_id, fake_public_key,
+                                  temp_dir.Take()));
     client_->WaitForUnpack();
   }
 

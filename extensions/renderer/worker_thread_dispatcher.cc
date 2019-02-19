@@ -95,8 +95,8 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
       return false;
     base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
     bool task_posted = runner->PostTask(
-        FROM_HERE, base::Bind(&WorkerThreadDispatcher::ForwardIPC,
-                              worker_thread_id, message));
+        FROM_HERE, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
+                                  worker_thread_id, message));
     DCHECK(task_posted) << "Could not PostTask IPC to worker thread.";
     return true;
   }

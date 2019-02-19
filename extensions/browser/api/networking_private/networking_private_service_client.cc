@@ -55,11 +55,11 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
       weak_factory_(this) {
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WiFiService::Initialize,
-                 base::Unretained(wifi_service_.get()), task_runner_));
+      base::BindOnce(&WiFiService::Initialize,
+                     base::Unretained(wifi_service_.get()), task_runner_));
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WiFiService::SetEventObservers,
           base::Unretained(wifi_service_.get()),
           base::ThreadTaskRunnerHandle::Get(),
@@ -86,8 +86,8 @@ void NetworkingPrivateServiceClient::Shutdown() {
   // Post ShutdownWifiServiceOnWorkerThread task to delete services when all
   // posted tasks are done.
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ShutdownWifiServiceOnWorkerThread,
-                                    base::Passed(&wifi_service_)));
+                         base::BindOnce(&ShutdownWifiServiceOnWorkerThread,
+                                        std::move(wifi_service_)));
 }
 
 void NetworkingPrivateServiceClient::AddObserver(
@@ -102,9 +102,9 @@ void NetworkingPrivateServiceClient::RemoveObserver(
 
 void NetworkingPrivateServiceClient::OnConnectionChanged(
     network::mojom::ConnectionType type) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&WiFiService::RequestConnectedNetworkUpdate,
-                                    base::Unretained(wifi_service_.get())));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WiFiService::RequestConnectedNetworkUpdate,
+                                base::Unretained(wifi_service_.get())));
 }
 
 NetworkingPrivateServiceClient::ServiceCallbacks*
@@ -389,8 +389,8 @@ bool NetworkingPrivateServiceClient::DisableNetworkType(
 bool NetworkingPrivateServiceClient::RequestScan(
     const std::string& /* type */) {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&WiFiService::RequestNetworkScan,
-                                    base::Unretained(wifi_service_.get())));
+                         base::BindOnce(&WiFiService::RequestNetworkScan,
+                                        base::Unretained(wifi_service_.get())));
   return true;
 }
 
