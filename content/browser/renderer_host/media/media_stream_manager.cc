@@ -2066,8 +2066,8 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
     if (media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS)
       continue;
 #if defined(USE_AURA)
-    // DesktopCaptureDevicAura is used when aura_id is valid.
-    if (media_id.aura_id > DesktopMediaID::kNullId)
+    // DesktopCaptureDeviceAura is used when aura_id is valid.
+    if (media_id.window_id > DesktopMediaID::kNullId)
       continue;
 #endif
     video_capture_manager_->SetDesktopCaptureWindowId(device.session_id,

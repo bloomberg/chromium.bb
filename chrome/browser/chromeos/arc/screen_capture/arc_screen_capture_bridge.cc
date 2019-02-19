@@ -162,7 +162,7 @@ void ArcScreenCaptureBridge::TestModeAcceptPermission(
   granted_permissions_map_.emplace(std::make_pair(
       package_name,
       GrantedCaptureParams(found->second.display_name,
-                           content::DesktopMediaID::RegisterAuraWindow(
+                           content::DesktopMediaID::RegisterNativeWindow(
                                content::DesktopMediaID::TYPE_SCREEN,
                                ash::Shell::GetPrimaryRootWindow()),
                            false /* enable notification */)));

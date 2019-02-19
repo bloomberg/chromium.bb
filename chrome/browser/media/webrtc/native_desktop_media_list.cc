@@ -284,9 +284,9 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
             *reinterpret_cast<gfx::AcceleratedWidget*>(&source.id.id));
     aura::Window* const aura_window = host ? host->window() : nullptr;
     if (aura_window) {
-      DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
+      DesktopMediaID aura_id = DesktopMediaID::RegisterNativeWindow(
           DesktopMediaID::TYPE_WINDOW, aura_window);
-      source.id.aura_id = aura_id.aura_id;
+      source.id.window_id = aura_id.window_id;
     }
   }
 #endif  // defined(USE_AURA)
@@ -314,7 +314,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
   std::vector<DesktopMediaID> native_ids;
   for (const auto& source : sources) {
 #if defined(USE_AURA)
-    if (source.id.aura_id > DesktopMediaID::kNullId) {
+    if (source.id.window_id > DesktopMediaID::kNullId) {
       CaptureAuraWindowThumbnail(source.id);
       continue;
     }
@@ -350,7 +350,7 @@ void NativeDesktopMediaList::UpdateNativeThumbnailsFinished() {
 
 void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
     const DesktopMediaID& id) {
-  gfx::NativeWindow window = DesktopMediaID::GetAuraWindowById(id);
+  gfx::NativeWindow window = DesktopMediaID::GetNativeWindowById(id);
   if (!window)
     return;
 

@@ -10,7 +10,7 @@
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   DCHECK_EQ(content::DesktopMediaID::TYPE_WINDOW, id.type);
-  aura::Window* window = content::DesktopMediaID::GetAuraWindowById(id);
+  aura::Window* window = content::DesktopMediaID::GetNativeWindowById(id);
   if (!window)
     return gfx::ImageSkia();
 

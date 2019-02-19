@@ -76,7 +76,7 @@ class AuraWindowVideoCaptureDevice::WindowTracker
     // |target_window_| to be null at this point.
     DCHECK(!target_window_);
 
-    target_window_ = DesktopMediaID::GetAuraWindowById(source_id);
+    target_window_ = DesktopMediaID::GetNativeWindowById(source_id);
     if (target_window_ &&
 #if defined(OS_CHROMEOS)
         // See class comments for LameWindowCapturerChromeOS.

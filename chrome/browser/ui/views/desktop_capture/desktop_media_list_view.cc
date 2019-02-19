@@ -182,7 +182,7 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
     // Empty icons are used to represent default icon for aura windows. By
     // detecting this, we load the default icon from resource.
     if (icon_image.isNull()) {
-      aura::Window* window = DesktopMediaID::GetAuraWindowById(source.id);
+      aura::Window* window = DesktopMediaID::GetNativeWindowById(source.id);
       if (window)
         icon_image = LoadDefaultIcon(window);
     }
