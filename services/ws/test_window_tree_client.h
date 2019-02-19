@@ -110,12 +110,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                              local_surface_id_allocation) override;
   void OnWindowBoundsChanged(
       Id window_id,
-      const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation) override;
   void OnWindowTransformChanged(Id window_id,
-                                const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
   void OnTransientWindowAdded(Id window_id, Id transient_window_id) override;
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id) override;
@@ -130,7 +128,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowDeleted(Id window) override;
   void OnWindowVisibilityChanged(Id window, bool visible) override;
   void OnWindowOpacityChanged(Id window,
-                              float old_opacity,
                               float new_opacity) override;
   void OnWindowDisplayChanged(Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(Id window, bool drawn) override;

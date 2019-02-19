@@ -207,7 +207,7 @@ TEST_F(RemoteViewProviderTest, ScreenBounds) {
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
   parent_local_surface_id_allocator.GenerateId();
   window_tree_client()->OnWindowBoundsChanged(
-      aura::WindowMus::Get(root_window)->server_id(), gfx::Rect(), root_bounds,
+      aura::WindowMus::Get(root_window)->server_id(), root_bounds,
       parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ(root_bounds, root_window->GetHost()->GetBoundsInPixels());
   EXPECT_EQ(root_bounds.origin(), root_window->GetBoundsInScreen().origin());

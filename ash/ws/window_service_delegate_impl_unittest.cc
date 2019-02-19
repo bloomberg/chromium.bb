@@ -147,8 +147,8 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveWithMultipleDisplays) {
                      "DisplayChanged window_id=0,1 display_id=2200000001"));
   EXPECT_TRUE(ContainsChange(
       *GetWindowTreeClientChanges(),
-      std::string("BoundsChanged window=0,1 old_bounds=500,0 100x100 "
-                  "new_bounds=500,0 100x100 local_surface_id=*")));
+      std::string("BoundsChanged window=0,1 bounds=500,0 100x100 "
+                  "local_surface_id=*")));
 }
 
 TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
@@ -479,8 +479,8 @@ TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
                          base::NumberToString(display1.id())));
   EXPECT_TRUE(ContainsChange(
       *GetWindowTreeClientChanges(),
-      std::string("BoundsChanged window=0,1 old_bounds=* "
-                  "new_bounds=100,100 100x100 local_surface_id=*")));
+      std::string("BoundsChanged window=0,1 bounds=100,100 100x100 "
+                  "local_surface_id=*")));
 }
 
 TEST_F(WindowServiceDelegateImplTest, MultiDisplayEventInjector) {

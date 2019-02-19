@@ -123,7 +123,6 @@ void TestWindowTreeClient::OnTopLevelCreated(
 
 void TestWindowTreeClient::OnWindowBoundsChanged(
     Id window_id,
-    const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
@@ -132,13 +131,12 @@ void TestWindowTreeClient::OnWindowBoundsChanged(
   // it is ignored.
   if (window_id == root_window_id_ && !track_root_bounds_changes_)
     return;
-  tracker_.OnWindowBoundsChanged(window_id, old_bounds, new_bounds,
+  tracker_.OnWindowBoundsChanged(window_id, new_bounds,
                                  local_surface_id_allocation);
 }
 
 void TestWindowTreeClient::OnWindowTransformChanged(
     Id window_id,
-    const gfx::Transform& old_transform,
     const gfx::Transform& new_transform) {
   tracker_.OnWindowTransformChanged(window_id);
 }
@@ -177,7 +175,6 @@ void TestWindowTreeClient::OnWindowVisibilityChanged(Id window, bool visible) {
 }
 
 void TestWindowTreeClient::OnWindowOpacityChanged(Id window,
-                                                  float old_opacity,
                                                   float new_opacity) {
   tracker_.OnWindowOpacityChanged(window, new_opacity);
 }

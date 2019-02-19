@@ -106,11 +106,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // Calls HandleBoundsOrScaleFactorChange() it the scale factor has changed.
   void CheckForScaleFactorChange();
 
-  // Called when the bounds or scale factor changes. |old_bounds| is the
-  // previous bounds, which may not have changed if the scale factor changes.
-  void HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds);
+  // Called when the bounds or scale factor changes.
+  void HandleBoundsOrScaleFactorChange();
 
-  void NotifyClientOfNewBounds(const gfx::Rect& old_bounds);
+  void NotifyClientOfNewBounds();
 
   // If necessary, notifies the client that the visibility of the Window is
   // |new_value|. This does nothing for top-levels.
@@ -155,8 +154,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
 
+  // Set to true in OnWillMoveWindowToDisplay() and false in
+  // OnDidMoveWindowToDisplay().
   bool is_moving_across_displays_ = false;
-  base::Optional<gfx::Rect> scheduled_change_old_bounds_;
+
+  // Set to true if the bounds changes between the time
+  // OnWillMoveWindowToDisplay() is called and OnDidMoveWindowToDisplay() is
+  // called.
+  bool display_move_changed_bounds_ = false;
 
   // Used for non-top-levels to watch for changes in screen coordinates.
   std::unique_ptr<aura_extra::WindowPositionInRootMonitor>

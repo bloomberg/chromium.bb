@@ -264,14 +264,12 @@ void RendererWindowTreeClient::OnTopLevelCreated(
 
 void RendererWindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
-    const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {}
 
 void RendererWindowTreeClient::OnWindowTransformChanged(
     ws::Id window_id,
-    const gfx::Transform& old_transform,
     const gfx::Transform& new_transform) {}
 
 void RendererWindowTreeClient::OnTransientWindowAdded(
@@ -301,7 +299,6 @@ void RendererWindowTreeClient::OnWindowVisibilityChanged(ws::Id window_id,
                                                          bool visible) {}
 
 void RendererWindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
-                                                      float old_opacity,
                                                       float new_opacity) {}
 
 void RendererWindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,

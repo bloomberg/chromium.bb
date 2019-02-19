@@ -91,7 +91,6 @@ struct Change {
   Id window_id2 = 0;
   Id window_id3 = 0;
   gfx::Rect bounds;
-  gfx::Rect bounds2;
   viz::FrameSinkId frame_sink_id;
   base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
   int32_t event_action = 0;
@@ -192,7 +191,6 @@ class TestChangeTracker {
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(
       Id window_id,
-      const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation);
