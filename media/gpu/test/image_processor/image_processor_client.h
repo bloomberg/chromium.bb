@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/gpu/image_processor.h"
+#include "media/gpu/test/video_frame_helpers.h"
 
 namespace base {
 
@@ -37,15 +38,18 @@ class Image;
 // main thread.
 class ImageProcessorClient {
  public:
-  // |store_processed_video_frames| is whether ImageProcessorClient will store
-  // VideoFrame in FrameReady().
-  // TODO(crbug.com/917951): Get VideoFrameProcessor and does not store
-  // VideoFrame.
+  // Create ImageProcessorClient that has ImageProcessor that converts images
+  // from |input_config| to |output_config|. The |num_buffers| parameter
+  // specifies the number of buffers we want to create, but might be ignored by
+  // the image processor. See description in "media/gpu/image_processor.h" for
+  // detail. The |frame_processors| will perform additional processing (e.g.
+  // validation, writing to file) on each video frame produced by the
+  // ImageProcessor.
   static std::unique_ptr<ImageProcessorClient> Create(
       const ImageProcessor::PortConfig& input_config,
       const ImageProcessor::PortConfig& output_config,
       size_t num_buffers,
-      bool store_processed_video_frames = true);
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors);
 
   // Destruct |image_processor_| if it is created.
   ~ImageProcessorClient();
@@ -57,7 +61,8 @@ class ImageProcessorClient {
 
   // TODO(crbug.com/917951): Add Reset() when we test Reset() test case.
 
-  // Wait until |num_processed| frames are processed.
+  // Wait until |num_processed| frames are processed. Returns false if
+  // |max_wait| is exceeded.
   bool WaitUntilNumImageProcessed(
       size_t num_processed,
       base::TimeDelta max_wait = base::TimeDelta::FromSeconds(5));
@@ -65,18 +70,16 @@ class ImageProcessorClient {
   // Get the number of processed VideoFrames.
   size_t GetNumOfProcessedImages() const;
 
-  // Get processed VideoFrames.
-  // This always returns empty unless |store_processed_video_frames_|
-  // TODO(hiroh): Remove this function and instead check md5sum and order
-  // interactively inside of ImageProcessorClient by passing some
-  // VideoFrameProcessor interface class.
-  std::vector<scoped_refptr<VideoFrame>> GetProcessedImages() const;
+  // Wait until all frame processors have finished processing. Returns whether
+  // processing was successful.
+  bool WaitForFrameProcessors();
 
   // Return whether |image_processor_| invokes ImageProcessor::ErrorCB.
   size_t GetErrorCount() const;
 
  private:
-  explicit ImageProcessorClient(bool store_processed_video_frames);
+  explicit ImageProcessorClient(
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors);
 
   // Create ImageProcessor with |input_config|, |output_config| and
   // |num_buffers|.
@@ -95,7 +98,7 @@ class ImageProcessorClient {
                    scoped_refptr<VideoFrame> output_frame);
 
   // FrameReadyCB for ImageProcessor::Process().
-  void FrameReady(scoped_refptr<VideoFrame> frame);
+  void FrameReady(size_t frame_index, scoped_refptr<VideoFrame> frame);
   // ErrorCB for ImageProcessor.
   void NotifyError();
 
@@ -108,25 +111,23 @@ class ImageProcessorClient {
 
   std::unique_ptr<ImageProcessor> image_processor_;
 
+  // VideoFrameProcessors that will process the video frames produced by
+  // |image_processor_|.
+  std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors_;
+  // Frame index to be assigned to next VideoFrame.
+  size_t next_frame_index_ = 0;
+
   // The thread on which the |image_processor_| is created and destroyed. From
   // the specification of ImageProcessor, ImageProcessor::Process(),
   // FrameReady() and NotifyError() must be run on
   // |image_processor_client_thread_|.
   base::Thread image_processor_client_thread_;
 
-  // If true, ImageProcessorClient stores processed VideoFrame in
-  // |output_video_frames_|.
-  const bool store_processed_video_frames_;
-
   mutable base::Lock output_lock_;
   // This is signaled in FrameReady().
   base::ConditionVariable output_cv_;
   // The number of processed VideoFrame.
   size_t num_processed_frames_ GUARDED_BY(output_lock_);
-  // The collection of processed VideoFrame. It is stored in FrameReady() call
-  // order.
-  std::vector<scoped_refptr<VideoFrame>> output_video_frames_
-      GUARDED_BY(output_lock_);
   // The number of times ImageProcessor::ErrorCB called.
   size_t image_processor_error_count_ GUARDED_BY(output_lock_);
 

@@ -31,11 +31,10 @@ class VideoFrameMapper;
 
 // VideoFrameValidator validates the pixel content of each video frame.
 // It maps a video frame by using VideoFrameMapper, and converts the mapped
-// frame to I420 format to resolve layout differences due to different pixel
-// layouts/alignments on different platforms.
-// Thereafter, it compares md5 values of the mapped and converted buffer with
-// golden md5 values. The golden values are prepared in advance and must be
-// identical on all platforms.
+// frame to |validation_format| to resolve pixel format differences on different
+// platforms. Thereafter, it compares md5 values of the mapped and converted
+// buffer with golden md5 values. The golden values are prepared in advance and
+// must be identical on all platforms.
 // Mapping and verification of a frame is a costly operation and will influence
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
@@ -50,7 +49,8 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // will be compared to the values in |expected_frame_checksums|. If no
   // checksums are provided only checksum calculation will be done.
   static std::unique_ptr<VideoFrameValidator> Create(
-      const std::vector<std::string>& expected_frame_checksums);
+      const std::vector<std::string>& expected_frame_checksums,
+      const VideoPixelFormat validation_format = PIXEL_FORMAT_I420);
 
   ~VideoFrameValidator() override;
 
@@ -76,7 +76,8 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
  private:
   VideoFrameValidator(std::vector<std::string> expected_frame_checksums,
-                      std::unique_ptr<VideoFrameMapper> video_frame_mapper);
+                      std::unique_ptr<VideoFrameMapper> video_frame_mapper,
+                      VideoPixelFormat validation_format);
 
   // Start the frame validation thread.
   bool Initialize();
@@ -87,20 +88,8 @@ class VideoFrameValidator : public VideoFrameProcessor {
   void ProcessVideoFrameTask(const scoped_refptr<const VideoFrame> video_frame,
                              size_t frame_index);
 
-  // This maps |video_frame|, converts it to I420 format.
-  // Returns the resulted I420 frame on success, and otherwise return nullptr.
-  // |video_frame| is unchanged in this method.
-  // TODO(dstaessens@) Move frame helper functions to video_frame_helpers.h.
-  scoped_refptr<VideoFrame> CreateStandardizedFrame(
-      scoped_refptr<const VideoFrame> video_frame) const;
-
   // Returns md5 values of video frame represented by |video_frame|.
-  std::string ComputeMD5FromVideoFrame(
-      scoped_refptr<VideoFrame> video_frame) const;
-
-  // Helper function to save I420 yuv image.
-  bool WriteI420ToFile(size_t frame_index,
-                       const VideoFrame* const video_frame) const;
+  std::string ComputeMD5FromVideoFrame(const VideoFrame* video_frame) const;
 
   // The results of invalid frame data.
   std::vector<MismatchedFrameInfo> mismatched_frames_
@@ -113,6 +102,9 @@ class VideoFrameValidator : public VideoFrameProcessor {
   const std::vector<std::string> expected_frame_checksums_;
 
   const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
+
+  // VideoPixelFormat the VideoFrame will be converted to for validation.
+  const VideoPixelFormat validation_format_;
 
   // The number of frames currently queued for validation.
   size_t num_frames_validating_ GUARDED_BY(frame_validator_lock_);

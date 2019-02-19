@@ -68,9 +68,9 @@ std::unique_ptr<ImageProcessorClient> ImageProcessorClient::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     size_t num_buffers,
-    bool store_processed_video_frames) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto ip_client =
-      base::WrapUnique(new ImageProcessorClient(store_processed_video_frames));
+      base::WrapUnique(new ImageProcessorClient(std::move(frame_processors)));
   if (!ip_client->CreateImageProcessor(input_config, output_config,
                                        num_buffers)) {
     LOG(ERROR) << "Failed to create ImageProcessor";
@@ -79,9 +79,10 @@ std::unique_ptr<ImageProcessorClient> ImageProcessorClient::Create(
   return ip_client;
 }
 
-ImageProcessorClient::ImageProcessorClient(bool store_processed_video_frames)
-    : image_processor_client_thread_("ImageProcessorClientThread"),
-      store_processed_video_frames_(store_processed_video_frames),
+ImageProcessorClient::ImageProcessorClient(
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors)
+    : frame_processors_(std::move(frame_processors)),
+      image_processor_client_thread_("ImageProcessorClientThread"),
       output_cv_(&output_lock_),
       num_processed_frames_(0),
       image_processor_error_count_(0) {
@@ -214,12 +215,15 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
   }
 }
 
-void ImageProcessorClient::FrameReady(scoped_refptr<VideoFrame> frame) {
+void ImageProcessorClient::FrameReady(size_t frame_index,
+                                      scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_THREAD(image_processor_client_thread_checker_);
 
   base::AutoLock auto_lock_(output_lock_);
-  if (store_processed_video_frames_)
-    output_video_frames_.push_back(std::move(frame));
+  // VideoFrame should be processed in FIFO order.
+  EXPECT_EQ(frame_index, num_processed_frames_);
+  for (auto& processor : frame_processors_)
+    processor->ProcessVideoFrame(std::move(frame), frame_index);
   num_processed_frames_++;
   output_cv_.Signal();
 }
@@ -233,26 +237,28 @@ bool ImageProcessorClient::WaitUntilNumImageProcessed(
   // locks again at the end.
   base::AutoLock auto_lock_(output_lock_);
   while (time_waiting < max_wait) {
+    if (num_processed_frames_ >= num_processed)
+      return true;
+
     const base::TimeTicks start_time = base::TimeTicks::Now();
     output_cv_.TimedWait(max_wait);
     time_waiting += base::TimeTicks::Now() - start_time;
-
-    if (num_processed_frames_ >= num_processed)
-      return true;
   }
+
   return false;
+}
+
+bool ImageProcessorClient::WaitForFrameProcessors() {
+  bool success = true;
+  for (auto& processor : frame_processors_)
+    success &= processor->WaitUntilDone();
+
+  return success;
 }
 
 size_t ImageProcessorClient::GetNumOfProcessedImages() const {
   base::AutoLock auto_lock_(output_lock_);
   return num_processed_frames_;
-}
-
-std::vector<scoped_refptr<VideoFrame>>
-ImageProcessorClient::GetProcessedImages() const {
-  LOG_ASSERT(store_processed_video_frames_);
-  base::AutoLock auto_lock_(output_lock_);
-  return output_video_frames_;
 }
 
 size_t ImageProcessorClient::GetErrorCount() const {
@@ -285,10 +291,11 @@ void ImageProcessorClient::ProcessTask(scoped_refptr<VideoFrame> input_frame,
   // base::Unretained(this) and base::ConstRef() for FrameReadyCB is safe here
   // because the callback is executed on |image_processor_client_thread_| which
   // is owned by this class.
-  image_processor_->Process(
-      std::move(input_frame), std::move(output_frame),
-      BindToCurrentLoop(base::BindOnce(&ImageProcessorClient::FrameReady,
-                                       base::Unretained(this))));
+  image_processor_->Process(std::move(input_frame), std::move(output_frame),
+                            BindToCurrentLoop(base::BindOnce(
+                                &ImageProcessorClient::FrameReady,
+                                base::Unretained(this), next_frame_index_)));
+  next_frame_index_++;
 }
 
 }  // namespace test

@@ -680,6 +680,7 @@ test("image_processor_test") {
   deps = [
     ":buildflags",
     ":gpu",
+    "test:frame_validator",
     "test:image_processor",
     "test:render_helpers",
     "//base/test:test_support",

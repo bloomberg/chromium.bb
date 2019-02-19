@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_mapper.h"
@@ -20,15 +21,20 @@ namespace test {
 
 // static
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
-    const std::vector<std::string>& expected_frame_checksums) {
-  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
+    const std::vector<std::string>& expected_frame_checksums,
+    const VideoPixelFormat validation_format) {
+  std::unique_ptr<VideoFrameMapper> video_frame_mapper;
+#if defined(OS_CHROMEOS)
+  video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
     return nullptr;
   }
+#endif
 
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      expected_frame_checksums, std::move(video_frame_mapper)));
+      expected_frame_checksums, std::move(video_frame_mapper),
+      validation_format));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
     return nullptr;
@@ -39,9 +45,11 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 
 VideoFrameValidator::VideoFrameValidator(
     std::vector<std::string> expected_frame_checksums,
-    std::unique_ptr<VideoFrameMapper> video_frame_mapper)
+    std::unique_ptr<VideoFrameMapper> video_frame_mapper,
+    VideoPixelFormat validation_format)
     : expected_frame_checksums_(std::move(expected_frame_checksums)),
       video_frame_mapper_(std::move(video_frame_mapper)),
+      validation_format_(validation_format),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
       frame_validator_cv_(&frame_validator_lock_) {
@@ -116,11 +124,20 @@ void VideoFrameValidator::ProcessVideoFrameTask(
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
 
-  auto standard_frame = CreateStandardizedFrame(video_frame);
-  if (!standard_frame) {
-    return;
+  scoped_refptr<const VideoFrame> validated_frame = video_frame;
+  // If this is a DMABuf-backed memory frame we need to map it before accessing.
+#if defined(OS_LINUX)
+  if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
+    validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
+#endif
+
+  if (validated_frame->format() != validation_format_) {
+    validated_frame =
+        ConvertVideoFrame(validated_frame.get(), validation_format_);
   }
-  std::string computed_md5 = ComputeMD5FromVideoFrame(standard_frame);
+
+  ASSERT_TRUE(validated_frame);
+  std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame.get());
 
   base::AutoLock auto_lock(frame_validator_lock_);
   frame_checksums_.push_back(computed_md5);
@@ -139,24 +156,12 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   frame_validator_cv_.Signal();
 }
 
-scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(
-    scoped_refptr<const VideoFrame> video_frame) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-  auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
-  if (!mapped_frame) {
-    LOG(FATAL) << "Failed to map decoded picture.";
-    return nullptr;
-  }
-
-  return ConvertVideoFrame(mapped_frame.get(), PIXEL_FORMAT_I420);
-}
-
 std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
-    scoped_refptr<VideoFrame> video_frame) const {
+    const VideoFrame* video_frame) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, *video_frame.get());
+  VideoFrame::HashFrameForTesting(&context, *video_frame);
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);
