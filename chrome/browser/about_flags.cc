@@ -3033,6 +3033,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentUseGenericSearchEngineIcon)},
 
+    {"omnibox-ui-show-suffix-on-all-search-suggestions",
+     flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsName,
+     flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentShowSuffixOnAllSearchSuggestions)},
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,

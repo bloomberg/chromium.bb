@@ -2585,6 +2585,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-ui-show-suffix-on-all-search-suggestions",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-ui-vertical-margin",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80

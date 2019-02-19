@@ -30932,6 +30932,8 @@ from previous Chrome versions.
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
+  <int value="-1715180530"
+      label="OmniboxUIExperimentShowSuffixOnAllSearchSuggestions:disabled"/>
   <int value="-1714128884" label="disable-launcher-search-provider-api"/>
   <int value="-1713564656" label="ProtectSyncCredentialOnReauth:enabled"/>
   <int value="-1711751318" label="enable-data-reduction-proxy-lo-fi-preview"/>
@@ -32307,6 +32309,8 @@ from previous Chrome versions.
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
   <int value="637452937" label="ChromeHomeSurvey:enabled"/>
+  <int value="638845342"
+      label="OmniboxUIExperimentShowSuffixOnAllSearchSuggestions:enabled"/>
   <int value="642037198" label="SoleIntegration:disabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644084236" label="CloseButtonsInactiveTabs:enabled"/>
