@@ -2095,9 +2095,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
 #if BUILDFLAG(ENABLE_VR)
-    {"webvr-vsync-align", flag_descriptions::kWebVrVsyncAlignName,
-     flag_descriptions::kWebVrVsyncAlignDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kWebVrVsyncAlign)},
 #if defined(OS_ANDROID)
     {"webxr-render-path", flag_descriptions::kWebXrRenderPathName,
      flag_descriptions::kWebXrRenderPathDescription, kOsAndroid,

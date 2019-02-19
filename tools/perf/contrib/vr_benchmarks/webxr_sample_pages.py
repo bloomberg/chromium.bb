@@ -35,9 +35,8 @@ class WebXrSamplePageSet(VrStorySet):
     super(WebXrSamplePageSet, self).__init__(
         use_fake_pose_tracker=use_fake_pose_tracker)
 
-    # Test cases that use the synthetic cube field page with VSync alignment
-    # turned off.
-    cube_test_cases_no_vsync = [
+    # Test cases that use the synthetic cube field page
+    cube_test_cases = [
       # Standard sample app with no changes.
       ['framebufferScale=1.0'],
       # Increased render scale.
@@ -53,6 +52,5 @@ class WebXrSamplePageSet(VrStorySet):
        'halfOnly=1', 'autorotate=1'],
     ]
 
-    for url_parameters in cube_test_cases_no_vsync:
-      self.AddStory(WebXrSamplePage(self, url_parameters, 'tests/cube-sea',
-          extra_browser_args=['--disable-features=WebVrVsyncAlign']))
+    for url_parameters in cube_test_cases:
+      self.AddStory(WebXrSamplePage(self, url_parameters, 'tests/cube-sea'))

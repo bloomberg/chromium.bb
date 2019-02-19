@@ -52,10 +52,9 @@ class WebVrSamplePageSet(VrStorySet):
     for url_parameters in cube_test_cases:
       # Standard set of pages with defaults
       self.AddStory(WebVrSamplePage(self, url_parameters, 'test-slow-render'))
-      # Set of pages with standardized render size and VSync alignment disabled
+      # Set of pages with standardized render size
       self.AddStory(WebVrSamplePage(self, url_parameters + ['standardSize=1'],
-          'test-slow-render',
-          extra_browser_args=['--disable-features=WebVrVsyncAlign']))
+          'test-slow-render'))
 
     # Test cases that use the 360 video page
     video_test_cases = [

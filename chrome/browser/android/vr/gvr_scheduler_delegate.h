@@ -173,9 +173,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
   SchedulerBrowserRendererInterface* browser_renderer_ = nullptr;
 
-  // Set from feature flags.
-  const bool webvr_vsync_align_;
-
   WebXrPresentationState webxr_;
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;

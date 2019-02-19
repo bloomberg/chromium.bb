@@ -2163,9 +2163,6 @@ extern const char kDcheckIsFatalDescription[];
 
 #if BUILDFLAG(ENABLE_VR)
 
-extern const char kWebVrVsyncAlignName[];
-extern const char kWebVrVsyncAlignDescription[];
-
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 extern const char kOculusVRName[];
 extern const char kOculusVRDescription[];
