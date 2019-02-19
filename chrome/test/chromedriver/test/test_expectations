@@ -24,9 +24,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2743
-    'ContentEditableTest.testShouldBeAbleToTypeIntoTinyMCE',
 ]
 
 _REVISION_READY_TO_RUN_FILTER = {}
