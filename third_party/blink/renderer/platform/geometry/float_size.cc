@@ -39,6 +39,9 @@
 
 namespace blink {
 
+FloatSize::FloatSize(const gfx::SizeF& size)
+    : width_(size.width()), height_(size.height()) {}
+
 FloatSize::FloatSize(const SkSize& size)
     : width_(size.width()), height_(size.height()) {}
 

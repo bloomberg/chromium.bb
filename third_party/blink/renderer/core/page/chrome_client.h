@@ -216,10 +216,10 @@ class CORE_EXPORT ChromeClient
 
   virtual void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) = 0;
 
-  // Returns a custom visible content rect if a viewport override is active.
-  virtual base::Optional<IntRect> VisibleContentRectForPainting() const {
-    return base::nullopt;
-  }
+  // Returns a custom visible rect if a viewport override is active. Requires
+  // the |frame| being painted, but only supports being used for the main frame.
+  virtual void OverrideVisibleRectForMainFrame(LocalFrame& frame,
+                                               IntRect* paint_rect) const {}
 
   // Returns the scale used to convert incoming input events while emulating
   // device metics.

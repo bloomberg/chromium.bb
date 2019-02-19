@@ -63,6 +63,7 @@ class PLATFORM_EXPORT FloatSize {
   constexpr FloatSize() : width_(0), height_(0) {}
   constexpr FloatSize(float width, float height)
       : width_(width), height_(height) {}
+  explicit FloatSize(const gfx::SizeF&);
   explicit FloatSize(const IntSize& size)
       : width_(size.Width()), height_(size.Height()) {}
   FloatSize(const SkSize&);

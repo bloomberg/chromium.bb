@@ -3460,14 +3460,24 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
   // with CompositeAfterPaint.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
-  // Paint the whole rect if "mainFrameClipsContent" is false, meaning that
+  // Paint the whole rect if "MainFrameClipsContent" is false, meaning that
   // WebPreferences::record_whole_document is true.
   if (!frame_->GetSettings()->GetMainFrameClipsContent())
     return;
 
-  paint_rect->Intersect(
-      GetPage()->GetChromeClient().VisibleContentRectForPainting().value_or(
-          IntRect(IntPoint(), Size())));
+  // By default we consider the bounds of the FrameView to be what is considered
+  // visible for the Frame.
+  IntRect visible_rect = IntRect(IntPoint(), Size());
+  // Non-main frames always clip to their FrameView bounds. Main frames can
+  // have this behaviour modified by devtools.
+  if (frame_->IsMainFrame()) {
+    // If devtools is overriding the viewport, then the FrameView's bounds are
+    // not what we should paint, instead we should paint inside the bounds
+    // specified by devtools.
+    GetPage()->GetChromeClient().OverrideVisibleRectForMainFrame(*frame_,
+                                                                 &visible_rect);
+  }
+  paint_rect->Intersect(visible_rect);
 }
 
 void LocalFrameView::DidChangeScrollOffset() {

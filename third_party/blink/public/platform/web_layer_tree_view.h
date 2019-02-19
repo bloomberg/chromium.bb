@@ -49,7 +49,6 @@ class PaintImage;
 }
 
 namespace gfx {
-class Size;
 class Vector2d;
 }  // namespace gfx
 
@@ -76,9 +75,6 @@ class WebLayerTreeView {
   virtual ~WebLayerTreeView() = default;
 
   // View properties ---------------------------------------------------
-
-  // Viewport size is given in physical pixels.
-  virtual gfx::Size GetViewportSize() const = 0;
 
   // Sets the background color for the viewport.
   virtual void SetBackgroundColor(SkColor) {}

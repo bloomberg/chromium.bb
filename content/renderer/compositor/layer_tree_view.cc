@@ -309,10 +309,6 @@ void LayerTreeView::SetNonBlinkManagedRootLayer(
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
 }
 
-gfx::Size LayerTreeView::GetViewportSize() const {
-  return layer_tree_host_->device_viewport_size();
-}
-
 void LayerTreeView::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
 }

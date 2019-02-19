@@ -4699,32 +4699,46 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   TransformationMatrix expected_matrix;
   expected_matrix.MakeIdentity();
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  EXPECT_FALSE(dev_tools_emulator->VisibleContentRectForPainting());
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
+    EXPECT_EQ(IntRect(1, 2, 3, 4), visible_rect);  // Was modified.
+  }
   EXPECT_TRUE(visual_viewport->ContainerLayer()->MasksToBounds());
 
-  // Override applies transform, sets visibleContentRect, and disables
+  // Override applies transform, sets visible rect, and disables
   // visual viewport clipping.
   dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
   expected_matrix.MakeIdentity().Scale(2.f).Translate(-50, -55);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  EXPECT_EQ(IntRect(50, 55, 50, 75),
-            *dev_tools_emulator->VisibleContentRectForPainting());
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
+    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);
+  }
   EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Setting new override discards previous one.
   dev_tools_emulator->ForceViewport(WebFloatPoint(5.4f, 10.5f), 1.5f);
   expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5.4f, -10.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  EXPECT_EQ(IntRect(5, 10, 68, 101),
-            *dev_tools_emulator->VisibleContentRectForPainting());
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
+    EXPECT_EQ(IntRect(5, 10, 68, 101), visible_rect);  // Was modified.
+  }
   EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
-  // Clearing override restores original transform, visibleContentRect and
+  // Clearing override restores original transform, visible rect and
   // visual viewport clipping.
   dev_tools_emulator->ResetViewport();
   expected_matrix.MakeIdentity();
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  EXPECT_FALSE(dev_tools_emulator->VisibleContentRectForPainting());
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
+    EXPECT_EQ(IntRect(1, 2, 3, 4), visible_rect);  // Not modified.
+  }
   EXPECT_TRUE(visual_viewport->ContainerLayer()->MasksToBounds());
 }
 
@@ -4780,9 +4794,12 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .Translate(100, 150)
       .Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  // Page scroll and scale are irrelevant for visibleContentRect.
-  EXPECT_EQ(IntRect(50, 55, 50, 75),
-            *dev_tools_emulator->VisibleContentRectForPainting());
+  // Page scroll and scale are irrelevant for visible rect.
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
+    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+  }
 
   // Transform adapts to scroll changes.
   frame_view->LayoutViewport()->SetScrollOffset(
@@ -4793,9 +4810,12 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .Translate(50, 55)
       .Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  // visibleContentRect doesn't change.
-  EXPECT_EQ(IntRect(50, 55, 50, 75),
-            *dev_tools_emulator->VisibleContentRectForPainting());
+  // Visible rect doesn't change.
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
+    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+  }
 
   // Transform adapts to page scale changes.
   web_view_impl->SetPageScaleFactor(2.f);
@@ -4805,9 +4825,12 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .Translate(50, 55)
       .Scale(1. / 2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  // visibleContentRect doesn't change.
-  EXPECT_EQ(IntRect(50, 55, 50, 75),
-            *dev_tools_emulator->VisibleContentRectForPainting());
+  // Visible rect doesn't change.
+  {
+    IntRect visible_rect(1, 2, 3, 4);
+    dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
+    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+  }
 }
 
 TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
