@@ -117,6 +117,8 @@ component("web_engine_core") {
   sources = [
     "browser/context_impl.cc",
     "browser/context_impl.h",
+    "browser/discarding_event_filter.cc",
+    "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
     "browser/message_port_impl.cc",

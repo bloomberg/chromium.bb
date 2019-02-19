@@ -17,6 +17,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/aura/window_tree_host.h"
@@ -71,6 +72,7 @@ class FrameImpl : public chromium::web::Frame,
   void PostMessage(chromium::web::WebMessage message,
                    std::string target_origin,
                    PostMessageCallback callback) override;
+  void SetEnableInput(bool enable_input) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);
@@ -141,6 +143,7 @@ class FrameImpl : public chromium::web::Frame,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<wm::FocusController> focus_controller_;
 
+  DiscardingEventFilter discarding_event_filter_;
   chromium::web::NavigationEventObserverPtr navigation_observer_;
   chromium::web::NavigationEntry cached_navigation_state_;
   chromium::web::NavigationEvent pending_navigation_event_;
