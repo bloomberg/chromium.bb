@@ -8,10 +8,10 @@
 #include <atomic>
 #include <memory>
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -29,7 +29,6 @@ class SourceStream;
 // ScriptStreamer handles it gracefully.
 class CORE_EXPORT ScriptStreamer final
     : public GarbageCollectedFinalized<ScriptStreamer> {
-  WTF_MAKE_NONCOPYABLE(ScriptStreamer);
   USING_PRE_FINALIZER(ScriptStreamer, Prefinalize);
 
  public:
@@ -185,6 +184,8 @@ class CORE_EXPORT ScriptStreamer final
   // doesn't break assumptions.
   // TODO(hiroshige): Check the state in more general way.
   bool prefinalizer_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptStreamer);
 };
 
 }  // namespace blink

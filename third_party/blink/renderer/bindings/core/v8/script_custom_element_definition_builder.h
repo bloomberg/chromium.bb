@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CUSTOM_ELEMENT_DEFINITION_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CUSTOM_ELEMENT_DEFINITION_BUILDER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition_builder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -19,7 +19,6 @@ class ExceptionState;
 class CORE_EXPORT ScriptCustomElementDefinitionBuilder
     : public CustomElementDefinitionBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ScriptCustomElementDefinitionBuilder);
 
  public:
   ScriptCustomElementDefinitionBuilder(ScriptState*,
@@ -52,6 +51,8 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   v8::Local<v8::Value> v8_form_reset_callback_;
   v8::Local<v8::Value> v8_disabled_state_changed_callback_;
   v8::Local<v8::Value> v8_restore_value_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptCustomElementDefinitionBuilder);
 };
 
 }  // namespace blink

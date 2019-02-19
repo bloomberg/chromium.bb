@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_V8_SCRIPT_VALUE_SERIALIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_V8_SCRIPT_VALUE_SERIALIZER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialization_tag.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_color_params.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -33,7 +33,6 @@ class Transferables;
 class CORE_EXPORT V8ScriptValueSerializer
     : public v8::ValueSerializer::Delegate {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 
  public:
   using Options = SerializedScriptValue::SerializeOptions;
@@ -113,6 +112,8 @@ class CORE_EXPORT V8ScriptValueSerializer
 #if DCHECK_IS_ON()
   bool serialize_invoked_ = false;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(V8ScriptValueSerializer);
 };
 
 // For code testing V8ScriptValueSerializer

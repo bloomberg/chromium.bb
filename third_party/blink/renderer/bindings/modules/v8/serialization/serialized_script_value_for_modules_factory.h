@@ -5,15 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FOR_MODULES_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FOR_MODULES_FACTORY_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class SerializedScriptValueForModulesFactory final
     : public SerializedScriptValueFactory {
   USING_FAST_MALLOC(SerializedScriptValueForModulesFactory);
-  WTF_MAKE_NONCOPYABLE(SerializedScriptValueForModulesFactory);
 
  public:
   SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() {}
@@ -34,6 +33,9 @@ class SerializedScriptValueForModulesFactory final
       UnpackedSerializedScriptValue*,
       v8::Isolate*,
       const SerializedScriptValue::DeserializeOptions&) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SerializedScriptValueForModulesFactory);
 };
 
 }  // namespace blink

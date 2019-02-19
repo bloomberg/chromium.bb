@@ -5,15 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FACTORY_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class CORE_EXPORT SerializedScriptValueFactory {
-  WTF_MAKE_NONCOPYABLE(SerializedScriptValueFactory);
   USING_FAST_MALLOC(SerializedScriptValueFactory);
 
  public:
@@ -65,6 +64,8 @@ class CORE_EXPORT SerializedScriptValueFactory {
   }
 
   static SerializedScriptValueFactory* instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(SerializedScriptValueFactory);
 };
 
 }  // namespace blink

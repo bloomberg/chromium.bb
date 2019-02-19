@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_TRANSFERABLES_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_TRANSFERABLES_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -32,7 +32,6 @@ using TransformStreamArray = HeapVector<Member<TransformStream>>;
 
 class CORE_EXPORT Transferables final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(Transferables);
 
  public:
   Transferables() = default;
@@ -45,6 +44,9 @@ class CORE_EXPORT Transferables final {
   ReadableStreamArray readable_streams;
   WritableStreamArray writable_streams;
   TransformStreamArray transform_streams;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Transferables);
 };
 
 // Along with extending |Transferables| to hold a new kind of transferable

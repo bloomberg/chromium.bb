@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
@@ -34,8 +35,6 @@ namespace blink {
 // (consumer). The main thread prepares the data (copies it from Resource) and
 // the streamer thread feeds it to V8.
 class SourceStreamDataQueue {
-  WTF_MAKE_NONCOPYABLE(SourceStreamDataQueue);
-
  public:
   SourceStreamDataQueue() : finished_(false), have_data_(mutex_) {}
   ~SourceStreamDataQueue() { DiscardQueuedData(); }
@@ -105,6 +104,8 @@ class SourceStreamDataQueue {
   bool finished_ GUARDED_BY(mutex_);
   Mutex mutex_;
   ThreadCondition have_data_ GUARDED_BY(mutex_);
+
+  DISALLOW_COPY_AND_ASSIGN(SourceStreamDataQueue);
 };
 
 // SourceStream implements the streaming interface towards V8. The main
@@ -112,8 +113,6 @@ class SourceStreamDataQueue {
 // actually giving the data (via GetMoreData which is called on a background
 // thread).
 class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
-  WTF_MAKE_NONCOPYABLE(SourceStream);
-
  public:
   SourceStream()
       : v8::ScriptCompiler::ExternalSourceStream(),
@@ -261,6 +260,8 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   SourceStreamDataQueue data_queue_;  // Thread safe.
   size_t queue_lead_position_;        // Only used by v8 thread.
   size_t queue_tail_position_ GUARDED_BY(mutex_);  // Used by both threads.
+
+  DISALLOW_COPY_AND_ASSIGN(SourceStream);
 };
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;

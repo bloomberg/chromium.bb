@@ -50,7 +50,7 @@ class WorkerGlobalScope;
 
 class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
                               public NameClient {
-  WTF_MAKE_NONCOPYABLE(ScheduledAction);
+  DISALLOW_COPY_AND_ASSIGN(ScheduledAction);
 
  public:
   static ScheduledAction* Create(ScriptState*,

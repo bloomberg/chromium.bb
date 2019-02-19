@@ -33,6 +33,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/macros.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -195,11 +197,12 @@ class CallbackPromiseAdapterInternal {
   template <typename S, typename T>
   class CallbackPromiseAdapter final
       : public OnErrorAdapter<WebTypeHolder<S>, WebTypeHolder<T>> {
-    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
-
    public:
     explicit CallbackPromiseAdapter(ScriptPromiseResolver* resolver)
         : OnErrorAdapter<WebTypeHolder<S>, WebTypeHolder<T>>(resolver) {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CallbackPromiseAdapter);
   };
 };
 

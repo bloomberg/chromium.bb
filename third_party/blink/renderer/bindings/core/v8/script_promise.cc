@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -45,8 +46,6 @@ namespace {
 
 class PromiseAllHandler final
     : public GarbageCollectedFinalized<PromiseAllHandler> {
-  WTF_MAKE_NONCOPYABLE(PromiseAllHandler);
-
  public:
   static ScriptPromise All(ScriptState* script_state,
                            const Vector<ScriptPromise>& promises) {
@@ -161,6 +160,8 @@ class PromiseAllHandler final
   // This is cleared when owners of this handler, that is, given promises are
   // settled.
   Vector<ScriptValue> values_;
+
+  DISALLOW_COPY_AND_ASSIGN(PromiseAllHandler);
 };
 
 }  // namespace
