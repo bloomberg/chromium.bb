@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/unguessable_token.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/test/fake_raster_source.h"
@@ -24,6 +25,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -396,6 +398,21 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 }
 
+TEST(DrawQuadTest, CopyVideoHoleDrawQuad) {
+  gfx::Rect visible_rect(40, 50, 30, 20);
+  base::UnguessableToken overlay_id = base::UnguessableToken::Create();
+  CREATE_SHARED_STATE();
+
+  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_id);
+  EXPECT_EQ(DrawQuad::VIDEO_HOLE, copy_quad->material);
+  EXPECT_EQ(visible_rect, copy_quad->visible_rect);
+  EXPECT_EQ(overlay_id, copy_quad->overlay_id);
+
+  CREATE_QUAD_ALL(VideoHoleDrawQuad, overlay_id);
+  EXPECT_EQ(DrawQuad::VIDEO_HOLE, copy_quad->material);
+  EXPECT_EQ(overlay_id, copy_quad->overlay_id);
+}
+
 TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   bool needs_blending = true;
@@ -639,6 +656,15 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
   EXPECT_EQ(resource_id + 1, quad_new->resource_id());
 }
 
+TEST_F(DrawQuadIteratorTest, VideoHoleDrawQuad) {
+  gfx::Rect visible_rect(40, 50, 30, 20);
+  base::UnguessableToken overlay_id = base::UnguessableToken::Create();
+
+  CREATE_SHARED_STATE();
+  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_id);
+  EXPECT_EQ(0, IterateAndCount(quad_new));
+}
+
 TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   gfx::RectF ya_tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
@@ -701,6 +727,9 @@ TEST(DrawQuadTest, LargestQuadType) {
       case DrawQuad::YUV_VIDEO_CONTENT:
         largest = std::max(largest, sizeof(YUVVideoDrawQuad));
         break;
+      case DrawQuad::VIDEO_HOLE:
+        largest = std::max(largest, sizeof(VideoHoleDrawQuad));
+        break;
       case DrawQuad::INVALID:
         break;
     }
@@ -741,6 +770,9 @@ TEST(DrawQuadTest, LargestQuadType) {
         break;
       case DrawQuad::YUV_VIDEO_CONTENT:
         LOG(ERROR) << "YUVVideoDrawQuad " << sizeof(YUVVideoDrawQuad);
+        break;
+      case DrawQuad::VIDEO_HOLE:
+        LOG(ERROR) << "VideoHoleDrawQuad " << sizeof(VideoHoleDrawQuad);
         break;
       case DrawQuad::INVALID:
         break;

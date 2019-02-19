@@ -15,6 +15,7 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -129,6 +130,9 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     case DrawQuad::TILED_CONTENT:
       return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                           candidate);
+    case DrawQuad::VIDEO_HOLE:
+      return FromVideoHoleQuad(
+          resource_provider, VideoHoleDrawQuad::MaterialCast(quad), candidate);
     case DrawQuad::STREAM_VIDEO_CONTENT:
       return FromStreamVideoQuad(resource_provider,
                                  StreamVideoDrawQuad::MaterialCast(quad),
@@ -177,6 +181,8 @@ bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
     case DrawQuad::TEXTURE_CONTENT:
       return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
              ui::ProtectedVideoType::kHardwareProtected;
+    case DrawQuad::VIDEO_HOLE:
+      return true;
     case DrawQuad::YUV_VIDEO_CONTENT:
       return YUVVideoDrawQuad::MaterialCast(quad)->protected_video_type ==
              ui::ProtectedVideoType::kHardwareProtected;
@@ -238,6 +244,26 @@ bool OverlayCandidate::FromDrawQuadResource(
   candidate->is_opaque = !quad->ShouldDrawWithBlending();
 
   candidate->resource_id = resource_id;
+  candidate->transform = overlay_transform;
+
+  return true;
+}
+
+// static
+// For VideoHoleDrawQuad, only calculate geometry information
+// and put it in the |candidate|.
+bool OverlayCandidate::FromVideoHoleQuad(
+    DisplayResourceProvider* resource_provider,
+    const VideoHoleDrawQuad* quad,
+    OverlayCandidate* candidate) {
+  gfx::OverlayTransform overlay_transform = GetOverlayTransform(
+      quad->shared_quad_state->quad_to_target_transform, false);
+  if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
+    return false;
+
+  auto& transform = quad->shared_quad_state->quad_to_target_transform;
+  candidate->display_rect = gfx::RectF(quad->rect);
+  transform.TransformRect(&candidate->display_rect);
   candidate->transform = overlay_transform;
 
   return true;

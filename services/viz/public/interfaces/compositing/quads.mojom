@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/surface_range.mojom";
 import "services/viz/public/interfaces/compositing/shared_quad_state.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -108,6 +109,10 @@ struct YUVVideoQuadState {
   ProtectedVideoState protected_video_type;
 };
 
+struct VideoHoleQuadState {
+  mojo_base.mojom.UnguessableToken overlay_id;
+};
+
 union DrawQuadState {
   DebugBorderQuadState debug_border_quad_state;
   RenderPassQuadState render_pass_quad_state;
@@ -117,6 +122,7 @@ union DrawQuadState {
   TextureQuadState texture_quad_state;
   TileQuadState tile_quad_state;
   YUVVideoQuadState yuv_video_quad_state;
+  VideoHoleQuadState video_hole_quad_state;
 };
 
 struct DrawQuad {

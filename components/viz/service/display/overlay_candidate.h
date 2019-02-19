@@ -29,6 +29,7 @@ class DisplayResourceProvider;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
+class VideoHoleDrawQuad;
 
 class VIZ_SERVICE_EXPORT OverlayCandidate {
  public:
@@ -130,6 +131,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static bool FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);
+  static bool FromVideoHoleQuad(DisplayResourceProvider* resource_provider,
+                                const VideoHoleDrawQuad* quad,
+                                OverlayCandidate* candidate);
 };
 
 class VIZ_SERVICE_EXPORT OverlayCandidateList

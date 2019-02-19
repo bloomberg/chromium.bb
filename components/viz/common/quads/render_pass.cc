@@ -26,6 +26,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/traced_value.h"
 
@@ -297,6 +298,9 @@ DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(const DrawQuad* quad) {
       break;
     case DrawQuad::SURFACE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<SurfaceDrawQuad>(quad);
+      break;
+    case DrawQuad::VIDEO_HOLE:
+      CopyFromAndAppendTypedDrawQuad<VideoHoleDrawQuad>(quad);
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
       CopyFromAndAppendTypedDrawQuad<YUVVideoDrawQuad>(quad);
