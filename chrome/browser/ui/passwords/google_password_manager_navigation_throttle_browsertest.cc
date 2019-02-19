@@ -71,7 +71,7 @@ class GooglePasswordManagerNavigationThrottleTest : public SyncTest {
     feature_list_.InitAndEnableFeature(
         password_manager::features::kGooglePasswordManager);
 
-    ProfileSyncServiceFactory::GetForProfile(profile)
+    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
         ->OverrideNetworkResourcesForTest(
             std::make_unique<fake_server::FakeServerNetworkResources>(
                 GetFakeServer()->AsWeakPtr()));

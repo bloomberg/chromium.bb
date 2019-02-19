@@ -108,9 +108,9 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 }
 
 // static
-ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
+syncer::SyncService* ProfileSyncServiceFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<ProfileSyncService*>(GetSyncServiceForProfile(profile));
+  return GetSyncServiceForProfile(profile);
 }
 
 // static
@@ -122,6 +122,12 @@ syncer::SyncService* ProfileSyncServiceFactory::GetSyncServiceForProfile(
 
   return static_cast<syncer::SyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+
+// static
+ProfileSyncService*
+ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(Profile* profile) {
+  return static_cast<ProfileSyncService*>(GetForProfile(profile));
 }
 
 ProfileSyncServiceFactory::ProfileSyncServiceFactory()

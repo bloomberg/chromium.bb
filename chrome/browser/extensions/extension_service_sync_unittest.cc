@@ -344,7 +344,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // The user has enabled sync.
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete();
 
@@ -380,7 +380,7 @@ TEST_F(ExtensionServiceSyncTest, ReenableDisabledExtensionFromSync) {
   InitializeEmptyExtensionService();
 
   // Enable sync.
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete();
 
@@ -462,7 +462,7 @@ TEST_F(ExtensionServiceSyncTest,
   InitializeEmptyExtensionService();
 
   // Enable sync.
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete();
 
@@ -528,7 +528,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // The user has enabled sync.
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
@@ -2631,7 +2631,7 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
     InitializeEmptyExtensionService();
 
     // Enable sync.
-    browser_sync::ProfileSyncService* sync_service =
+    syncer::SyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile());
     sync_service->GetUserSettings()->SetFirstSetupComplete();
 

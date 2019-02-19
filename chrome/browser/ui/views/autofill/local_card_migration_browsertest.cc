@@ -137,7 +137,8 @@ class LocalCardMigrationBrowserTest
         "components/test/data/autofill");
     embedded_test_server()->StartAcceptingConnections();
 
-    ProfileSyncServiceFactory::GetForProfile(browser()->profile())
+    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+        browser()->profile())
         ->OverrideNetworkResourcesForTest(
             std::make_unique<fake_server::FakeServerNetworkResources>(
                 GetFakeServer()->AsWeakPtr()));

@@ -16,7 +16,8 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {
@@ -144,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   Profile* profile = GetProfile(0);
   app_list::AppListSyncableService* service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   const size_t kNumApps = 5;

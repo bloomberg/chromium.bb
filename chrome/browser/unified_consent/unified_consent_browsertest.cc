@@ -30,7 +30,7 @@ class UnifiedConsentBrowserTest : public SyncTest {
 
   void EnableSync() {
     Profile* profile = browser()->profile();
-    ProfileSyncServiceFactory::GetForProfile(profile)
+    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
         ->OverrideNetworkResourcesForTest(
             std::make_unique<fake_server::FakeServerNetworkResources>(
                 GetFakeServer()->AsWeakPtr()));
