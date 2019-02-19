@@ -82,6 +82,28 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
   return ids_string;
 }
 
+std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
+    IDCollectionKey key) {
+  InitVariationIDsCacheIfNeeded();
+
+  // Get all the active variation ids while holding the lock.
+  std::set<VariationIDEntry> all_variation_ids;
+  {
+    base::AutoLock scoped_lock(lock_);
+    all_variation_ids = GetAllVariationIds();
+  }
+
+  // Copy the requested variations to the output vector. Note that the ids will
+  // be in sorted order because they're coming from a std::set.
+  std::vector<VariationID> result;
+  result.reserve(all_variation_ids.size());
+  for (const VariationIDEntry& entry : all_variation_ids) {
+    if (entry.second == key)
+      result.push_back(entry.first);
+  }
+  return result;
+}
+
 VariationsHttpHeaderProvider::ForceIdsResult
 VariationsHttpHeaderProvider::ForceVariationIds(
     const std::vector<std::string>& variation_ids,

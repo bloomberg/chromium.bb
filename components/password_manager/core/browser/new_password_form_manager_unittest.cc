@@ -338,6 +338,7 @@ class NewPasswordFormManagerTest : public testing::Test {
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
+
   // Define |fetcher_| before |form_manager_|, because the former needs to
   // outlive the latter.
   std::unique_ptr<FakeFormFetcher> fetcher_;

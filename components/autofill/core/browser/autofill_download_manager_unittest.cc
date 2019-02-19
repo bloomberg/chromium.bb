@@ -38,6 +38,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -127,7 +128,7 @@ bool GetUploadRequestProtoFromRequest(
 // The responses in test are out of order and verify: successful query request,
 // successful upload request, failed upload request.
 class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
-                                    public testing::Test {
+                                    public ::testing::Test {
  public:
   AutofillDownloadManagerTest()
       : test_shared_loader_factory_(
@@ -186,6 +187,7 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
     ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {}
   };
 
+  ScopedActiveAutofillExperiments scoped_active_autofill_experiments;
   base::test::ScopedTaskEnvironment task_environment_;
   std::list<ResponseData> responses_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -1024,6 +1026,11 @@ class AutofillServerCommunicationTest
   void TearDown() override {
     if (server_.Started())
       ASSERT_TRUE(server_.ShutdownAndWaitUntilComplete());
+
+    auto* variations_http_header_provider =
+        variations::VariationsHttpHeaderProvider::GetInstance();
+    if (variations_http_header_provider != nullptr)
+      variations_http_header_provider->ResetForTesting();
   }
 
   // AutofillDownloadManager::Observer implementation.
@@ -1098,6 +1105,7 @@ class AutofillServerCommunicationTest
     EXPECT_EQ(run_loop_, nullptr);
     run_loop_ = std::make_unique<base::RunLoop>();
 
+    ScopedActiveAutofillExperiments scoped_active_autofill_experiments;
     AutofillDownloadManager download_manager(driver_.get(), this);
     bool succeeded =
         download_manager.StartQueryRequest(ToRawPointerVector(form_structures));
@@ -1115,6 +1123,7 @@ class AutofillServerCommunicationTest
     EXPECT_EQ(run_loop_, nullptr);
     run_loop_ = std::make_unique<base::RunLoop>();
 
+    ScopedActiveAutofillExperiments scoped_active_autofill_experiments;
     AutofillDownloadManager download_manager(driver_.get(), this);
     bool succeeded = download_manager.StartUploadRequest(
         form, form_was_autofilled, available_field_types, login_form_signature,
@@ -1221,10 +1230,80 @@ TEST_P(AutofillQueryTest, CacheableResponse) {
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
   }
 
-  // Query again the next day. This should go to the cache, since the max-age
-  // for the cached response is 2 days.
+  // Query again. This should go to the cache, since the max-age for the cached
+  // response is 2 days.
   {
     SCOPED_TRACE("Second Query");
+    base::HistogramTester histogram;
+    call_count_ = 0;
+    ASSERT_TRUE(SendQueryRequest(form_structures));
+    EXPECT_EQ(0u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
+    histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
+    histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_HIT, 1);
+  }
+}
+
+TEST_P(AutofillQueryTest, SendsExperiment) {
+  FormFieldData field;
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
+  field.form_control_type = "text";
+
+  FormData form;
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  // Query for the form. This should go to the embedded server.
+  {
+    SCOPED_TRACE("First Query");
+    base::HistogramTester histogram;
+    call_count_ = 0;
+    ASSERT_TRUE(SendQueryRequest(form_structures));
+    EXPECT_EQ(1u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
+    histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
+    histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+  }
+
+  // Add experiment/variation idd from the range reserved for autofill.
+  auto* variations_http_header_provider =
+      variations::VariationsHttpHeaderProvider::GetInstance();
+  ASSERT_TRUE(variations_http_header_provider != nullptr);
+  variations_http_header_provider->ForceVariationIds(
+      {"t3314883", "t3312923", "t3314885"},  // first two valid, out-of-order
+      {});
+
+  // Query again. This should go to the embedded server since it's not the same
+  // as the previously cached query.
+  {
+    SCOPED_TRACE("Second Query");
+    base::HistogramTester histogram;
+    call_count_ = 0;
+    payloads_.clear();
+    ASSERT_TRUE(SendQueryRequest(form_structures));
+    EXPECT_EQ(1u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
+    histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
+    histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+
+    ASSERT_EQ(1u, payloads_.size());
+    AutofillQueryContents query_contents;
+    ASSERT_TRUE(query_contents.ParseFromString(payloads_[0]));
+    ASSERT_EQ(2, query_contents.experiments_size());
+    EXPECT_EQ(3312923, query_contents.experiments(0));
+    EXPECT_EQ(3314883, query_contents.experiments(1));
+  }
+
+  // Query a third time (will experiments still enabled). This should go to the
+  // cache.
+  {
+    SCOPED_TRACE("Third Query");
     base::HistogramTester histogram;
     call_count_ = 0;
     ASSERT_TRUE(SendQueryRequest(form_structures));
@@ -1622,19 +1701,29 @@ TEST_P(AutofillUploadTest, Throttling) {
 
 TEST_P(AutofillUploadTest, ThrottlingDisabled) {
   ASSERT_NE(DISABLED, GetParam());
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitWithFeatures(
+      // Enabled.
+      {},
+      // Disabled
+      {features::kAutofillUploadThrottling,
+       features::kAutofillEnforceMinRequiredFieldsForUpload});
 
   FormData form;
+  FormData small_form;
   FormFieldData field;
 
   field.label = UTF8ToUTF16("First Name:");
   field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
+  small_form.fields.push_back(field);
 
   field.label = UTF8ToUTF16("Last Name:");
   field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
+  small_form.fields.push_back(field);
 
   field.label = UTF8ToUTF16("Email:");
   field.name = UTF8ToUTF16("email");
@@ -1643,15 +1732,16 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
 
   AutofillDownloadManager download_manager(driver_.get(), this);
   FormStructure form_structure(form);
-
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(features::kAutofillUploadThrottling);
+  FormStructure small_form_structure(small_form);
 
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
     form_structure.set_submission_source(submission_source);
+    small_form_structure.set_submission_source(submission_source);
+
+    payloads_.clear();
 
     // The first attempt should succeed.
     EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
@@ -1662,18 +1752,44 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
     // The third attempt should also succeed
     EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
 
-    // No throttling metrics should be logged.
-    EXPECT_TRUE(histogram_tester.GetAllSamples("Autofill.UploadEvent").empty());
-    EXPECT_TRUE(
-        histogram_tester
-            .GetAllSamples(AutofillMetrics::SubmissionSourceToUploadEventMetric(
-                submission_source))
-            .empty());
+    // The first small form attempt should succeed
+    EXPECT_TRUE(SendUploadRequest(small_form_structure, true, {}, "", true));
+
+    // The second small form attempt should be throttled, even if throttling
+    // is disabled.
+    EXPECT_FALSE(SendUploadRequest(small_form_structure, true, {}, "", true));
+
+    // All uploads were allowed..
+    histogram_tester.ExpectBucketCount("Autofill.UploadEvent", 1, 4);
+    histogram_tester.ExpectBucketCount(
+        AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
+        1, 4);
+    histogram_tester.ExpectBucketCount(
+        AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
+        0, 1);
+
+    // The last middle two uploads were marked as throttle-able.
+    ASSERT_EQ(4u, payloads_.size());
+    for (size_t i = 0; i < payloads_.size(); ++i) {
+      AutofillUploadContents upload_contents;
+      ASSERT_TRUE(upload_contents.ParseFromString(payloads_[i]));
+      EXPECT_EQ(upload_contents.was_throttleable(), (i == 1 || i == 2))
+          << "Wrong was_throttleable value for upload " << i;
+      EXPECT_FALSE(upload_contents.has_randomized_form_metadata());
+      for (const auto& field : upload_contents.field()) {
+        EXPECT_FALSE(field.has_randomized_field_metadata());
+      }
+    }
   }
 }
 
 TEST_P(AutofillUploadTest, PeriodicReset) {
   ASSERT_NE(DISABLED, GetParam());
+
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeatureWithParameters(
+      features::kAutofillUploadThrottling,
+      {{switches::kAutofillUploadThrottlingPeriodInDays, "16"}});
 
   FormData form;
   FormFieldData field;
@@ -1708,11 +1824,11 @@ TEST_P(AutofillUploadTest, PeriodicReset) {
   EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
 
   // Advance the clock, but not past the reset period. The pref won't reset,
-  // so the upload should never be sent.
-  test_clock.Advance(base::TimeDelta::FromDays(27));
+  // so the upload should not be sent.
+  test_clock.Advance(base::TimeDelta::FromDays(15));
   EXPECT_FALSE(SendUploadRequest(form_structure, true, {}, "", true));
 
-  // Advance the clock beyond the reset period. The pref should bfde reset and
+  // Advance the clock beyond the reset period. The pref should be reset and
   // the upload should succeed.
   test_clock.Advance(base::TimeDelta::FromDays(2));  // Total = 29
   EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
