@@ -234,6 +234,18 @@ const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery{
     "OmniboxUIExperimentBlueSearchLoopAndSearchQuery",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to change the color of text in navigation suggestions. It
+// changes title text from black to blue, and URL text from blue to gray.
+const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions{
+    "OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to change the color of text in navigation suggestions. It
+// changes title text from black to blue.
+const base::Feature kUIExperimentBlueTitlesOnPageSuggestions{
+    "OmniboxUIExperimentBlueTitlesOnPageSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to show a " - Google Search", " - Bing Search", etc. suffix on
 // all search suggestions instead of just the first one in each cluster.
 const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
