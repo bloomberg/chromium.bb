@@ -361,14 +361,7 @@ void ProfileSyncService::AccountStateChanged() {
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
-#if !defined(OS_CHROMEOS)
-    // TODO(crbug.com/814787): SyncAuthManager shouldn't call us again if we
-    // already have the signed-in account, and hence we shouldn't have an engine
-    // here, but some tests on ChromeOS set the account without notifying, which
-    // get us into an inconsistent state. Since calling TryStart() again in that
-    // case isn't harmful, skip the DCHECK on ChromeOS for now.
     DCHECK(!engine_);
-#endif
     startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
   }
   for (auto* provider : invalidations_identity_providers_) {
