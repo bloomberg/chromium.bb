@@ -7,7 +7,7 @@
 [
     Constructor,
     Serializable,
-    OriginTrialEnabled=ShapeDetection
+    RuntimeEnabled=ShapeDetection
 ] interface DetectedBarcode {
     // TODO(mcasas): Implement missing fields. https://crbug.com/646083
     [SameObject] readonly attribute DOMString rawValue;
