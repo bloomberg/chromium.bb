@@ -81,6 +81,7 @@ void NewTabPageTabHelper::Deactivate() {
 }
 
 bool NewTabPageTabHelper::IgnoreLoadRequests() const {
+  DCHECK(active_);
   return ignore_load_requests_;
 }
 
