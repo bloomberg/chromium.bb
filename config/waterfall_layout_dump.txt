@@ -622,7 +622,6 @@
   amd64-generic-paladin-tryjob
   amd64-generic-postsubmit-tryjob
   amd64-generic-pre-cq
-  amd64-generic-telem-chromium-pfq-informational-tryjob
   amd64-generic-telemetry-tryjob
   amd64-generic-tot-asan-informational-tryjob
   amd64-generic-tot-chromium-pfq-informational-tryjob

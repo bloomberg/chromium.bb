@@ -439,19 +439,6 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
-      'telemetry',
-      display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
-      build_type=constants.INCREMENTAL_TYPE,
-      uprev=False,
-      overlays=constants.PUBLIC_OVERLAYS,
-      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                        test_suite='telemetry_unit_server',
-                                        # Add an extra 60 minutes.
-                                        timeout=120 * 60)],
-      description='Telemetry Builds',
-  )
-
-  site_config.AddTemplate(
       'external_chromium_pfq',
       build_type=constants.CHROME_PFQ_TYPE,
       uprev=False,
@@ -520,6 +507,16 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'chrome_pfq_cheets_informational',
       site_config.templates.chrome_pfq_informational,
+  )
+
+  site_config.AddTemplate(
+      'telemetry',
+      site_config.templates.chromium_pfq_informational,
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='telemetry_unit_server',
+                                        # Add an extra 60 minutes.
+                                        timeout=120 * 60)],
+      description='Telemetry Builds',
   )
 
   site_config.AddTemplate(
@@ -1193,7 +1190,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards_dict['generic_kernel_boards'],
       board_configs,
       site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14', 'kernel-4_19']),
+      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
+                                           'kernel-4_19']),
   )
   site_config.AddForBoards(
       'no-vmtest-pre-cq',
@@ -2721,15 +2719,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _chrome_perf_boards,
       internal_board_configs,
       site_config.templates.chrome_perf,
-  )
-
-  site_config.AddForBoards(
-      'telem-chromium-pfq-informational',
-      ['amd64-generic'],
-      internal_board_configs,
-      site_config.templates.chromium_pfq_informational,
-      site_config.templates.telemetry,
-      site_config.templates.chrome_try,
   )
 
   _tot_chromium_pfq_informational_swarming_boards = frozenset([
