@@ -12,12 +12,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
-namespace {
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(exo::InputMethodSurface*,
-                                   kInputMethodSurface,
-                                   nullptr);
-}
-
+DEFINE_UI_CLASS_PROPERTY_KEY(exo::InputMethodSurface*,
+                             kInputMethodSurface,
+                             nullptr);
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::InputMethodSurface*);
 
 namespace exo {
