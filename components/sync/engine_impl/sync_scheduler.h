@@ -38,15 +38,6 @@ struct ConfigurationParams {
   base::Closure ready_task;
 };
 
-struct ClearParams {
-  explicit ClearParams(const base::Closure& report_success_task);
-  ClearParams(const ClearParams& other);
-  ~ClearParams();
-
-  // Callback to invoke on successful completion.
-  base::Closure report_success_task;
-};
-
 // A class to schedule syncer tasks intelligently.
 class SyncScheduler : public SyncCycle::Delegate {
  public:
@@ -56,10 +47,6 @@ class SyncScheduler : public SyncCycle::Delegate {
     // specific type only, and not continue syncing until we are moved into
     // normal mode.
     CONFIGURATION_MODE,
-    // This mode is used to issue a clear server data command.  The scheduler
-    // may only transition to this mode from the CONFIGURATION_MODE.  When in
-    // this mode, the only schedulable operation is |SchedulerClearServerData|.
-    CLEAR_SERVER_DATA_MODE,
     // Resumes polling and allows nudges, drops configuration tasks.  Runs
     // through entire sync cycle.
     NORMAL_MODE,
@@ -85,11 +72,6 @@ class SyncScheduler : public SyncCycle::Delegate {
   // called when configuration finishes.
   // Note: must already be in CONFIGURATION mode.
   virtual void ScheduleConfiguration(const ConfigurationParams& params) = 0;
-
-  // Schedules clear of server data in preparation for transitioning to
-  // passphrase encryption. The scheduler must be in CLEAR_SERVER_DATA_MODE
-  // before calling this method.
-  virtual void ScheduleClearServerData(const ClearParams& params) = 0;
 
   // Request that the syncer avoid starting any new tasks and prepare for
   // shutdown.

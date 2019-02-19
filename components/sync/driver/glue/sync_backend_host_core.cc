@@ -597,15 +597,6 @@ void SyncBackendHostCore::SaveChanges() {
   sync_manager_->SaveChanges();
 }
 
-void SyncBackendHostCore::DoClearServerData(
-    const base::Closure& frontend_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Closure callback =
-      base::Bind(&SyncBackendHostCore::ClearServerDataDone,
-                 weak_ptr_factory_.GetWeakPtr(), frontend_callback);
-  sync_manager_->ClearServerData(callback);
-}
-
 void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
                                                bool empty_jar,
                                                const base::Closure& callback) {
@@ -631,13 +622,6 @@ bool SyncBackendHostCore::HasUnsyncedItemsForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_manager_);
   return sync_manager_->HasUnsyncedItemsForTest();
-}
-
-void SyncBackendHostCore::ClearServerDataDone(
-    const base::Closure& frontend_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE, &SyncEngineImpl::ClearServerDataDoneOnFrontendLoop,
-             frontend_callback);
 }
 
 }  // namespace syncer

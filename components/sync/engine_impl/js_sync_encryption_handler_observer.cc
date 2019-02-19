@@ -105,9 +105,6 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseTypeChanged(
   HandleJsEvent(FROM_HERE, "onPassphraseTypeChanged", JsEventDetails(&details));
 }
 
-void JsSyncEncryptionHandlerObserver::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {}
-
 void JsSyncEncryptionHandlerObserver::HandleJsEvent(
     const base::Location& from_here,
     const std::string& name,

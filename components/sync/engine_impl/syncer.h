@@ -69,11 +69,6 @@ class Syncer {
   // otherwise.
   virtual bool PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle);
 
-  // Posts a ClearServerData command.
-  // Returns: false if an error occurred and retries should backoff, true
-  // otherwise.
-  virtual bool PostClearServerData(SyncCycle* cycle);
-
  private:
   bool DownloadAndApplyUpdates(ModelTypeSet* request_types,
                                SyncCycle* cycle,

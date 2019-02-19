@@ -84,8 +84,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override;
 
   // Gets the set of enabled types.
   ModelTypeSet GetEnabledTypes() const;

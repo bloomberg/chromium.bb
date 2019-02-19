@@ -67,8 +67,6 @@ class DebugInfoEventListener : public SyncManager::Observer,
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time explicit_passphrase_time) override;
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override;
 
   // Sync manager events.
   void OnNudgeFromDatatype(ModelType datatype);

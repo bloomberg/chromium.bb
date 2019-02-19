@@ -23,8 +23,6 @@ cr.define('chrome.sync', function() {
       'onActionableError',
       'onChangesApplied',
       'onChangesComplete',
-      'onClearServerDataFailed',
-      'onClearServerDataSucceeded',
       'onConnectionStatusChange',
       'onEncryptedTypesChanged',
       'onEncryptionComplete',

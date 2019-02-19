@@ -33,7 +33,6 @@
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/backend_migrator.h"
-#include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
@@ -303,19 +302,6 @@ void ProfileSyncService::Initialize() {
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncClearDataOnPassphraseEncryption) &&
-      sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
-    DCHECK(CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false));
-    // We are restarting catchup configuration after browser restart.
-    UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
-                              syncer::CLEAR_SERVER_DATA_RETRIED,
-                              syncer::CLEAR_SERVER_DATA_MAX);
-
-    crypto_.BeginConfigureCatchUpBeforeClear();
-    return;
-  }
-
   if (engine_)
     engine_->StartSyncingWithServer();
 
@@ -1086,47 +1072,11 @@ void ProfileSyncService::OnActionableError(
     case syncer::RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(syncer::DISABLE_SYNC);
       startup_controller_->TryStart(IsSetupInProgress());
-      UMA_HISTOGRAM_ENUMERATION(
-          "Sync.ClearServerDataEvents",
-          syncer::CLEAR_SERVER_DATA_RESET_LOCAL_DATA_RECEIVED,
-          syncer::CLEAR_SERVER_DATA_MAX);
       break;
     case syncer::UNKNOWN_ACTION:
       NOTREACHED();
   }
   NotifyObservers();
-}
-
-void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  engine_->ClearServerData(
-      base::BindRepeating(&ProfileSyncService::OnClearServerDataDone,
-                          sync_enabled_weak_factory_.GetWeakPtr()));
-}
-
-void ProfileSyncService::OnClearServerDataDone() {
-  DCHECK(sync_prefs_.GetPassphraseEncryptionTransitionInProgress());
-  sync_prefs_.SetPassphraseEncryptionTransitionInProgress(false);
-
-  // Call to ClearServerData generates new keystore key on the server. This
-  // makes keystore bootstrap token invalid. Let's clear it from preferences.
-  sync_prefs_.SetKeystoreEncryptionBootstrapToken(std::string());
-
-  // Shutdown sync, delete the Directory, then restart, restoring the cached
-  // nigori state.
-  ShutdownImpl(syncer::DISABLE_SYNC);
-  startup_controller_->TryStart(IsSetupInProgress());
-  UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
-                            syncer::CLEAR_SERVER_DATA_SUCCEEDED,
-                            syncer::CLEAR_SERVER_DATA_MAX);
-}
-
-void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Sync has a restriction that the engine must be in configuration mode
-  // in order to run clear server data.
-  engine_->StartConfiguration();
-  engine_->ClearServerData(callback);
 }
 
 void ProfileSyncService::OnConfigureDone(
@@ -1165,12 +1115,6 @@ void ProfileSyncService::OnConfigureDone(
 
   // Handle unrecoverable error.
   if (result.status != DataTypeManager::OK) {
-    if (result.was_catch_up_configure) {
-      // Record catchup configuration failure.
-      UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
-                                syncer::CLEAR_SERVER_DATA_CATCHUP_FAILED,
-                                syncer::CLEAR_SERVER_DATA_MAX);
-    }
     // Something catastrophic had happened. We should only have one
     // error representing it.
     syncer::SyncError error =
@@ -1211,11 +1155,6 @@ void ProfileSyncService::OnConfigureDone(
     // configuring something.  It will be up to the migrator to call
     // StartSyncingWithServer() if migration is now finished.
     migrator_->OnConfigureDone(result);
-    return;
-  }
-
-  if (result.was_catch_up_configure) {
-    ClearAndRestartSyncForPassphraseEncryption();
     return;
   }
 
@@ -1411,8 +1350,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
                             base::Unretained(this)));
 
     // Override reason if no configuration has completed ever.
-    if (is_first_time_sync_configure_ &&
-        reason != syncer::CONFIGURE_REASON_CATCH_UP) {
+    if (is_first_time_sync_configure_) {
       configure_context.reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
     }
   }

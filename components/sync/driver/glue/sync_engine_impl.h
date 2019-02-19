@@ -87,7 +87,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void DisableProtocolEventForwarding() override;
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
-  void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
                           const base::Closure& callback) override;
@@ -188,9 +187,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
   void HandleConnectionStatusChangeOnFrontendLoop(ConnectionStatus status);
-
-  void ClearServerDataDoneOnFrontendLoop(
-      const base::Closure& frontend_callback);
 
   void OnCookieJarChangedDoneOnFrontendLoop(const base::Closure& callback);
 
