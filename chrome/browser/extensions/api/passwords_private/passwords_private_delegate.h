@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"

@@ -4,7 +4,6 @@
 
 #include "chromeos/network/network_certificate_handler.h"
 
-#include "base/observer_list_threadsafe.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/certificate_helper.h"
 #include "net/base/hash_value.h"
