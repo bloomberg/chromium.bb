@@ -117,7 +117,8 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     const std::string& password,
     SigninType signin_type)
     : profile_(profile),
-      service_(ProfileSyncServiceFactory::GetForProfile(profile)),
+      service_(ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+          profile)),
       username_(username),
       password_(password),
       signin_type_(signin_type),

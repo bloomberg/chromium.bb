@@ -240,7 +240,7 @@ class UkmBrowserTestBase : public SyncTest {
  protected:
   std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
       Profile* profile) {
-    ProfileSyncServiceFactory::GetForProfile(profile)
+    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
         ->OverrideNetworkResourcesForTest(
             std::make_unique<fake_server::FakeServerNetworkResources>(
                 GetFakeServer()->AsWeakPtr()));
@@ -1104,7 +1104,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
 
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service->GetTransportState());
@@ -1128,7 +1128,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   // CONNECTION_OK.
   sync_service->TriggerRefresh(syncer::Intersection(
       sync_service->GetActiveDataTypes(), syncer::ProtocolTypes()));
-  SyncConnectionOkChecker connection_ok(sync_service);
+  SyncConnectionOkChecker connection_ok(
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile));
   ASSERT_TRUE(connection_ok.Wait());
 
   // History Sync is now not active anymore, but (maybe surprisingly) TYPED_URLS
@@ -1170,7 +1171,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       InitializeProfileForSync(profile);
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   secondary_account_helper::SignInSecondaryAccount(

@@ -8,11 +8,12 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -23,11 +24,11 @@ bool IsFlagEnabled() {
 }
 
 bool IsUserSyncTypeEnabled(Profile* profile) {
-  browser_sync::ProfileSyncService* profile_sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return profile_sync_service &&
-         (profile_sync_service->GetUserSettings()->IsSyncEverythingEnabled() ||
-          profile_sync_service->GetUserSettings()->GetChosenDataTypes().Has(
+  return sync_service &&
+         (sync_service->GetUserSettings()->IsSyncEverythingEnabled() ||
+          sync_service->GetUserSettings()->GetChosenDataTypes().Has(
               syncer::SEND_TAB_TO_SELF));
 }
 

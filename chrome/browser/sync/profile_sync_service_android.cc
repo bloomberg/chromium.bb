@@ -107,7 +107,8 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
 
   sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile_->GetPrefs());
 
-  sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
+  sync_service_ =
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile_);
 }
 
 bool ProfileSyncServiceAndroid::Init() {

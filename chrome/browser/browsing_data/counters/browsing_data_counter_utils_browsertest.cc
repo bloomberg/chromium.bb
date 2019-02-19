@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
   Profile* profile = browser()->profile();
 
   browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
 
   sync_service->OverrideNetworkResourcesForTest(
       std::make_unique<fake_server::FakeServerNetworkResources>(

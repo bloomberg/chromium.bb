@@ -66,7 +66,8 @@ class LocalSyncTest : public InProcessBrowserTest {
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+          browser()->profile());
 
   // Wait until the first sync cycle is completed.
   ASSERT_TRUE(SyncActiveChecker(service).Wait());

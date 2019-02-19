@@ -526,7 +526,8 @@ std::vector<ProfileSyncServiceHarness*> SyncTest::GetSyncClients() {
 }
 
 ProfileSyncService* SyncTest::GetSyncService(int index) {
-  return ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
+  return ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+      GetProfile(index));
 }
 
 std::vector<ProfileSyncService*> SyncTest::GetSyncServices() {
@@ -643,7 +644,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
   // already exist.
   ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+          GetProfile(index));
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
