@@ -22,6 +22,8 @@ class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
   // ContentBrowserClient overrides.
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::string GetProduct() const override;
   std::string GetUserAgent() const override;
 
  private:

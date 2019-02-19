@@ -123,6 +123,8 @@ component("web_engine_core") {
     "browser/frame_impl.h",
     "browser/message_port_impl.cc",
     "browser/message_port_impl.h",
+    "browser/web_engine_devtools_manager_delegate.cc",
+    "browser/web_engine_devtools_manager_delegate.h",
     "browser/webrunner_browser_context.cc",
     "browser/webrunner_browser_context.h",
     "browser/webrunner_browser_main.cc",

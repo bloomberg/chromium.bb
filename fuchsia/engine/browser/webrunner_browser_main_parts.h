@@ -12,20 +12,22 @@
 #include "base/optional.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/webrunner_browser_context.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace display {
 class Screen;
 }
 
-class WebRunnerBrowserContext;
-
 class WebRunnerBrowserMainParts : public content::BrowserMainParts {
  public:
   explicit WebRunnerBrowserMainParts(zx::channel context_channel);
   ~WebRunnerBrowserMainParts() override;
 
-  ContextImpl* context() { return context_service_.get(); }
+  ContextImpl* context() const { return context_service_.get(); }
+  content::BrowserContext* browser_context() const {
+    return browser_context_.get();
+  }
 
   // content::BrowserMainParts overrides.
   void PreMainMessageLoopRun() override;
