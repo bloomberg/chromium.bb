@@ -3753,7 +3753,7 @@
             ],
             "experiments": [
                 {
-                    "name": "enabled",
+                    "name": "Enabled",
                     "params": {
                         "HighLoadedTabCount": "1000",
                         "ShouldPeriodicallyUnfreeze": "true",
