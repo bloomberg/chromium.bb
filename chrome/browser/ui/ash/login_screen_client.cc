@@ -30,6 +30,8 @@ LoginScreenClient* g_login_screen_client_instance = nullptr;
 LoginScreenClient::Delegate::Delegate() = default;
 LoginScreenClient::Delegate::~Delegate() = default;
 
+LoginScreenClient::ParentAccessDelegate::~ParentAccessDelegate() = default;
+
 LoginScreenClient::LoginScreenClient()
     : binding_(this),
       auth_recorder_(std::make_unique<chromeos::LoginAuthRecorder>()),
@@ -64,6 +66,11 @@ LoginScreenClient* LoginScreenClient::Get() {
 
 void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
+}
+
+void LoginScreenClient::SetParentAccessDelegate(
+    ParentAccessDelegate* delegate) {
+  parent_access_delegate_ = delegate;
 }
 
 void LoginScreenClient::AddSystemTrayFocusObserver(
@@ -101,6 +108,7 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
     std::move(callback).Run(false);
   }
 }
+
 void LoginScreenClient::AuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
@@ -131,6 +139,19 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
     auth_recorder_->RecordAuthMethod(
         chromeos::LoginAuthRecorder::AuthMethod::kSmartlock);
   }
+}
+
+void LoginScreenClient::ValidateParentAccessCode(
+    const AccountId& account_id,
+    const std::string& access_code,
+    ValidateParentAccessCodeCallback callback) {
+  if (!parent_access_delegate_) {
+    LOG(ERROR) << "Cannot validate parent access code - no delegate";
+    std::move(callback).Run(false);
+    return;
+  }
+  parent_access_delegate_->ValidateParentAccessCode(access_code,
+                                                    std::move(callback));
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {

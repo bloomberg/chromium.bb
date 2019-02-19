@@ -30,12 +30,22 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
                     AuthenticateUserWithExternalBinaryCallback& callback));
   MOCK_METHOD1(EnrollUserWithExternalBinary_,
                void(EnrollUserWithExternalBinaryCallback& callback));
+  MOCK_METHOD3(ValidateParentAccessCode_,
+               void(const AccountId& account_id,
+                    const std::string& access_code,
+                    ValidateParentAccessCodeCallback& callback));
 
   // Set the result that should be passed to |callback| in
   // |AuthenticateUserWithPasswordOrPin| or
   // |AuthenticateUserWithExternalBinary|.
   void set_authenticate_user_callback_result(bool value) {
     authenticate_user_callback_result_ = value;
+  }
+
+  // Sets the result that should be passed to |callback| in
+  // |ValidateParentAccessCode|.
+  void set_validate_parent_access_code_result(bool value) {
+    validate_parent_access_code_result_ = value;
   }
 
   // If set to non-null, when |AuthenticateUser| is called the callback will be
@@ -64,6 +74,10 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
       AuthenticateUserWithExternalBinaryCallback callback) override;
   void EnrollUserWithExternalBinary(
       EnrollUserWithExternalBinaryCallback callback) override;
+  void ValidateParentAccessCode(
+      const AccountId& account_id,
+      const std::string& code,
+      ValidateParentAccessCodeCallback callback) override;
   MOCK_METHOD1(AuthenticateUserWithEasyUnlock,
                void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
@@ -98,6 +112,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
 
  private:
   bool authenticate_user_callback_result_ = true;
+  bool validate_parent_access_code_result_ = true;
   AuthenticateUserWithPasswordOrPinCallback*
       authenticate_user_with_password_or_pin_callback_storage_ = nullptr;
   AuthenticateUserWithExternalBinaryCallback*

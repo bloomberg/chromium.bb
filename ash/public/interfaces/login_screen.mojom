@@ -265,6 +265,13 @@ interface LoginScreenClient {
   // the other auth methods above.
   AuthenticateUserWithEasyUnlock(signin.mojom.AccountId account_id);
 
+  // Validates parent access code for the user identified by |account_id|.
+  // Passes validation result in the callback.
+  // Note: This should only be used for child user.
+  ValidateParentAccessCode(
+    signin.mojom.AccountId account_id,
+    string access_code) => (bool access_code_valid);
+
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.
   HardlockPod(signin.mojom.AccountId account_id);

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 
+#include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
@@ -21,13 +23,33 @@ ParentAccessService::ParentAccessService(
     : config_source_(std::move(config_source)),
       clock_(base::DefaultClock::GetInstance()) {
   CreateValidators(config_source_->GetConfigSet());
+  LoginScreenClient::Get()->SetParentAccessDelegate(this);
 }
 
-ParentAccessService::~ParentAccessService() = default;
+ParentAccessService::~ParentAccessService() {
+  LoginScreenClient::Get()->SetParentAccessDelegate(nullptr);
+}
 
 void ParentAccessService::SetDelegate(Delegate* delegate) {
-  DCHECK(!!delegate_ ^ !!delegate);
+  DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
+}
+
+void ParentAccessService::ValidateParentAccessCode(
+    const std::string& access_code,
+    ValidateParentAccessCodeCallback callback) {
+  bool validation_result = false;
+  for (auto& validator : access_code_validators_) {
+    if (validator->Validate(access_code, clock_->Now())) {
+      validation_result = true;
+      break;
+    }
+  }
+
+  if (delegate_)
+    delegate_->OnAccessCodeValidation(validation_result);
+
+  std::move(callback).Run(validation_result);
 }
 
 void ParentAccessService::OnConfigChanged(
