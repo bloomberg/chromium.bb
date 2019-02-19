@@ -799,23 +799,37 @@ cr.define('omnibox_output', function() {
       this.appendChild(this.container_);
 
       /** @private {!Element} */
-      this.icon_ = document.createElement('img');
-      this.container_.appendChild(this.icon_);
+      this.iconAndUrlContainer_ = document.createElement('div');
+      this.iconAndUrlContainer_.classList.add('pair-item');
+      this.container_.appendChild(this.iconAndUrlContainer_);
 
       /** @private {!Element} */
-      this.link_ = document.createElement('a');
-      this.container_.appendChild(this.link_);
+      this.icon_ = document.createElement('img');
+      this.iconAndUrlContainer_.appendChild(this.icon_);
+
+      /** @private {!Element} */
+      this.urlLink_ = document.createElement('a');
+      this.iconAndUrlContainer_.appendChild(this.urlLink_);
+
+      /** @private {!Element} */
+      this.strippedUrlLink_ = document.createElement('a');
+      this.strippedUrlLink_.classList.add('pair-item');
+      this.container_.appendChild(this.strippedUrlLink_);
     }
 
     /** @private @override */
     render_() {
-      if (this.values_[1]) {
+      const [destinationUrl, isSearchType, strippedDestinationUrl] =
+          this.values_;
+      if (isSearchType) {
         this.icon_.removeAttribute('src');
       } else {
-        this.icon_.src = `chrome://favicon/${this.value}`;
+        this.icon_.src = `chrome://favicon/${destinationUrl}`;
       }
-      this.link_.textContent = this.value;
-      this.link_.href = this.value;
+      this.urlLink_.textContent = destinationUrl;
+      this.urlLink_.href = destinationUrl;
+      this.strippedUrlLink_.textContent = strippedDestinationUrl;
+      this.strippedUrlLink_.href = strippedDestinationUrl;
     }
   }
 
@@ -954,8 +968,10 @@ cr.define('omnibox_output', function() {
             'matches an open tab.',
         ['hasTabMatch'], OutputBooleanProperty),
     new Column(
-        ['URL'], '', 'destinationUrl', true, 'The URL for the result.',
-        ['destinationUrl', 'isSearchType'], OutputUrlProperty),
+        ['URL', 'Stripped URL'], '', 'destinationUrl', true,
+        'The URL for the result.',
+        ['destinationUrl', 'isSearchType', 'strippedDestinationUrl'],
+        OutputUrlProperty),
     new Column(
         ['Fill', 'Inline'], '', 'fillAndInline', false,
         'The text shown in the omnibox when the result is selected. / The ' +

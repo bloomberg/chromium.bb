@@ -20,6 +20,7 @@ struct AutocompleteMatch {
   string fill_into_edit;
   string inline_autocompletion;
   string destination_url;
+  string stripped_destination_url;
   string image;
   string contents;
   string description;
