@@ -54,6 +54,11 @@ class ArcSharedSampler {
   // app or system processes.
   int pending_memory_dump_types_ = 0;
 
+  // The timestamp of when the last refresh call finished, for system and
+  // app processes.
+  base::Time last_system_refresh = base::Time();
+  base::Time last_app_refresh = base::Time();
+
   base::WeakPtrFactory<ArcSharedSampler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSharedSampler);
