@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if defined(OS_ANDROID)
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
@@ -23,116 +24,11 @@ namespace identity {
 
 namespace {
 
-enum class IdentityManagerEvent {
-  PRIMARY_ACCOUNT_SET,
-  PRIMARY_ACCOUNT_CLEARED,
-  REFRESH_TOKENS_LOADED,
-  REFRESH_TOKEN_UPDATED,
-  REFRESH_TOKEN_REMOVED,
-  ACCOUNTS_IN_COOKIE_UPDATED,
-};
-
-class OneShotIdentityManagerObserver : public IdentityManager::Observer {
- public:
-  OneShotIdentityManagerObserver(IdentityManager* identity_manager,
-                                 base::OnceClosure done_closure,
-                                 IdentityManagerEvent event_to_wait_on);
-  ~OneShotIdentityManagerObserver() override;
-
- private:
-  // IdentityManager::Observer:
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override;
-  void OnRefreshTokensLoaded() override;
-  void OnRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
-  void OnAccountsInCookieUpdated(
-      const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
-      const GoogleServiceAuthError& error) override;
-
-  IdentityManager* identity_manager_;
-  base::OnceClosure done_closure_;
-  IdentityManagerEvent event_to_wait_on_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneShotIdentityManagerObserver);
-};
-
-OneShotIdentityManagerObserver::OneShotIdentityManagerObserver(
-    IdentityManager* identity_manager,
-    base::OnceClosure done_closure,
-    IdentityManagerEvent event_to_wait_on)
-    : identity_manager_(identity_manager),
-      done_closure_(std::move(done_closure)),
-      event_to_wait_on_(event_to_wait_on) {
-  identity_manager_->AddObserver(this);
-}
-
-OneShotIdentityManagerObserver::~OneShotIdentityManagerObserver() {
-  identity_manager_->RemoveObserver(this);
-}
-
-void OneShotIdentityManagerObserver::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  if (event_to_wait_on_ != IdentityManagerEvent::PRIMARY_ACCOUNT_SET)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
-void OneShotIdentityManagerObserver::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  if (event_to_wait_on_ != IdentityManagerEvent::PRIMARY_ACCOUNT_CLEARED)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
-void OneShotIdentityManagerObserver::OnRefreshTokensLoaded() {
-  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKENS_LOADED)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
-void OneShotIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(
-    const CoreAccountInfo& account_info) {
-  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_UPDATED)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
-void OneShotIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
-    const std::string& account_id) {
-  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_REMOVED)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
-void OneShotIdentityManagerObserver::OnAccountsInCookieUpdated(
-    const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
-    const GoogleServiceAuthError& error) {
-  if (event_to_wait_on_ != IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED)
-    return;
-
-  DCHECK(done_closure_);
-  std::move(done_closure_).Run();
-}
-
 void WaitForLoadCredentialsToComplete(IdentityManager* identity_manager) {
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver load_credentials_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::REFRESH_TOKENS_LOADED);
+  TestIdentityManagerObserver load_credentials_observer(identity_manager);
+  load_credentials_observer.SetOnRefreshTokensLoadedCallback(
+      run_loop.QuitClosure());
 
   if (identity_manager->AreRefreshTokensLoaded())
     return;
@@ -166,9 +62,9 @@ void UpdateRefreshTokenForAccount(
   WaitForLoadCredentialsToComplete(identity_manager);
 
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver token_updated_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::REFRESH_TOKEN_UPDATED);
+  TestIdentityManagerObserver token_updated_observer(identity_manager);
+  token_updated_observer.SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   token_service->UpdateCredentials(account_id, new_token);
 
@@ -262,9 +158,8 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
     return;
 
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver signout_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::PRIMARY_ACCOUNT_CLEARED);
+  TestIdentityManagerObserver signout_observer(identity_manager);
+  signout_observer.SetOnPrimaryAccountClearedCallback(run_loop.QuitClosure());
 
   SigninManager* real_signin_manager = SigninManager::FromSigninManagerBase(
       identity_manager->GetSigninManager());
@@ -341,9 +236,9 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
     return;
 
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver token_updated_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::REFRESH_TOKEN_REMOVED);
+  TestIdentityManagerObserver token_updated_observer(identity_manager);
+  token_updated_observer.SetOnRefreshTokenRemovedCallback(
+      run_loop.QuitClosure());
 
   identity_manager->GetTokenService()->RevokeCredentials(account_id);
 
@@ -362,9 +257,8 @@ void SetCookieAccounts(IdentityManager* identity_manager,
   }
 
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver cookie_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED);
+  TestIdentityManagerObserver cookie_observer(identity_manager);
+  cookie_observer.SetOnAccountsInCookieUpdatedCallback(run_loop.QuitClosure());
 
   signin::SetListAccountsResponseWithParams(gaia_cookie_accounts,
                                             test_url_loader_factory);

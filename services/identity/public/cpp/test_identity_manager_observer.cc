@@ -248,7 +248,6 @@ void TestIdentityManagerObserver::StartBatchOfRefreshTokenStateChanges() {
 }
 
 void TestIdentityManagerObserver::OnEndBatchOfRefreshTokenStateChanges() {
-  EXPECT_TRUE(is_inside_batch_);
   is_inside_batch_ = false;
 }
 
