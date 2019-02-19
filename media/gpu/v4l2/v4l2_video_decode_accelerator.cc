@@ -233,68 +233,88 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
     DVLOGF(2) << "No GL callbacks provided, initializing without GL support";
   }
 
-  input_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
-
-  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
-    VLOGF(1) << "Failed to open device for profile: " << config.profile
-             << " fourcc: " << FourccToString(input_format_fourcc_);
-    return false;
-  }
-
-  // Capabilities check.
-  struct v4l2_capability caps;
-  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
-  if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
-             << ", caps check failed: 0x" << std::hex << caps.capabilities;
-    return false;
-  }
-
-  output_mode_ = config.output_mode;
-
-  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
-  if (!input_queue_)
-    return false;
-
-  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!output_queue_)
-    return false;
-
-  if (!SetupFormats())
-    return false;
-
-  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
-    decoder_h264_parser_.reset(new H264Parser());
-  }
+  decoder_state_ = kInitialized;
 
   if (!decoder_thread_.Start()) {
     VLOGF(1) << "decoder thread failed to start";
     return false;
   }
 
-  decoder_state_ = kInitialized;
-
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "media::V4l2VideoDecodeAccelerator", decoder_thread_.task_runner());
-
-  // InitializeTask will NOTIFY_ERROR on failure.
+  bool result = false;
+  base::WaitableEvent done;
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::InitializeTask,
-                                base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&V4L2VideoDecodeAccelerator::InitializeTask,
+                     base::Unretained(this), config, &result, &done));
+  done.Wait();
 
-  return true;
+  return result;
 }
 
-void V4L2VideoDecodeAccelerator::InitializeTask() {
+void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
+                                                bool* result,
+                                                base::WaitableEvent* done) {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_NE(result, nullptr);
+  DCHECK_NE(done, nullptr);
   DCHECK_EQ(decoder_state_, kInitialized);
   TRACE_EVENT0("media,gpu", "V4L2VDA::InitializeTask");
 
-  if (IsDestroyPending())
+  // Assume failure for now.
+  *result = false;
+
+  input_format_fourcc_ =
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
+
+  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
+    VLOGF(1) << "Failed to open device for profile: " << config.profile
+             << " fourcc: " << FourccToString(input_format_fourcc_);
+    done->Signal();
     return;
+  }
+
+  // Capabilities check.
+  struct v4l2_capability caps;
+  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
+  IOCTL_OR_ERROR_RETURN(VIDIOC_QUERYCAP, &caps);
+  if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
+    VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
+             << ", caps check failed: 0x" << std::hex << caps.capabilities;
+    done->Signal();
+    return;
+  }
+
+  output_mode_ = config.output_mode;
+
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  if (!input_queue_) {
+    done->Signal();
+    return;
+  }
+
+  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+  if (!output_queue_) {
+    done->Signal();
+    return;
+  }
+
+  if (!SetupFormats()) {
+    done->Signal();
+    return;
+  }
+
+  // We have confirmed that |config| is supported, tell the good news to the
+  // client.
+  *result = true;
+  done->Signal();
+
+  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
+    decoder_h264_parser_.reset(new H264Parser());
+  }
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "media::V4l2VideoDecodeAccelerator", decoder_thread_.task_runner());
 
   // Subscribe to the resolution change event.
   struct v4l2_event_subscription sub;
@@ -790,9 +810,6 @@ void V4L2VideoDecodeAccelerator::Destroy() {
                                   base::Unretained(this)));
     // DestroyTask() will cause the decoder_thread_ to flush all tasks.
     decoder_thread_.Stop();
-  } else {
-    // Otherwise, call the destroy task directly.
-    DestroyTask();
   }
 
   delete this;
@@ -971,6 +988,8 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
                                                       size_t size,
                                                       size_t* endpos) {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     // For H264, we need to feed HW one frame at a time.  This is going to take
     // some parsing of our input stream.
@@ -1225,12 +1244,13 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
-  DCHECK(input_queue_);
-  DCHECK(output_queue_);
   TRACE_EVENT0("media,gpu", "V4L2VDA::ServiceDeviceTask");
 
   if (IsDestroyPending())
     return;
+
+  DCHECK(input_queue_);
+  DCHECK(output_queue_);
 
   if (decoder_state_ == kResetting) {
     DVLOGF(3) << "early out: kResetting state";
@@ -1885,6 +1905,7 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
 
 void V4L2VideoDecodeAccelerator::DestroyTask() {
   VLOGF(2);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::DestroyTask");
 
   // DestroyTask() should run regardless of decoder_state_.
@@ -1912,14 +1933,13 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   DestroyInputBuffers();
   DestroyOutputBuffers();
 
-  if (decoder_thread_.IsRunning()) {
-    DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-    // DestroyTask can be executed on not only decoder_thread but also child
-    // thread. When decoder thread is Stop(), |this| is not registered in
-    // MemoryDumpManager. So
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        this);
-  }
+  input_queue_ = nullptr;
+  output_queue_ = nullptr;
+
+  decoder_h264_parser_ = nullptr;
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
@@ -1942,12 +1962,10 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
 
 bool V4L2VideoDecodeAccelerator::StopDevicePoll() {
   DVLOGF(3);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (!device_poll_thread_.IsRunning())
     return true;
-
-  if (decoder_thread_.IsRunning())
-    DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
@@ -1967,6 +1985,8 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll() {
 
 bool V4L2VideoDecodeAccelerator::StopOutputStream() {
   VLOGF(2);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
   if (!output_queue_ || !output_queue_->IsStreaming())
     return true;
 
@@ -1983,6 +2003,8 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
 
 bool V4L2VideoDecodeAccelerator::StopInputStream() {
   VLOGF(2);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
   if (!input_queue_ || !input_queue_->IsStreaming())
     return true;
 
@@ -2248,12 +2270,10 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
 }
 
 bool V4L2VideoDecodeAccelerator::SetupFormats() {
-  // We always run this as we prepare to initialize.
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(decoder_state_, kUninitialized);
-  // TODO(acourbot@) this is running in the wrong thread!
-  // DCHECK(!input_queue_->IsStreaming());
-  // DCHECK(!output_queue_->IsStreaming());
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(decoder_state_, kInitialized);
+  DCHECK(!input_queue_->IsStreaming());
+  DCHECK(!output_queue_->IsStreaming());
 
   size_t input_size;
   gfx::Size max_resolution, min_resolution;
@@ -2564,8 +2584,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
 
 void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   VLOGF(2);
-  DCHECK(!decoder_thread_.IsRunning() ||
-         decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (!input_queue_)
     return;
@@ -2575,8 +2594,7 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
 
 bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   VLOGF(2);
-  DCHECK(!decoder_thread_.IsRunning() ||
-         decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!output_queue_ || !output_queue_->IsStreaming());
   bool success = true;
 
