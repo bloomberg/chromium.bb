@@ -1126,7 +1126,7 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
           ash::TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f,
           200);
   event_generator->GestureScrollSequence(start, end, duration, 200);
-  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
+  ASSERT_TRUE(shell->overview_controller()->IsSelecting());
   EXPECT_TRUE(
       shell->overview_controller()->overview_session()->IsWindowInOverview(
           window));

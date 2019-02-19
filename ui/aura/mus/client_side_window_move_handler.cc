@@ -46,8 +46,10 @@ Window* GetToplevelTargetForEvent(ui::LocatedEvent* event, int* component) {
     return nullptr;
 
   window = window->GetToplevelWindow();
-  if (!window->GetProperty(client::kGestureDragFromClientAreaTopMovesWindow))
+  if (!window->GetRootWindow()->GetProperty(
+          client::kGestureDragFromClientAreaTopMovesWindow)) {
     return nullptr;
+  }
 
   if (event->AsGestureEvent()->details().scroll_y_hint() < 0)
     return nullptr;

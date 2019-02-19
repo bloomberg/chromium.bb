@@ -624,12 +624,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::UpdateImmersiveMode() {
-  bool immersive = ShouldEnableImmersiveMode();
   ash::ImmersiveFullscreenController::EnableForWidget(
       widget(), ShouldEnableImmersiveMode());
-  // TODO(estade): de-dupe this logic with WmToplevelWindowEventHandler.
-  TabletModeClient* client = TabletModeClient::Get();
-  GetNativeWindow()->SetProperty(
-      aura::client::kGestureDragFromClientAreaTopMovesWindow,
-      client && client->tablet_mode_enabled() && immersive);
 }
