@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -655,10 +656,27 @@ bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
 }
 
 bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
-  // For masked cards, this is the best we can do to compare card numbers.
+  // Masked cards are considered to have the same number if their last four
+  // digits match and if any expiration date information available for both
+  // cards matches.
   if (record_type() == MASKED_SERVER_CARD ||
       other.record_type() == MASKED_SERVER_CARD) {
-    return NetworkAndLastFourDigits() == other.NetworkAndLastFourDigits();
+    // The below metric is logged because this function previously compared
+    // cards' last four digits and networks if one card was masked. It may be
+    // useful to know how often networks match; however, it is expected that the
+    // number of discrepanies will be low.
+    AutofillMetrics::LogMaskedCardComparisonNetworksMatch(
+        NetworkForDisplay() == other.NetworkForDisplay());
+
+    bool months_match = expiration_month() == other.expiration_month() ||
+                        expiration_month() == 0 ||
+                        other.expiration_month() == 0;
+
+    bool years_match = expiration_year() == other.expiration_year() ||
+                       expiration_year() == 0 || other.expiration_year() == 0;
+
+    return LastFourDigits() == other.LastFourDigits() && months_match &&
+           years_match;
   }
 
   return StripSeparators(number_) == StripSeparators(other.number_);

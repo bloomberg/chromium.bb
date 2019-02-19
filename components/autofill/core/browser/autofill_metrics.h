@@ -169,7 +169,7 @@ class AutofillMetrics {
   // Metric to measure if a submitted card's expiration date matches the same
   // server card's expiration date (unmasked or not).  Cards are considered to
   // be the same if they have the same card number (if unmasked) or if they have
-  // the same network and last four digits (if masked).
+  // the same last four digits (if masked).
   enum SubmittedServerCardExpirationStatusMetric {
     // The submitted card and the unmasked server card had the same expiration
     // date.
@@ -846,6 +846,10 @@ class AutofillMetrics {
   // server card's known expiration date.
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
+
+  // When a masked card is compared with another card, logs whether the cards'
+  // networks match.
+  static void LogMaskedCardComparisonNetworksMatch(bool matches);
 
   // When credit card save is not offered (either at all on mobile or by simply
   // not showing the bubble on desktop), logs the occurrence.

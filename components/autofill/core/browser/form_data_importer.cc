@@ -443,7 +443,10 @@ bool FormDataImporter::ImportCreditCard(
   // there is for local cards.
   for (const CreditCard* card :
        personal_data_manager_->GetServerCreditCards()) {
-    if (candidate_credit_card.HasSameNumberAs(*card)) {
+    if ((card->record_type() == CreditCard::MASKED_SERVER_CARD &&
+         card->LastFourDigits() == candidate_credit_card.LastFourDigits()) ||
+        (card->record_type() == CreditCard::FULL_SERVER_CARD &&
+         candidate_credit_card.HasSameNumberAs(*card))) {
       // Don't update card if the expiration date is missing
       if (candidate_credit_card.expiration_month() == 0 ||
           candidate_credit_card.expiration_year() == 0) {
