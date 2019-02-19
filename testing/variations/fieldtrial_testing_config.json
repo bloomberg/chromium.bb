@@ -4298,9 +4298,9 @@
             ],
             "experiments": [
                 {
-                    "name": "enabled_300",
+                    "name": "Enabled",
                     "params": {
-                        "local_blacklists_update_interval_in_secs": "300"
+                        "local_blacklists_update_interval_in_secs": "900"
                     },
                     "enable_features": [
                         "SafeBrowsingUseLocalBlacklistsV2"
