@@ -13,10 +13,6 @@ function buildPaymentRequest() {
     return new PaymentRequest(
         [{supportedMethods: 'basic-card'}], {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          displayItems: [
-            {label: 'Item1', amount: {currency: 'USD', value: '2.00'}},
-            {label: 'Item2', amount: {currency: 'USD', value: '3.00'}},
-          ],
           shippingOptions: [{
             selected: true,
             id: 'freeShipping',
@@ -72,26 +68,6 @@ function updateWithTotal() {  // eslint-disable-line no-unused-vars
   var pr = buildPaymentRequest();
   var updatedDetails = {
     total: {label: 'Updated total', amount: {currency: 'USD', value: '10.00'}},
-  };
-  pr.addEventListener('shippingaddresschange', function(e) {
-    e.updateWith(updatedDetails);
-  });
-  pr.addEventListener('shippingoptionchange', function(e) {
-    e.updateWith(updatedDetails);
-  });
-  showPaymentRequest(pr);
-}
-
-/**
- * Calls updateWith() with displayItems
- */
-function updateWithDisplayItems() {  // eslint-disable-line no-unused-vars
-  var pr = buildPaymentRequest();
-  var updatedDetails = {
-    displayItems: [
-      {label: 'Item1', amount: {currency: 'USD', value: '3.00'}},
-      {label: 'Item2', amount: {currency: 'USD', value: '2.00'}},
-    ],
   };
   pr.addEventListener('shippingaddresschange', function(e) {
     e.updateWith(updatedDetails);

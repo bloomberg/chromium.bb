@@ -60,16 +60,10 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testUpdateWithEmpty() throws Throwable {
         mRule.triggerUIAndWait("updateWithEmpty", mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
@@ -84,40 +78,10 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testUpdateWithTotal() throws Throwable {
         mRule.triggerUIAndWait("updateWithTotal", mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $10.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
-        mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
-        mRule.setTextInCardUnmaskDialogAndWait(
-                R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(
-                ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
-        mRule.expectResultContains(new String[] {"freeShipping"});
-    }
-
-    /** A merchant that calls updateWith() with displayItems will not cause timeouts in UI. */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testUpdateWithDisplayItems() throws Throwable {
-        mRule.triggerUIAndWait("updateWithDisplayItems", mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
-        Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
-        mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
-        mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
-        Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(1));
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
@@ -132,16 +96,10 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testUpdateWithShippingOptions() throws Throwable {
         mRule.triggerUIAndWait("updateWithShippingOptions", mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
-        Assert.assertEquals("$2.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$3.00", mRule.getLineItemAmount(1));
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());

@@ -514,8 +514,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          */
         private TextView mUpdatedView;
 
-        private final List<TextView> mLineItemAmountsForTest = new ArrayList<>();
-
         /** The runnable used to fade out the mUpdatedView. */
         private Runnable mFadeOutRunnable = new Runnable() {
             @Override
@@ -619,7 +617,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             setSummaryText(cart.getTotal().getLabel(), totalPrice);
 
             mBreakdownLayout.removeAllViews();
-            mLineItemAmountsForTest.clear();
             if (cart.getContents() == null) return;
 
             int maximumDescriptionWidthPx =
@@ -649,7 +646,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                             ? R.style.TextAppearance_PaymentsUiSectionPendingTextEndAligned
                             : R.style.TextAppearance_PaymentsUiSectionDescriptiveTextEndAligned);
                 amount.setText(createValueString(item.getCurrency(), item.getPrice(), false));
-                mLineItemAmountsForTest.add(amount);
 
                 // Each item is represented by a row in the GridLayout.
                 GridLayout.LayoutParams descriptionParams = new GridLayout.LayoutParams(
@@ -750,15 +746,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
             mBreakdownLayout.setVisibility(mDisplayMode == DISPLAY_MODE_FOCUSED ? VISIBLE : GONE);
             super.updateControlLayout();
-        }
-
-        /**
-         * Returns the line item amount at the specified |index|. Returns null if there is no amount
-         * at that index.
-         */
-        @VisibleForTesting
-        public TextView getLineItemAmountForTest(int index) {
-            return mLineItemAmountsForTest.get(index);
         }
     }
 

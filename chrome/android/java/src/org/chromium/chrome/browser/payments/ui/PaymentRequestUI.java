@@ -1279,11 +1279,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @VisibleForTesting
-    public LineItemBreakdownSection getOrderSummarySectionForTest() {
-        return mOrderSummarySection;
-    }
-
-    @VisibleForTesting
     public OptionSection getShippingAddressSectionForTest() {
         return mShippingAddressSection;
     }
