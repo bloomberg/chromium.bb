@@ -538,6 +538,18 @@ bool InitializeAccessibilityTreeSearch(
   return true;
 }
 
+void AppendTextToString(const std::string& extra_text, std::string* string) {
+  if (extra_text.empty())
+    return;
+
+  if (string->empty()) {
+    *string = extra_text;
+    return;
+  }
+
+  *string += std::string(". ") + extra_text;
+}
+
 }  // namespace
 
 #if defined(MAC_OS_X_VERSION_10_12) && \
@@ -910,6 +922,31 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       owner_->GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
   std::string name =
       owner_->GetStringAttribute(ax::mojom::StringAttribute::kName);
+
+  auto status = owner_->GetData().GetImageAnnotationStatus();
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed: {
+      base::string16 status_string =
+          owner_->GetLocalizedStringForImageAnnotationStatus(status);
+      AppendTextToString(base::UTF16ToUTF8(status_string), &name);
+      break;
+    }
+
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      AppendTextToString(owner_->GetStringAttribute(
+                             ax::mojom::StringAttribute::kImageAnnotation),
+                         &name);
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+      break;
+  }
+
   if (!name.empty()) {
     // On Mac OS X, the accessible name of an object is exposed as its
     // title if it comes from visible text, and as its description
@@ -1481,6 +1518,22 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (BOOL)shouldExposeNameInDescription {
+  // Image annotations are not visible text, so they should be exposed
+  // as a description and not a title.
+  switch (owner_->GetData().GetImageAnnotationStatus()) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      return true;
+
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+      break;
+  }
+
   // VoiceOver will not read the label of a fieldset or radiogroup unless it is
   // exposed in the description instead of the title.
   switch (owner_->GetRole()) {
@@ -1624,6 +1677,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSString*)roleDescription {
   if (![self instanceActive])
     return nil;
+
+  if (owner_->GetData().GetImageAnnotationStatus() ==
+      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation) {
+    return base::SysUTF16ToNSString(
+        owner_->GetLocalizedRoleDescriptionForUnlabeledImage());
+  }
 
   if (owner_->HasStringAttribute(
           ax::mojom::StringAttribute::kRoleDescription)) {
