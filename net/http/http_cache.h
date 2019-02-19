@@ -278,6 +278,15 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
  private:
   // Types --------------------------------------------------------------------
 
+  // The type of operation represented by a work item.
+  enum WorkItemOperation {
+    WI_CREATE_BACKEND,
+    WI_OPEN_OR_CREATE_ENTRY,
+    WI_OPEN_ENTRY,
+    WI_CREATE_ENTRY,
+    WI_DOOM_ENTRY
+  };
+
   // Disk cache entry data indices.
   enum {
     kResponseInfoIndex = 0,
@@ -302,7 +311,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // To help with testing.
   friend class MockHttpCache;
-  friend class HttpCacheTest;
+  friend class HttpCacheIOCallbackTest;
 
   using TransactionList = std::list<Transaction*>;
   using TransactionSet = std::unordered_set<Transaction*>;
@@ -380,6 +389,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Methods ------------------------------------------------------------------
 
+  // Creates a WorkItem and sets it as the |pending_op|'s writer, or adds it to
+  // the queue if a writer already exists.
+  net::Error CreateAndSetWorkItem(ActiveEntry** entry,
+                                  Transaction* transaction,
+                                  WorkItemOperation operation,
+                                  PendingOp* pending_op);
+
   // Creates the |backend| object and notifies the |callback| when the operation
   // completes. Returns an error code.
   int CreateBackend(disk_cache::Backend** backend,
@@ -438,6 +454,15 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Deletes a PendingOp.
   void DeletePendingOp(PendingOp* pending_op);
+
+  // Opens the disk cache entry associated with |key|, creating the entry if it
+  // does not already exist, returning an ActiveEntry in |*entry|. |trans| will
+  // be notified via its IO callback if this method returns ERR_IO_PENDING. This
+  // should not be called if there already is an active entry associated with
+  // |key|, e.g. you should call FindActiveEntry first.
+  int OpenOrCreateEntry(const std::string& key,
+                        ActiveEntry** entry,
+                        Transaction* trans);
 
   // Opens the disk cache entry associated with |key|, returning an ActiveEntry
   // in |*entry|. |trans| will be notified via its IO callback if this method
