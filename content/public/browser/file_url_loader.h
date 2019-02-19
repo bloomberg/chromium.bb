@@ -53,6 +53,7 @@ CONTENT_EXPORT void CreateFileURLLoader(
     network::mojom::URLLoaderRequest loader,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer,
+    bool allow_directory_listing,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers = nullptr);
 
 // Helper to create a FileURLLoaderFactory instance. This exposes the ability

@@ -983,7 +983,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
     content::CreateFileURLLoader(
         request, std::move(loader), std::move(client),
         std::make_unique<FileLoaderObserver>(std::move(verify_job)),
-        std::move(response_headers));
+        /* allow_directory_listing */ false, std::move(response_headers));
   }
 
   content::BrowserContext* browser_context_;
