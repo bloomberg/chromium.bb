@@ -7,21 +7,25 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
-
-class ConfirmInfoBarDelegate;
+@protocol InfobarBannerDelegate;
 
 // TODO(crbug.com/911864): PLACEHOLDER Work in Progress class for the new
 // InfobarUI.
-@interface InfobarBannerViewController : UIViewController <InfobarUIDelegate>
+@interface InfobarBannerViewController : UIViewController
 
-- (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)infoBarDelegate
+- (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
+
+// The message displayed by this InfobarBanner.
+@property(nonatomic, copy) NSString* messageText;
+
+// The button text displayed by this InfobarBanner.
+@property(nonatomic, copy) NSString* buttonText;
 
 @end
 

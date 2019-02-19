@@ -15,23 +15,30 @@ source_set("infobars") {
     "infobar_controller+protected.h",
     "infobar_controller.h",
     "infobar_controller.mm",
-    "infobar_controller_delegate.h",
     "infobar_manager_impl.h",
     "infobar_manager_impl.mm",
     "infobar_utils.h",
     "infobar_utils.mm",
   ]
   deps = [
+    ":public",
     "//base",
     "//components/translate/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
-    "//ios/chrome/browser/ui/infobars/banners",
+    "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",
   ]
   public_deps = [
     "//components/infobars/core",
+  ]
+}
+
+source_set("public") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_controller_delegate.h",
   ]
 }

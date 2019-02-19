@@ -17,15 +17,17 @@ class InfoBarControllerDelegate;
 
 // Detaches view from its delegate. After this function is called, no user
 // interaction can be handled.
-// TODO(crbug.com/1372916): This nils the View's delegate, once we
+// TODO(crbug.com/927064): Nils the View's delegate, once we
 // start using ViewControllers it might not be needed.
 - (void)detachView;
 
-// The Infobar UIView.
-@property(nonatomic, readonly) UIView* view;
-
 // The InfobarControllerDelegate.
 @property(nonatomic, assign) InfoBarControllerDelegate* delegate;
+
+@optional
+// The Infobar UIView.
+// TODO(crbug.com/927064): Only used in the Legacy implementation.
+@property(nonatomic, readonly) UIView* view;
 
 @end
 

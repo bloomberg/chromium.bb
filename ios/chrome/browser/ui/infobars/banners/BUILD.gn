@@ -5,12 +5,8 @@
 source_set("banners") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_banner_delegate.h",
     "infobar_banner_view_controller.h",
     "infobar_banner_view_controller.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/infobars/core",
-    "//ios/chrome/browser/ui/infobars:infobars_ui",
   ]
 }
