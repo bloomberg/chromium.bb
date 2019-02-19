@@ -5233,7 +5233,8 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
 
   ContextMenuParams context_menu_params(params);
   // Allow WebContentsDelegates to handle the context menu operation first.
-  if (delegate_ && delegate_->HandleContextMenu(context_menu_params))
+  if (delegate_ &&
+      delegate_->HandleContextMenu(render_frame_host, context_menu_params))
     return;
 
   render_view_host_delegate_view_->ShowContextMenu(render_frame_host,

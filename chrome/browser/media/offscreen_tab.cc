@@ -245,7 +245,9 @@ void OffscreenTab::CanDownload(
   callback.Run(false);
 }
 
-bool OffscreenTab::HandleContextMenu(const content::ContextMenuParams& params) {
+bool OffscreenTab::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
   // Context menus should never be shown.  Do nothing, but indicate the context
   // menu was shown so that default implementation in libcontent does not
   // attempt to do so on its own.
