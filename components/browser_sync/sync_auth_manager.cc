@@ -87,23 +87,11 @@ void SyncAuthManager::RegisterForAuthNotifications() {
 }
 
 syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
-  if (!registered_for_auth_notifications_) {
-    return syncer::SyncAccountInfo();
-  }
-
-#if defined(OS_CHROMEOS)
-  if (!base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount)) {
-    // TODO(crbug.com/814787): Once the ChromeOS test setup is fixed, we can
-    // just return |sync_account_| here instead of re-querying.
-    return DetermineAccountToUse();
-  }
-#endif  // !defined(OS_CHROMEOS)
-  // Note: At this point, |sync_account_| should generally be identical to the
-  // result of a DetermineAccountToUse() call, but there are a few edge cases
-  // when it isn't: E.g. when another identity observer gets notified before us
-  // and calls in here, or when we're currently switching accounts in
+  // Note: |sync_account_| should generally be identical to the result of a
+  // DetermineAccountToUse() call, but there are a few edge cases when it isn't:
+  // E.g. when another identity observer gets notified before us and calls in
+  // here, or when we're currently switching accounts in
   // UpdateSyncAccountIfNecessary(). So unfortunately we can't verify this.
-
   return sync_account_;
 }
 
@@ -122,9 +110,7 @@ syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
 }
 
 syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
-  // TODO(crbug.com/814787): Once the ChromeOS test setup is fixed, we can just
-  // use |sync_account_| directly here.
-  const CoreAccountInfo& account_info = GetActiveAccountInfo().account_info;
+  const CoreAccountInfo& account_info = sync_account_.account_info;
 
   syncer::SyncCredentials credentials;
   credentials.account_id = account_info.account_id;
