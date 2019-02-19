@@ -354,6 +354,8 @@ Still reading?
     <!-- TODO(crbug.com/909915): Remove this after full Lite mode launch. -->
     <!-- 12 resources used by Data Saver during rebranding to Lite mode -->
     <ignore regexp="The resource `R.string..*lite_mode` appears to be unused"/>
+    <!-- Module titles may only be used by the Play Store. -->
+    <ignore regexp="The resource `R.string.*_module_title` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">
