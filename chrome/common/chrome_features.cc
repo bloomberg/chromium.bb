@@ -463,12 +463,6 @@ const base::Feature kDisablePostScriptPrinting{
     "DisablePostScriptPrinting", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables a page for manaing policies at chrome://policy-tool.
-#if !defined(OS_ANDROID)
-const base::Feature kPolicyTool{"PolicyTool",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Allows prediction operations (e.g., prefetching) on all connection types.
 const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",

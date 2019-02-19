@@ -32354,7 +32354,6 @@ from previous Chrome versions.
   <int value="719267310"
       label="KeepAliveRendererForKeepaliveRequests:disabled"/>
   <int value="720931007" label="WebAuthenticationBle:enabled"/>
-  <int value="721225492" label="PolicyTool:enabled"/>
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
   <int value="724052572" label="EnableFilesystemInIncognito"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
@@ -32582,7 +32581,6 @@ from previous Chrome versions.
   <int value="1113196543" label="ShowManagedUi:disabled"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
-  <int value="1115476442" label="PolicyTool:disabled"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
   <int value="1117795262" label="BloatedRendererDetection:disabled"/>

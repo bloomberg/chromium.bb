@@ -432,9 +432,6 @@ extern const char kEnableMaterialDesignBookmarksDescription[];
 extern const char kEnableMediaSessionServiceName[];
 extern const char kEnableMediaSessionServiceDescription[];
 
-extern const char kEnablePolicyToolName[];
-extern const char kEnablePolicyToolDescription[];
-
 extern const char kEnableNavigationTracingName[];
 extern const char kEnableNavigationTracingDescription[];
 
