@@ -2862,7 +2862,7 @@
   },
   {
     "name": "simplify-https-indicator",
-    // "owners": [ "your-team" ],
+    "owners": [ "cthomp", "estark" ],
     "expiry_milestone": 76
   },
   {
