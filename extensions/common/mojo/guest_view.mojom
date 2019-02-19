@@ -42,3 +42,16 @@ interface GuestView {
       extensions.mime_handler.BeforeUnloadControl? before_unload_control,
       int32 plugin_frame_id);
 };
+
+// An interface implemented by the renderer which is used for creating a
+// MimeHandlerViewFrameContainer. This interface is exposed on RenderFrame and
+// and is used by the browser to ask the renderer to start the MimeHandlerView
+// creation process (by creating a MimeHandlerViewFrameContainer).
+interface MimeHandlerViewContainerManager {
+  // Asks the renderer to set up a MimeHandlerViewFrameContainer. The passed
+  // arguments are later used in GuestView mojo calls above to create a
+  // MimeHandlerViewGuest on the browser side.
+  CreateFrameContainer(url.mojom.Url resource_url,
+                       string mime_type,
+                       string view_id);
+};

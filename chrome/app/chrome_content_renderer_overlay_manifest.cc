@@ -32,6 +32,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/mojo/app_window.mojom.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
 #endif
 
 const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
@@ -60,6 +61,7 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
                 dom_distiller::mojom::DistillerPageNotifierService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                 extensions::mojom::AppWindow,
+                extensions::mojom::MimeHandlerViewContainerManager,
 #endif  // TODO: need gated include back
                 safe_browsing::mojom::ThreatReporter,
 #if defined(FULL_SAFE_BROWSING)
