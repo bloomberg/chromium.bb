@@ -411,6 +411,11 @@ class CONTENT_EXPORT FrameTreeNode {
   blink::FrameOwnerElementType frame_owner_element_type() const {
     return replication_state_.frame_owner_element_type;
   }
+  // Only meaningful to call on a root frame. The value of |feature_state| will
+  // be nontrivial if there is an opener which is restricted in some of the
+  // feature policies.
+  void SetOpenerFeaturePolicyState(
+      const blink::FeaturePolicy::FeatureState& feature_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,

@@ -462,6 +462,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns whether we are associated with a print context who suggests to use
   // printing layout.
   virtual bool UsePrintingLayout() const { return false; }
+
+  // Called to get the FeatureState inherited from an opener if any. This works
+  // with disowned openers, i.e., even if Frame::Opener() is nullptr, there
+  // could be a non-empty feature state which is taken from the the original
+  // opener of the frame. This is similar to how sandbox flags are propagated to
+  // the opened new browsing contexts.
+  virtual const FeaturePolicy::FeatureState& GetOpenerFeatureState() const = 0;
 };
 
 }  // namespace blink

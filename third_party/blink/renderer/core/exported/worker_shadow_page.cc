@@ -40,7 +40,8 @@ WorkerShadowPage::WorkerShadowPage(
           CreateStubDocumentInterfaceBrokerHandle(),
           nullptr /* opener */,
           g_empty_atom,
-          WebSandboxFlags::kNone)),
+          WebSandboxFlags::kNone,
+          FeaturePolicy::FeatureState())),
       loader_factory_(std::move(loader_factory)),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());

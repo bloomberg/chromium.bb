@@ -139,6 +139,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                              const WebWindowFeatures&,
                              NavigationPolicy,
                              SandboxFlags,
+                             const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override {
     return nullptr;
   }
@@ -406,6 +407,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
 
   Frame* FindFrame(const AtomicString& name) const override;
+
+  const FeaturePolicy::FeatureState& GetOpenerFeatureState() const override;
 
  protected:
   // Not owned

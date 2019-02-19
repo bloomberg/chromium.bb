@@ -166,7 +166,13 @@ void SecurityContext::SetFeaturePolicy(
 void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
-    const FeaturePolicy* parent_feature_policy) {
+    const FeaturePolicy* parent_feature_policy,
+    const FeaturePolicy::FeatureState* opener_feature_state) {
+  // Feature policy should either come from a parent in the case of an embedded
+  // child frame, or from an opener if any when a new window is created by an
+  // opener. A main frame without an opener would not have a parent policy nor
+  // an opener feature state.
+  DCHECK(!parent_feature_policy || !opener_feature_state);
   report_only_feature_policy_ = nullptr;
   if (!HasCustomizedFeaturePolicy()) {
     feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
@@ -174,8 +180,16 @@ void SecurityContext::InitializeFeaturePolicy(
     return;
   }
 
-  feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-      parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
+  if (!opener_feature_state ||
+      !RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+        parent_feature_policy, container_policy,
+        security_origin_->ToUrlOrigin());
+  } else {
+    DCHECK(!parent_feature_policy);
+    feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
+        *opener_feature_state, security_origin_->ToUrlOrigin());
+  }
   feature_policy_->SetHeaderPolicy(parsed_header);
 }
 

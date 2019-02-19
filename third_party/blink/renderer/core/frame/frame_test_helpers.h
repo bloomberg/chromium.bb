@@ -249,6 +249,7 @@ class TestWebViewClient : public WebViewClient {
                       WebNavigationPolicy,
                       bool,
                       WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override;
 
  private:

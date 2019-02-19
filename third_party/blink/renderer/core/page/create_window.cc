@@ -243,11 +243,17 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
                                 ? kNavigationPolicyNewForegroundTab
                                 : NavigationPolicyForCreateWindow(features);
 
+  bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
+      kSandboxPropagatesToAuxiliaryBrowsingContexts);
   const SandboxFlags sandbox_flags =
-      opener_frame.GetDocument()->IsSandboxed(
-          kSandboxPropagatesToAuxiliaryBrowsingContexts)
-          ? opener_frame.GetSecurityContext()->GetSandboxFlags()
-          : kSandboxNone;
+      propagate_sandbox ? opener_frame.GetDocument()->GetSandboxFlags()
+                        : kSandboxNone;
+  bool not_sandboxed =
+      opener_frame.GetDocument()->GetSandboxFlags() != kSandboxNone;
+  FeaturePolicy::FeatureState opener_feature_state =
+      (not_sandboxed || propagate_sandbox)
+          ? opener_frame.GetDocument()->GetFeaturePolicy()->inherited_policies()
+          : FeaturePolicy::FeatureState();
 
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();
@@ -262,7 +268,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   Page* page = old_page->GetChromeClient().CreateWindow(
       &opener_frame, request, features, policy, sandbox_flags,
-      new_namespace_id);
+      opener_feature_state, new_namespace_id);
   if (!page)
     return nullptr;
 
