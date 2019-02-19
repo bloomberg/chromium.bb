@@ -259,7 +259,7 @@ class CORE_EXPORT FrameLoader final {
                           std::unique_ptr<WebDocumentLoader::ExtraData>);
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
-                                         HistoryItem::ViewState*,
+                                         const HistoryItem::ViewState&,
                                          HistoryScrollRestorationType);
 
   void DetachDocumentLoader(Member<DocumentLoader>&,
