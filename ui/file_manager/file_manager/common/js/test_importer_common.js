@@ -12,7 +12,7 @@ var importer = importer || {};
  * @suppress{accessControls} For testing.
  */
 importer.setupTestLogger = function() {
-  var logger = new importer.TestLogger();
+  const logger = new importer.TestLogger();
   importer.logger_ = logger;
   return logger;
 };

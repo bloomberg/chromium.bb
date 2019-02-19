@@ -9,7 +9,7 @@
  */
 
 var metrics;  // Needs to be defined in each window which uses metrics.
-var metricsBase = {};
+const metricsBase = {};
 
 /**
  * A map from interval name to interval start timestamp.
@@ -146,10 +146,10 @@ metricsBase.recordInterval = function(name) {
  *     or a boundary number (one-past-the-end) value.
  */
 metricsBase.recordEnum = function(name, value, opt_validValues) {
-  var boundaryValue;
-  var index;
+  let boundaryValue;
+  let index;
 
-  var validValues = opt_validValues;
+  let validValues = opt_validValues;
   if (metrics.validEnumValues_ && name in metrics.validEnumValues_) {
     console.assert(validValues === undefined);
     validValues = metrics.validEnumValues_[name];
@@ -172,7 +172,7 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
   // of using histograms for enum-like types. Bucket #0 works as a regular
   // bucket AND the underflow bucket.
   // (Source: UMA_HISTOGRAM_ENUMERATION definition in base/metrics/histogram.h)
-  var metricDescr = {
+  const metricDescr = {
     'metricName': metrics.convertName_(name),
     'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
     'min': 1,

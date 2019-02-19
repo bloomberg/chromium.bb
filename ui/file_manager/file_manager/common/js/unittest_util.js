@@ -10,7 +10,7 @@
  * @param {!Array<!FileEntry>} actual
  */
 function assertFileEntryListEquals(expected, actual) {
-  var entryToPath = function(entry) {
+  const entryToPath = function(entry) {
     assertTrue(entry.isFile);
     return entry.fullPath;
   };
@@ -27,12 +27,12 @@ function assertFileEntryListEquals(expected, actual) {
 function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
   assertEquals(expectedPaths.length, fileEntries.length);
 
-  var entryToPath = function(entry) {
+  const entryToPath = function(entry) {
     assertTrue(entry.isFile);
     return entry.fullPath;
   };
 
-  var actualPaths = fileEntries.map(entryToPath);
+  const actualPaths = fileEntries.map(entryToPath);
   actualPaths.sort();
   expectedPaths = expectedPaths.slice();
   expectedPaths.sort();
@@ -81,7 +81,7 @@ TestCallRecorder.prototype.recordArguments_ = function() {
  * @param {number} expected The expected number of calls.
  */
 TestCallRecorder.prototype.assertCallCount = function(expected) {
-  var actual = this.calls_.length;
+  const actual = this.calls_.length;
   assertEquals(
       expected, actual,
       'Expected ' + expected + ' call(s), but was ' + actual + '.');
@@ -134,7 +134,7 @@ function MockChromeStorageAPI() {
  */
 MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
   var keys = keys instanceof Array ? keys : [keys];
-  var result = {};
+  const result = {};
   keys.forEach((key) => {
     if (key in this.state) {
       result[key] = this.state[key];
@@ -149,7 +149,7 @@ MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
  * @private
  */
 MockChromeStorageAPI.prototype.set_ = function(values, opt_callback) {
-  for (var key in values) {
+  for (const key in values) {
     this.state[key] = values[key];
   }
   if (opt_callback) {

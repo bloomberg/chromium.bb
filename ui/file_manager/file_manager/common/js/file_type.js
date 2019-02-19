@@ -437,7 +437,7 @@ FileType.getExtension = function(entry) {
     return '';
   }
 
-  var extensionStartIndex = entry.name.lastIndexOf('.');
+  const extensionStartIndex = entry.name.lastIndexOf('.');
   if (extensionStartIndex === -1 ||
       extensionStartIndex === entry.name.length - 1) {
     return '';
@@ -454,16 +454,16 @@ FileType.getExtension = function(entry) {
  * @return {!FileType.Descriptor} The matching descriptor or a placeholder.
  */
 FileType.getTypeForName = function(name) {
-  var types = FileType.types;
-  for (var i = 0; i < types.length; i++) {
+  const types = FileType.types;
+  for (let i = 0; i < types.length; i++) {
     if (types[i].pattern.test(name)) {
       return types[i];
     }
   }
 
   // Unknown file type.
-  var match = /\.[^\/\.]+$/.exec(name);
-  var extension = match ? match[0] : '';
+  const match = /\.[^\/\.]+$/.exec(name);
+  const extension = match ? match[0] : '';
   if (extension === '') {
     return FileType.PLACEHOLDER;
   }
@@ -489,7 +489,7 @@ FileType.getType = function(entry, opt_mimeType) {
   }
 
   if (opt_mimeType) {
-    for (var i = 0; i < FileType.types.length; i++) {
+    for (let i = 0; i < FileType.types.length; i++) {
       if (FileType.types[i].mimePattern &&
           FileType.types[i].mimePattern.test(opt_mimeType)) {
         return FileType.types[i];
@@ -497,14 +497,14 @@ FileType.getType = function(entry, opt_mimeType) {
     }
   }
 
-  for (var i = 0; i < FileType.types.length; i++) {
+  for (let i = 0; i < FileType.types.length; i++) {
     if (FileType.types[i].pattern.test(entry.name)) {
       return FileType.types[i];
     }
   }
 
   // Unknown file type.
-  var extension = FileType.getExtension(entry);
+  const extension = FileType.getExtension(entry);
   if (extension === '') {
     return FileType.PLACEHOLDER;
   }
@@ -574,7 +574,7 @@ FileType.isRaw = function(entry, opt_mimeType) {
  * @return {boolean} True if type is in specified set
  */
 FileType.isType = function(types, entry, opt_mimeType) {
-  var type = FileType.getMediaType(entry, opt_mimeType);
+  const type = FileType.getMediaType(entry, opt_mimeType);
   return !!type && types.indexOf(type) !== -1;
 };
 

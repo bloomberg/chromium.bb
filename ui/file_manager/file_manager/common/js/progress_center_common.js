@@ -7,7 +7,7 @@
  * @enum {string}
  * @const
  */
-var ProgressCenterEvent = {
+const ProgressCenterEvent = {
   /**
    * Background page notifies item update to application windows.
    */
@@ -25,7 +25,7 @@ Object.freeze(ProgressCenterEvent);
  * @enum {string}
  * @const
  */
-var ProgressItemState = {
+const ProgressItemState = {
   PROGRESSING: 'progressing',
   COMPLETED: 'completed',
   ERROR: 'error',
@@ -38,7 +38,7 @@ Object.freeze(ProgressItemState);
  * @enum {string}
  * @const
  */
-var ProgressItemType = {
+const ProgressItemType = {
   // The item is file copy operation.
   COPY: 'copy',
   // The item is file move operation.
@@ -60,7 +60,7 @@ Object.freeze(ProgressItemType);
  * @constructor
  * @struct
  */
-var ProgressCenterItem = function() {
+const ProgressCenterItem = function() {
   /**
    * Item ID.
    * @type {?string}
@@ -174,7 +174,7 @@ ProgressCenterItem.prototype = /** @struct */ {
  * @return {ProgressCenterItem} New item having the same properties with this.
  */
 ProgressCenterItem.prototype.clone = function() {
-  var newItem = new ProgressCenterItem();
+  const newItem = new ProgressCenterItem();
   newItem.id = this.id;
   newItem.state = this.state;
   newItem.message = this.message;
