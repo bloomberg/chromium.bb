@@ -31,12 +31,17 @@ void MoveMouseToCenterAndPress(views::View* view,
       animator->StopAnimating();
   }
 
-  gfx::Point view_center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &view_center);
+  gfx::Point view_center = GetCenterInScreenCoordinates(view);
   ui_controls::SendMouseMoveNotifyWhenDone(
       view_center.x(), view_center.y(),
       base::BindOnce(&internal::ClickTask, button, button_state, closure,
                      accelerator_state));
+}
+
+gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
+  gfx::Point center = view->GetLocalBounds().CenterPoint();
+  views::View::ConvertPointToScreen(view, &center);
+  return center;
 }
 
 }  // namespace ui_test_utils

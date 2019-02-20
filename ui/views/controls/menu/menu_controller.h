@@ -176,12 +176,12 @@ class VIEWS_EXPORT MenuController
   void OnDragEnteredScrollButton(SubmenuView* source, bool is_up);
   void OnDragExitedScrollButton(SubmenuView* source);
 
-  // Called by the Widget when a drag is about to start on a child view. This
-  // could be initiated by one of our MenuItemViews, or could be through another
-  // child View.
+  // Called by the MenuHost when a drag is about to start on a child view.
+  // This could be initiated by one of our MenuItemViews, or could be through
+  // another child View.
   void OnDragWillStart();
 
-  // Called by the Widget when the drag has completed. |should_close|
+  // Called by the MenuHost when the drag has completed. |should_close|
   // corresponds to whether or not the menu should close.
   void OnDragComplete(bool should_close);
 

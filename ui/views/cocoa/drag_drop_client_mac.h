@@ -65,7 +65,7 @@ class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
   DropHelper drop_helper_;
 
   // The drag and drop operation.
-  int operation_;
+  int operation_ = 0;
 
   // The bridge between the content view and the drag drop client.
   BridgedNativeWidgetImpl* bridge_;  // Weak. Owns |this|.
@@ -74,7 +74,7 @@ class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
   base::Closure quit_closure_;
 
   // Whether |this| is the source of current dragging session.
-  bool is_drag_source_;
+  bool is_drag_source_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropClientMac);
 };

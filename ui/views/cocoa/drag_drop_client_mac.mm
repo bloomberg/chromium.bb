@@ -18,11 +18,7 @@ namespace views {
 
 DragDropClientMac::DragDropClientMac(BridgedNativeWidgetImpl* bridge,
                                      View* root_view)
-    : drop_helper_(root_view),
-      operation_(0),
-      bridge_(bridge),
-      quit_closure_(base::Closure()),
-      is_drag_source_(false) {
+    : drop_helper_(root_view), bridge_(bridge) {
   DCHECK(bridge);
 }
 
