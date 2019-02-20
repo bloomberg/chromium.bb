@@ -20,7 +20,9 @@
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -164,7 +166,9 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
 }
 
 const KURL& WorkerFetchContext::Url() const {
-  return global_scope_->Url();
+  return GetResourceFetcherProperties()
+      .GetFetchClientSettingsObject()
+      .GlobalObjectUrl();
 }
 
 const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
