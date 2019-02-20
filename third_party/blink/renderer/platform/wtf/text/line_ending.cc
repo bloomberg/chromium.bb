@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/text/line_ending.h"
+#include "third_party/blink/renderer/platform/wtf/text/line_ending.h"
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace blink {
+namespace WTF {
 namespace {
 
 template <typename CharType>
@@ -185,4 +185,4 @@ void NormalizeLineEndingsToNative(const CString& from, Vector<char>& result) {
 #endif
 }
 
-}  // namespace blink
+}  // namespace WTF
