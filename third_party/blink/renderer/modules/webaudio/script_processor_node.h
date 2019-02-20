@@ -28,6 +28,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -39,7 +40,6 @@ namespace blink {
 
 class BaseAudioContext;
 class AudioBuffer;
-class WaitableEvent;
 
 // ScriptProcessorNode is an AudioNode which allows for arbitrary synthesis or
 // processing directly using JavaScript.  The API allows for a variable number
@@ -83,7 +83,7 @@ class ScriptProcessorHandler final : public AudioHandler {
   bool RequiresTailProcessing() const final;
 
   void FireProcessEvent(uint32_t);
-  void FireProcessEventForOfflineAudioContext(uint32_t, WaitableEvent*);
+  void FireProcessEventForOfflineAudioContext(uint32_t, base::WaitableEvent*);
 
   // Double buffering
   uint32_t DoubleBufferIndex() const { return double_buffer_index_; }

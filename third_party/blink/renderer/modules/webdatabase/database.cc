@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -279,7 +279,7 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
                                     DatabaseError& error,
                                     String& error_message,
                                     V8DatabaseCallback* creation_callback) {
-  WaitableEvent event;
+  base::WaitableEvent event;
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return false;
 
@@ -901,7 +901,7 @@ Vector<String> Database::TableNames() {
   // take strict turns in dealing with them. However, if the code changes,
   // this may not be true anymore.
   Vector<String> result;
-  WaitableEvent event;
+  base::WaitableEvent event;
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return result;
 

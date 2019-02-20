@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/synchronization/waitable_event.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
 
   void AddGlobalScopeForTesting(WorkerThread* thread,
                                 AnimationWorkletProxyClient* proxy_client,
-                                WaitableEvent* waitable_event) {
+                                base::WaitableEvent* waitable_event) {
     proxy_client->AddGlobalScopeForTesting(
         To<WorkletGlobalScope>(thread->GlobalScope()));
     waitable_event->Signal();
@@ -119,7 +120,7 @@ TEST_F(AnimationWorkletProxyClientTest, SelectGlobalScope) {
 
   // Register global scopes with proxy client. This step must be performed on
   // the worker threads.
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(

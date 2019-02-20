@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -85,7 +86,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunBasicTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -96,7 +97,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunSimpleProcessTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -107,7 +108,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunParsingTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -118,7 +119,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunParsingParameterDescriptorTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(&AudioWorkletGlobalScopeTest::
@@ -153,7 +154,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   // if the class definition is correctly registered, then instantiate an
   // AudioWorkletProcessor instance from the definition.
   void RunBasicTestOnWorkletThread(WorkerThread* thread,
-                                   WaitableEvent* wait_event) {
+                                   base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -201,7 +202,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   // Test if various class definition patterns are parsed correctly.
   void RunParsingTestOnWorkletThread(WorkerThread* thread,
-                                     WaitableEvent* wait_event) {
+                                     base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -256,7 +257,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   // Test if the invocation of process() method in AudioWorkletProcessor and
   // AudioWorkletGlobalScope is performed correctly.
   void RunSimpleProcessTestOnWorkletThread(WorkerThread* thread,
-                                           WaitableEvent* wait_event) {
+                                           base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -322,7 +323,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   void RunParsingParameterDescriptorTestOnWorkletThread(
       WorkerThread* thread,
-      WaitableEvent* wait_event) {
+      base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());

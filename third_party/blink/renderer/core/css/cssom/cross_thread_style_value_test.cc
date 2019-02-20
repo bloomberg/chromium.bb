@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
@@ -15,21 +16,20 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 
 class CrossThreadStyleValueTest : public testing::Test {
  public:
-  void ShutDown(WaitableEvent* waitable_event) {
+  void ShutDown(base::WaitableEvent* waitable_event) {
     DCHECK(!IsMainThread());
     thread_->ShutdownOnThread();
     waitable_event->Signal();
   }
 
   void ShutDownThread() {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     thread_->PostTask(FROM_HERE,
                       CrossThreadBind(&CrossThreadStyleValueTest::ShutDown,
                                       CrossThreadUnretained(this),
@@ -38,7 +38,7 @@ class CrossThreadStyleValueTest : public testing::Test {
   }
 
   void CheckUnsupportedValue(
-      WaitableEvent* waitable_event,
+      base::WaitableEvent* waitable_event,
       std::unique_ptr<CrossThreadUnsupportedValue> value) {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
@@ -47,7 +47,7 @@ class CrossThreadStyleValueTest : public testing::Test {
     waitable_event->Signal();
   }
 
-  void CheckKeywordValue(WaitableEvent* waitable_event,
+  void CheckKeywordValue(base::WaitableEvent* waitable_event,
                          std::unique_ptr<CrossThreadKeywordValue> value) {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
@@ -56,7 +56,7 @@ class CrossThreadStyleValueTest : public testing::Test {
     waitable_event->Signal();
   }
 
-  void CheckUnitValue(WaitableEvent* waitable_event,
+  void CheckUnitValue(base::WaitableEvent* waitable_event,
                       std::unique_ptr<CrossThreadUnitValue> value) {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
@@ -80,7 +80,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
   // Use a WebThreadSupportingGC to emulate worklet thread.
   thread_ = WebThreadSupportingGC::Create(
       ThreadCreationParams(WebThreadType::kTestThread));
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   thread_->PostTask(
       FROM_HERE,
       CrossThreadBind(&CrossThreadStyleValueTest::CheckUnsupportedValue,
@@ -111,7 +111,7 @@ TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
   // Use a WebThreadSupportingGC to emulate worklet thread.
   thread_ = WebThreadSupportingGC::Create(
       ThreadCreationParams(WebThreadType::kTestThread));
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   thread_->PostTask(
       FROM_HERE, CrossThreadBind(&CrossThreadStyleValueTest::CheckKeywordValue,
                                  CrossThreadUnretained(this),
@@ -142,7 +142,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnitValueCrossThread) {
   // Use a WebThreadSupportingGC to emulate worklet thread.
   thread_ = WebThreadSupportingGC::Create(
       ThreadCreationParams(WebThreadType::kTestThread));
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&CrossThreadStyleValueTest::CheckUnitValue,
                                     CrossThreadUnretained(this),

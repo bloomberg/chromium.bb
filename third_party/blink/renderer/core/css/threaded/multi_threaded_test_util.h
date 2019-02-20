@@ -10,12 +10,12 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -55,12 +55,12 @@ class MultiThreadedTest : public testing::Test {
   template <typename FunctionType, typename... Ps>
   void RunOnThreads(FunctionType function, Ps&&... parameters) {
     Vector<std::unique_ptr<WebThreadSupportingGC>> threads;
-    Vector<std::unique_ptr<WaitableEvent>> waits;
+    Vector<std::unique_ptr<base::WaitableEvent>> waits;
 
     for (int i = 0; i < num_threads_; ++i) {
       threads.push_back(WebThreadSupportingGC::Create(
           ThreadCreationParams(WebThreadType::kTestThread)));
-      waits.push_back(std::make_unique<WaitableEvent>());
+      waits.push_back(std::make_unique<base::WaitableEvent>());
     }
 
     for (int i = 0; i < num_threads_; ++i) {
@@ -82,7 +82,7 @@ class MultiThreadedTest : public testing::Test {
       PostCrossThreadTask(
           *task_runner, FROM_HERE,
           CrossThreadBind(
-              [](WebThreadSupportingGC* thread, WaitableEvent* w) {
+              [](WebThreadSupportingGC* thread, base::WaitableEvent* w) {
                 thread->ShutdownOnThread();
                 w->Signal();
               },

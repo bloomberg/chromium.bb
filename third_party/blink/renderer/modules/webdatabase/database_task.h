@@ -33,12 +33,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_error.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -56,14 +56,14 @@ class DatabaseTask {
   Database* GetDatabase() const { return database_.Get(); }
 
  protected:
-  DatabaseTask(Database*, WaitableEvent* complete_event);
+  DatabaseTask(Database*, base::WaitableEvent* complete_event);
 
  private:
   virtual void DoPerformTask() = 0;
   virtual void TaskCancelled() {}
 
   CrossThreadPersistent<Database> database_;
-  WaitableEvent* complete_event_;
+  base::WaitableEvent* complete_event_;
 
 #if DCHECK_IS_ON()
   virtual const char* DebugTaskName() const = 0;
@@ -78,7 +78,7 @@ class Database::DatabaseOpenTask final : public DatabaseTask {
   static std::unique_ptr<DatabaseOpenTask> Create(
       Database* db,
       bool set_version_in_new_database,
-      WaitableEvent* complete_event,
+      base::WaitableEvent* complete_event,
       DatabaseError& error,
       String& error_message,
       bool& success) {
@@ -90,7 +90,7 @@ class Database::DatabaseOpenTask final : public DatabaseTask {
  private:
   DatabaseOpenTask(Database*,
                    bool set_version_in_new_database,
-                   WaitableEvent*,
+                   base::WaitableEvent*,
                    DatabaseError&,
                    String& error_message,
                    bool& success);
@@ -110,12 +110,12 @@ class Database::DatabaseCloseTask final : public DatabaseTask {
  public:
   static std::unique_ptr<DatabaseCloseTask> Create(
       Database* db,
-      WaitableEvent* synchronizer) {
+      base::WaitableEvent* synchronizer) {
     return base::WrapUnique(new DatabaseCloseTask(db, synchronizer));
   }
 
  private:
-  DatabaseCloseTask(Database*, WaitableEvent*);
+  DatabaseCloseTask(Database*, base::WaitableEvent*);
 
   void DoPerformTask() override;
 #if DCHECK_IS_ON()
@@ -149,14 +149,18 @@ class Database::DatabaseTransactionTask final : public DatabaseTask {
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseTableNamesTask>
-  Create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
+  static std::unique_ptr<DatabaseTableNamesTask> Create(
+      Database* db,
+      base::WaitableEvent* synchronizer,
+      Vector<String>& names) {
     return base::WrapUnique(
         new DatabaseTableNamesTask(db, synchronizer, names));
   }
 
  private:
-  DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
+  DatabaseTableNamesTask(Database*,
+                         base::WaitableEvent*,
+                         Vector<String>& names);
 
   void DoPerformTask() override;
 #if DCHECK_IS_ON()

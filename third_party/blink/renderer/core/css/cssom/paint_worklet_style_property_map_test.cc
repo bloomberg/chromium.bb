@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
@@ -29,14 +29,14 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
   Node* PageNode() { return GetDocument().documentElement(); }
 
-  void ShutDown(WaitableEvent* waitable_event) {
+  void ShutDown(base::WaitableEvent* waitable_event) {
     DCHECK(!IsMainThread());
     thread_->ShutdownOnThread();
     waitable_event->Signal();
   }
 
   void ShutDownThread() {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     thread_->PostTask(
         FROM_HERE, CrossThreadBind(&PaintWorkletStylePropertyMapTest::ShutDown,
                                    CrossThreadUnretained(this),
@@ -95,7 +95,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     exception_state.ClearException();
   }
 
-  void CheckStyleMap(WaitableEvent* waitable_event,
+  void CheckStyleMap(base::WaitableEvent* waitable_event,
                      scoped_refptr<PaintWorkletInput> input) {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
@@ -243,7 +243,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
 
   thread_ = WebThreadSupportingGC::Create(
       ThreadCreationParams(WebThreadType::kTestThread));
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   thread_->PostTask(
       FROM_HERE, CrossThreadBind(
                      &PaintWorkletStylePropertyMapTest::CheckStyleMap,
