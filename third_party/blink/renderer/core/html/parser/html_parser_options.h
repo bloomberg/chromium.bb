@@ -38,7 +38,6 @@ class CORE_EXPORT HTMLParserOptions {
 
  public:
   bool script_enabled = false;
-  bool plugins_enabled = false;
 
   // TODO(domfarolino): Remove this when Priority Hints is no longer in an
   // Origin Trial. See https://crbug.com/821464.
