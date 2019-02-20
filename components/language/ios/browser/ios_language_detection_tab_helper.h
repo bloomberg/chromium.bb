@@ -50,6 +50,8 @@ class IOSLanguageDetectionTabHelper
 
   Callback extra_callback_for_testing_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(IOSLanguageDetectionTabHelper);
 };
 

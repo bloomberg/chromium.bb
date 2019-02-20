@@ -63,3 +63,5 @@ void NetworkActivityIndicatorTabHelper::Stop() {
   if ([shared_manager numNetworkTasksForGroup:network_activity_key_])
     [shared_manager stopNetworkTaskForGroup:network_activity_key_];
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(NetworkActivityIndicatorTabHelper)

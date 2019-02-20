@@ -51,4 +51,6 @@ void IOSLanguageDetectionTabHelper::SetExtraCallbackForTesting(
   extra_callback_for_testing_ = callback;
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(IOSLanguageDetectionTabHelper)
+
 }  // namespace language

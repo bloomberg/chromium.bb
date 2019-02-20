@@ -58,3 +58,5 @@ void FontSizeTabHelper::PageLoaded(
   if (size != 100)
     SetPageFontSize(size);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(FontSizeTabHelper)

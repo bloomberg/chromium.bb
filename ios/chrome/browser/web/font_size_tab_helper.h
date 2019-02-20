@@ -46,6 +46,8 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(FontSizeTabHelper);
 };
 

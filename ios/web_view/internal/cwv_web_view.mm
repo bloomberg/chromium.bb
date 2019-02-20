@@ -87,8 +87,13 @@ class WebViewHolder : public web::WebStateUserData<WebViewHolder> {
   void set_web_view(CWVWebView* web_view) { web_view_ = web_view; }
 
  private:
+  friend class web::WebStateUserData<WebViewHolder>;
+
   __weak CWVWebView* web_view_ = nil;
+  WEB_STATE_USER_DATA_KEY_DECL();
 };
+
+WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }  // namespace
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {

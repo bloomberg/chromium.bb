@@ -123,6 +123,8 @@ class ChromeIOSTranslateClient
       translate_option_selection_handler_;
   __weak id<TranslateNotificationHandler> translate_notification_handler_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
 };
 

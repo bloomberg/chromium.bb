@@ -136,3 +136,5 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
         weak_placeholder_view.alpha = 1.0f;
       }];
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(PagePlaceholderTabHelper)

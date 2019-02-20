@@ -95,3 +95,5 @@ void FindTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
   web_state->RemoveObserver(this);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(FindTabHelper)

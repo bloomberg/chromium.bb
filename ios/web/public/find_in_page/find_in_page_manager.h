@@ -54,6 +54,8 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
 
   ~FindInPageManager() override {}
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
  protected:
   FindInPageManager() {}
 

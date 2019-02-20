@@ -78,6 +78,8 @@ class ARQuickLookTabHelper
   virtual void Download(std::unique_ptr<web::DownloadTask> download_task);
 
  private:
+  friend class web::WebStateUserData<ARQuickLookTabHelper>;
+
   // Previews the downloaded file given by current download task.
   void DidFinishDownload();
   // Stops observing the current download task and resets the reference.
@@ -104,6 +106,8 @@ class ARQuickLookTabHelper
   __weak id<ARQuickLookTabHelperDelegate> delegate_ = nil;
   // The current download task.
   std::unique_ptr<web::DownloadTask> download_task_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ARQuickLookTabHelper);
 };

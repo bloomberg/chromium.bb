@@ -60,6 +60,8 @@ class PassKitTabHelper : public web::WebStateUserData<PassKitTabHelper>,
                    id<PassKitTabHelperDelegate> delegate);
 
  private:
+  friend class web::WebStateUserData<PassKitTabHelper>;
+
   // web::DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override;
 
@@ -67,6 +69,8 @@ class PassKitTabHelper : public web::WebStateUserData<PassKitTabHelper>,
   __weak id<PassKitTabHelperDelegate> delegate_ = nil;
   // Set of unfinished download tasks.
   std::set<std::unique_ptr<web::DownloadTask>> tasks_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PassKitTabHelper);
 };

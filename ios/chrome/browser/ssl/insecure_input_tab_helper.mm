@@ -124,3 +124,5 @@ void InsecureInputTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(InsecureInputTabHelper)

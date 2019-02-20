@@ -36,6 +36,8 @@ class WebStateTopSitesObserver
   // Underlying TopSites instance, may be null during testing.
   TopSites* top_sites_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebStateTopSitesObserver);
 };
 

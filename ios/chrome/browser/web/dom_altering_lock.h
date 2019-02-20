@@ -55,8 +55,11 @@ class DOMAlteringLock : public web::WebStateUserData<DOMAlteringLock> {
   void Release(id<DOMAltering> feature);
 
  private:
+  friend class web::WebStateUserData<DOMAlteringLock>;
+
   // DOMAltering object currently having the lock.
   __weak id<DOMAltering> current_dom_altering_feature_ = nil;
+  WEB_STATE_USER_DATA_KEY_DECL();
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_DOM_ALTERING_LOCK_H_

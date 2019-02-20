@@ -33,6 +33,8 @@ class IOSChromeSessionTabHelper
   // Unique identifier of the window the tab is in.
   SessionID window_id_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSessionTabHelper);
 };
 

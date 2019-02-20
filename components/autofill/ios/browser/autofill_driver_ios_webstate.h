@@ -34,6 +34,7 @@ class AutofillDriverIOSWebState
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
+  WEB_STATE_USER_DATA_KEY_DECL();
 };
 }  // namespace autofill
 

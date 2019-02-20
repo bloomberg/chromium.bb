@@ -53,4 +53,6 @@ void WebStateTopSitesObserver::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(WebStateTopSitesObserver)
+
 }  // namespace history

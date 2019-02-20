@@ -166,3 +166,5 @@ bool NewTabPageTabHelper::IsNTPURL(const GURL& url) {
   return url.GetOrigin() == kChromeUINewTabURL ||
          (url.SchemeIs(url::kAboutScheme) && url.path() == kAboutNewTabPath);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(NewTabPageTabHelper)

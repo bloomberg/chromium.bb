@@ -105,4 +105,6 @@ void WebFramesManagerImpl::RegisterExistingFrames() {
       base::UTF8ToUTF16("__gCrWeb.message.getExistingFrames();"));
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(WebFramesManager)
+
 }  // namespace

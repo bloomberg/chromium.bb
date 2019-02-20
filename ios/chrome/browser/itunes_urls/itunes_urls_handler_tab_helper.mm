@@ -139,3 +139,5 @@ void ITunesUrlsHandlerTabHelper::HandleITunesUrl(const GURL& url) {
   }
   RecordStoreKitHandlingResult(handling_result);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ITunesUrlsHandlerTabHelper)

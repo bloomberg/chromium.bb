@@ -101,4 +101,6 @@ AutofillDriverIOSWebFrame::GetRetainableDriver() {
   return driver_;
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(AutofillDriverIOSWebFrameFactory)
+
 }  //  namespace autofill

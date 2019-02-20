@@ -175,4 +175,6 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& query,
   }
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(FindInPageManager)
+
 }  // namespace web

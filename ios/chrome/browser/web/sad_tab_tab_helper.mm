@@ -234,3 +234,5 @@ void SadTabTabHelper::UpdateFullscreenDisabler() {
     fullscreen_disabler_ = nullptr;
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(SadTabTabHelper)

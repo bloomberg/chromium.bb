@@ -284,3 +284,5 @@ void SearchEngineTabHelper::AddTemplateURLBySearchableURL(
   data.safe_for_autoreplace = true;
   url_service->Add(std::make_unique<TemplateURL>(data));
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(SearchEngineTabHelper)

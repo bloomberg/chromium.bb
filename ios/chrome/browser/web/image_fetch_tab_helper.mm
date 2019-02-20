@@ -208,3 +208,5 @@ void ImageFetchTabHelper::OnJsTimeout(int call_id) {
     RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult::kTimeout);
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ImageFetchTabHelper)

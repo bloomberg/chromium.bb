@@ -33,6 +33,7 @@ class FormActivityTabHelper
 
  private:
   friend class web::WebStateUserData<FormActivityTabHelper>;
+
   // TestFormActivityTabHelper can be used by tests that want to simulate form
   // events without loading page and executing JavaScript.
   // To trigger events, TestFormActivityTabHelper will access |observer_|.
@@ -68,6 +69,8 @@ class FormActivityTabHelper
 
   // The observers.
   base::ObserverList<FormActivityObserver>::Unchecked observers_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(FormActivityTabHelper);
 };

@@ -41,6 +41,8 @@ class LoadTimingTabHelper : public web::WebStateUserData<LoadTimingTabHelper>,
   static const char kOmnibarToPageLoadedMetric[];
 
  private:
+  friend class web::WebStateUserData<LoadTimingTabHelper>;
+
   void ReportLoadTime(const base::TimeDelta& elapsed);
   void ResetTimer();
 
@@ -49,6 +51,8 @@ class LoadTimingTabHelper : public web::WebStateUserData<LoadTimingTabHelper>,
   web::WebState* web_state_ = nullptr;
 
   base::TimeTicks load_start_time_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(LoadTimingTabHelper);
 };

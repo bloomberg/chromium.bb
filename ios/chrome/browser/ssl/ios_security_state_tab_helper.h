@@ -38,6 +38,8 @@ class IOSSecurityStateTabHelper
 
   web::WebState* web_state_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(IOSSecurityStateTabHelper);
 };
 

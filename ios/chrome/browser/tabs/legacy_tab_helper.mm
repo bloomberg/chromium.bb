@@ -46,3 +46,5 @@ void LegacyTabHelper::CreateForWebStateInternal(web::WebState* web_state,
             web_state, tab ? tab : [[Tab alloc] initWithWebState:web_state])));
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(LegacyTabHelper)

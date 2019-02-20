@@ -40,6 +40,8 @@ class VoiceSearchNavigationTabHelper
   // Whether a voice search navigation is expected.
   bool will_navigate_to_voice_search_result_ = false;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchNavigationTabHelper);
 };
 

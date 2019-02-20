@@ -190,3 +190,5 @@ void SnapshotTabHelper::OnManagerShuttingDown(
   infobar_observer_.Remove(manager);
   infobar_manager_ = nullptr;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(SnapshotTabHelper)

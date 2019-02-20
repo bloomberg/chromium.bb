@@ -47,11 +47,14 @@ class AutofillDriverIOSWebFrameFactory
       web::WebFrame* web_frame);
 
  private:
+  friend class web::WebStateUserData<AutofillDriverIOSWebFrameFactory>;
+
   web::WebState* web_state_ = nullptr;
   AutofillClient* client_ = nullptr;
   id<AutofillDriverIOSBridge> bridge_ = nil;
   std::string app_locale_;
   AutofillManager::AutofillDownloadManagerState enable_download_manager_;
+  WEB_STATE_USER_DATA_KEY_DECL();
 };
 
 // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS. This is

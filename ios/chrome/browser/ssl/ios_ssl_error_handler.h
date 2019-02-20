@@ -41,6 +41,8 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
   ~IOSSSLErrorHandler() override;
 
  private:
+  friend class web::WebStateUserData<IOSSSLErrorHandler>;
+
   // Creates an error handler for the given |web_state| and |request_url|.
   // The |cert_error| and SSL |info| represent the SSL error detected which
   // triggered the display of the SSL interstitial. If |overridable| is true,
@@ -91,6 +93,8 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
   base::OneShotTimer timer_;
 
   base::WeakPtrFactory<IOSSSLErrorHandler> weak_factory_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(IOSSSLErrorHandler);
 };

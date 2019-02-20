@@ -197,3 +197,5 @@ void ARQuickLookTabHelper::OnDownloadUpdated(web::DownloadTask* download_task) {
       NOTREACHED() << "Invalid state.";
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ARQuickLookTabHelper)
