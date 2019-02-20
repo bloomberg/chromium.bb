@@ -96,17 +96,19 @@ void SessionStorageNamespaceImplMojo::Reset() {
 
 void SessionStorageNamespaceImplMojo::Bind(
     blink::mojom::SessionStorageNamespaceRequest request,
-    int process_id) {
+    int process_id,
+    base::OnceClosure bind_done) {
   if (waiting_on_clone_population_) {
     bind_waiting_on_clone_population_ = true;
-    run_after_clone_population_.push_back(
-        base::BindOnce(&SessionStorageNamespaceImplMojo::Bind,
-                       base::Unretained(this), std::move(request), process_id));
+    run_after_clone_population_.push_back(base::BindOnce(
+        &SessionStorageNamespaceImplMojo::Bind, base::Unretained(this),
+        std::move(request), process_id, std::move(bind_done)));
     return;
   }
   DCHECK(IsPopulated());
   bindings_.AddBinding(this, std::move(request), process_id);
   bind_waiting_on_clone_population_ = false;
+  std::move(bind_done).Run();
 }
 
 void SessionStorageNamespaceImplMojo::PurgeUnboundAreas() {

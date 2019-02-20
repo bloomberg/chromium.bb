@@ -152,8 +152,7 @@ void SessionStorageContextMojo::OpenSessionStorage(
   }
 
   PurgeUnusedAreasIfNeeded();
-  found->second->Bind(std::move(request), process_id);
-  std::move(bind_done).Run();
+  found->second->Bind(std::move(request), process_id, std::move(bind_done));
 
   size_t total_cache_size, unused_area_count;
   GetStatistics(&total_cache_size, &unused_area_count);
