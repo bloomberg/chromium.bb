@@ -17,11 +17,31 @@ class ComputedStyle;
 class NGLayoutResult;
 struct MinMaxSizeInput;
 
+// Operations provided by a layout algorithm.
+class NGLayoutAlgorithmOperations {
+ public:
+  // Actual layout function. Lays out the children and descendants within the
+  // constraints given by the NGConstraintSpace. Returns a layout result with
+  // the resulting layout information.
+  // TODO(layout-dev): attempt to make this function const.
+  virtual scoped_refptr<NGLayoutResult> Layout() = 0;
+
+  // Computes the min-content and max-content intrinsic sizes for the given box.
+  // The result will not take any min-width, max-width or width properties into
+  // account. If the return value is empty, the caller is expected to synthesize
+  // this value from the overflow rect returned from Layout called with an
+  // available width of 0 and LayoutUnit::max(), respectively.
+  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
+      const MinMaxSizeInput&) const {
+    return base::nullopt;
+  }
+};
+
 // Base class for all LayoutNG algorithms.
 template <typename NGInputNodeType,
           typename NGBoxFragmentBuilderType,
           typename NGBreakTokenType>
-class CORE_EXPORT NGLayoutAlgorithm {
+class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   STACK_ALLOCATED();
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
@@ -44,22 +64,6 @@ class CORE_EXPORT NGLayoutAlgorithm {
                           break_token) {}
 
   virtual ~NGLayoutAlgorithm() = default;
-
-  // Actual layout function. Lays out the children and descendants within the
-  // constraints given by the NGConstraintSpace. Returns a layout result with
-  // the resulting layout information.
-  // TODO(layout-dev): attempt to make this function const.
-  virtual scoped_refptr<NGLayoutResult> Layout() = 0;
-
-  // Computes the min-content and max-content intrinsic sizes for the given box.
-  // The result will not take any min-width, max-width or width properties into
-  // account. If the return value is empty, the caller is expected to synthesize
-  // this value from the overflow rect returned from Layout called with an
-  // available width of 0 and LayoutUnit::max(), respectively.
-  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const {
-    return base::nullopt;
-  }
 
  protected:
   const NGConstraintSpace& ConstraintSpace() const { return constraint_space_; }
