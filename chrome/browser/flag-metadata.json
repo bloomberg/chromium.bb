@@ -3033,7 +3033,7 @@
   },
   {
     "name": "unfiltered-bluetooth-devices",
-    // "owners": [ "your-team" ],
+    "owners": [ "sonnysasaka", "qiyuh@google.com" ],
     "expiry_milestone": 76
   },
   {
