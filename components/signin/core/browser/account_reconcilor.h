@@ -23,7 +23,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -95,7 +94,6 @@ class AccountReconcilor : public KeyedService,
   AccountReconcilor(
       identity::IdentityManager* identity_manager,
       SigninClient* client,
-      GaiaCookieManagerService* cookie_manager_service,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
   ~AccountReconcilor() override;
 
@@ -314,9 +312,6 @@ class AccountReconcilor : public KeyedService,
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
-
-  // The GaiaCookieManagerService associated with this reconcilor.
-  GaiaCookieManagerService* cookie_manager_service_;
 
   bool registered_with_identity_manager_;
   bool registered_with_content_settings_;

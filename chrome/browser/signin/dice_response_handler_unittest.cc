@@ -136,7 +136,7 @@ class DiceResponseHandlerTest : public testing::Test,
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
             &signin_client_, signin::AccountConsistencyMethod::kDiceMigration);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
-        identity_test_env_.identity_manager(), &signin_client_, nullptr,
+        identity_test_env_.identity_manager(), &signin_client_,
         std::move(account_reconcilor_delegate));
     about_signin_internals_.Initialize(&signin_client_);
     account_reconcilor_->AddObserver(this);
