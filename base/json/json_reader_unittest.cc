@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include <memory>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
@@ -53,31 +53,29 @@ TEST(JSONReaderTest, EmbeddedComments) {
   std::string value;
   EXPECT_TRUE(root->GetAsString(&value));
   EXPECT_EQ("sample string", value);
-  std::unique_ptr<ListValue> list = ListValue::From(
-      JSONReader::ReadDeprecated("[1, /* comment, 2 ] */ \n 3]"));
-  ASSERT_TRUE(list);
-  EXPECT_EQ(2u, list->GetSize());
-  int int_val = 0;
-  EXPECT_TRUE(list->GetInteger(0, &int_val));
-  EXPECT_EQ(1, int_val);
-  EXPECT_TRUE(list->GetInteger(1, &int_val));
-  EXPECT_EQ(3, int_val);
-  list = ListValue::From(JSONReader::ReadDeprecated("[1, /*a*/2, 3]"));
-  ASSERT_TRUE(list);
-  EXPECT_EQ(3u, list->GetSize());
+  root = JSONReader::Read("[1, /* comment, 2 ] */ \n 3]");
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_list());
+  ASSERT_EQ(2u, root->GetList().size());
+  ASSERT_TRUE(root->GetList()[0].is_int());
+  EXPECT_EQ(1, root->GetList()[0].GetInt());
+  ASSERT_TRUE(root->GetList()[1].is_int());
+  EXPECT_EQ(3, root->GetList()[1].GetInt());
+  root = JSONReader::Read("[1, /*a*/2, 3]");
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_list());
+  EXPECT_EQ(3u, root->GetList().size());
   root = JSONReader::Read("/* comment **/42");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_int());
-  EXPECT_TRUE(root->GetAsInteger(&int_val));
-  EXPECT_EQ(42, int_val);
+  ASSERT_TRUE(root->is_int());
+  EXPECT_EQ(42, root->GetInt());
   root = JSONReader::Read(
       "/* comment **/\n"
       "// */ 43\n"
       "44");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_int());
-  EXPECT_TRUE(root->GetAsInteger(&int_val));
-  EXPECT_EQ(44, int_val);
+  EXPECT_EQ(44, root->GetInt());
 }
 
 TEST(JSONReaderTest, Ints) {
@@ -478,12 +476,12 @@ TEST(JSONReaderTest, UTF8Input) {
   EXPECT_TRUE(root->GetAsString(&str_val));
   EXPECT_EQ(L"\x7f51\x9875", UTF8ToWide(str_val));
 
-  std::unique_ptr<DictionaryValue> dict_val =
-      DictionaryValue::From(JSONReader::ReadDeprecated(
-          "{\"path\": \"/tmp/\xc3\xa0\xc3\xa8\xc3\xb2.png\"}"));
-  ASSERT_TRUE(dict_val);
-  EXPECT_TRUE(dict_val->GetString("path", &str_val));
-  EXPECT_EQ("/tmp/\xC3\xA0\xC3\xA8\xC3\xB2.png", str_val);
+  root = JSONReader::Read("{\"path\": \"/tmp/\xc3\xa0\xc3\xa8\xc3\xb2.png\"}");
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_dict());
+  const std::string* maybe_string = root->FindStringKey("path");
+  ASSERT_TRUE(maybe_string);
+  EXPECT_EQ("/tmp/\xC3\xA0\xC3\xA8\xC3\xB2.png", *maybe_string);
 }
 
 TEST(JSONReaderTest, InvalidUTF8Input) {
@@ -572,15 +570,15 @@ TEST(JSONReaderTest, ReadFromFile) {
 // Tests that the root of a JSON object can be deleted safely while its
 // children outlive it.
 TEST(JSONReaderTest, StringOptimizations) {
-  std::unique_ptr<Value> dict_literal_0;
-  std::unique_ptr<Value> dict_literal_1;
-  std::unique_ptr<Value> dict_string_0;
-  std::unique_ptr<Value> dict_string_1;
-  std::unique_ptr<Value> list_value_0;
-  std::unique_ptr<Value> list_value_1;
+  Value dict_literal_0;
+  Value dict_literal_1;
+  Value dict_string_0;
+  Value dict_string_1;
+  Value list_value_0;
+  Value list_value_1;
 
   {
-    std::unique_ptr<Value> root = JSONReader::ReadDeprecated(
+    Optional<Value> root = JSONReader::Read(
         "{"
         "  \"test\": {"
         "    \"foo\": true,"
@@ -595,46 +593,52 @@ TEST(JSONReaderTest, StringOptimizations) {
         "}",
         JSON_PARSE_RFC);
     ASSERT_TRUE(root);
+    ASSERT_TRUE(root->is_dict());
 
-    DictionaryValue* root_dict = nullptr;
-    ASSERT_TRUE(root->GetAsDictionary(&root_dict));
+    Value* dict = root->FindKeyOfType("test", Value::Type::DICTIONARY);
+    ASSERT_TRUE(dict);
+    Value* list = root->FindKeyOfType("list", Value::Type::LIST);
+    ASSERT_TRUE(list);
 
-    DictionaryValue* dict = nullptr;
-    ListValue* list = nullptr;
+    Value* to_move = dict->FindKey("foo");
+    ASSERT_TRUE(to_move);
+    dict_literal_0 = std::move(*to_move);
+    to_move = dict->FindKey("bar");
+    ASSERT_TRUE(to_move);
+    dict_literal_1 = std::move(*to_move);
+    to_move = dict->FindKey("baz");
+    ASSERT_TRUE(to_move);
+    dict_string_0 = std::move(*to_move);
+    to_move = dict->FindKey("moo");
+    ASSERT_TRUE(to_move);
+    dict_string_1 = std::move(*to_move);
+    ASSERT_TRUE(dict->RemoveKey("foo"));
+    ASSERT_TRUE(dict->RemoveKey("bar"));
+    ASSERT_TRUE(dict->RemoveKey("baz"));
+    ASSERT_TRUE(dict->RemoveKey("moo"));
 
-    ASSERT_TRUE(root_dict->GetDictionary("test", &dict));
-    ASSERT_TRUE(root_dict->GetList("list", &list));
-
-    ASSERT_TRUE(dict->Remove("foo", &dict_literal_0));
-    ASSERT_TRUE(dict->Remove("bar", &dict_literal_1));
-    ASSERT_TRUE(dict->Remove("baz", &dict_string_0));
-    ASSERT_TRUE(dict->Remove("moo", &dict_string_1));
-
-    ASSERT_EQ(2u, list->GetSize());
-    ASSERT_TRUE(list->Remove(0, &list_value_0));
-    ASSERT_TRUE(list->Remove(0, &list_value_1));
+    ASSERT_EQ(2u, list->GetList().size());
+    list_value_0 = std::move(list->GetList()[0]);
+    list_value_1 = std::move(list->GetList()[1]);
+    list->GetList().clear();
   }
 
-  bool b = false;
-  double d = 0;
-  std::string s;
+  ASSERT_TRUE(dict_literal_0.is_bool());
+  EXPECT_TRUE(dict_literal_0.GetBool());
 
-  EXPECT_TRUE(dict_literal_0->GetAsBoolean(&b));
-  EXPECT_TRUE(b);
+  ASSERT_TRUE(dict_literal_1.is_double());
+  EXPECT_EQ(3.14, dict_literal_1.GetDouble());
 
-  EXPECT_TRUE(dict_literal_1->GetAsDouble(&d));
-  EXPECT_EQ(3.14, d);
+  ASSERT_TRUE(dict_string_0.is_string());
+  EXPECT_EQ("bat", dict_string_0.GetString());
 
-  EXPECT_TRUE(dict_string_0->GetAsString(&s));
-  EXPECT_EQ("bat", s);
+  ASSERT_TRUE(dict_string_1.is_string());
+  EXPECT_EQ("cow", dict_string_1.GetString());
 
-  EXPECT_TRUE(dict_string_1->GetAsString(&s));
-  EXPECT_EQ("cow", s);
-
-  EXPECT_TRUE(list_value_0->GetAsString(&s));
-  EXPECT_EQ("a", s);
-  EXPECT_TRUE(list_value_1->GetAsString(&s));
-  EXPECT_EQ("b", s);
+  ASSERT_TRUE(list_value_0.is_string());
+  EXPECT_EQ("a", list_value_0.GetString());
+  ASSERT_TRUE(list_value_1.is_string());
+  EXPECT_EQ("b", list_value_1.GetString());
 }
 
 // A smattering of invalid JSON designed to test specific portions of the
