@@ -242,7 +242,7 @@ void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
   if (!JavaBridgeThread::CurrentlyOn()) {
     JavaBridgeThread::GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection,
             this, allow));
     return;
