@@ -5070,13 +5070,7 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
     return false;
 
-  // TODO(nasko): This check should be updated to apply to all URLs, not just
-  // standard ones.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
-    return false;
-  }
+  // TODO(nasko): Consider checking the |url| against CanAccessDataForOrigin.
 
   return true;
 }
