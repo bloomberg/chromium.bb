@@ -51,6 +51,8 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
+constexpr base::TimeDelta kUnusedIdleSocketTimeout =
+    base::TimeDelta::FromSeconds(10);
 const char kGroupName[] = "a";
 
 // Just check that all connect times are set to base::TimeTicks::Now(), for
@@ -125,6 +127,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
         http_proxy_socket_pool_(
             kMaxSockets,
             kMaxSocketsPerGroup,
+            kUnusedIdleSocketTimeout,
             &socket_factory_,
             &host_resolver_,
             nullptr /* proxy_delegate */,

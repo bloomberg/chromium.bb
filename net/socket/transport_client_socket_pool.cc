@@ -165,6 +165,7 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
 TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
+    base::TimeDelta unused_idle_socket_timeout,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
@@ -183,7 +184,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     : base_(this,
             max_sockets,
             max_sockets_per_group,
-            ClientSocketPool::unused_idle_socket_timeout(),
+            unused_idle_socket_timeout,
             ClientSocketPool::used_idle_socket_timeout(),
             new TransportConnectJobFactory(
                 client_socket_factory,

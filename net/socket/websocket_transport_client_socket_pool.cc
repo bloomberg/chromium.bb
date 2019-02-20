@@ -29,6 +29,7 @@ namespace net {
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
+    base::TimeDelta unused_idle_socket_timeout,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
@@ -46,6 +47,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     : TransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
+          unused_idle_socket_timeout,
           client_socket_factory,
           host_resolver,
           proxy_delegate,

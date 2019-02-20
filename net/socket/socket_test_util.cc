@@ -2148,6 +2148,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
     : TransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
+          base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
           socket_factory,
           nullptr /* host_resolver */,
           nullptr /* proxy_delegate */,

@@ -49,6 +49,8 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
+constexpr base::TimeDelta kUnusedIdleSocketTimeout =
+    base::TimeDelta::FromSeconds(10);
 const char * const kAuthHeaders[] = {
   "proxy-authorization", "Basic Zm9vOmJhcg=="
 };
@@ -73,6 +75,7 @@ class HttpProxyClientSocketPoolTest
       : pool_(std::make_unique<TransportClientSocketPool>(
             kMaxSockets,
             kMaxSocketsPerGroup,
+            kUnusedIdleSocketTimeout,
             &socket_factory_,
             session_deps_.host_resolver.get(),
             nullptr /* proxy_delegate */,
@@ -95,8 +98,8 @@ class HttpProxyClientSocketPoolTest
 
   void InitPoolWithProxyDelegate(ProxyDelegate* proxy_delegate) {
     pool_ = std::make_unique<TransportClientSocketPool>(
-        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_,
-        session_deps_.host_resolver.get(), proxy_delegate,
+        kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        &socket_factory_, session_deps_.host_resolver.get(), proxy_delegate,
         session_deps_.cert_verifier.get(),
         session_deps_.channel_id_service.get(),
         session_deps_.transport_security_state.get(),

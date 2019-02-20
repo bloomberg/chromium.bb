@@ -188,9 +188,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Returns the maximum amount of time to wait before retrying a connect.
   static const int kMaxConnectRetryIntervalMs = 250;
 
-  static base::TimeDelta unused_idle_socket_timeout();
-  static void set_unused_idle_socket_timeout(base::TimeDelta timeout);
-
   static base::TimeDelta used_idle_socket_timeout();
   static void set_used_idle_socket_timeout(base::TimeDelta timeout);
 

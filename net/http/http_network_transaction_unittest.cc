@@ -688,6 +688,7 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
     CertVerifier* /* cert_verifier */)
     : ParentPool(0,
                  0,
+                 base::TimeDelta(),
                  NULL,
                  host_resolver,
                  NULL,
@@ -14262,8 +14263,9 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   // each round of multi-round authentication.
   HttpNetworkSessionPeer session_peer(session.get());
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
-      50,  // Max sockets for pool
-      1,   // Max sockets per group
+      50,                                // Max sockets for pool
+      1,                                 // Max sockets per group
+      base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
       session_deps_.socket_factory.get(), session_deps_.host_resolver.get(),
       nullptr /* proxy_delegate */, session_deps_.cert_verifier.get(),
       session_deps_.channel_id_service.get(),

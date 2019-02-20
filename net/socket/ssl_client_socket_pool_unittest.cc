@@ -55,6 +55,8 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
+constexpr base::TimeDelta kUnusedIdleSocketTimeout =
+    base::TimeDelta::FromSeconds(10);
 const char kGroupName[] = "a";
 
 class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
@@ -92,6 +94,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         http_proxy_socket_pool_(
             kMaxSockets,
             kMaxSocketsPerGroup,
+            kUnusedIdleSocketTimeout,
             &socket_factory_,
             &host_resolver_,
             nullptr /* proxy_delegate */,
@@ -111,10 +114,10 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
 
   void CreatePool(bool http_proxy_pool) {
     pool_.reset(new TransportClientSocketPool(
-        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_, &host_resolver_,
-        NULL /* proxy_delegate */, cert_verifier_.get(),
-        NULL /* channel_id_service */, transport_security_state_.get(),
-        &ct_verifier_, &ct_policy_enforcer_,
+        kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        &socket_factory_, &host_resolver_, NULL /* proxy_delegate */,
+        cert_verifier_.get(), NULL /* channel_id_service */,
+        transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
         nullptr /* ssl_client_session_cache */,
         nullptr /* ssl_client_session_cache_privacy_mode */,
         nullptr /* ssl_config_service */,
