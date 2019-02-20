@@ -238,6 +238,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // PostAfterStartupTask()).
   virtual void SetBrowserStartupIsCompleteForTesting();
 
+  // Returns true if the embedder is in the process of shutting down, whether
+  // because of the user closing the browser or the OS is shutting down.
+  virtual bool IsShuttingDown();
+
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will
   // own the delegate.

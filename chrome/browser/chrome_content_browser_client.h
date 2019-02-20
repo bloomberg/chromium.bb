@@ -110,6 +110,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;
+  bool IsShuttingDown() override;
   bool IsValidStoragePartitionId(content::BrowserContext* browser_context,
                                  const std::string& partition_id) override;
   void GetStoragePartitionConfigForSite(

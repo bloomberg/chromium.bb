@@ -74,6 +74,10 @@ WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
   return nullptr;
 }
 
+bool ContentBrowserClient::IsShuttingDown() {
+  return false;
+}
+
 bool ContentBrowserClient::AllowGpuLaunchRetryOnIOThread() {
   return true;
 }
