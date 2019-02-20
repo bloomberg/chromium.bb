@@ -47,29 +47,29 @@ The below is a list of major libraries. For a complete list, look at
 
 * **Reference counting**
 
-  [RefCounted], [RefPtr]
+  [RefCounted]
 
 * **Memory**
 
-  [Allocator.h] (memory placement macros)
+  [allocator.h] (memory placement macros)
 
 * **Functors, binding**
 
-  [Functional.h]
+  [functional.h]
 
 * **Threading**
 
-  [Threading.h], [ThreadingPrimitives.h]
+  [threading.h], [threading_primitives.h]
 
 * **Compile-time switch macros**
 
-  [Compiler.h] (e.g. `COMPILER(GCC)`),
-  [CPU.h] (e.g. `WTF_CPU_ARM_NEON`),
+  [compiler.h] (e.g. `OBJC_CLASS`),
+  [cpu.h] (e.g. `WTF_CPU_ARM_NEON`),
 
 * **Miscellaneous**
 
-  [StdLibExtras.h] (`DEFINE_STATIC_LOCAL` etc.),
-  [Time.h]
+  [std_lib_extras.h] (`DEFINE_STATIC_LOCAL` etc.),
+  [time.h]
 
 ## History
 
@@ -87,7 +87,7 @@ the WebKit era. WTF was initially under the directory Source/JavaScriptCore,
 but it moved to Source/WTF/wtf in 2011-2012, then to Source/wtf in 2013.
 
 Blink forked WebKit in 2013. In 2017, the directory finally [moved to the
-current location][4] Source/platform/wtf.
+current location][4] platform/wtf.
 
 [the directory listing]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/
 [base]: https://cs.chromium.org/chromium/src/base/
@@ -100,15 +100,15 @@ current location][4] Source/platform/wtf.
 [StringBuilder]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/string_builder.h
 [CString]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/cstring.h
 [RefCounted]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/ref_counted.h
-[Allocator.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/allocator.h
-[Functional.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/functional.h
-[Threading.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading.h
-[ThreadingPrimitives.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading_primitives.h
-[Compiler.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/compiler.h
-[CPU.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/cpu.h
+[allocator.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/allocator.h
+[functional.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/functional.h
+[threading.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading.h
+[threading_primitives.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading_primitives.h
+[compiler.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/compiler.h
+[cpu.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/cpu.h
 [build_config.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/build_config.h
-[StdLibExtras.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/std_lib_extras.h
-[Time.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/time.h
+[std_lib_extras.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/std_lib_extras.h
+[time.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/time.h
 [1]: https://chromium.googlesource.com/chromium/src/+/e372c152fc6e57743ebc508fe17f6eb131b4ff8d
 [2]: https://chromium.googlesource.com/chromium/src/+/547a6ca360a56fbee3d5ea4a71ba18f91622455c
 [3]: https://chromium.googlesource.com/chromium/src/+/478890427ee03fd88e6f0f58ee8220512044bed9/third_party/WebKit/WebCore/kwq/KWQAssertions.h
