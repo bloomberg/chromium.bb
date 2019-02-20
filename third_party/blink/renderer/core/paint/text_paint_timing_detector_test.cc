@@ -28,10 +28,20 @@ class TextPaintTimingDetectorTest
     return GetFrameView().GetPaintTimingDetector();
   }
 
-  unsigned CountRecords() {
+  unsigned CountVisibleTexts() {
+    return GetPaintTimingDetector()
+               .GetTextPaintTimingDetector()
+               .id_record_map_.size() -
+           GetPaintTimingDetector()
+               .GetTextPaintTimingDetector()
+               .detached_ids_.size();
+    ;
+  }
+
+  unsigned CountDetachedTexts() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .recorded_text_node_ids_.size();
+        .detached_ids_.size();
   }
 
   void InvokeCallback() {
@@ -145,7 +155,8 @@ TEST_F(TextPaintTimingDetectorTest, NodeRemovedBeforeAssigningSwapTime) {
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("remove"));
   InvokeCallback();
-  EXPECT_EQ(CountRecords(), 0u);
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+  EXPECT_EQ(CountDetachedTexts(), 1u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
@@ -189,6 +200,35 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   EXPECT_GE(time3, second_largest);
   EXPECT_GE(second_last, time2);
   EXPECT_GE(time3, second_last);
+}
+
+// There is a risk that a text that is just recorded is selected to be the
+// metric candidate. The algorithm should skip the text record if its paint time
+// hasn't been recorded yet.
+TEST_F(TextPaintTimingDetectorTest, PendingTextIsLargest) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  GetFrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  // We do not call swap-time callback here in order to not set the paint time.
+  EXPECT_FALSE(TextRecordOfLargestTextPaint());
+}
+
+// The same node may be visited by recordText for twice before the paint time
+// is set. In some previous design, this caused the node to be recorded twice.
+TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  Element* text = AppendDivElementToBody("text");
+  GetFrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  // Change a property of the text to trigger repaint.
+  text->setAttribute(html_names::kStyleAttr, AtomicString("color:red;"));
+  GetFrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  InvokeCallback();
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(text));
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
@@ -365,10 +405,10 @@ TEST_F(TextPaintTimingDetectorTest, TreatEllipsisAsText) {
   // tracking node while layout ng is using the layout text as the tracking
   // node.
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(CountRecords(), 1u);
+    EXPECT_EQ(CountVisibleTexts(), 1u);
   } else {
     // The text and the elllipsis are recorded.
-    EXPECT_EQ(CountRecords(), 2u);
+    EXPECT_EQ(CountVisibleTexts(), 2u);
   }
 }
 
@@ -377,7 +417,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureFileUploadController) {
   Element* element = GetDocument().QuerySelector("input");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(CountRecords(), 1u);
+  EXPECT_EQ(CountVisibleTexts(), 1u);
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::IdForNode(element));
 }
@@ -393,7 +433,7 @@ TEST_F(TextPaintTimingDetectorTest, NotCapturingListMarkers) {
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(CountRecords(), 0u);
+  EXPECT_EQ(CountVisibleTexts(), 0u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
@@ -407,7 +447,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
       ToSVGTextContentElement(GetDocument().QuerySelector("text"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(CountRecords(), 1u);
+  EXPECT_EQ(CountVisibleTexts(), 1u);
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(elem));
 }
 
