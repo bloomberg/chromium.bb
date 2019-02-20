@@ -137,8 +137,6 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   TestingProfileManager profile_manager_;
 };
 
@@ -184,8 +182,8 @@ int FakeConsumer::GetAndClearInvalidationServiceSetCount() {
   return invalidation_service_set_count;
 }
 
-const invalidation::InvalidationService*
-FakeConsumer::GetInvalidationService() const {
+const invalidation::InvalidationService* FakeConsumer::GetInvalidationService()
+    const {
   return invalidation_service_;
 }
 
@@ -195,9 +193,6 @@ AffiliatedInvalidationServiceProviderImplTest::
       profile_invalidation_service_(nullptr),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
       user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
-      test_shared_loader_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
   cros_settings_test_helper_.InstallAttributes()->SetCloudManaged("example.com",
                                                                   "device_id");
@@ -209,7 +204,7 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   ASSERT_TRUE(profile_manager_.SetUp());
 
   chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
-      test_shared_loader_factory_,
+      test_url_loader_factory_.GetSafeWeakWrapper(),
       TestingBrowserProcess::GetGlobal()->local_state());
 
   invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
@@ -223,7 +218,6 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   consumer_.reset();
   provider_->Shutdown();
   provider_.reset();
-  test_shared_loader_factory_->Detach();
 
   invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
       ->RegisterTestingFactory(
