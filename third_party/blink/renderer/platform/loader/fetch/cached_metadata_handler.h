@@ -72,6 +72,8 @@ class CachedMetadataHandler
   virtual void OnMemoryDump(WebProcessMemoryDump* pmd,
                             const String& dump_prefix) const = 0;
 
+  virtual size_t GetCodeCacheSize() const = 0;
+
  protected:
   CachedMetadataHandler() = default;
 };

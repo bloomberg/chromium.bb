@@ -63,6 +63,11 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
     // No memory to report here because it is attributed to |parent_|.
   }
 
+  size_t GetCodeCacheSize() const override {
+    // No need to implement this because it is attributed to |parent_|.
+    return 0;
+  }
+
  private:
   Member<SourceKeyedCachedMetadataHandler> parent_;
   Key key_;

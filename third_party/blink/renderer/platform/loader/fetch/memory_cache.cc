@@ -297,6 +297,7 @@ void MemoryCache::TypeStatistic::AddResource(Resource* o) {
   decoded_size += o->DecodedSize();
   encoded_size += o->EncodedSize();
   overhead_size += o->OverheadSize();
+  code_cache_size += o->CodeCacheSize();
   encoded_size_duplicated_in_data_urls +=
       o->Url().ProtocolIsData() ? o->EncodedSize() : 0;
 }
@@ -428,8 +429,11 @@ bool MemoryCache::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     dump5->AddScalar("size", "bytes",
                      stats.fonts.encoded_size + stats.fonts.overhead_size);
     WebMemoryAllocatorDump* dump6 =
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Code_cache");
+    dump6->AddScalar("size", "bytes", stats.scripts.code_cache_size);
+    WebMemoryAllocatorDump* dump7 =
         memory_dump->CreateMemoryAllocatorDump("web_cache/Other_resources");
-    dump6->AddScalar("size", "bytes",
+    dump7->AddScalar("size", "bytes",
                      stats.other.encoded_size + stats.other.overhead_size);
     return true;
   }
