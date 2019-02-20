@@ -116,10 +116,12 @@ class AutofillDownloadManager {
 
  private:
   friend class AutofillDownloadManagerTest;
+  friend struct ScopedActiveAutofillExperiments;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Upload);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Query);
-  friend struct ScopedActiveAutofillExperiments;
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, RetryLimit_Upload);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, RetryLimit_Query);
 
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
@@ -159,6 +161,9 @@ class AutofillDownloadManager {
   // Concatenates |forms_in_query| into one signature.
   std::string GetCombinedSignature(
       const std::vector<std::string>& forms_in_query) const;
+
+  // Returns the maximum number of attempts for a given autofill server request.
+  static int GetMaxServerAttempts();
 
   void OnSimpleLoaderComplete(
       std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,

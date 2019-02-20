@@ -768,6 +768,163 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   EXPECT_EQ(1, buckets[0].count);
 }
 
+TEST_F(AutofillDownloadManagerTest, RetryLimit_Query) {
+  FormData form;
+  FormFieldData field;
+  field.label = UTF8ToUTF16("address");
+  field.name = UTF8ToUTF16("address");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("address2");
+  field.name = UTF8ToUTF16("address2");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("city");
+  field.name = UTF8ToUTF16("city");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = UTF8ToUTF16("Submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  // Request with id 0.
+  base::HistogramTester histogram;
+  EXPECT_TRUE(
+      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+
+  const auto kTimeDeltaMargin = base::TimeDelta::FromMilliseconds(100);
+  const int max_attempts = download_manager_.GetMaxServerAttempts();
+  int attempt = 0;
+  while (true) {
+    auto* request = test_url_loader_factory_.GetPendingRequest(attempt);
+    ASSERT_TRUE(request != nullptr);
+
+    // Request error incurs a retry after 1 second.
+    test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+        request,
+        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+        "<html></html>", network::URLLoaderCompletionStatus(net::OK));
+
+    EXPECT_EQ(1U, responses_.size());
+    const auto& response = responses_.front();
+    EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_QUERY_FAILED,
+              response.type_of_response);
+    EXPECT_EQ(net::HTTP_INTERNAL_SERVER_ERROR, response.error);
+    responses_.pop_front();
+
+    if (++attempt >= max_attempts)
+      break;
+
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        download_manager_.loader_backoff_.GetTimeUntilRelease() +
+            kTimeDeltaMargin);
+    run_loop.Run();
+  }
+
+  // There should not be an additional retry.
+  EXPECT_EQ(attempt, max_attempts);
+  EXPECT_EQ(nullptr, test_url_loader_factory_.GetPendingRequest(attempt));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  // Verify metrics.
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
+                              net::HTTP_INTERNAL_SERVER_ERROR, max_attempts);
+  auto buckets = histogram.GetAllSamples("Autofill.Query.FailingPayloadSize");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_EQ(max_attempts, buckets[0].count);
+}
+
+TEST_F(AutofillDownloadManagerTest, RetryLimit_Upload) {
+  FormData form;
+  FormFieldData field;
+  field.label = UTF8ToUTF16("address");
+  field.name = UTF8ToUTF16("address");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("address2");
+  field.name = UTF8ToUTF16("address2");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("city");
+  field.name = UTF8ToUTF16("city");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = UTF8ToUTF16("Submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram;
+  const auto kTimeDeltaMargin = base::TimeDelta::FromMilliseconds(100);
+
+  auto form_structure = std::make_unique<FormStructure>(form);
+  form_structure->set_submission_source(SubmissionSource::FORM_SUBMISSION);
+
+  // Request with id 0.
+  EXPECT_TRUE(download_manager_.StartUploadRequest(
+      *form_structure, true, ServerFieldTypeSet(), std::string(), true,
+      pref_service_.get()));
+
+  const int max_attempts = download_manager_.GetMaxServerAttempts();
+  int attempt = 0;
+  while (true) {
+    auto* request = test_url_loader_factory_.GetPendingRequest(attempt);
+    ASSERT_TRUE(request != nullptr);
+
+    // Simulate a server failure.
+    test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+        request,
+        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+        "", network::URLLoaderCompletionStatus(net::OK));
+
+    // Check that it was a failure.
+    ASSERT_EQ(1U, responses_.size());
+    const auto& response = responses_.front();
+    EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
+              response.type_of_response);
+    EXPECT_EQ(net::HTTP_INTERNAL_SERVER_ERROR, response.error);
+    responses_.pop_front();
+
+    if (++attempt >= max_attempts)
+      break;
+
+    // A retry should have been scheduled with wait time on the order of
+    // |delay|.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        download_manager_.loader_backoff_.GetTimeUntilRelease() +
+            kTimeDeltaMargin);
+    run_loop.Run();
+  }
+
+  // There should not be an additional retry.
+  EXPECT_EQ(attempt, max_attempts);
+  EXPECT_EQ(nullptr, test_url_loader_factory_.GetPendingRequest(attempt));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  // Verify metrics.
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
+                              net::HTTP_INTERNAL_SERVER_ERROR, max_attempts);
+  auto buckets = histogram.GetAllSamples("Autofill.Upload.FailingPayloadSize");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_EQ(max_attempts, buckets[0].count);
+}
+
 TEST_F(AutofillDownloadManagerTest, QueryTooManyFieldsTest) {
   // Create a query that contains too many fields for the server.
   std::vector<FormData> forms(21);

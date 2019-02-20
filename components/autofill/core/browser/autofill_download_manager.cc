@@ -108,6 +108,12 @@ constexpr char kGoogEncodeResponseIfExecutable[] =
 
 constexpr char kDefaultAPIKey[] = "";
 
+// The maximum number of attempts for a given autofill request.
+constexpr base::FeatureParam<int> kAutofillMaxServerAttempts(
+    &features::kAutofillServerCommunication,
+    "max-attempts",
+    5);
+
 // Returns the base URL for the autofill server.
 GURL GetAutofillServerURL() {
   // If a valid autofill server URL is specified on the command line, then the
@@ -471,6 +477,7 @@ struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
   RequestType request_type;
   std::string payload;
+  int num_attempts = 0;
 };
 
 ScopedActiveAutofillExperiments::ScopedActiveAutofillExperiments() {
@@ -815,6 +822,16 @@ std::string AutofillDownloadManager::GetCombinedSignature(
   return signature;
 }
 
+// static
+int AutofillDownloadManager::GetMaxServerAttempts() {
+  // This value is constant for the life of the browser, so we cache it
+  // statically on first use to avoid re-parsing the param on each retry
+  // opportunity. The range is forced to be within [1, 20].
+  static int max_attempts =
+      std::max(1, std::min(20, kAutofillMaxServerAttempts.Get()));
+  return max_attempts;
+}
+
 void AutofillDownloadManager::OnSimpleLoaderComplete(
     std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
     FormRequestData request_data,
@@ -861,6 +878,10 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
 
     // If the failure was a client error don't retry.
     if (response_code >= 400 && response_code <= 499)
+      return;
+
+    // If we've exhausted the maximum number of attempts, don't retry.
+    if (++request_data.num_attempts >= GetMaxServerAttempts())
       return;
 
     base::TimeDelta backoff = loader_backoff_.GetTimeUntilRelease();
