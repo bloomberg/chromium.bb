@@ -21,6 +21,13 @@ Polymer({
     certList: Boolean,
 
     /**
+     * Set true if the dropdown list should allow only device-wide
+     * certificates.
+     * Note: only used when |items| is a list of certificates.
+     */
+    deviceCertsOnly: Boolean,
+
+    /**
      * Array of item values to select from.
      * @type {!Array<string>}
      */
@@ -99,6 +106,9 @@ Polymer({
   getItemEnabled_: function(item) {
     if (this.certList) {
       const cert = /** @type {chrome.networkingPrivate.Certificate}*/ (item);
+      if (this.deviceCertsOnly && !(cert.deviceWide || cert.isDefault)) {
+        return false;
+      }
       return !!cert.hash;
     }
     return true;

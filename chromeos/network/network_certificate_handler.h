@@ -59,6 +59,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertificateHandler
 
     // True if a user certificate is stored in a hardware slot.
     bool hardware_backed = false;
+
+    // True if the certificate is device-wide.
+    bool device_wide = false;
   };
 
   NetworkCertificateHandler();

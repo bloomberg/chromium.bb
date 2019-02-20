@@ -48,7 +48,7 @@
             value="{{value::change}}" aria-label$="[[label]]">
           <template is="dom-repeat" items="[[items]]">
             <option value="[[getItemValue_(item)]]"
-                disabled="[[!getItemEnabled_(item)]]">
+                disabled="[[!getItemEnabled_(item, deviceCertsOnly)]]">
               [[getItemLabel_(item, oncPrefix)]]
             </option>
           </template>
