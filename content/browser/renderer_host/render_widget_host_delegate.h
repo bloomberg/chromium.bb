@@ -18,6 +18,7 @@
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"
@@ -237,7 +238,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // WebContents changes. This method is only called on an inner WebContents and
   // will eventually notify all the RenderWidgetHostViews belonging to that
   // WebContents.
-  virtual void OnRenderFrameProxyVisibilityChanged(bool visible) {}
+  virtual void OnRenderFrameProxyVisibilityChanged(
+      blink::mojom::FrameVisibility visibility) {}
 
   // Update the renderer's cache of the screen rect of the view and window.
   virtual void SendScreenRects() {}
