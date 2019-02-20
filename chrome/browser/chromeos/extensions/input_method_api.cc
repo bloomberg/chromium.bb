@@ -254,26 +254,11 @@ InputMethodPrivateShowInputViewFunction::Run() {
 #else
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (!keyboard_client->is_keyboard_enabled()) {
-    keyboard_client->ShowKeyboard();
-    return RespondNow(NoArguments());
+    return RespondNow(Error(kErrorFailToShowInputView));
   }
 
-  // Temporarily enable the onscreen keyboard if there is no keyboard enabled.
-  // This will be cleared when the keybaord is hidden.
-  keyboard_client->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kTemporarilyEnabled);
-  keyboard_client->GetKeyboardEnabled(base::BindOnce(
-      &InputMethodPrivateShowInputViewFunction::OnGetIsEnabled, this));
-  return RespondLater();
-}
-
-void InputMethodPrivateShowInputViewFunction::OnGetIsEnabled(bool enabled) {
-  if (!enabled) {
-    Respond(Error(kErrorFailToShowInputView));
-    return;
-  }
-  ChromeKeyboardControllerClient::Get()->ShowKeyboard();
-  Respond(NoArguments());
+  keyboard_client->ShowKeyboard();
+  return RespondNow(NoArguments());
 #endif
 }
 
