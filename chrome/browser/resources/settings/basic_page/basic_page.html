@@ -21,6 +21,7 @@
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../contained_shell_page/contained_shell_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
+<link rel="import" href="../contained_shell_page/contained_shell_page.html">
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
@@ -201,7 +202,7 @@
           <settings-section
               page-title="$i18n{containedShellPageTitle}"
               section="contained-shell">
-            <settings-contained-shell-page>
+            <settings-contained-shell-page prefs="{{prefs}}">
             </settings-contained-shell-page>
           </settings-section>
         </template>

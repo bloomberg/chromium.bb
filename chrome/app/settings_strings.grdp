@@ -487,8 +487,26 @@
     <message name="IDS_SETTINGS_CONTAINED_SHELL_LABEL" desc="The text associated with the contained shell section setting." translateable="false">
       Contained Shell
     </message>
-    <message name="IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT" desc="The subtext associated with the contained shell section setting." translateable="false">
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_ENABLE" desc="Text shown when displaying the enable Contained Shell button." translateable="false">
       Enables the Contained Shell for the next sign in.
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_DISABLE" desc="Text shown when displaying the disable Contained Shell button." translateable="false">
+      Disable the Contained Shell and return to the normal Chrome OS experience.
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_TURN_OFF" desc="Label for the button that disables the Contained Shell." translateable="false">
+      Turn off
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_TITLE" desc="Title for the confirmation dialog when disabling the Contained Shell." translateable="false">
+      Turn off the Contained Shell
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_TITLE" desc="Title for the confirmation dialog when enabling the Contained Shell." translateable="false">
+      Turn on the Contained Shell
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_BODY" desc="Body text for the confirmation dialog when disabling the Contained Shell." translateable="false">
+      This will turn off the Contained Shell, sign you out and return you to the normal Chrome OS experience.
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_BODY" desc="Body text for the confirmation dialog when enabling the Contained Shell." translateable="false">
+      This will sign you out and turn on the Contained Shell experience.
     </message>
     <!-- Crostini Page -->
     <message name="IDS_SETTINGS_CROSTINI_TITLE" desc="The title of Crostini section.">

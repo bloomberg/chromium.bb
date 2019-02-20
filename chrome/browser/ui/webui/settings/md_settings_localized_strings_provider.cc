@@ -489,8 +489,20 @@ void AddContainedShellStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"containedShellPageTitle", IDS_SETTINGS_CONTAINED_SHELL_TITLE},
       {"containedShellPageLabel", IDS_SETTINGS_CONTAINED_SHELL_LABEL},
-      {"containedShellPageSubtext", IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT},
+      {"containedShellPageSubtextEnable",
+       IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_ENABLE},
+      {"containedShellPageSubtextDisable",
+       IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_DISABLE},
       {"containedShellTurnOn", IDS_SETTINGS_TURN_ON},
+      {"containedShellTurnOff", IDS_SETTINGS_CONTAINED_SHELL_TURN_OFF},
+      {"containedShellEnabledDialogTitle",
+       IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_TITLE},
+      {"containedShellDisabledDialogTitle",
+       IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_TITLE},
+      {"containedShellEnabledDialogBody",
+       IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_BODY},
+      {"containedShellDisabledDialogBody",
+       IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_BODY},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
