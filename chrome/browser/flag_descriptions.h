@@ -1350,9 +1350,6 @@ extern const char kContextualSearchSecondTapDescription[];
 extern const char kContextualSearchUnityIntegrationName[];
 extern const char kContextualSearchUnityIntegrationDescription[];
 
-extern const char kDisplayCutoutAPIName[];
-extern const char kDisplayCutoutAPIDescription[];
-
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 

@@ -424,9 +424,8 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnablePageLifecycle(true);
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI) &&
-      base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_P) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_P) {
     // Display Cutout is limited to Android P+.
     WebRuntimeFeatures::EnableDisplayCutoutAPI(true);
   }

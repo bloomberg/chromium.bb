@@ -3631,12 +3631,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalProductivityFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
-#if defined(OS_ANDROID)
-    {"enable-display-cutout-api", flag_descriptions::kDisplayCutoutAPIName,
-     flag_descriptions::kDisplayCutoutAPIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kDisplayCutoutAPI)},
-#endif  // OS_ANDROID
-
 #if defined(USE_AURA)
     {"touchpad-overscroll-history-navigation",
      flag_descriptions::kTouchpadOverscrollHistoryNavigationName,
