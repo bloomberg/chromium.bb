@@ -201,10 +201,11 @@ static void ProduceCacheInternal(
     const KURL& source_url,
     const TextPosition& source_start_position,
     bool is_streamed,
+    const char* trace_name,
     V8CodeCache::ProduceCacheOptions produce_cache_options,
     v8::ScriptCompiler::CompileOptions compile_options,
     ScriptStreamer::NotStreamingReason not_streaming_reason) {
-  TRACE_EVENT0("v8", "v8.compile");
+  TRACE_EVENT0("v8", trace_name);
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
@@ -214,7 +215,7 @@ static void ProduceCacheInternal(
       break;
     case V8CodeCache::ProduceCacheOptions::kProduceCodeCache: {
       constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
-      TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
+      TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, trace_name, "fileName",
                          source_url.GetString().Utf8());
 
       std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
@@ -239,7 +240,7 @@ static void ProduceCacheInternal(
       }
 
       TRACE_EVENT_END1(
-          kTraceEventCategoryGroup, "v8.compile", "data",
+          kTraceEventCategoryGroup, trace_name, "data",
           inspector_compile_script_event::Data(
               source_url.GetString(), source_start_position,
               inspector_compile_script_event::V8CacheResult(
@@ -264,7 +265,7 @@ void V8CodeCache::ProduceCache(
   ProduceCacheInternal(isolate, script->GetUnboundScript(),
                        source.CacheHandler(), source.Source().length(),
                        source.Url(), source.StartPosition(), source.Streamer(),
-                       produce_cache_options, compile_options,
+                       "v8.compile", produce_cache_options, compile_options,
                        source.NotStreamingReason());
 }
 
@@ -273,12 +274,12 @@ void V8CodeCache::ProduceCache(v8::Isolate* isolate,
                                size_t source_text_length,
                                const KURL& source_url,
                                const TextPosition& source_start_position) {
-  ProduceCacheInternal(isolate, produce_cache_data->UnboundScript(isolate),
-                       produce_cache_data->CacheHandler(), source_text_length,
-                       source_url, source_start_position, false,
-                       produce_cache_data->GetProduceCacheOptions(),
-                       produce_cache_data->GetCompileOptions(),
-                       ScriptStreamer::kModuleScript);
+  ProduceCacheInternal(
+      isolate, produce_cache_data->UnboundScript(isolate),
+      produce_cache_data->CacheHandler(), source_text_length, source_url,
+      source_start_position, false, "v8.compileModule",
+      produce_cache_data->GetProduceCacheOptions(),
+      produce_cache_data->GetCompileOptions(), ScriptStreamer::kModuleScript);
 }
 
 uint32_t V8CodeCache::TagForCodeCache(
