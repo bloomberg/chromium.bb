@@ -128,7 +128,7 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   extensions::ExtensionBrowserTest::SetUpOnMainThread();
-  ExtensionToolbarMenuView::set_close_menu_delay_for_testing(0);
+  ExtensionToolbarMenuView::set_close_menu_delay_for_testing(base::TimeDelta());
 
   auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   auto* toolbar_button_provider = browser_view->toolbar_button_provider();

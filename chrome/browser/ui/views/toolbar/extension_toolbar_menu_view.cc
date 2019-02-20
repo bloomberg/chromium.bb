@@ -22,7 +22,7 @@ namespace {
 // The delay before we close the app menu if this was opened for a drop so that
 // the user can see a browser action if one was moved.
 // This can be changed for tests.
-int g_close_menu_delay = 300;
+base::TimeDelta g_close_menu_delay = base::TimeDelta::FromMilliseconds(300);
 }
 
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(
@@ -85,7 +85,8 @@ void ExtensionToolbarMenuView::OnBoundsChanged(
   menu_item_->GetParentMenuItem()->ChildrenChanged();
 }
 
-void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(int delay) {
+void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(
+    base::TimeDelta delay) {
   g_close_menu_delay = delay;
 }
 
@@ -107,7 +108,7 @@ void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
         FROM_HERE,
         base::BindOnce(&ExtensionToolbarMenuView::CloseAppMenu,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(g_close_menu_delay));
+        g_close_menu_delay);
   }
 }
 
