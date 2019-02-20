@@ -40,9 +40,9 @@ struct VulkanFunctionPointers {
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
   // Unassociated functions
+  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn = nullptr;
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
   PFN_vkCreateInstance vkCreateInstanceFn = nullptr;
-  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn = nullptr;
   PFN_vkEnumerateInstanceExtensionProperties
       vkEnumerateInstanceExtensionPropertiesFn = nullptr;
   PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerPropertiesFn =
@@ -101,16 +101,26 @@ struct VulkanFunctionPointers {
   PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
   PFN_vkGetDeviceQueue vkGetDeviceQueueFn = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatusFn = nullptr;
+  PFN_vkGetImageMemoryRequirements vkGetImageMemoryRequirementsFn = nullptr;
   PFN_vkResetFences vkResetFencesFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
   // Android only device functions.
 #if defined(OS_ANDROID)
-  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
+  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
+#endif
+
+  // Device functions shared between Linux and Android.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
+#endif
+
+  // Linux-only device functions.
+#if defined(OS_LINUX)
+  PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
 #endif
 
   // Queue functions
@@ -220,19 +230,28 @@ struct VulkanFunctionPointers {
 #define vkFreeMemory gpu::GetVulkanFunctionPointers()->vkFreeMemoryFn
 #define vkGetDeviceQueue gpu::GetVulkanFunctionPointers()->vkGetDeviceQueueFn
 #define vkGetFenceStatus gpu::GetVulkanFunctionPointers()->vkGetFenceStatusFn
+#define vkGetImageMemoryRequirements \
+  gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirementsFn
 #define vkResetFences gpu::GetVulkanFunctionPointers()->vkResetFencesFn
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
 
 #if defined(OS_ANDROID)
-#define vkImportSemaphoreFdKHR \
-  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #define vkGetAndroidHardwareBufferPropertiesANDROID \
   gpu::GetVulkanFunctionPointers()                  \
       ->vkGetAndroidHardwareBufferPropertiesANDROIDFn
+#define vkImportSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #define vkGetSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
+#endif
+
+#if defined(OS_LINUX)
+#define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
 #endif
 
 // Queue functions

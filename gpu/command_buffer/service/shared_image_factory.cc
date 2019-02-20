@@ -25,6 +25,10 @@
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/trace_util.h"
 
+#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/command_buffer/service/external_vk_image_factory.h"
+#endif
+
 namespace gpu {
 // Overrides for flat_set lookups:
 bool operator<(
@@ -62,10 +66,15 @@ SharedImageFactory::SharedImageFactory(
                                                                workarounds,
                                                                gpu_feature_info,
                                                                image_factory)),
+#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
+      interop_backing_factory_(
+          std::make_unique<ExternalVkImageFactory>(context_state)),
+#endif
       wrapped_sk_image_factory_(
           gpu_preferences.enable_raster_to_sk_image
               ? std::make_unique<raster::WrappedSkImageFactory>(context_state)
-              : nullptr) {}
+              : nullptr) {
+}
 
 SharedImageFactory::~SharedImageFactory() {
   DCHECK(shared_images_.empty());
@@ -76,18 +85,39 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
+  if (using_vulkan_ && (usage & SHARED_IMAGE_USAGE_GLES2) &&
+      (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION)) {
+    // TODO(crbug.com/932214): The interop backings don't currently support
+    // Vulkan writes so they cannot be used for OOP-R.
+    LOG(ERROR) << "Bad SharedImage usage combination: "
+               << "SHARED_IMAGE_USAGE_GLES2 | "
+               << "SHARED_IMAGE_USAGE_OOP_RASTERIZATION";
+    return false;
+  }
   std::unique_ptr<SharedImageBacking> backing;
   bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
                                 (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
+  bool using_interop_factory = using_vulkan_ &&
+                               (usage & SHARED_IMAGE_USAGE_GLES2) &&
+                               (usage & SHARED_IMAGE_USAGE_DISPLAY);
   if (using_wrapped_sk_image) {
     backing = wrapped_sk_image_factory_->CreateSharedImage(
         mailbox, format, size, color_space, usage);
+  } else if (using_interop_factory) {
+    if (!interop_backing_factory_) {
+      LOG(ERROR) << "Unable to create SharedImage backing: GL / Vulkan "
+                 << "interoperability is not supported on this platform";
+      return false;
+    }
+    backing = interop_backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                          color_space, usage);
   } else {
     backing = backing_factory_->CreateSharedImage(mailbox, format, size,
                                                   color_space, usage);
   }
 
-  return RegisterBacking(std::move(backing), !using_wrapped_sk_image);
+  return RegisterBacking(std::move(backing),
+                         !using_wrapped_sk_image && !using_interop_factory);
 }
 
 bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,

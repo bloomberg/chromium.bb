@@ -295,6 +295,9 @@ typedef void(GL_BINDING_CALL* glCoverStrokePathInstancedNVProc)(
     const GLfloat* transformValues);
 typedef void(GL_BINDING_CALL* glCoverStrokePathNVProc)(GLuint name,
                                                        GLenum coverMode);
+typedef void(GL_BINDING_CALL* glCreateMemoryObjectsEXTProc)(
+    GLsizei n,
+    GLuint* memoryObjects);
 typedef GLuint(GL_BINDING_CALL* glCreateProgramProc)(void);
 typedef GLuint(GL_BINDING_CALL* glCreateShaderProc)(GLenum type);
 typedef GLuint(GL_BINDING_CALL* glCreateShaderProgramvProc)(
@@ -338,6 +341,9 @@ typedef void(GL_BINDING_CALL* glDeleteRenderbuffersEXTProc)(
     const GLuint* renderbuffers);
 typedef void(GL_BINDING_CALL* glDeleteSamplersProc)(GLsizei n,
                                                     const GLuint* samplers);
+typedef void(GL_BINDING_CALL* glDeleteSemaphoresEXTProc)(
+    GLsizei n,
+    const GLuint* semaphores);
 typedef void(GL_BINDING_CALL* glDeleteShaderProc)(GLuint shader);
 typedef void(GL_BINDING_CALL* glDeleteSyncProc)(GLsync sync);
 typedef void(GL_BINDING_CALL* glDeleteTexturesProc)(GLsizei n,
@@ -461,6 +467,8 @@ typedef void(GL_BINDING_CALL* glGenQueriesProc)(GLsizei n, GLuint* ids);
 typedef void(GL_BINDING_CALL* glGenRenderbuffersEXTProc)(GLsizei n,
                                                          GLuint* renderbuffers);
 typedef void(GL_BINDING_CALL* glGenSamplersProc)(GLsizei n, GLuint* samplers);
+typedef void(GL_BINDING_CALL* glGenSemaphoresEXTProc)(GLsizei n,
+                                                      GLuint* semaphores);
 typedef void(GL_BINDING_CALL* glGenTexturesProc)(GLsizei n, GLuint* textures);
 typedef void(GL_BINDING_CALL* glGenTransformFeedbacksProc)(GLsizei n,
                                                            GLuint* ids);
@@ -986,6 +994,13 @@ typedef void(GL_BINDING_CALL* glGetVertexAttribPointervRobustANGLEProc)(
     GLsizei* length,
     void** pointer);
 typedef void(GL_BINDING_CALL* glHintProc)(GLenum target, GLenum mode);
+typedef void(GL_BINDING_CALL* glImportMemoryFdEXTProc)(GLuint memory,
+                                                       GLuint64 size,
+                                                       GLenum handleType,
+                                                       GLint fd);
+typedef void(GL_BINDING_CALL* glImportSemaphoreFdEXTProc)(GLuint semaphore,
+                                                          GLenum handleType,
+                                                          GLint fd);
 typedef void(GL_BINDING_CALL* glInsertEventMarkerEXTProc)(GLsizei length,
                                                           const char* marker);
 typedef void(GL_BINDING_CALL* glInvalidateFramebufferProc)(
@@ -1369,6 +1384,13 @@ typedef void(GL_BINDING_CALL* glShaderSourceProc)(GLuint shader,
                                                   GLsizei count,
                                                   const char* const* str,
                                                   const GLint* length);
+typedef void(GL_BINDING_CALL* glSignalSemaphoreEXTProc)(
+    GLuint semaphore,
+    GLuint numBufferBarriers,
+    const GLuint* buffers,
+    GLuint numTextureBarriers,
+    const GLuint* textures,
+    const GLenum* dstLayouts);
 typedef void(GL_BINDING_CALL* glStencilFillPathInstancedNVProc)(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -1540,6 +1562,13 @@ typedef void(GL_BINDING_CALL* glTexStorage3DProc)(GLenum target,
                                                   GLsizei width,
                                                   GLsizei height,
                                                   GLsizei depth);
+typedef void(GL_BINDING_CALL* glTexStorageMem2DEXTProc)(GLenum target,
+                                                        GLsizei levels,
+                                                        GLenum internalFormat,
+                                                        GLsizei width,
+                                                        GLsizei height,
+                                                        GLuint memory,
+                                                        GLuint64 offset);
 typedef void(GL_BINDING_CALL* glTexSubImage2DProc)(GLenum target,
                                                    GLint level,
                                                    GLint xoffset,
@@ -1776,6 +1805,12 @@ typedef void(GL_BINDING_CALL* glViewportProc)(GLint x,
                                               GLint y,
                                               GLsizei width,
                                               GLsizei height);
+typedef void(GL_BINDING_CALL* glWaitSemaphoreEXTProc)(GLuint semaphore,
+                                                      GLuint numBufferBarriers,
+                                                      const GLuint* buffers,
+                                                      GLuint numTextureBarriers,
+                                                      const GLuint* textures,
+                                                      const GLenum* srcLayouts);
 typedef void(GL_BINDING_CALL* glWaitSyncProc)(GLsync sync,
                                               GLbitfield flags,
                                               GLuint64 timeout);
@@ -1833,9 +1868,13 @@ struct ExtensionsGL {
   bool b_GL_EXT_gpu_shader4;
   bool b_GL_EXT_instanced_arrays;
   bool b_GL_EXT_map_buffer_range;
+  bool b_GL_EXT_memory_object;
+  bool b_GL_EXT_memory_object_fd;
   bool b_GL_EXT_multisampled_render_to_texture;
   bool b_GL_EXT_occlusion_query_boolean;
   bool b_GL_EXT_robustness;
+  bool b_GL_EXT_semaphore;
+  bool b_GL_EXT_semaphore_fd;
   bool b_GL_EXT_shader_image_load_store;
   bool b_GL_EXT_texture_buffer;
   bool b_GL_EXT_texture_buffer_object;
@@ -1930,6 +1969,7 @@ struct ProcsGL {
   glCoverFillPathNVProc glCoverFillPathNVFn;
   glCoverStrokePathInstancedNVProc glCoverStrokePathInstancedNVFn;
   glCoverStrokePathNVProc glCoverStrokePathNVFn;
+  glCreateMemoryObjectsEXTProc glCreateMemoryObjectsEXTFn;
   glCreateProgramProc glCreateProgramFn;
   glCreateShaderProc glCreateShaderFn;
   glCreateShaderProgramvProc glCreateShaderProgramvFn;
@@ -1947,6 +1987,7 @@ struct ProcsGL {
   glDeleteQueriesProc glDeleteQueriesFn;
   glDeleteRenderbuffersEXTProc glDeleteRenderbuffersEXTFn;
   glDeleteSamplersProc glDeleteSamplersFn;
+  glDeleteSemaphoresEXTProc glDeleteSemaphoresEXTFn;
   glDeleteShaderProc glDeleteShaderFn;
   glDeleteSyncProc glDeleteSyncFn;
   glDeleteTexturesProc glDeleteTexturesFn;
@@ -2003,6 +2044,7 @@ struct ProcsGL {
   glGenQueriesProc glGenQueriesFn;
   glGenRenderbuffersEXTProc glGenRenderbuffersEXTFn;
   glGenSamplersProc glGenSamplersFn;
+  glGenSemaphoresEXTProc glGenSemaphoresEXTFn;
   glGenTexturesProc glGenTexturesFn;
   glGenTransformFeedbacksProc glGenTransformFeedbacksFn;
   glGenVertexArraysOESProc glGenVertexArraysOESFn;
@@ -2129,6 +2171,8 @@ struct ProcsGL {
   glGetVertexAttribPointervRobustANGLEProc
       glGetVertexAttribPointervRobustANGLEFn;
   glHintProc glHintFn;
+  glImportMemoryFdEXTProc glImportMemoryFdEXTFn;
+  glImportSemaphoreFdEXTProc glImportSemaphoreFdEXTFn;
   glInsertEventMarkerEXTProc glInsertEventMarkerEXTFn;
   glInvalidateFramebufferProc glInvalidateFramebufferFn;
   glInvalidateSubFramebufferProc glInvalidateSubFramebufferFn;
@@ -2242,6 +2286,7 @@ struct ProcsGL {
   glSetFenceNVProc glSetFenceNVFn;
   glShaderBinaryProc glShaderBinaryFn;
   glShaderSourceProc glShaderSourceFn;
+  glSignalSemaphoreEXTProc glSignalSemaphoreEXTFn;
   glStencilFillPathInstancedNVProc glStencilFillPathInstancedNVFn;
   glStencilFillPathNVProc glStencilFillPathNVFn;
   glStencilFuncProc glStencilFuncFn;
@@ -2277,6 +2322,7 @@ struct ProcsGL {
   glTexStorage2DEXTProc glTexStorage2DEXTFn;
   glTexStorage2DMultisampleProc glTexStorage2DMultisampleFn;
   glTexStorage3DProc glTexStorage3DFn;
+  glTexStorageMem2DEXTProc glTexStorageMem2DEXTFn;
   glTexSubImage2DProc glTexSubImage2DFn;
   glTexSubImage2DRobustANGLEProc glTexSubImage2DRobustANGLEFn;
   glTexSubImage3DProc glTexSubImage3DFn;
@@ -2341,6 +2387,7 @@ struct ProcsGL {
   glVertexAttribPointerProc glVertexAttribPointerFn;
   glVertexBindingDivisorProc glVertexBindingDivisorFn;
   glViewportProc glViewportFn;
+  glWaitSemaphoreEXTProc glWaitSemaphoreEXTFn;
   glWaitSyncProc glWaitSyncFn;
   glWindowRectanglesEXTProc glWindowRectanglesEXTFn;
 };
@@ -2611,6 +2658,7 @@ class GL_EXPORT GLApi {
       GLenum transformType,
       const GLfloat* transformValues) = 0;
   virtual void glCoverStrokePathNVFn(GLuint name, GLenum coverMode) = 0;
+  virtual void glCreateMemoryObjectsEXTFn(GLsizei n, GLuint* memoryObjects) = 0;
   virtual GLuint glCreateProgramFn(void) = 0;
   virtual GLuint glCreateShaderFn(GLenum type) = 0;
   virtual GLuint glCreateShaderProgramvFn(GLenum type,
@@ -2644,6 +2692,7 @@ class GL_EXPORT GLApi {
   virtual void glDeleteRenderbuffersEXTFn(GLsizei n,
                                           const GLuint* renderbuffers) = 0;
   virtual void glDeleteSamplersFn(GLsizei n, const GLuint* samplers) = 0;
+  virtual void glDeleteSemaphoresEXTFn(GLsizei n, const GLuint* semaphores) = 0;
   virtual void glDeleteShaderFn(GLuint shader) = 0;
   virtual void glDeleteSyncFn(GLsync sync) = 0;
   virtual void glDeleteTexturesFn(GLsizei n, const GLuint* textures) = 0;
@@ -2747,6 +2796,7 @@ class GL_EXPORT GLApi {
   virtual void glGenQueriesFn(GLsizei n, GLuint* ids) = 0;
   virtual void glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) = 0;
   virtual void glGenSamplersFn(GLsizei n, GLuint* samplers) = 0;
+  virtual void glGenSemaphoresEXTFn(GLsizei n, GLuint* semaphores) = 0;
   virtual void glGenTexturesFn(GLsizei n, GLuint* textures) = 0;
   virtual void glGenTransformFeedbacksFn(GLsizei n, GLuint* ids) = 0;
   virtual void glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) = 0;
@@ -3207,6 +3257,13 @@ class GL_EXPORT GLApi {
                                                       GLsizei* length,
                                                       void** pointer) = 0;
   virtual void glHintFn(GLenum target, GLenum mode) = 0;
+  virtual void glImportMemoryFdEXTFn(GLuint memory,
+                                     GLuint64 size,
+                                     GLenum handleType,
+                                     GLint fd) = 0;
+  virtual void glImportSemaphoreFdEXTFn(GLuint semaphore,
+                                        GLenum handleType,
+                                        GLint fd) = 0;
   virtual void glInsertEventMarkerEXTFn(GLsizei length, const char* marker) = 0;
   virtual void glInvalidateFramebufferFn(GLenum target,
                                          GLsizei numAttachments,
@@ -3555,6 +3612,12 @@ class GL_EXPORT GLApi {
                                 GLsizei count,
                                 const char* const* str,
                                 const GLint* length) = 0;
+  virtual void glSignalSemaphoreEXTFn(GLuint semaphore,
+                                      GLuint numBufferBarriers,
+                                      const GLuint* buffers,
+                                      GLuint numTextureBarriers,
+                                      const GLuint* textures,
+                                      const GLenum* dstLayouts) = 0;
   virtual void glStencilFillPathInstancedNVFn(
       GLsizei numPaths,
       GLenum pathNameType,
@@ -3712,6 +3775,13 @@ class GL_EXPORT GLApi {
                                 GLsizei width,
                                 GLsizei height,
                                 GLsizei depth) = 0;
+  virtual void glTexStorageMem2DEXTFn(GLenum target,
+                                      GLsizei levels,
+                                      GLenum internalFormat,
+                                      GLsizei width,
+                                      GLsizei height,
+                                      GLuint memory,
+                                      GLuint64 offset) = 0;
   virtual void glTexSubImage2DFn(GLenum target,
                                  GLint level,
                                  GLint xoffset,
@@ -3926,6 +3996,12 @@ class GL_EXPORT GLApi {
                             GLint y,
                             GLsizei width,
                             GLsizei height) = 0;
+  virtual void glWaitSemaphoreEXTFn(GLuint semaphore,
+                                    GLuint numBufferBarriers,
+                                    const GLuint* buffers,
+                                    GLuint numTextureBarriers,
+                                    const GLuint* textures,
+                                    const GLenum* srcLayouts) = 0;
   virtual void glWaitSyncFn(GLsync sync,
                             GLbitfield flags,
                             GLuint64 timeout) = 0;
@@ -4026,6 +4102,8 @@ class GL_EXPORT GLApi {
 #define glCoverStrokePathInstancedNV \
   ::gl::g_current_gl_context->glCoverStrokePathInstancedNVFn
 #define glCoverStrokePathNV ::gl::g_current_gl_context->glCoverStrokePathNVFn
+#define glCreateMemoryObjectsEXT \
+  ::gl::g_current_gl_context->glCreateMemoryObjectsEXTFn
 #define glCreateProgram ::gl::g_current_gl_context->glCreateProgramFn
 #define glCreateShader ::gl::g_current_gl_context->glCreateShaderFn
 #define glCreateShaderProgramv \
@@ -4049,6 +4127,8 @@ class GL_EXPORT GLApi {
 #define glDeleteRenderbuffersEXT \
   ::gl::g_current_gl_context->glDeleteRenderbuffersEXTFn
 #define glDeleteSamplers ::gl::g_current_gl_context->glDeleteSamplersFn
+#define glDeleteSemaphoresEXT \
+  ::gl::g_current_gl_context->glDeleteSemaphoresEXTFn
 #define glDeleteShader ::gl::g_current_gl_context->glDeleteShaderFn
 #define glDeleteSync ::gl::g_current_gl_context->glDeleteSyncFn
 #define glDeleteTextures ::gl::g_current_gl_context->glDeleteTexturesFn
@@ -4123,6 +4203,7 @@ class GL_EXPORT GLApi {
 #define glGenRenderbuffersEXT \
   ::gl::g_current_gl_context->glGenRenderbuffersEXTFn
 #define glGenSamplers ::gl::g_current_gl_context->glGenSamplersFn
+#define glGenSemaphoresEXT ::gl::g_current_gl_context->glGenSemaphoresEXTFn
 #define glGenTextures ::gl::g_current_gl_context->glGenTexturesFn
 #define glGenTransformFeedbacks \
   ::gl::g_current_gl_context->glGenTransformFeedbacksFn
@@ -4317,6 +4398,9 @@ class GL_EXPORT GLApi {
 #define glGetVertexAttribPointervRobustANGLE \
   ::gl::g_current_gl_context->glGetVertexAttribPointervRobustANGLEFn
 #define glHint ::gl::g_current_gl_context->glHintFn
+#define glImportMemoryFdEXT ::gl::g_current_gl_context->glImportMemoryFdEXTFn
+#define glImportSemaphoreFdEXT \
+  ::gl::g_current_gl_context->glImportSemaphoreFdEXTFn
 #define glInsertEventMarkerEXT \
   ::gl::g_current_gl_context->glInsertEventMarkerEXTFn
 #define glInvalidateFramebuffer \
@@ -4465,6 +4549,7 @@ class GL_EXPORT GLApi {
 #define glSetFenceNV ::gl::g_current_gl_context->glSetFenceNVFn
 #define glShaderBinary ::gl::g_current_gl_context->glShaderBinaryFn
 #define glShaderSource ::gl::g_current_gl_context->glShaderSourceFn
+#define glSignalSemaphoreEXT ::gl::g_current_gl_context->glSignalSemaphoreEXTFn
 #define glStencilFillPathInstancedNV \
   ::gl::g_current_gl_context->glStencilFillPathInstancedNVFn
 #define glStencilFillPathNV ::gl::g_current_gl_context->glStencilFillPathNVFn
@@ -4514,6 +4599,7 @@ class GL_EXPORT GLApi {
 #define glTexStorage2DMultisample \
   ::gl::g_current_gl_context->glTexStorage2DMultisampleFn
 #define glTexStorage3D ::gl::g_current_gl_context->glTexStorage3DFn
+#define glTexStorageMem2DEXT ::gl::g_current_gl_context->glTexStorageMem2DEXTFn
 #define glTexSubImage2D ::gl::g_current_gl_context->glTexSubImage2DFn
 #define glTexSubImage2DRobustANGLE \
   ::gl::g_current_gl_context->glTexSubImage2DRobustANGLEFn
@@ -4589,6 +4675,7 @@ class GL_EXPORT GLApi {
 #define glVertexBindingDivisor \
   ::gl::g_current_gl_context->glVertexBindingDivisorFn
 #define glViewport ::gl::g_current_gl_context->glViewportFn
+#define glWaitSemaphoreEXT ::gl::g_current_gl_context->glWaitSemaphoreEXTFn
 #define glWaitSync ::gl::g_current_gl_context->glWaitSyncFn
 #define glWindowRectanglesEXT \
   ::gl::g_current_gl_context->glWindowRectanglesEXTFn

@@ -305,7 +305,23 @@ target(link_target_type, "gles2_sources") {
   ]
 
   if (enable_vulkan) {
-    deps += [ "//components/viz/common:vulkan_context_provider" ]
+    deps += [
+      "//components/viz/common:vulkan_context_provider",
+      "//gpu/vulkan",
+    ]
+
+    if (is_linux) {
+      sources += [
+        "external_vk_image_backing.cc",
+        "external_vk_image_backing.h",
+        "external_vk_image_factory.cc",
+        "external_vk_image_factory.h",
+        "external_vk_image_gl_representation.cc",
+        "external_vk_image_gl_representation.h",
+        "external_vk_image_skia_representation.cc",
+        "external_vk_image_skia_representation.h",
+      ]
+    }
   }
 
   if (is_mac) {

@@ -95,7 +95,9 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
-  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {

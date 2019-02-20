@@ -234,6 +234,7 @@ MOCK_METHOD7(CoverStrokePathInstancedNV,
                   GLenum transformType,
                   const GLfloat* transformValues));
 MOCK_METHOD2(CoverStrokePathNV, void(GLuint name, GLenum coverMode));
+MOCK_METHOD2(CreateMemoryObjectsEXT, void(GLsizei n, GLuint* memoryObjects));
 MOCK_METHOD0(CreateProgram, GLuint());
 MOCK_METHOD1(CreateShader, GLuint(GLenum type));
 MOCK_METHOD3(CreateShaderProgramv,
@@ -267,6 +268,7 @@ MOCK_METHOD2(DeleteQueries, void(GLsizei n, const GLuint* ids));
 MOCK_METHOD2(DeleteRenderbuffersEXT,
              void(GLsizei n, const GLuint* renderbuffers));
 MOCK_METHOD2(DeleteSamplers, void(GLsizei n, const GLuint* samplers));
+MOCK_METHOD2(DeleteSemaphoresEXT, void(GLsizei n, const GLuint* semaphores));
 MOCK_METHOD1(DeleteShader, void(GLuint shader));
 MOCK_METHOD1(DeleteSync, void(GLsync sync));
 MOCK_METHOD2(DeleteTextures, void(GLsizei n, const GLuint* textures));
@@ -369,6 +371,7 @@ MOCK_METHOD2(GenProgramPipelines, GLuint(GLsizei n, GLuint* pipelines));
 MOCK_METHOD2(GenQueries, void(GLsizei n, GLuint* ids));
 MOCK_METHOD2(GenRenderbuffersEXT, void(GLsizei n, GLuint* renderbuffers));
 MOCK_METHOD2(GenSamplers, void(GLsizei n, GLuint* samplers));
+MOCK_METHOD2(GenSemaphoresEXT, void(GLsizei n, GLuint* semaphores));
 MOCK_METHOD2(GenTextures, void(GLsizei n, GLuint* textures));
 MOCK_METHOD2(GenTransformFeedbacks, void(GLsizei n, GLuint* ids));
 MOCK_METHOD2(GenVertexArraysOES, void(GLsizei n, GLuint* arrays));
@@ -838,6 +841,10 @@ MOCK_METHOD5(GetVertexAttribPointervRobustANGLE,
                   GLsizei* length,
                   void** pointer));
 MOCK_METHOD2(Hint, void(GLenum target, GLenum mode));
+MOCK_METHOD4(ImportMemoryFdEXT,
+             void(GLuint memory, GLuint64 size, GLenum handleType, GLint fd));
+MOCK_METHOD3(ImportSemaphoreFdEXT,
+             void(GLuint semaphore, GLenum handleType, GLint fd));
 MOCK_METHOD2(InsertEventMarkerEXT, void(GLsizei length, const char* marker));
 MOCK_METHOD3(InvalidateFramebuffer,
              void(GLenum target,
@@ -1151,6 +1158,13 @@ MOCK_METHOD4(ShaderSource,
                   GLsizei count,
                   const char* const* str,
                   const GLint* length));
+MOCK_METHOD6(SignalSemaphoreEXT,
+             void(GLuint semaphore,
+                  GLuint numBufferBarriers,
+                  const GLuint* buffers,
+                  GLuint numTextureBarriers,
+                  const GLuint* textures,
+                  const GLenum* dstLayouts));
 MOCK_METHOD8(StencilFillPathInstancedNV,
              void(GLsizei numPaths,
                   GLenum pathNameType,
@@ -1287,6 +1301,14 @@ MOCK_METHOD6(TexStorage3D,
                   GLsizei width,
                   GLsizei height,
                   GLsizei depth));
+MOCK_METHOD7(TexStorageMem2DEXT,
+             void(GLenum target,
+                  GLsizei levels,
+                  GLenum internalFormat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLuint memory,
+                  GLuint64 offset));
 MOCK_METHOD9(TexSubImage2D,
              void(GLenum target,
                   GLint level,
@@ -1442,6 +1464,13 @@ MOCK_METHOD6(VertexAttribPointer,
                   const void* ptr));
 MOCK_METHOD2(VertexBindingDivisor, void(GLuint bindingindex, GLuint divisor));
 MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
+MOCK_METHOD6(WaitSemaphoreEXT,
+             void(GLuint semaphore,
+                  GLuint numBufferBarriers,
+                  const GLuint* buffers,
+                  GLuint numTextureBarriers,
+                  const GLuint* textures,
+                  const GLenum* srcLayouts));
 MOCK_METHOD3(WaitSync, void(GLsync sync, GLbitfield flags, GLuint64 timeout));
 MOCK_METHOD3(WindowRectanglesEXT,
              void(GLenum mode, GLsizei n, const GLint* box));

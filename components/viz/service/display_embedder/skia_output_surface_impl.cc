@@ -132,6 +132,10 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     } else {
 #if BUILDFLAG(ENABLE_VULKAN)
       backend_format = GrBackendFormat::MakeVk(ToVkFormat(resource_format_));
+      // TODO(crbug.com/933441): We should be able to use kRGB_888x_SkColorType
+      // for the image, but Skia doesn't allow it.
+      if (resource_format_ == RGBX_8888)
+        color_type = kRGBA_8888_SkColorType;
 #else
       NOTREACHED();
 #endif
