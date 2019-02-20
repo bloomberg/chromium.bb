@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 #include <memory>
 
@@ -88,7 +87,7 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
 
   MOCK_METHOD0(NotifyAnimationsReadyRef, void());
 
-  void SignalWhenComplete(WaitableEvent* done_event) {
+  void SignalWhenComplete(base::WaitableEvent* done_event) {
     done_event_ = done_event;
   }
 
@@ -96,7 +95,7 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
                void(cc::MutatorOutputState* output_state));
 
  private:
-  WaitableEvent* done_event_;  // not owned.
+  base::WaitableEvent* done_event_;  // not owned.
 };
 
 class AnimationWorkletMutatorDispatcherImplTest : public ::testing::Test {
@@ -352,7 +351,7 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
   // notification from the client.
   void CallMutateAndWaitForClientCompletion(
       MutateAsyncCallback mutate_callback) {
-    WaitableEvent done_event;
+    base::WaitableEvent done_event;
     client_->SignalWhenComplete(&done_event);
     PostCrossThreadTask(*Thread::CompositorThread()->GetTaskRunner(), FROM_HERE,
                         std::move(mutate_callback));
@@ -364,16 +363,16 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
   // such as when there are no inputs.
   void CallMutateAndWaitForCallbackCompletion(
       MutateAsyncCallback mutate_callback) {
-    WaitableEvent done_event;
-    PostCrossThreadTask(
-        *Thread::CompositorThread()->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(
-            [](MutateAsyncCallback mutate_callback, WaitableEvent* done_event) {
-              mutate_callback.Run();
-              done_event->Signal();
-            },
-            WTF::Passed(std::move(mutate_callback)),
-            WTF::CrossThreadUnretained(&done_event)));
+    base::WaitableEvent done_event;
+    PostCrossThreadTask(*Thread::CompositorThread()->GetTaskRunner(), FROM_HERE,
+                        CrossThreadBind(
+                            [](MutateAsyncCallback mutate_callback,
+                               base::WaitableEvent* done_event) {
+                              mutate_callback.Run();
+                              done_event->Signal();
+                            },
+                            WTF::Passed(std::move(mutate_callback)),
+                            WTF::CrossThreadUnretained(&done_event)));
     done_event.Wait();
   }
 };

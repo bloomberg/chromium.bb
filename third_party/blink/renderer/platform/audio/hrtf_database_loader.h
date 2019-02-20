@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_DATABASE_LOADER_H_
 
 #include <memory>
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_database.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -81,7 +82,7 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
 
   // Called in asynchronous loading thread.
   void LoadTask();
-  void CleanupTask(WaitableEvent*);
+  void CleanupTask(base::WaitableEvent*);
 
   // Holding a m_lock is required when accessing m_hrtfDatabase since we access
   // it from multiple threads.

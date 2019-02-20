@@ -9,13 +9,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 
 namespace {
 
-void PingPongTask(WaitableEvent* done_event) {
+void PingPongTask(base::WaitableEvent* done_event) {
   done_event->Signal();
 }
 
@@ -23,7 +22,8 @@ void PingPongTask(WaitableEvent* done_event) {
 
 TEST(BackgroundSchedulerTest, RunOnBackgroundThread) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  std::unique_ptr<WaitableEvent> done_event = std::make_unique<WaitableEvent>();
+  std::unique_ptr<base::WaitableEvent> done_event =
+      std::make_unique<base::WaitableEvent>();
   worker_pool::PostTask(
       FROM_HERE,
       CrossThreadBind(&PingPongTask, CrossThreadUnretained(done_event.get())));

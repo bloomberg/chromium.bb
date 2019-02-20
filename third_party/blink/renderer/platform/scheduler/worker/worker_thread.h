@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"

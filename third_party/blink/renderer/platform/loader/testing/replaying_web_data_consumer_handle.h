@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -74,7 +74,7 @@ class ReplayingWebDataConsumerHandle final : public WebDataConsumerHandle {
     void DetachHandle();
     Result BeginRead(const void** buffer, Flags, size_t* available);
     Result EndRead(size_t read_size);
-    WaitableEvent* Detached() { return detached_.get(); }
+    base::WaitableEvent* Detached() { return detached_.get(); }
 
    private:
     Context();
@@ -92,7 +92,7 @@ class ReplayingWebDataConsumerHandle final : public WebDataConsumerHandle {
     Result result_;
     bool is_handle_attached_;
     Mutex mutex_;
-    std::unique_ptr<WaitableEvent> detached_;
+    std::unique_ptr<base::WaitableEvent> detached_;
   };
 
   Context* GetContext() { return context_.get(); }

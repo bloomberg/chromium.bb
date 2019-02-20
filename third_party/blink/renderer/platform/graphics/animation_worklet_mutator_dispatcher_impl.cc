@@ -6,6 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 
@@ -108,9 +108,9 @@ void AnimationWorkletMutatorDispatcherImpl::MutateSynchronously(
   if (mutator_input_map_.IsEmpty())
     return;
 
-  WaitableEvent event;
+  base::WaitableEvent event;
   WTF::CrossThreadClosure on_done = CrossThreadBind(
-      &WaitableEvent::Signal, WTF::CrossThreadUnretained(&event));
+      &base::WaitableEvent::Signal, WTF::CrossThreadUnretained(&event));
   RequestMutations(std::move(on_done));
   event.Wait();
 
