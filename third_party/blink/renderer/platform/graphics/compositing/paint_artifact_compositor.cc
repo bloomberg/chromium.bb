@@ -88,7 +88,7 @@ PaintArtifactCompositor::~PaintArtifactCompositor() {
 
 void PaintArtifactCompositor::EnableExtraDataForTesting() {
   if (!extra_data_for_testing_enabled_)
-    SetNeedsUpdate(true);
+    SetNeedsUpdate();
   extra_data_for_testing_enabled_ = true;
   extra_data_for_testing_ = std::make_unique<ExtraDataForTesting>();
 }
@@ -123,8 +123,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
 
 static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
     const PaintArtifact& paint_artifact,
-    const PaintChunk& paint_chunk,
-    gfx::Vector2dF& layer_offset) {
+    const PaintChunk& paint_chunk) {
   if (paint_chunk.size() != 1)
     return nullptr;
 
@@ -133,11 +132,7 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   if (!display_item.IsForeignLayer())
     return nullptr;
 
-  const auto& foreign_layer_display_item =
-      static_cast<const ForeignLayerDisplayItem&>(display_item);
-  auto* layer = foreign_layer_display_item.GetLayer();
-  layer_offset = layer->offset_to_transform_parent();
-  return layer;
+  return static_cast<const ForeignLayerDisplayItem&>(display_item).GetLayer();
 }
 
 const TransformPaintPropertyNode&
@@ -179,8 +174,7 @@ PaintArtifactCompositor::ScrollTranslationForScrollHitTestLayer(
 scoped_refptr<cc::Layer>
 PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
     const PaintArtifact& paint_artifact,
-    const PendingLayer& pending_layer,
-    gfx::Vector2dF& layer_offset) {
+    const PendingLayer& pending_layer) {
   const auto* scroll_offset_node =
       ScrollTranslationForScrollHitTestLayer(paint_artifact, pending_layer);
   if (!scroll_offset_node)
@@ -199,9 +193,8 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
     scroll_layer->SetElementId(scroll_element_id);
   }
 
-  // TODO(pdr): Add a helper for blink::FloatPoint to gfx::Vector2dF.
-  auto offset = scroll_node.ContainerRect().Location();
-  layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
+  scroll_layer->SetOffsetToTransformParent(
+      gfx::Vector2dF(FloatPoint(scroll_node.ContainerRect().Location())));
   // TODO(pdr): The scroll layer's bounds are currently set to the clipped
   // container bounds but this does not include the border. We may want to
   // change this behavior to make non-composited and composited hit testing
@@ -237,7 +230,6 @@ scoped_refptr<cc::Layer>
 PaintArtifactCompositor::CompositedLayerForPendingLayer(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const PendingLayer& pending_layer,
-    gfx::Vector2dF& layer_offset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
     Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers) {
   auto paint_chunks =
@@ -247,8 +239,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
-  if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
-          *paint_artifact, first_paint_chunk, layer_offset)) {
+  if (scoped_refptr<cc::Layer> foreign_layer =
+          ForeignLayerForPaintChunk(*paint_artifact, first_paint_chunk)) {
     DCHECK_EQ(paint_chunks.size(), 1u);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(foreign_layer);
@@ -256,8 +248,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   }
 
   // If the paint chunk is a scroll hit test layer, lookup/create the layer.
-  if (scoped_refptr<cc::Layer> scroll_layer = ScrollHitTestLayerForPendingLayer(
-          *paint_artifact, pending_layer, layer_offset)) {
+  if (scoped_refptr<cc::Layer> scroll_layer =
+          ScrollHitTestLayerForPendingLayer(*paint_artifact, pending_layer)) {
     new_scroll_hit_test_layers.push_back(scroll_layer);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->scroll_hit_test_layers.push_back(scroll_layer);
@@ -269,8 +261,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
       ClientForPaintChunk(first_paint_chunk);
 
   gfx::Rect cc_combined_bounds(EnclosingIntRect(pending_layer.bounds));
-  layer_offset = cc_combined_bounds.OffsetFromOrigin();
-
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
@@ -289,7 +279,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
 void PaintArtifactCompositor::UpdateTouchActionRects(
     cc::Layer* layer,
-    const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
   Vector<HitTestRect> touch_action_rects_in_layer_space;
@@ -307,6 +296,7 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
         continue;
       }
       LayoutRect layout_rect = LayoutRect(rect.Rect());
+      gfx::Vector2dF layer_offset = layer->offset_to_transform_parent();
       layout_rect.MoveBy(
           LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
       touch_action_rects_in_layer_space.emplace_back(
@@ -843,9 +833,8 @@ void PaintArtifactCompositor::Update(
           IntRect(scroll->ContainerRect().Location(), scroll->ContentsSize())));
     }
 
-    gfx::Vector2dF layer_offset;
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
-        paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
+        paint_artifact, pending_layer, new_content_layer_clients,
         new_scroll_hit_test_layers);
 
     // Pre-CompositeAfterPaint, touch action rects are updated through
@@ -853,8 +842,7 @@ void PaintArtifactCompositor::Update(
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_chunks = paint_artifact->GetPaintChunkSubset(
           pending_layer.paint_chunk_indices);
-      UpdateTouchActionRects(layer.get(), layer_offset, property_state,
-                             paint_chunks);
+      UpdateTouchActionRects(layer.get(), property_state, paint_chunks);
     }
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
@@ -870,8 +858,6 @@ void PaintArtifactCompositor::Update(
         ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
-
-    layer->SetOffsetToTransformParent(layer_offset);
 
     layer_list_builder.Add(layer);
 
@@ -934,7 +920,7 @@ void PaintArtifactCompositor::Update(
   // Mark the property trees as having been rebuilt.
   host->property_trees()->needs_rebuild = false;
   host->property_trees()->ResetCachedData();
-  SetNeedsUpdate(false);
+  needs_update_ = false;
 
   g_s_property_tree_sequence_number++;
 

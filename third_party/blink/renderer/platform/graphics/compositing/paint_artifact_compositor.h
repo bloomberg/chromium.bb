@@ -25,7 +25,6 @@ class LayerTreeHost;
 }
 
 namespace gfx {
-class Vector2dF;
 class ScrollOffset;
 }
 
@@ -128,11 +127,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // Update the cc::Layer's touch action region from the touch action rects of
   // the paint chunks.
   static void UpdateTouchActionRects(cc::Layer*,
-                                     const gfx::Vector2dF& layer_offset,
                                      const PropertyTreeState& layer_state,
                                      const PaintChunkSubset& paint_chunks);
 
-  void SetNeedsUpdate(bool needs_update) { needs_update_ = needs_update; }
+  void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }
 
  private:
@@ -201,15 +199,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                    const PendingLayer&);
 
   // Builds a leaf layer that represents a single paint chunk.
-  // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
-  // bounding box of a paint chunk does not necessarily start at (0, 0) (and
-  // could even be negative). Internally the generated layer translates the
-  // paint chunk to align the bounding box to (0, 0) and return the actual
-  // origin of the paint chunk in the |layerOffset| outparam.
   scoped_refptr<cc::Layer> CompositedLayerForPendingLayer(
       scoped_refptr<const PaintArtifact>,
       const PendingLayer&,
-      gfx::Vector2dF& layer_offset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
       Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers);
@@ -230,8 +222,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // layer, returning nullptr if the layer is not a scroll hit test layer.
   scoped_refptr<cc::Layer> ScrollHitTestLayerForPendingLayer(
       const PaintArtifact&,
-      const PendingLayer&,
-      gfx::Vector2dF& layer_offset);
+      const PendingLayer&);
 
   // Finds a client among the current vector of clients that matches the paint
   // chunk's id, or otherwise allocates a new one.

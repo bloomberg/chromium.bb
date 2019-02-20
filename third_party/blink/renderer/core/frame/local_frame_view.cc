@@ -4015,7 +4015,7 @@ void LocalFrameView::SetIntersectionObservationState(
 void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() const {
   LocalFrameView* root = GetFrame().LocalFrameRoot().View();
   if (root && root->paint_artifact_compositor_)
-    root->paint_artifact_compositor_->SetNeedsUpdate(true);
+    root->paint_artifact_compositor_->SetNeedsUpdate();
 }
 
 unsigned LocalFrameView::GetIntersectionObservationFlags() const {

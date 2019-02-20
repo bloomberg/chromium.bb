@@ -214,6 +214,13 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
                                layer_state);
   layer_state_ = layer_state;
 
+  // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
+  // bounding box of a paint chunk does not necessarily start at (0, 0) (and
+  // could even be negative). Internally the generated layer translates the
+  // paint chunk to align the bounding box to (0, 0) and we set the layer's
+  // offset_to_transform_parent with the origin of the paint chunk here.
+  cc_picture_layer_->SetOffsetToTransformParent(
+      layer_bounds.OffsetFromOrigin());
   cc_picture_layer_->SetBounds(layer_bounds.size());
   cc_picture_layer_->SetIsDrawable(true);
 
