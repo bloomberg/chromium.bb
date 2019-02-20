@@ -482,10 +482,12 @@ void MockHostResolverBase::TriggerMdnsListeners(
 }
 
 // start id from 1 to distinguish from NULL RequestHandle
-MockHostResolverBase::MockHostResolverBase(bool use_caching)
+MockHostResolverBase::MockHostResolverBase(bool use_caching,
+                                           int cache_invalidation_num)
     : last_request_priority_(DEFAULT_PRIORITY),
       synchronous_mode_(false),
       ondemand_mode_(false),
+      initial_cache_invalidation_num_(cache_invalidation_num),
       next_request_id_(1),
       num_resolve_(0),
       num_resolve_from_cache_(0),
@@ -497,9 +499,10 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
   rules_map_[HostResolverSource::MULTICAST_DNS] =
       CreateCatchAllHostResolverProc();
 
-  if (use_caching) {
+  if (use_caching)
     cache_.reset(new HostCache(kMaxCacheEntries));
-  }
+  else
+    DCHECK_GE(0, cache_invalidation_num);
 }
 
 int MockHostResolverBase::Resolve(RequestImpl* request) {
@@ -602,6 +605,18 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
             AddressList::CopyWithPort(entry->addresses().value(), host.port());
         *out_stale_info = std::move(stale_info);
       }
+
+      auto cache_invalidation_iterator = cache_invalidation_nums_.find(key);
+      if (cache_invalidation_iterator != cache_invalidation_nums_.end()) {
+        DCHECK_LE(1, cache_invalidation_iterator->second);
+        cache_invalidation_iterator->second--;
+        if (cache_invalidation_iterator->second == 0) {
+          HostCache::Entry new_entry(*entry);
+          cache_->Set(key, new_entry, tick_clock_->NowTicks(),
+                      base::TimeDelta());
+          cache_invalidation_nums_.erase(cache_invalidation_iterator);
+        }
+      }
     }
   }
   return rv;
@@ -624,8 +639,11 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
                        flags, source);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
-    if (rv == OK)
+    if (rv == OK) {
       ttl = base::TimeDelta::FromSeconds(kCacheEntryTTLSeconds);
+      if (initial_cache_invalidation_num_ > 0)
+        cache_invalidation_nums_[key] = initial_cache_invalidation_num_;
+    }
     cache_->Set(key,
                 HostCache::Entry(rv, addr, HostCache::Entry::SOURCE_UNKNOWN),
                 tick_clock_->NowTicks(), ttl);

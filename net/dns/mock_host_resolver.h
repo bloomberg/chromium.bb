@@ -216,11 +216,16 @@ class MockHostResolverBase
     tick_clock_ = tick_clock;
   }
 
- protected:
-  explicit MockHostResolverBase(bool use_caching);
-
  private:
+  friend class MockHostResolver;
+  friend class MockCachingHostResolver;
+
   typedef std::map<size_t, RequestImpl*> RequestMap;
+
+  // If > 0, |cache_invalidation_num| is the number of times a cached entry can
+  // be read before it invalidates itself. Useful to force cache expiration
+  // scenarios.
+  explicit MockHostResolverBase(bool use_caching, int cache_invalidation_num);
 
   // Handle resolution for |request|. Expected to be called only the RequestImpl
   // object itself.
@@ -253,6 +258,9 @@ class MockHostResolverBase
       rules_map_;
   std::unique_ptr<HostCache> cache_;
 
+  const int initial_cache_invalidation_num_;
+  std::map<HostCache::Key, int> cache_invalidation_nums_;
+
   // Maintain non-owning pointers to outstanding requests and listeners to allow
   // completing/notifying them. The objects are owned by callers, and should be
   // removed from |this| on destruction by calling DetachRequest() or
@@ -274,7 +282,9 @@ class MockHostResolverBase
 
 class MockHostResolver : public MockHostResolverBase {
  public:
-  MockHostResolver() : MockHostResolverBase(false /*use_caching*/) {}
+  MockHostResolver()
+      : MockHostResolverBase(false /*use_caching*/,
+                             0 /* cache_invalidation_num */) {}
   ~MockHostResolver() override {}
 };
 
@@ -285,7 +295,11 @@ class MockHostResolver : public MockHostResolverBase {
 // operation mode in case that is what you needed from the caching version).
 class MockCachingHostResolver : public MockHostResolverBase {
  public:
-  MockCachingHostResolver() : MockHostResolverBase(true /*use_caching*/) {}
+  // If > 0, |cache_invalidation_num| is the number of times a cached entry can
+  // be read before it invalidates itself. Useful to force cache expiration
+  // scenarios.
+  explicit MockCachingHostResolver(int cache_invalidation_num = 0)
+      : MockHostResolverBase(true /*use_caching*/, cache_invalidation_num) {}
   ~MockCachingHostResolver() override {}
 };
 
