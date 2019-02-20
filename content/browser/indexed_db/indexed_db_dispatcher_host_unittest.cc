@@ -68,7 +68,7 @@ ACTION_TEMPLATE(MoveArg,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = std::move(*::testing::get<k>(args));
-};
+}
 
 ACTION_P(RunClosure, closure) {
   closure.Run();

@@ -46,7 +46,7 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
   EXPECT_EQ(expected_guid, arg0->guid);
   if (!callback.is_null())
     callback.Run();
-};
+}
 
 class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
  public:

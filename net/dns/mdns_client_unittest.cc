@@ -49,7 +49,7 @@ ACTION_TEMPLATE(MoveArgPointee,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = std::move(*::testing::get<k>(args));
-};
+}
 
 const uint8_t kSamplePacket1[] = {
     // Header

@@ -37,7 +37,7 @@ namespace {
 
 ACTION_P(CheckStatus, expected_status) {
   EXPECT_EQ(expected_status, arg0->status());
-};
+}
 
 const char kPolicyName[] = "fake-policy-name";
 const ValueValidationIssue::Severity kSeverity = ValueValidationIssue::kError;

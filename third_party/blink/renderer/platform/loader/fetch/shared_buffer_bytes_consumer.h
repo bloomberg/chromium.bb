@@ -20,13 +20,13 @@ class PLATFORM_EXPORT SharedBufferBytesConsumer final : public BytesConsumer {
   Result BeginRead(const char** buffer, size_t* available) override;
   Result EndRead(size_t read_size) override;
   void SetClient(Client* client) override {}
-  void ClearClient() override{};
+  void ClearClient() override {}
   void Cancel() override;
   PublicState GetPublicState() const override;
   Error GetError() const override {
     NOTREACHED();
     return Error();
-  };
+  }
   String DebugName() const override;
 
  private:

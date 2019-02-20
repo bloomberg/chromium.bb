@@ -192,7 +192,7 @@ class FixtureWithMockTaskRunner final : public Fixture {
 
   int GetNowTicksCallCount() override {
     return call_counting_clock_.now_call_count();
-  };
+  }
 
  private:
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
@@ -260,7 +260,7 @@ class FixtureWithMockMessagePump : public Fixture {
 
   int GetNowTicksCallCount() override {
     return call_counting_clock_.now_call_count();
-  };
+  }
 
  private:
   MockTimeMessagePump* pump_ = nullptr;
@@ -335,7 +335,7 @@ class FixtureWithMessageLoop : public Fixture {
 
   int GetNowTicksCallCount() override {
     return call_counting_clock_.now_call_count();
-  };
+  }
 
  private:
   static TickClock* global_clock_;

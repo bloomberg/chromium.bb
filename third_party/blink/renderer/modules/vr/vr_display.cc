@@ -100,7 +100,7 @@ SessionClientBinding::SessionClientBinding(
     : display_(display),
       is_immersive_(immersive ==
                     SessionClientBinding::SessionBindingType::kImmersive),
-      client_binding_(this, std::move(request)){};
+      client_binding_(this, std::move(request)) {}
 
 SessionClientBinding::~SessionClientBinding() = default;
 

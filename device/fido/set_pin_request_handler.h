@@ -19,7 +19,7 @@
 
 namespace service_manager {
 class Connector;
-};  // namespace service_manager
+}  // namespace service_manager
 
 namespace device {
 

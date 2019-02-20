@@ -1247,7 +1247,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
   }
 
   stream->Read(base::Bind(&ValidateAnnexB, stream));
-};
+}
 
 TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
   const char* files[] = {
