@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -32,7 +33,6 @@ class Origin;
 }
 
 namespace net {
-class HostPortPair;
 class HttpResponseHeaders;
 class URLFetcherDelegate;
 class URLFetcherResponseWriter;
@@ -321,7 +321,7 @@ class NET_EXPORT URLFetcher {
   // Retrieve the remote socket address from the request.  Must only
   // be called after the OnURLFetchComplete callback has run and if
   // the request has not failed.
-  virtual HostPortPair GetSocketAddress() const = 0;
+  virtual IPEndPoint GetSocketAddress() const = 0;
 
   // Returns the proxy server that proxied the request. Must only be called
   // after the OnURLFetchComplete callback has run and the request has not

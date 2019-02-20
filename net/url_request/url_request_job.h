@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/power_monitor/power_observer.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -138,7 +138,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Gets the remote endpoint that the network stack is currently fetching the
   // URL from. Returns true and fills in |endpoint| if it is available; returns
   // false and leaves |endpoint| unchanged if it is unavailable.
-  virtual bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
+  virtual bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const;
 
   // Populates the network error details of the most recent origin that the
   // network stack makes the request to.
@@ -226,7 +226,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
 
   // Returns the socket address for the connection.
   // See url_request.h for details.
-  virtual HostPortPair GetSocketAddress() const;
+  virtual IPEndPoint GetResponseRemoteEndpoint() const;
 
   // base::PowerObserver methods:
   // We invoke URLRequestJob::Kill on suspend (crbug.com/4606).

@@ -28,6 +28,7 @@
 #include "content/renderer/loader/sync_load_response.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
@@ -560,15 +561,17 @@ TEST_P(WebURLLoaderImplTest, ResponseIPAddress) {
       {"123.123.123.123", "123.123.123.123"},
       {"::1", "[::1]"},
       {"2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-       "[2001:0db8:85a3:0000:0000:8a2e:0370:7334]"},
-      {"2001:db8:85a3:0:0:8a2e:370:7334", "[2001:db8:85a3:0:0:8a2e:370:7334]"},
+       "[2001:db8:85a3::8a2e:370:7334]"},
+      {"2001:db8:85a3:0:0:8a2e:370:7334", "[2001:db8:85a3::8a2e:370:7334]"},
       {"2001:db8:85a3::8a2e:370:7334", "[2001:db8:85a3::8a2e:370:7334]"},
-      {"::ffff:192.0.2.128", "[::ffff:192.0.2.128]"}};
+      {"::ffff:192.0.2.128", "[::ffff:c000:280]"}};
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.ip);
     network::ResourceResponseInfo info;
-    info.socket_address = net::HostPortPair(test.ip, 443);
+    net::IPAddress address;
+    ASSERT_TRUE(address.AssignFromIPLiteral(test.ip));
+    info.remote_endpoint = net::IPEndPoint(address, 443);
     blink::WebURLResponse response;
     WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true, -1);
     EXPECT_EQ(test.expected, response.RemoteIPAddress().Utf8());

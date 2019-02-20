@@ -154,7 +154,7 @@ HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
   return core_->GetResponseHeaders();
 }
 
-HostPortPair URLFetcherImpl::GetSocketAddress() const {
+IPEndPoint URLFetcherImpl::GetSocketAddress() const {
   return core_->GetSocketAddress();
 }
 

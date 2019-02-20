@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -257,7 +258,8 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   void OnFinishOpeningHandshake() {
     WebSocketDispatchOnFinishOpeningHandshake(
         connect_delegate(), url_request_->url(),
-        url_request_->response_headers(), url_request_->GetSocketAddress(),
+        url_request_->response_headers(),
+        url_request_->GetResponseRemoteEndpoint(),
         url_request_->response_time());
   }
 
@@ -414,7 +416,7 @@ void Delegate::OnAuthRequired(URLRequest* request,
   // be called called during the opening handshake.
   int rv = owner_->connect_delegate()->OnAuthRequired(
       scoped_refptr<AuthChallengeInfo>(auth_info), request->response_headers(),
-      request->GetSocketAddress(),
+      request->GetResponseRemoteEndpoint(),
       base::BindOnce(&Delegate::OnAuthRequiredComplete, base::Unretained(this),
                      request),
       &credentials);
@@ -511,13 +513,13 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     WebSocketStream::ConnectDelegate* connect_delegate,
     const GURL& url,
     const scoped_refptr<HttpResponseHeaders>& headers,
-    const HostPortPair& socket_address,
+    const IPEndPoint& remote_endpoint,
     base::Time response_time) {
   DCHECK(connect_delegate);
   if (headers.get()) {
     connect_delegate->OnFinishOpeningHandshake(
         std::make_unique<WebSocketHandshakeResponseInfo>(
-            url, headers, socket_address, response_time));
+            url, headers, remote_endpoint, response_time));
   }
 }
 

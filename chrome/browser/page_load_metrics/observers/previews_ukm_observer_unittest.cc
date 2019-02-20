@@ -21,6 +21,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/ip_endpoint.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
@@ -570,13 +571,13 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached non-proxied request.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -619,13 +620,13 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached non-proxied request.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -667,13 +668,13 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached non-proxied request.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -711,12 +712,12 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -760,12 +761,12 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -809,12 +810,12 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
   // Prepare 3 resources of varying size and configurations, 2 of which have
   // client LoFi set.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -859,13 +860,13 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
   // 1 has Server LoFi.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Uncached proxied request with .1 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 10 /* original_network_content_length */, std::move(data1),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached proxied request with .5 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data2),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
@@ -913,13 +914,13 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
   // 1 has Server LoFi.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Uncached proxied request with .1 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 10 /* original_network_content_length */, std::move(data1),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached proxied request with .5 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data2),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
@@ -966,13 +967,13 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
   // 1 has Server LoFi.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Uncached proxied request with .1 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 10 /* original_network_content_length */, std::move(data1),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,
        nullptr /* load_timing_info */},
       // Uncached proxied request with .5 compression ratio.
-      {GURL(kDefaultTestUrl), net::HostPortPair(), -1, false /*was_cached*/,
+      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data2),
        content::ResourceType::RESOURCE_TYPE_IMAGE, 0,

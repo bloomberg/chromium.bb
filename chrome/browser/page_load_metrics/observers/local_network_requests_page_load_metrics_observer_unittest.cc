@@ -14,8 +14,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/navigation_simulator.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -38,10 +37,10 @@ typedef struct {
 static const PageAddressInfo
     kPublicPage = {(char*)"https://foo.com/", (char*)"216.58.195.78", 443},
     kPublicPageIPv6 = {(char*)"https://google.com/",
-                       (char*)"[2607:f8b0:4005:809::200e]", 443},
+                       (char*)"2607:f8b0:4005:809::200e", 443},
     kPrivatePage = {(char*)"http://test.local/", (char*)"192.168.10.123", 80},
     kLocalhostPage = {(char*)"http://localhost/", (char*)"127.0.0.1", 80},
-    kLocalhostPageIPv6 = {(char*)"http://[::1]/", (char*)"[::1]", 80},
+    kLocalhostPageIPv6 = {(char*)"http://[::1]/", (char*)"::1", 80},
     kPublicRequest1 = {(char*)"http://bar.com/", (char*)"100.150.200.250", 80},
     kPublicRequest2 = {(char*)"https://www.baz.com/", (char*)"192.10.20.30",
                        443},
@@ -89,12 +88,14 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
 
   void SimulateNavigateAndCommit(const internal::PageAddressInfo& page) {
     GURL url(page.url);
-    net::HostPortPair socket_address(page.host_ip, page.port);
+    net::IPAddress address;
+    ASSERT_TRUE(address.AssignFromIPLiteral(page.host_ip));
+    net::IPEndPoint remote_endpoint(address, page.port);
 
     navigation_simulator_ =
         content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
     navigation_simulator_->Start();
-    navigation_simulator_->SetSocketAddress(socket_address);
+    navigation_simulator_->SetSocketAddress(remote_endpoint);
     navigation_simulator_->Commit();
   }
 
@@ -109,8 +110,10 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
 
   void SimulateLoadedResource(const internal::PageAddressInfo& resource,
                               const int net_error) {
+    net::IPAddress address;
+    ASSERT_TRUE(address.AssignFromIPLiteral(resource.host_ip));
     page_load_metrics::ExtraRequestCompleteInfo request_info(
-        GURL(resource.url), net::HostPortPair(resource.host_ip, resource.port),
+        GURL(resource.url), net::IPEndPoint(address, resource.port),
         -1 /* frame_tree_node_id */, !net_error /* was_cached */,
         (net_error ? 1024 * 20 : 0) /* raw_body_bytes */,
         0 /* original_network_content_length */,
@@ -775,7 +778,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
   // Load a resource that has the IP address in the URL but returned an empty
   // socket address for some reason.
   PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
-      {GURL(internal::kDiffSubnetRequest2.url), net::HostPortPair(),
+      {GURL(internal::kDiffSubnetRequest2.url), net::IPEndPoint(),
        -1 /* frame_tree_node_id */, true /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
@@ -803,7 +806,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
   // Load a resource that doesn't have the IP address in the URL and returned an
   // empty socket address (e.g., failed DNS resolution).
   PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
-      {GURL(internal::kPrivatePage.url), net::HostPortPair(),
+      {GURL(internal::kPrivatePage.url), net::IPEndPoint(),
        -1 /* frame_tree_node_id */, false /* was_cached */,
        0 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,

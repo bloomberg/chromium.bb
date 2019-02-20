@@ -19,6 +19,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/escape.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/parse_number.h"
 #include "net/base/port_util.h"
@@ -691,7 +692,7 @@ int FtpNetworkTransaction::DoCtrlConnectComplete(int result) {
     IPEndPoint ip_endpoint;
     result = ctrl_socket_->GetPeerAddress(&ip_endpoint);
     if (result == OK) {
-      response_.socket_address = HostPortPair::FromIPEndPoint(ip_endpoint);
+      response_.remote_endpoint = ip_endpoint;
       next_state_ = STATE_CTRL_READ;
 
       if (ip_endpoint.GetFamily() == ADDRESS_FAMILY_IPV4) {

@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -104,7 +105,7 @@ class WebSocket::WebSocketEventHandler final
   int OnAuthRequired(
       scoped_refptr<net::AuthChallengeInfo> auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
-      const net::HostPortPair& host_port_pair,
+      const net::IPEndPoint& remote_endpoint,
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
       base::Optional<net::AuthCredentials>* credentials) override;
 
@@ -250,7 +251,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   response_to_pass->status_code = response->headers->response_code();
   response_to_pass->status_text = response->headers->GetStatusText();
   response_to_pass->http_version = response->headers->GetHttpVersion();
-  response_to_pass->socket_address = response->socket_address;
+  response_to_pass->remote_endpoint = response->remote_endpoint;
   size_t iter = 0;
   std::string name, value;
   std::string headers_text =
@@ -286,7 +287,7 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
 int WebSocket::WebSocketEventHandler::OnAuthRequired(
     scoped_refptr<net::AuthChallengeInfo> auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const net::AuthCredentials*)> callback,
     base::Optional<net::AuthCredentials>* credentials) {
   DVLOG(3) << "WebSocketEventHandler::OnAuthRequired"
@@ -297,7 +298,7 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
   }
 
   impl_->auth_handler_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), host_port_pair,
+      std::move(auth_info), std::move(response_headers), remote_endpoint,
       base::BindOnce(&WebSocket::OnAuthRequiredComplete,
                      impl_->weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));

@@ -92,15 +92,15 @@ void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
     *info = *http_response_info_;
 }
 
-HostPortPair URLRequestFtpJob::GetSocketAddress() const {
+IPEndPoint URLRequestFtpJob::GetResponseRemoteEndpoint() const {
   if (proxy_info_.is_direct()) {
     if (!ftp_transaction_)
-      return HostPortPair();
-    return ftp_transaction_->GetResponseInfo()->socket_address;
+      return IPEndPoint();
+    return ftp_transaction_->GetResponseInfo()->remote_endpoint;
   } else {
     if (!http_transaction_)
-      return HostPortPair();
-    return http_transaction_->GetResponseInfo()->socket_address;
+      return IPEndPoint();
+    return http_transaction_->GetResponseInfo()->remote_endpoint;
   }
 }
 

@@ -32,6 +32,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -376,7 +377,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     network::ResourceResponseHead head;
     head.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-    head.socket_address = net::HostPortPair("1.2.3.4", 80);
+    head.remote_endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
     head.mime_type = "text/html";
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = content.size();

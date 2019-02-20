@@ -17,7 +17,7 @@
 class GURL;
 
 namespace net {
-class HostPortPair;
+class IPEndPoint;
 class HttpResponseHeaders;
 }  // namespace net
 
@@ -252,7 +252,7 @@ class NavigationSimulator {
 
   // The following parameters can change at any point until the page fails or
   // commits. They should be specified before calling |Fail| or |Commit|.
-  virtual void SetSocketAddress(const net::HostPortPair& socket_address) = 0;
+  virtual void SetSocketAddress(const net::IPEndPoint& remote_endpoint) = 0;
 
   // Pretend the navigation is against an inner response of a signed exchange.
   virtual void SetIsSignedExchangeInnerResponse(

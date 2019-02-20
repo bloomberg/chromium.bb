@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/auth.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -387,9 +386,9 @@ void URLRequest::GetResponseHeaderByName(const string& name,
   }
 }
 
-HostPortPair URLRequest::GetSocketAddress() const {
+IPEndPoint URLRequest::GetResponseRemoteEndpoint() const {
   DCHECK(job_.get());
-  return job_->GetSocketAddress();
+  return job_->GetResponseRemoteEndpoint();
 }
 
 HttpResponseHeaders* URLRequest::response_headers() const {
@@ -406,11 +405,11 @@ void URLRequest::PopulateNetErrorDetails(NetErrorDetails* details) const {
   return job_->PopulateNetErrorDetails(details);
 }
 
-bool URLRequest::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+bool URLRequest::GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const {
   if (!job_)
     return false;
 
-  return job_->GetRemoteEndpoint(endpoint);
+  return job_->GetTransactionRemoteEndpoint(endpoint);
 }
 
 void URLRequest::GetMimeType(string* mime_type) const {

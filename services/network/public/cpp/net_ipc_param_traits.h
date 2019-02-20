@@ -13,6 +13,8 @@
 #include "ipc/param_traits_macros.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
@@ -100,6 +102,26 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::HostPortPair> {
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPEndPoint> {
+  typedef net::IPEndPoint param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPAddress> {
+  typedef net::IPAddress param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

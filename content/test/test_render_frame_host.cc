@@ -26,6 +26,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -365,26 +366,26 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 }
 
 void TestRenderFrameHost::PrepareForCommit() {
-  PrepareForCommitInternal(GURL(), net::HostPortPair(),
+  PrepareForCommitInternal(GURL(), net::IPEndPoint(),
                            /* is_signed_exchange_inner_response=*/false);
 }
 
 void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
-    const net::HostPortPair& socket_address,
+    const net::IPEndPoint& remote_endpoint,
     bool is_signed_exchange_inner_response) {
-  PrepareForCommitInternal(GURL(), socket_address,
+  PrepareForCommitInternal(GURL(), remote_endpoint,
                            is_signed_exchange_inner_response);
 }
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
-  PrepareForCommitInternal(redirect_url, net::HostPortPair(),
+  PrepareForCommitInternal(redirect_url, net::IPEndPoint(),
                            /* is_signed_exchange_inner_response=*/false);
 }
 
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
-    const net::HostPortPair& socket_address,
+    const net::IPEndPoint& remote_endpoint,
     bool is_signed_exchange_inner_response) {
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
@@ -423,7 +424,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   // Simulate the network stack commit.
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
-  response->head.socket_address = socket_address;
+  response->head.remote_endpoint = remote_endpoint;
   response->head.is_signed_exchange_inner_response =
       is_signed_exchange_inner_response;
   // TODO(carlosk): Ideally, it should be possible someday to

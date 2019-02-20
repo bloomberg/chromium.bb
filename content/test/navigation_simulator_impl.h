@@ -18,6 +18,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "url/gurl.h"
@@ -78,7 +79,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetMethod(const std::string& method) override;
   void SetIsFormSubmission(bool is_form_submission) override;
   void SetReferrer(const Referrer& referrer) override;
-  void SetSocketAddress(const net::HostPortPair& socket_address) override;
+  void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
   void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) override;
   void SetInterfaceProviderRequest(
@@ -213,7 +214,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Note: additional parameters to modify the navigation should be properly
   // initialized (if needed) in InitializeFromStartedRequest.
   GURL navigation_url_;
-  net::HostPortPair socket_address_;
+  net::IPEndPoint remote_endpoint_;
   bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool is_form_submission_ = false;

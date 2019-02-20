@@ -39,6 +39,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -469,8 +470,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
     }
     out.status_line = response->headers->GetStatusLine();
 
-    EXPECT_EQ("127.0.0.1", response->socket_address.host());
-    EXPECT_EQ(80, response->socket_address.port());
+    EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+    EXPECT_EQ(80, response->remote_endpoint.port());
 
     bool got_endpoint =
         trans.GetRemoteEndpoint(&out.remote_endpoint_after_start);

@@ -8381,10 +8381,12 @@ TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
 
 // Tests basic pickling/unpickling of HttpResponseInfo.
 TEST_F(HttpCacheTest, PersistHttpResponseInfo) {
+  const IPEndPoint expected_endpoint =
+      IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
   // Set some fields (add more if needed.)
   HttpResponseInfo response1;
   response1.was_cached = false;
-  response1.socket_address = HostPortPair("1.2.3.4", 80);
+  response1.remote_endpoint = expected_endpoint;
   response1.headers = new HttpResponseHeaders("HTTP/1.1 200 OK");
 
   // Pickle.
@@ -8399,8 +8401,7 @@ TEST_F(HttpCacheTest, PersistHttpResponseInfo) {
 
   // Verify fields.
   EXPECT_TRUE(response2.was_cached);  // InitFromPickle sets this flag.
-  EXPECT_EQ("1.2.3.4", response2.socket_address.host());
-  EXPECT_EQ(80, response2.socket_address.port());
+  EXPECT_EQ(expected_endpoint, response2.remote_endpoint);
   EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
 }
 

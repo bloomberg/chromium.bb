@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
@@ -156,7 +157,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
           : web_contents()->GetMainFrame();
 
   observer_->OnRequestComplete(
-      info.url, info.host_port_pair, info.frame_tree_node_id, request_id,
+      info.url, info.remote_endpoint, info.frame_tree_node_id, request_id,
       render_frame_host_or_null, info.resource_type, info.was_cached,
       info.data_reduction_proxy_data
           ? info.data_reduction_proxy_data->DeepCopy()

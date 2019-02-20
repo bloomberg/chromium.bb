@@ -17,7 +17,6 @@
 #include "components/domain_reliability/google_configs.h"
 #include "components/domain_reliability/header.h"
 #include "components/domain_reliability/quic_error_mapping.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -243,7 +242,7 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
   request.GetLoadTimingInfo(&load_timing_info);
   request.GetConnectionAttempts(&connection_attempts);
   request.PopulateNetErrorDetails(&details);
-  if (!request.GetRemoteEndpoint(&remote_endpoint))
+  if (!request.GetTransactionRemoteEndpoint(&remote_endpoint))
     remote_endpoint = net::IPEndPoint();
 }
 

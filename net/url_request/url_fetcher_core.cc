@@ -313,11 +313,11 @@ HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
   return response_headers_.get();
 }
 
-// TODO(panayiotis): socket_address_ is written in the IO thread,
+// TODO(panayiotis): remote_endpoint_ is written in the IO thread,
 // if this is accessed in the UI thread, this could result in a race.
 // Same for response_headers_ above and was_fetched_via_proxy_ below.
-HostPortPair URLFetcherCore::GetSocketAddress() const {
-  return socket_address_;
+IPEndPoint URLFetcherCore::GetSocketAddress() const {
+  return remote_endpoint_;
 }
 
 const ProxyServer& URLFetcherCore::ProxyServerUsed() const {
@@ -428,7 +428,7 @@ void URLFetcherCore::OnResponseStarted(URLRequest* request, int net_error) {
   if (net_error == OK) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
-    socket_address_ = request_->GetSocketAddress();
+    remote_endpoint_ = request_->GetResponseRemoteEndpoint();
     proxy_server_ = request_->proxy_server();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     was_cached_ = request_->was_cached();

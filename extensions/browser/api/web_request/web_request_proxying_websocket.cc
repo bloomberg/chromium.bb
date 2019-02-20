@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_util.h"
 
 namespace extensions {
@@ -165,7 +166,7 @@ void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
       response_.headers->AddHeader(header->name + ": " + header->value);
     }
   }
-  response_.socket_address = response->socket_address;
+  response_.remote_endpoint = response->remote_endpoint;
 
   forwarding_client_->OnFinishOpeningHandshake(std::move(response));
 
@@ -232,7 +233,7 @@ void WebRequestProxyingWebSocket::OnClosingHandshake() {
 void WebRequestProxyingWebSocket::OnAuthRequired(
     const scoped_refptr<net::AuthChallengeInfo>& auth_info,
     const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const net::HostPortPair& socket_address,
+    const net::IPEndPoint& remote_endpoint,
     OnAuthRequiredCallback callback) {
   if (!auth_info || !callback) {
     OnError(net::ERR_FAILED);
@@ -240,7 +241,7 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
   }
 
   response_.headers = headers;
-  response_.socket_address = socket_address;
+  response_.remote_endpoint = remote_endpoint;
   auth_required_callback_ = std::move(callback);
 
   auto continuation = base::BindRepeating(

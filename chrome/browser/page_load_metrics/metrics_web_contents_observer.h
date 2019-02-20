@@ -24,6 +24,10 @@
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -126,7 +130,7 @@ class MetricsWebContentsObserver
   // frame requests when browser-side navigation is enabled.
   void OnRequestComplete(
       const GURL& url,
-      const net::HostPortPair& host_port_pair,
+      const net::IPEndPoint& remote_endpoint,
       int frame_tree_node_id,
       const content::GlobalRequestID& request_id,
       content::RenderFrameHost* render_frame_host_or_null,

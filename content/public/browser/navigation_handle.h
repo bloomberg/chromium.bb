@@ -14,7 +14,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -232,7 +232,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual const GURL& GetPreviousURL() = 0;
 
   // Returns the remote address of the socket which fetched this resource.
-  virtual net::HostPortPair GetSocketAddress() = 0;
+  virtual net::IPEndPoint GetSocketAddress() = 0;
 
   // Returns the headers used for this request.
   virtual const net::HttpRequestHeaders& GetRequestHeaders() = 0;

@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
@@ -208,9 +207,9 @@ HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {
   return fake_response_headers_.get();
 }
 
-HostPortPair TestURLFetcher::GetSocketAddress() const {
+IPEndPoint TestURLFetcher::GetSocketAddress() const {
   NOTIMPLEMENTED();
-  return HostPortPair();
+  return IPEndPoint();
 }
 
 const ProxyServer& TestURLFetcher::ProxyServerUsed() const {

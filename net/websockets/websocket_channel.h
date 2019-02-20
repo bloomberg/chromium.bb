@@ -33,6 +33,7 @@ namespace net {
 
 class HttpRequestHeaders;
 class IOBuffer;
+class IPEndPoint;
 class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
@@ -214,7 +215,7 @@ class NET_EXPORT WebSocketChannel {
   // Forwards the request to the event interface.
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials);
 

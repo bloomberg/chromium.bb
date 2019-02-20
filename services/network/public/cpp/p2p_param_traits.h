@@ -25,35 +25,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
-namespace net {
-class IPAddress;
-class IPEndPoint;
-}  // namespace net
-
-namespace IPC {
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPEndPoint> {
-  typedef net::IPEndPoint param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPAddress> {
-  typedef net::IPAddress param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
 #endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::P2PSocketType, network::P2P_SOCKET_TYPE_LAST)

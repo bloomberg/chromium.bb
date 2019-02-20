@@ -34,9 +34,9 @@ namespace net {
 
 class AuthChallengeInfo;
 class AuthCredentials;
-class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class IPEndPoint;
 class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     virtual int OnAuthRequired(
         scoped_refptr<AuthChallengeInfo> auth_info,
         scoped_refptr<HttpResponseHeaders> response_headers,
-        const HostPortPair& host_port_pair,
+        const IPEndPoint& remote_endpoint,
         base::OnceCallback<void(const AuthCredentials*)> callback,
         base::Optional<AuthCredentials>* credentials) = 0;
   };
@@ -275,7 +275,7 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     WebSocketStream::ConnectDelegate* connect_delegate,
     const GURL& gurl,
     const scoped_refptr<HttpResponseHeaders>& headers,
-    const HostPortPair& socket_address,
+    const IPEndPoint& remote_endpoint,
     base::Time response_time);
 
 }  // namespace net

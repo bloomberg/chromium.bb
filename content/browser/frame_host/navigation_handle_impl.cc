@@ -435,12 +435,12 @@ const GURL& NavigationHandleImpl::GetPreviousURL() {
   return previous_url_;
 }
 
-net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
+net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
   // This is CANCELING because although the data comes in after
   // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
   // after and the caller might want this value.
   DCHECK(state_ >= CANCELING);
-  return socket_address_;
+  return remote_endpoint_;
 }
 
 void NavigationHandleImpl::Resume(NavigationThrottle* resuming_throttle) {
@@ -676,7 +676,7 @@ void NavigationHandleImpl::WillProcessResponse(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
-    const net::HostPortPair& socket_address,
+    const net::IPEndPoint& remote_endpoint,
     const net::SSLInfo& ssl_info,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -698,7 +698,7 @@ void NavigationHandleImpl::WillProcessResponse(
   was_cached_ = was_cached;
   state_ = PROCESSING_WILL_PROCESS_RESPONSE;
   ssl_info_ = ssl_info;
-  socket_address_ = socket_address;
+  remote_endpoint_ = remote_endpoint;
   complete_callback_ = std::move(callback);
 
   // Notify each throttle of the response.

@@ -58,6 +58,7 @@ mojom("websocket_mojom") {
   ]
 
   public_deps = [
+    ":mojom_ip_address",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

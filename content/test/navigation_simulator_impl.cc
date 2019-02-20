@@ -313,7 +313,6 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
                            : web_contents->GetMainFrame()->frame_tree_node()),
       request_(nullptr),
       navigation_url_(original_url),
-      socket_address_("2001:db8::1", 80),
       initial_method_("GET"),
       browser_initiated_(browser_initiated),
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
@@ -321,6 +320,10 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
       contents_mime_type_("text/html"),
       load_url_params_(nullptr),
       weak_factory_(this) {
+  net::IPAddress address;
+  CHECK(address.AssignFromIPLiteral("2001:db8::1"));
+  remote_endpoint_ = net::IPEndPoint(address, 80);
+
   // For renderer-initiated navigation, the RenderFrame must be initialized. Do
   // it if it hasn't happened yet.
   if (!browser_initiated)
@@ -359,7 +362,7 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
   CHECK_EQ(frame_tree_node_, request_->frame_tree_node());
   state_ = STARTED;
   navigation_url_ = handle->GetURL();
-  // |socket_address_| cannot be inferred from the request.
+  // |remote_endpoint_| cannot be inferred from the request.
   // |initial_method_| cannot be set after the request has started.
   browser_initiated_ = request_->browser_initiated();
   // |same_document_| should always be false here.
@@ -508,7 +511,7 @@ void NavigationSimulatorImpl::ReadyToCommit() {
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
-            socket_address_, is_signed_exchange_inner_response_);
+            remote_endpoint_, is_signed_exchange_inner_response_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -810,10 +813,10 @@ void NavigationSimulatorImpl::SetReferrer(const Referrer& referrer) {
 }
 
 void NavigationSimulatorImpl::SetSocketAddress(
-    const net::HostPortPair& socket_address) {
+    const net::IPEndPoint& remote_endpoint) {
   CHECK_LE(state_, STARTED) << "The socket address cannot be set after the "
                                "navigation has committed or failed";
-  socket_address_ = socket_address;
+  remote_endpoint_ = remote_endpoint;
 }
 
 void NavigationSimulatorImpl::SetIsSignedExchangeInnerResponse(

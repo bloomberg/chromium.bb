@@ -9,6 +9,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -66,7 +67,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(DidReplaceEntry, bool());
   MOCK_METHOD0(ShouldUpdateHistory, bool());
   MOCK_METHOD0(GetPreviousURL, const GURL&());
-  MOCK_METHOD0(GetSocketAddress, net::HostPortPair());
+  MOCK_METHOD0(GetSocketAddress, net::IPEndPoint());
   const net::HttpRequestHeaders& GetRequestHeaders() override {
     return request_headers_;
   }

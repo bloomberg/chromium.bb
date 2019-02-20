@@ -58,6 +58,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/features.h"
+#include "net/base/ip_endpoint.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -711,9 +712,9 @@ class ResourceLoadObserver : public WebContentsObserver {
       if (!first_network_request)
         EXPECT_GT(resource_load_info->request_id, 0);
       EXPECT_EQ(mime_type, resource_load_info->mime_type);
-      ASSERT_TRUE(resource_load_info->network_info->ip_port_pair);
-      EXPECT_EQ(ip_address,
-                resource_load_info->network_info->ip_port_pair->host());
+      ASSERT_TRUE(resource_load_info->network_info->remote_endpoint);
+      EXPECT_EQ(ip_address, resource_load_info->network_info->remote_endpoint
+                                ->ToStringWithoutPort());
       EXPECT_EQ(was_cached, resource_load_info->was_cached);
       // Simple sanity check of the load timing info.
       auto CheckTime = [before_request, after_request](auto actual) {

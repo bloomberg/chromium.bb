@@ -21,6 +21,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
@@ -218,9 +219,8 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
                                                  resource_request_->url, head);
   }
 
-  if (reporter_) {
-    reporter_->set_cert_server_ip(head.socket_address.host());
-  }
+  if (reporter_)
+    reporter_->set_cert_server_ip_address(head.remote_endpoint.address());
 
   // |headers| is null when loading data URL.
   if (head.headers && head.headers->response_code() != net::HTTP_OK) {

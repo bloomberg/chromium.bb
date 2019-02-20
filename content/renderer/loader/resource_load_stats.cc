@@ -10,6 +10,7 @@
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "net/base/ip_endpoint.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -131,8 +132,8 @@ void NotifyResourceRedirectReceived(
       redirect_response.network_accessed;
   net_redirect_info->network_info->always_access_network =
       AlwaysAccessNetwork(redirect_response.headers);
-  net_redirect_info->network_info->ip_port_pair =
-      redirect_response.socket_address;
+  net_redirect_info->network_info->remote_endpoint =
+      redirect_response.remote_endpoint;
   resource_load_info->redirect_info_chain.push_back(
       std::move(net_redirect_info));
 }
@@ -159,7 +160,8 @@ void NotifyResourceResponseReceived(
       response_head.network_accessed;
   resource_load_info->network_info->always_access_network =
       AlwaysAccessNetwork(response_head.headers);
-  resource_load_info->network_info->ip_port_pair = response_head.socket_address;
+  resource_load_info->network_info->remote_endpoint =
+      response_head.remote_endpoint;
 
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)

@@ -1166,7 +1166,7 @@ TEST_F(URLFetcherTest, SocketAddress) {
   EXPECT_EQ(test_server_->host_port_pair().port(),
             delegate.fetcher()->GetSocketAddress().port());
   EXPECT_EQ(test_server_->host_port_pair().host(),
-            delegate.fetcher()->GetSocketAddress().host());
+            delegate.fetcher()->GetSocketAddress().ToStringWithoutPort());
 }
 
 TEST_F(URLFetcherTest, StopOnRedirect) {

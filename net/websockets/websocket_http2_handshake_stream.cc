@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -102,7 +103,7 @@ int WebSocketHttp2HandshakeStream::SendRequest(
     OnFailure("Error getting IP address.");
     return result;
   }
-  http_response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  http_response_info_->remote_endpoint = address;
 
   auto request = std::make_unique<WebSocketHandshakeRequestInfo>(
       request_info_->url, base::Time::Now());
@@ -378,7 +379,7 @@ void WebSocketHttp2HandshakeStream::OnFinishOpeningHandshake() {
   DCHECK(http_response_info_);
   WebSocketDispatchOnFinishOpeningHandshake(
       connect_delegate_, request_info_->url, http_response_info_->headers,
-      http_response_info_->socket_address, http_response_info_->response_time);
+      http_response_info_->remote_endpoint, http_response_info_->response_time);
 }
 
 void WebSocketHttp2HandshakeStream::OnFailure(const std::string& message) {
