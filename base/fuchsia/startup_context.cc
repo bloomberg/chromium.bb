@@ -25,6 +25,21 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
       break;
     }
   }
+
+  // TODO(https://crbug.com/933834): Remove this workaround when we migrate to
+  // the new component manager.
+  if (!incoming_services_ && startup_info_.launch_info.flat_namespace) {
+    LOG(WARNING) << "Falling back to LaunchInfo namespace";
+    for (size_t i = 0;
+         i < startup_info_.launch_info.flat_namespace->paths.size(); ++i) {
+      if (startup_info_.launch_info.flat_namespace->paths[i] == "/svc") {
+        incoming_services_ = std::make_unique<ServiceDirectoryClient>(
+            fidl::InterfaceHandle<::fuchsia::io::Directory>(std::move(
+                startup_info_.launch_info.flat_namespace->directories[i])));
+        break;
+      }
+    }
+  }
 }
 
 StartupContext::~StartupContext() = default;
