@@ -947,7 +947,8 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   // associated with it. It must be thawed before changing visibility.
   DCHECK(!is_frozen_);
 
-  TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
+  TRACE_EVENT_WITH_FLOW0("renderer", "RenderWidget::OnWasShown", routing_id(),
+                         TRACE_EVENT_FLAG_FLOW_IN);
 
   was_shown_time_ = base::TimeTicks::Now();
 

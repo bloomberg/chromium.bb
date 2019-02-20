@@ -853,6 +853,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
                                      int index,
                                      int reason) {
   DCHECK(new_contents);
+  TRACE_EVENT0("ui", "BrowserView::OnActiveTabChanged");
 
   if (old_contents && !old_contents->IsBeingDestroyed()) {
     // We do not store the focus when closing the tab to work-around bug 4633.
@@ -2723,6 +2724,7 @@ void BrowserView::UpdateDevToolsForContents(
 }
 
 void BrowserView::UpdateUIForContents(WebContents* contents) {
+  TRACE_EVENT0("ui", "BrowserView::UpdateUIForContents");
   bool needs_layout = MaybeShowBookmarkBar(contents);
   // TODO(jamescook): This function always returns true. Remove it and figure
   // out when layout is actually required.
