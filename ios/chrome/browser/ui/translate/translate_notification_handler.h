@@ -7,33 +7,34 @@
 
 @protocol TranslateNotificationDelegate;
 
+// Types of translate notifications.
+typedef NS_ENUM(NSInteger, TranslateNotificationType) {
+  // Notification that user chose 'sourceLanguage' to always be translated to
+  // 'targetLanguage'.
+  TranslateNotificationTypeAlwaysTranslate,
+  // Notification that it was automatically decided that 'sourceLanguage' to
+  // always be translated to 'targetLanguage'.
+  TranslateNotificationTypeAutoAlwaysTranslate,
+  // Notification that user chose 'sourceLanguage' not to be translated.
+  TranslateNotificationTypeNeverTranslate,
+  // Notification that it was automatically decided that 'sourceLanguage' not to
+  // be translated.
+  TranslateNotificationTypeAutoNeverTranslate,
+  // Notification that user chose the site not to be translated.
+  TranslateNotificationTypeNeverTranslateSite,
+  // Notification that the page could not be translated.
+  TranslateNotificationTypeError,
+};
+
 // Protocol adopted by an object that displays translate notifications.
 @protocol TranslateNotificationHandler
 
-// Tells the handler to display a notification that |sourceLanguage| will always
-// be translated to |targetLanguage| and inform |delegate| of its dismissal.
-- (void)showAlwaysTranslateLanguageNotificationWithDelegate:
+// Tells the handler to display a notification of the given type and inform
+// |delegate| of its dismissal (whether automatically or by the user) as well as
+// its reversal by the user.
+- (void)showTranslateNotificationWithDelegate:
             (id<TranslateNotificationDelegate>)delegate
-                                             sourceLanguage:
-                                                 (NSString*)sourceLanguage
-                                             targetLanguage:
-                                                 (NSString*)targetLanguage;
-
-// Tells the handler to display a notification that |sourceLanguage| will never
-// be translated and inform |delegate| of its dismissal.
-- (void)showNeverTranslateLanguageNotificationWithDelegate:
-            (id<TranslateNotificationDelegate>)delegate
-                                            sourceLanguage:
-                                                (NSString*)sourceLanguage;
-
-// Tells the handler to display a notification that this site will never be
-// translated and inform |delegate| of its dismissal.
-- (void)showNeverTranslateSiteNotificationWithDelegate:
-    (id<TranslateNotificationDelegate>)delegate;
-
-// Tells the handler to display a notification that the page could not be
-// translated.
-- (void)showTranslateErrorNotification;
+                             notificationType:(TranslateNotificationType)type;
 
 // Tells the handler to stop displaying the notification, if any.
 - (void)dismissNotification;

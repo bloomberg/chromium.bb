@@ -11,8 +11,11 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/metrics/metrics_log.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_controller+protected.h"
@@ -25,8 +28,8 @@
 #include "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view_delegate.h"
-#include "ios/chrome/browser/ui/translate/translate_notification_delegate.h"
-#include "ios/chrome/browser/ui/translate/translate_notification_handler.h"
+#import "ios/chrome/browser/ui/translate/translate_notification_delegate.h"
+#import "ios/chrome/browser/ui/translate/translate_notification_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -55,6 +58,57 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   UserActionExpandMenu = 1 << 5,
 };
 
+// UMA histogram names.
+// Note: These string constants are repeated in TranslateCompactInfoBar.java.
+const char kLanguageHistogramTranslate[] =
+    "Translate.CompactInfobar.Language.Translate";
+const char kLanguageHistogramMoreLanguages[] =
+    "Translate.CompactInfobar.Language.MoreLanguages";
+const char kLanguageHistogramPageNotInLanguage[] =
+    "Translate.CompactInfobar.Language.PageNotIn";
+const char kLanguageHistogramAlwaysTranslate[] =
+    "Translate.CompactInfobar.Language.AlwaysTranslate";
+const char kLanguageHistogramNeverTranslate[] =
+    "Translate.CompactInfobar.Language.NeverTranslate";
+const char kEventHistogram[] = "Translate.CompactInfobar.Event";
+const char kTranslationCountHistogram[] =
+    "Translate.CompactInfobar.TranslationsPerPage";
+
+// Enum for the Translate.CompactInfobar.Event UMA histogram.
+// Note: These values are repeated as constants in TranslateCompactInfoBar.java.
+// Note: This enum is used to back an UMA histogram, and should be treated as
+// append-only.
+// TODO(crbug.com/933371): Share these enums with Java.
+enum class InfobarEvent {
+  INFOBAR_IMPRESSION = 0,
+  INFOBAR_TARGET_TAB_TRANSLATE = 1,
+  INFOBAR_DECLINE = 2,
+  INFOBAR_OPTIONS = 3,
+  INFOBAR_MORE_LANGUAGES = 4,
+  INFOBAR_MORE_LANGUAGES_TRANSLATE = 5,
+  INFOBAR_PAGE_NOT_IN = 6,
+  INFOBAR_ALWAYS_TRANSLATE = 7,
+  INFOBAR_NEVER_TRANSLATE = 8,
+  INFOBAR_NEVER_TRANSLATE_SITE = 9,
+  INFOBAR_SCROLL_HIDE = 10,
+  INFOBAR_SCROLL_SHOW = 11,
+  INFOBAR_REVERT = 12,
+  INFOBAR_SNACKBAR_ALWAYS_TRANSLATE_IMPRESSION = 13,
+  INFOBAR_SNACKBAR_NEVER_TRANSLATE_IMPRESSION = 14,
+  INFOBAR_SNACKBAR_NEVER_TRANSLATE_SITE_IMPRESSION = 15,
+  INFOBAR_SNACKBAR_CANCEL_ALWAYS = 16,
+  INFOBAR_SNACKBAR_CANCEL_NEVER_SITE = 17,
+  INFOBAR_SNACKBAR_CANCEL_NEVER = 18,
+  INFOBAR_ALWAYS_TRANSLATE_UNDO = 19,
+  INFOBAR_CLOSE_DEPRECATED = 20,
+  INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION = 21,
+  INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION = 22,
+  INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS = 23,
+  INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER = 24,
+  INFOBAR_HISTOGRAM_BOUNDARY = 25,
+  kMaxValue = INFOBAR_HISTOGRAM_BOUNDARY,
+};
+
 }  // namespace
 
 @interface TranslateInfoBarController () <LanguageSelectionDelegate,
@@ -79,11 +133,8 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 // Tracks user actions.
 @property(nonatomic, assign) UserAction userAction;
 
-// The source language name.
-@property(nonatomic, readonly) NSString* sourceLanguage;
-
-// The target language name.
-@property(nonatomic, readonly) NSString* targetLanguage;
+// Tracks the total number of translations in a page, incl. reverts to original.
+@property(nonatomic, assign) NSUInteger translationsCount;
 
 @end
 
@@ -101,6 +152,8 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
         std::make_unique<TranslateInfobarDelegateObserverBridge>(
             infoBarDelegate, self);
     _userAction = UserActionNone;
+
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_IMPRESSION];
   }
   return self;
 }
@@ -126,7 +179,14 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   _infobarView.state = [self translateInfobarViewStateForTranslateStep:step];
 
   if (step == translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR) {
-    [self.translateNotificationHandler showTranslateErrorNotification];
+    [self.translateNotificationHandler
+        showTranslateNotificationWithDelegate:self
+                             notificationType:TranslateNotificationTypeError];
+  }
+
+  if (step == translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR ||
+      step == translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE) {
+    [self incrementAndRecordTranslationsCount];
   }
 }
 
@@ -144,6 +204,9 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.userAction |= UserActionRevert;
 
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_REVERT];
+  [self incrementAndRecordTranslationsCount];
+
   self.infoBarDelegate->RevertWithoutClosingInfobar();
   _infobarView.state = TranslateInfobarViewStateBeforeTranslate;
 }
@@ -155,13 +218,20 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.userAction |= UserActionTranslate;
 
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_TARGET_TAB_TRANSLATE];
+  [self
+      recordLanguageDataHistogram:kLanguageHistogramTranslate
+                     languageCode:self.infoBarDelegate->target_language_code()];
+
   if (self.infoBarDelegate->ShouldAutoAlwaysTranslate()) {
+    [self recordInfobarEvent:InfobarEvent::
+                                 INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION];
+
     // Page will be translated once the snackbar finishes showing.
     [self.translateNotificationHandler
-        showAlwaysTranslateLanguageNotificationWithDelegate:self
-                                             sourceLanguage:self.sourceLanguage
-                                             targetLanguage:
-                                                 self.targetLanguage];
+        showTranslateNotificationWithDelegate:self
+                             notificationType:
+                                 TranslateNotificationTypeAutoAlwaysTranslate];
   } else {
     self.infoBarDelegate->Translate();
   }
@@ -173,6 +243,8 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.userAction |= UserActionExpandMenu;
 
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_OPTIONS];
+
   [self showTranslateOptionSelector];
 }
 
@@ -182,11 +254,19 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.infoBarDelegate->InfoBarDismissed();
 
+  if (self.userAction == UserActionNone) {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_DECLINE];
+  }
+
   if (self.infoBarDelegate->ShouldAutoNeverTranslate()) {
+    [self recordInfobarEvent:InfobarEvent::
+                                 INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION];
+
     // Infobar will dismiss once the snackbar finishes showing.
     [self.translateNotificationHandler
-        showNeverTranslateLanguageNotificationWithDelegate:self
-                                            sourceLanguage:self.sourceLanguage];
+        showTranslateNotificationWithDelegate:self
+                             notificationType:
+                                 TranslateNotificationTypeAutoNeverTranslate];
   } else {
     self.delegate->RemoveInfoBar();
   }
@@ -196,9 +276,16 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
 - (void)languageSelectorSelectedLanguage:(std::string)languageCode {
   if (self.languageSelectionState == LanguageSelectionStateSource) {
+    [self recordLanguageDataHistogram:kLanguageHistogramPageNotInLanguage
+                         languageCode:languageCode];
+
     self.infoBarDelegate->UpdateOriginalLanguage(languageCode);
     _infobarView.sourceLanguage = self.sourceLanguage;
   } else {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_MORE_LANGUAGES_TRANSLATE];
+    [self recordLanguageDataHistogram:kLanguageHistogramMoreLanguages
+                         languageCode:languageCode];
+
     self.infoBarDelegate->UpdateTargetLanguage(languageCode);
     _infobarView.targetLanguage = self.targetLanguage;
   }
@@ -224,6 +311,8 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.userAction |= UserActionExpandMenu;
 
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_MORE_LANGUAGES];
+
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   self.languageSelectionState = LanguageSelectionStateTarget;
@@ -240,14 +329,22 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   if (self.infoBarDelegate->ShouldAlwaysTranslate()) {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_ALWAYS_TRANSLATE_UNDO];
+
     self.infoBarDelegate->ToggleAlwaysTranslate();
   } else {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_ALWAYS_TRANSLATE];
+    [self recordInfobarEvent:InfobarEvent::
+                                 INFOBAR_SNACKBAR_ALWAYS_TRANSLATE_IMPRESSION];
+    [self recordLanguageDataHistogram:kLanguageHistogramAlwaysTranslate
+                         languageCode:self.infoBarDelegate
+                                          ->original_language_code()];
+
     // Page will be translated once the snackbar finishes showing.
     [self.translateNotificationHandler
-        showAlwaysTranslateLanguageNotificationWithDelegate:self
-                                             sourceLanguage:self.sourceLanguage
-                                             targetLanguage:
-                                                 self.targetLanguage];
+        showTranslateNotificationWithDelegate:self
+                             notificationType:
+                                 TranslateNotificationTypeAlwaysTranslate];
   }
 }
 
@@ -261,10 +358,18 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   if (self.infoBarDelegate->IsTranslatableLanguageByPrefs()) {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_NEVER_TRANSLATE];
+    [self recordInfobarEvent:InfobarEvent::
+                                 INFOBAR_SNACKBAR_NEVER_TRANSLATE_IMPRESSION];
+    [self recordLanguageDataHistogram:kLanguageHistogramNeverTranslate
+                         languageCode:self.infoBarDelegate
+                                          ->original_language_code()];
+
     // Infobar will dismiss once the snackbar finishes showing.
     [self.translateNotificationHandler
-        showNeverTranslateLanguageNotificationWithDelegate:self
-                                            sourceLanguage:self.sourceLanguage];
+        showTranslateNotificationWithDelegate:self
+                             notificationType:
+                                 TranslateNotificationTypeNeverTranslate];
   }
 }
 
@@ -278,9 +383,15 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   if (!self.infoBarDelegate->IsSiteBlacklisted()) {
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_NEVER_TRANSLATE_SITE];
+    [self recordInfobarEvent:
+              InfobarEvent::INFOBAR_SNACKBAR_NEVER_TRANSLATE_SITE_IMPRESSION];
+
     // Infobar will dismiss once the snackbar finishes showing.
     [self.translateNotificationHandler
-        showNeverTranslateSiteNotificationWithDelegate:self];
+        showTranslateNotificationWithDelegate:self
+                             notificationType:
+                                 TranslateNotificationTypeNeverTranslateSite];
   }
 }
 
@@ -290,6 +401,8 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
     return;
 
   self.userAction |= UserActionExpandMenu;
+
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_PAGE_NOT_IN];
 
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
@@ -303,25 +416,57 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
 #pragma mark - TranslateNotificationDelegate
 
-- (void)translateNotificationHandlerDidDismissAlwaysTranslateLanguage:
-    (id<TranslateNotificationHandler>)sender {
-  self.infoBarDelegate->ToggleAlwaysTranslate();
-  self.infoBarDelegate->Translate();
+- (void)translateNotificationHandlerDidDismiss:
+            (id<TranslateNotificationHandler>)sender
+                              notificationType:(TranslateNotificationType)type {
+  switch (type) {
+    case TranslateNotificationTypeAlwaysTranslate:
+    case TranslateNotificationTypeAutoAlwaysTranslate:
+      self.infoBarDelegate->ToggleAlwaysTranslate();
+      self.infoBarDelegate->Translate();
+      break;
+    case TranslateNotificationTypeNeverTranslate:
+    case TranslateNotificationTypeAutoNeverTranslate:
+      self.infoBarDelegate->ToggleTranslatableLanguageByPrefs();
+      self.delegate->RemoveInfoBar();
+      break;
+    case TranslateNotificationTypeNeverTranslateSite:
+      self.infoBarDelegate->ToggleSiteBlacklist();
+      self.delegate->RemoveInfoBar();
+      break;
+    case TranslateNotificationTypeError:
+      // No-op.
+      break;
+  }
 }
 
-- (void)translateNotificationHandlerDidDismissNeverTranslateLanguage:
-    (id<TranslateNotificationHandler>)sender {
-  self.infoBarDelegate->ToggleTranslatableLanguageByPrefs();
-  self.delegate->RemoveInfoBar();
+- (void)translateNotificationHandlerDidUndo:
+            (id<TranslateNotificationHandler>)sender
+                           notificationType:(TranslateNotificationType)type {
+  switch (type) {
+    case TranslateNotificationTypeAlwaysTranslate:
+      [self recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_ALWAYS];
+      break;
+    case TranslateNotificationTypeAutoAlwaysTranslate:
+      [self
+          recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS];
+      break;
+    case TranslateNotificationTypeNeverTranslate:
+      [self recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_NEVER];
+      break;
+    case TranslateNotificationTypeAutoNeverTranslate:
+      [self
+          recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER];
+      break;
+    case TranslateNotificationTypeNeverTranslateSite:
+      [self
+          recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_NEVER_SITE];
+      break;
+    case TranslateNotificationTypeError:
+      // No-op.
+      break;
+  }
 }
-
-- (void)translateNotificationHandlerDidDismissNeverTranslateSite:
-    (id<TranslateNotificationHandler>)sender {
-  self.infoBarDelegate->ToggleSiteBlacklist();
-  self.delegate->RemoveInfoBar();
-}
-
-#pragma mark - Properties
 
 - (NSString*)sourceLanguage {
   return base::SysUTF16ToNSString(
@@ -390,6 +535,21 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [self.languageSelectionHandler showLanguageSelectorWithContext:context
                                                         delegate:self];
   [_infobarView updateUIForPopUpMenuDisplayed:YES];
+}
+
+- (void)recordInfobarEvent:(InfobarEvent)event {
+  UMA_HISTOGRAM_ENUMERATION(kEventHistogram, event);
+}
+
+- (void)recordLanguageDataHistogram:(const std::string&)histogram
+                       languageCode:(const std::string&)langCode {
+  base::SparseHistogram::FactoryGet(
+      histogram, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(metrics::MetricsLog::Hash(langCode));
+}
+
+- (void)incrementAndRecordTranslationsCount {
+  UMA_HISTOGRAM_COUNTS_1M(kTranslationCountHistogram, ++self.translationsCount);
 }
 
 @end
