@@ -659,6 +659,14 @@ void AuthenticatorImpl::MakeCredential(
         std::move(options->challenge));
   }
 
+  // U2F requests proxied from the cryptotoken extension are limited to USB
+  // devices.
+  const auto transports =
+      OriginIsCryptoTokenExtension(caller_origin_)
+          ? base::flat_set<device::FidoTransportProtocol>(
+                {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
+          : transports_;
+
   auto authenticator_selection_criteria =
       options->authenticator_selection
           ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
@@ -667,6 +675,7 @@ void AuthenticatorImpl::MakeCredential(
 
   auto ctap_request = CreateCtapMakeCredentialRequest(
       client_data_json_, options, browser_context()->IsOffTheRecord());
+  // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
   ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin_));
 
   // Compute the effective attestation conveyance preference and set
@@ -683,7 +692,7 @@ void AuthenticatorImpl::MakeCredential(
       attestation != ::device::AttestationConveyancePreference::NONE;
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_, transports_, std::move(ctap_request),
+      connector_, transports, std::move(ctap_request),
       std::move(authenticator_selection_criteria),
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -730,7 +739,6 @@ void AuthenticatorImpl::GetAssertion(
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
   if (OriginIsCryptoTokenExtension(caller_origin_)) {
-    // Cryptotoken requests should be proxied without UI.
     request_delegate_->DisableUI();
 
     // As Cryptotoken validates the origin, accept the relying party id as the
@@ -780,6 +788,14 @@ void AuthenticatorImpl::GetAssertion(
     }
   }
 
+  // U2F requests proxied from the cryptotoken extension are limited to USB
+  // devices.
+  const auto transports =
+      OriginIsCryptoTokenExtension(caller_origin_)
+          ? base::flat_set<device::FidoTransportProtocol>(
+                {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
+          : transports_;
+
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
 
@@ -797,7 +813,7 @@ void AuthenticatorImpl::GetAssertion(
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_, transports_, std::move(ctap_request),
+      connector_, transports, std::move(ctap_request),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 

@@ -86,6 +86,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
       const {
     return transports_;
   }
+  void set_transports_for_testing(
+      base::flat_set<device::FidoTransportProtocol> transports) {
+    transports_ = transports;
+  }
 
  protected:
   virtual void UpdateRequestDelegate();
@@ -183,7 +187,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
 
   RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
-  const base::flat_set<device::FidoTransportProtocol> transports_;
+  base::flat_set<device::FidoTransportProtocol> transports_;
 
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   MakeCredentialCallback make_credential_response_callback_;

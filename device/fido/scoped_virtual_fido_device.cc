@@ -24,9 +24,10 @@ class VirtualFidoDeviceDiscovery
       public base::SupportsWeakPtr<VirtualFidoDeviceDiscovery> {
  public:
   explicit VirtualFidoDeviceDiscovery(
+      FidoTransportProtocol transport,
       scoped_refptr<VirtualFidoDevice::State> state,
       ProtocolVersion supported_protocol)
-      : FidoDeviceDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice),
+      : FidoDeviceDiscovery(transport),
         state_(std::move(state)),
         supported_protocol_(supported_protocol) {}
   ~VirtualFidoDeviceDiscovery() override = default;
@@ -61,6 +62,10 @@ void ScopedVirtualFidoDevice::SetSupportedProtocol(
   supported_protocol_ = supported_protocol;
 }
 
+void ScopedVirtualFidoDevice::SetTransport(FidoTransportProtocol transport) {
+  transport_ = transport;
+}
+
 VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
   return state_.get();
 }
@@ -68,10 +73,10 @@ VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
 std::unique_ptr<FidoDiscoveryBase> ScopedVirtualFidoDevice::CreateFidoDiscovery(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
-  if (transport != FidoTransportProtocol::kUsbHumanInterfaceDevice) {
+  if (transport != transport_) {
     return nullptr;
   }
-  return std::make_unique<VirtualFidoDeviceDiscovery>(state_,
+  return std::make_unique<VirtualFidoDeviceDiscovery>(transport_, state_,
                                                       supported_protocol_);
 }
 
