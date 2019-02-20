@@ -67,6 +67,8 @@ class TestSigninClient : public SigninClient {
 
   void set_is_signout_allowed(bool value) { is_signout_allowed_ = value; }
 
+  bool is_ready_for_dice_migration() { return is_ready_for_dice_migration_; }
+
   // When |value| is true, network calls posted through DelayNetworkCall() are
   // delayed indefinitely.
   // When |value| is false, all pending calls are unblocked, and new calls are
@@ -88,6 +90,7 @@ class TestSigninClient : public SigninClient {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
   void PreGaiaLogout(base::OnceClosure callback) override;
+  void SetReadyForDiceMigration(bool ready) override;
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -97,6 +100,8 @@ class TestSigninClient : public SigninClient {
   bool are_signin_cookies_allowed_;
   bool network_calls_delayed_;
   bool is_signout_allowed_;
+  bool is_ready_for_dice_migration_;
+
   std::vector<base::OnceClosure> delayed_network_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSigninClient);
