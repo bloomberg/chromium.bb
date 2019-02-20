@@ -188,7 +188,8 @@ def method_context(interface, method, is_visible=True):
         'arguments': argument_contexts,
         'camel_case_name': NameStyleConverter(name).to_upper_camel_case(),
         'cpp_type': (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
-                     if idl_type.is_explicit_nullable else idl_type.cpp_type),
+                     if idl_type.is_explicit_nullable
+                     else v8_types.cpp_type(idl_type, extended_attributes=extended_attributes)),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
         'high_entropy': v8_utilities.high_entropy(method),  # [HighEntropy]
