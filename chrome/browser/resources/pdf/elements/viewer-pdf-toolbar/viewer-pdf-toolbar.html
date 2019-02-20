@@ -103,7 +103,8 @@
       #eraser:not([selected]),
       #pen:not([selected]),
       #highlighter:not([selected]) {
-        filter: contrast(30%);
+        --pen-tip-fill: currentcolor !important;
+        --pen-tip-border: currentcolor !important;
       }
 
       #pen,
@@ -114,6 +115,13 @@
       #eraser[selected] {
         background-color: rgb(50, 54, 57);
         border-radius: 4px;
+      }
+
+      #annotation-separator {
+        background: rgb(151, 152, 152);
+        height: 30px;
+        margin-inline-end: 12px;
+        width: 1px;
       }
 
       :host([annotation-mode]) #annotate {
@@ -208,14 +216,6 @@
     </div>
 
     <div id="annotations-bar" class="invisible">
-      <paper-icon-button id="eraser"
-          selected$="[[equal_('eraser', annotationTool.tool)]]"
-          on-click="annotationToolClicked_"
-          icon="pdf:eraser"
-          aria-label$="{{strings.annotationEraser}}"
-          title$="{{strings.annotationEraser}}">
-      </paper-icon-button>
-
       <viewer-toolbar-dropdown id="pen"
           selected$="[[equal_('pen', annotationTool.tool)]]"
           open-after-select
@@ -253,6 +253,30 @@
           on-selected-color-changed="annotationToolOptionChanged_">
         </viewer-pen-options>
       </viewer-toolbar-dropdown>
+
+      <paper-icon-button id="eraser"
+          selected$="[[equal_('eraser', annotationTool.tool)]]"
+          on-click="annotationToolClicked_"
+          icon="pdf:eraser"
+          aria-label$="{{strings.annotationEraser}}"
+          title$="{{strings.annotationEraser}}">
+      </paper-icon-button>
+
+      <div id="annotation-separator"></div>
+
+      <paper-icon-button id="undo"
+          icon="pdf:undo"
+          on-click="undo"
+          aria-label$="{{strings.annotationUndo}}"
+          title$="{{strings.annotationUndo}}">
+      </paper-icon-button>
+
+      <paper-icon-button id="redo"
+          icon="pdf:redo"
+          on-click="redo"
+          aria-label$="{{strings.annotationRedo}}"
+          title$="{{strings.annotationRedo}}">
+      </paper-icon-button>
     </div>
   </template>
   <script src="viewer-pdf-toolbar.js"></script>

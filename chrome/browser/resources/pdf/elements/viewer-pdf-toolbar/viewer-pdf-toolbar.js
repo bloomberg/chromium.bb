@@ -163,6 +163,14 @@ Polymer({
     this.fire('print');
   },
 
+  undo: function() {
+    this.fire('undo');
+  },
+
+  redo: function() {
+    this.fire('redo');
+  },
+
   toggleAnnotation: function() {
     this.annotationMode = !this.annotationMode;
     if (this.annotationMode) {
@@ -193,6 +201,10 @@ Polymer({
       selectedColor: null,
     };
     element.attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
+    element.attributeStyleMap.set(
+        '--pen-tip-border',
+        options.selectedColor == '#000000' ? 'currentcolor' :
+                                             options.selectedColor);
     this.annotationTool = {
       tool: tool,
       size: options.selectedSize,

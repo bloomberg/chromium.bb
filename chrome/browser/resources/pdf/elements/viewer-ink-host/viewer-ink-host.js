@@ -248,6 +248,16 @@ Polymer({
     this.ink_.setCamera(camera);
   },
 
+  /** Undo the last edit action. */
+  undo() {
+    this.ink_.undo();
+  },
+
+  /** Redo the last undone edit action. */
+  redo() {
+    this.ink_.redo();
+  },
+
   /**
    * @return {!Promise<{fileName: string, dataToSave: ArrayBuffer}>}
    *     The serialized PDF document including any annotations that were made.
