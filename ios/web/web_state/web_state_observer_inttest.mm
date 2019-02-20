@@ -277,7 +277,8 @@ ACTION_P5(VerifyDataFinishedContext,
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
-  EXPECT_FALSE(web_state->ContentIsHTML());
+  EXPECT_TRUE(web_state->ContentIsHTML());
+  EXPECT_EQ(mime_type, web_state->GetContentsMimeType());
   EXPECT_FALSE(web_state->IsLoading());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();

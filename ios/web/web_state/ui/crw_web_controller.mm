@@ -1550,6 +1550,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // Note: it is possible that the URL in item already match |url|. But item can
   // also contain a placeholder URL intended to be replaced.
   item->SetURL(URL);
+  navigationContext->SetMimeType(MIMEType);
   if (item->GetUserAgentType() == web::UserAgentType::NONE &&
       web::wk_navigation_util::URLNeedsUserAgentType(URL)) {
     item->SetUserAgentType(web::UserAgentType::MOBILE);
@@ -1711,10 +1712,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)commitPendingNavigationInfo {
   if ([_pendingNavigationInfo referrer]) {
     _currentReferrerString = [[_pendingNavigationInfo referrer] copy];
-  }
-  if ([_pendingNavigationInfo MIMEType]) {
-    self.webStateImpl->SetContentsMimeType(
-        base::SysNSStringToUTF8([_pendingNavigationInfo MIMEType]));
   }
   [self updateCurrentBackForwardListItemHolder];
 
@@ -4263,6 +4260,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                         placeholderNavigation:NO];
   }
   context->SetLoadingHtmlString(true);
+  context->SetMimeType(@"text/html");
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
@@ -4729,6 +4727,12 @@ GURL URLEscapedForHistory(const GURL& url) {
     _webStateImpl->OnHttpResponseHeadersReceived(headers.get(), responseURL);
   }
 
+  if (WKResponse.forMainFrame) {
+    web::NavigationContextImpl* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+    context->SetMimeType(WKResponse.response.MIMEType);
+  }
+
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
@@ -5031,26 +5035,11 @@ GURL URLEscapedForHistory(const GURL& url) {
       context->SetHasCommitted(true);
     }
     context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
+    self.webStateImpl->SetContentsMimeType(
+        base::SysNSStringToUTF8(context->GetMimeType()));
   }
 
   [self commitPendingNavigationInfo];
-
-  // TODO(crbug.com/925304): Pending item (which is stores
-  // currentBackForwardListItemHolder) should be owned by NavigationContext.
-  // Pending item should never be null.
-  if (self.currentNavItem) {
-    if ([self currentBackForwardListItemHolder]
-        -> navigation_type() == WKNavigationTypeBackForward) {
-      // A fast back/forward won't call decidePolicyForNavigationResponse, so
-      // the MIME type needs to be updated explicitly.
-      NSString* storedMIMEType =
-          [self currentBackForwardListItemHolder] -> mime_type();
-      if (storedMIMEType) {
-        self.webStateImpl->SetContentsMimeType(
-            base::SysNSStringToUTF8(storedMIMEType));
-      }
-    }
-  }
 
   [self removeAllWebFrames];
 
@@ -5206,6 +5195,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   holder->set_navigation_type(WKNavigationTypeBackForward);
   context->SetIsPost((holder && [holder->http_method() isEqual:@"POST"]) ||
                      item->HasPostData());
+
+  if (holder) {
+    context->SetMimeType(holder->mime_type());
+  }
 
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
   [_navigationStates setState:web::WKNavigationState::REQUESTED
@@ -6053,6 +6046,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       // |didCommitNavigation:| may not be called for fast navigation, so update
       // the navigation type now as it is already known.
       navigationContext->SetWKNavigationType(WKNavigationTypeBackForward);
+      navigationContext->SetMimeType(holder->mime_type());
       holder->set_navigation_type(WKNavigationTypeBackForward);
       navigation =
           [_webView goToBackForwardListItem:holder->back_forward_list_item()];
