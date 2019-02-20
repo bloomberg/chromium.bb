@@ -64,14 +64,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   needs_stack_alignment = false
 }
 
-config("dav1d_config") {
-  include_dirs = [
-    "version",
-    "libdav1d",
-    "libdav1d/include",
-    "libdav1d/include/dav1d",
-    platform_config_root,
-  ]
+config("public_dav1d_config") {
+  include_dirs = [ "version" ]
 
   # Disable internal dav1d logs in the official build to save storage.
   if (is_official_build) {
@@ -87,6 +81,16 @@ config("dav1d_config") {
   # Don't let dav1d export any symbols. Otherwise the verify_order step on macOS
   # can fail since these exports end up in the final Chromium binary.
   defines += [ "DAV1D_API=" ]
+}
+
+config("dav1d_config") {
+  configs = [ ":public_dav1d_config" ]
+  include_dirs = [
+    "libdav1d",
+    "libdav1d/include",
+    "libdav1d/include/dav1d",
+    platform_config_root,
+  ]
 }
 
 dav1d_copts = [
@@ -238,6 +242,8 @@ static_library("dav1d") {
     ":dav1d_8bit",
     ":dav1d_entrypoints",
   ]
+
+  public_configs = [ ":public_dav1d_config" ]
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":dav1d_x86" ]

@@ -20,9 +20,6 @@
 #include "media/base/video_util.h"
 
 extern "C" {
-// Prevents symbol exports. See //third_party/dav1d/BUILD.gn for details.
-#define DAV1D_API
-
 #include "third_party/dav1d/libdav1d/include/dav1d/dav1d.h"
 }
 
