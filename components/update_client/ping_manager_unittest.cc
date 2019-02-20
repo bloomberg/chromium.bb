@@ -139,7 +139,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       ASSERT_TRUE(request);
       EXPECT_TRUE(request->FindKey("@os"));
@@ -219,7 +220,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       const auto& app = request->FindKey("app")->GetList()[0];
       EXPECT_EQ("abc", app.FindKey("appid")->GetString());
@@ -266,7 +268,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       const auto& app = request->FindKey("app")->GetList()[0];
       EXPECT_EQ("abc", app.FindKey("appid")->GetString());
@@ -316,7 +319,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       const auto& app = request->FindKey("app")->GetList()[0];
       EXPECT_EQ("abc", app.FindKey("appid")->GetString());
@@ -350,7 +354,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       const auto& app = request->FindKey("app")->GetList()[0];
       EXPECT_EQ("abc", app.FindKey("appid")->GetString());
@@ -414,7 +419,8 @@ TEST_P(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     const auto msg = interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(msg);
+      const auto root = base::JSONReader::Read(msg);
+      ASSERT_TRUE(root);
       const auto* request = root->FindKey("request");
       const auto& app = request->FindKey("app")->GetList()[0];
       EXPECT_EQ("abc", app.FindKey("appid")->GetString());
