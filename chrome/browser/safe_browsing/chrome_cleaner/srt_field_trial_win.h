@@ -70,10 +70,6 @@ extern const base::Feature kRebootPromptDialogFeature;
 // versions will be downloaded. When not enabled, default versions will be used.
 extern const base::Feature kChromeCleanupDistributionFeature;
 
-// Quarantine feature. When enabled, Chrome Cleaner will backup the removed
-// files.
-extern const base::Feature kChromeCleanupQuarantineFeature;
-
 // Extensions cleanup feature. When enabled, Chrome Cleaner will prompt users
 // for, and cleanup, bad extensions.
 extern const base::Feature kChromeCleanupExtensionsFeature;

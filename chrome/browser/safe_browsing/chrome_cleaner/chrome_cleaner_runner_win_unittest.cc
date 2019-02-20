@@ -72,14 +72,12 @@ enum class ReporterEngine {
 //       process running in scanning mode.
 // - chrome_prompt (ChromePromptValue): indicates if this is a user-initiated
 //       run or if the user was prompted.
-// - quarantine_enabled (bool): indicates if the quarantine feature is enabled.
 class ChromeCleanerRunnerSimpleTest
     : public testing::TestWithParam<
           std::tuple<ChromeCleanerRunner::ChromeMetricsStatus,
                      ReporterEngine,
                      bool,
-                     ChromePromptValue,
-                     bool>>,
+                     ChromePromptValue>>,
       public ChromeCleanerRunnerTestDelegate {
  public:
   ChromeCleanerRunnerSimpleTest()
@@ -87,13 +85,7 @@ class ChromeCleanerRunnerSimpleTest
 
   void SetUp() override {
     std::tie(metrics_status_, reporter_engine_, cleaner_logs_enabled_,
-             chrome_prompt_, quarantine_enabled_) = GetParam();
-
-    std::vector<base::Feature> enabled_features;
-    if (quarantine_enabled_) {
-      enabled_features.push_back(kChromeCleanupQuarantineFeature);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, {});
+             chrome_prompt_) = GetParam();
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
   }
@@ -166,7 +158,6 @@ class ChromeCleanerRunnerSimpleTest
   ReporterEngine reporter_engine_;
   bool cleaner_logs_enabled_ = false;
   ChromePromptValue chrome_prompt_ = ChromePromptValue::kUnspecified;
-  bool quarantine_enabled_ = false;
 
   // Set by LaunchTestProcess.
   base::CommandLine command_line_;
@@ -176,9 +167,6 @@ class ChromeCleanerRunnerSimpleTest
   ChromeCleanerRunner::ProcessStatus process_status_;
 
   base::RunLoop run_loop_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
@@ -222,8 +210,7 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
   int reboot_prompt = -1;
   EXPECT_TRUE(base::StringToInt(reboot_prompt_method, &reboot_prompt));
 
-  EXPECT_EQ(quarantine_enabled_,
-            command_line_.HasSwitch(chrome_cleaner::kQuarantineSwitch));
+  EXPECT_TRUE(command_line_.HasSwitch(chrome_cleaner::kQuarantineSwitch));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -236,8 +223,7 @@ INSTANTIATE_TEST_SUITE_P(
                    ReporterEngine::kNewEngine),
             Bool(),
             Values(ChromePromptValue::kPrompted,
-                   ChromePromptValue::kUserInitiated),
-            Bool()));
+                   ChromePromptValue::kUserInitiated)));
 
 typedef std::tuple<UwsFoundStatus,
                    ExtensionCleaningFeatureStatus,
