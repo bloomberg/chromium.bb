@@ -3704,6 +3704,21 @@
             ]
         }
     ],
+    "PreviewsLitePageRedirect": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190214",
+                    "enable_features": [
+                        "LitePageServerPreviews"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsNoScript": [
         {
             "platforms": [
