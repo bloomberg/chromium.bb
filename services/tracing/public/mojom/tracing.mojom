@@ -39,7 +39,8 @@ interface AgentRegistry {
 // close the recorder connection to signal the tracing service that no more data
 // will be sent.
 interface Agent {
-  StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time);
+  StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time)
+      => (bool success);
   StopAndFlush(Recorder recorder);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
 };
@@ -60,7 +61,7 @@ interface Coordinator {
   // The return value is false if tracing is already enabled with a different
   // config. Otherwise, true is returned as soon as the service receives acks
   // from all existing agents and agents that connect during |StartTracing|.
-  StartTracing(string config);
+  StartTracing(string config) => (bool success);
   StopAndFlush(handle<data_pipe_producer> stream)
       => (mojo_base.mojom.DictionaryValue metadata);
   // Same as |StopAndFlush| but only write data from a certain |agent_label| to

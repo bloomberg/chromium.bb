@@ -39,7 +39,10 @@ void BaseAgent::Disconnect() {
 }
 
 void BaseAgent::StartTracing(const std::string& config,
-                             base::TimeTicks coordinator_time) {}
+                             base::TimeTicks coordinator_time,
+                             Agent::StartTracingCallback callback) {
+  std::move(callback).Run(true /* success */);
+}
 
 void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
 

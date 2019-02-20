@@ -343,8 +343,7 @@ void ArcTracingBridge::StartTracing(const std::string& config,
 
   if (state_ != State::kDisabled) {
     DLOG(WARNING) << "Cannot start tracing, it is already enabled.";
-    if (callback)
-      std::move(callback).Run(false /*success*/);
+    std::move(callback).Run(false /*success*/);
     return;
   }
   state_ = State::kStarting;
@@ -391,8 +390,7 @@ void ArcTracingBridge::OnArcTracingStarted(SuccessCallback callback,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(State::kStarting, state_);
   state_ = success ? State::kEnabled : State::kDisabled;
-  if (callback)
-    std::move(callback).Run(success);
+  std::move(callback).Run(success);
 }
 
 void ArcTracingBridge::StopAndFlush(TraceDataCallback callback) {
@@ -463,9 +461,10 @@ void ArcTracingBridge::ArcTracingAgent::GetCategories(
 
 void ArcTracingBridge::ArcTracingAgent::StartTracing(
     const std::string& config,
-    base::TimeTicks coordinator_time) {
+    base::TimeTicks coordinator_time,
+    Agent::StartTracingCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bridge_->StartTracing(config, SuccessCallback());
+  bridge_->StartTracing(config, std::move(callback));
 }
 
 void ArcTracingBridge::ArcTracingAgent::StopAndFlush(

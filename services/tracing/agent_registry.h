@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
@@ -53,6 +54,7 @@ class AgentRegistry : public mojom::AgentRegistry {
     const mojom::TraceDataType type_;
     const base::ProcessId pid_;
     std::map<const void*, base::OnceClosure> closures_;
+    base::RepeatingTimer timer_;
 
     DISALLOW_COPY_AND_ASSIGN(AgentEntry);
   };

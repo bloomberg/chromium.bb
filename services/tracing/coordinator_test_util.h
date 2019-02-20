@@ -39,7 +39,7 @@ class CoordinatorTestUtil : public mojo::DataPipeDrainer::Client {
   MockAgent* AddObjectAgent();
   MockAgent* AddStringAgent();
 
-  void StartTracing(std::string config);
+  void StartTracing(std::string config, bool expected_response);
   std::string StopAndFlush();
 
   void IsTracing(bool expected_response);
@@ -49,6 +49,9 @@ class CoordinatorTestUtil : public mojo::DataPipeDrainer::Client {
   void CheckDisconnectClosures(size_t num_agents);
 
   AgentRegistry* agent_registry() { return agent_registry_.get(); }
+  bool tracing_begin_callback_received() const {
+    return tracing_begin_callback_received_;
+  }
 
  protected:
   std::unique_ptr<Coordinator> coordinator_;
@@ -63,6 +66,7 @@ class CoordinatorTestUtil : public mojo::DataPipeDrainer::Client {
   base::RunLoop tracing_loop_;
   base::RepeatingClosure wait_for_data_closure_;
   std::string output_;
+  bool tracing_begin_callback_received_ = false;
 };
 
 }  // namespace tracing

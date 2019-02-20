@@ -227,12 +227,13 @@ CrOSTracingAgent::~CrOSTracingAgent() = default;
 
 // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
 void CrOSTracingAgent::StartTracing(const std::string& config,
-                                    base::TimeTicks coordinator_time) {
+                                    base::TimeTicks coordinator_time,
+                                    Agent::StartTracingCallback callback) {
   DCHECK(!session_);
   session_ = std::make_unique<CrOSSystemTracingSession>();
   session_->StartTracing(
       config, base::BindOnce(&CrOSTracingAgent::StartTracingCallbackProxy,
-                             base::Unretained(this)));
+                             base::Unretained(this), std::move(callback)));
 }
 
 void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
@@ -245,9 +246,11 @@ void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
 }
 
 void CrOSTracingAgent::StartTracingCallbackProxy(
+    Agent::StartTracingCallback callback,
     bool success) {
   if (!success)
     session_.reset();
+  std::move(callback).Run(success);
 }
 
 void CrOSTracingAgent::RecorderProxy(
