@@ -60,14 +60,9 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 
-  SimCanvas::Commands commands;
-  paint_commands_ = &commands;
-
   layer_tree_view_->layer_tree_host()->Composite(last_frame_time_,
                                                  /*raster=*/false);
-
-  paint_commands_ = nullptr;
-  return commands;
+  return PaintFrame();
 }
 
 SimCanvas::Commands SimCompositor::PaintFrame() {
@@ -104,7 +99,6 @@ void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
   web_view_->MainFrameWidget()->BeginFrame(last_frame_time_, false);
   web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
-  *paint_commands_ = PaintFrame();
 }
 
 }  // namespace blink

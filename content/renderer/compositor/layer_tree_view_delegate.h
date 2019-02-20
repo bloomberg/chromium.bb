@@ -56,6 +56,10 @@ class LayerTreeViewDelegate {
   // Notifies that the compositor has issued a BeginMainFrame.
   virtual void BeginMainFrame(base::TimeTicks frame_time) = 0;
 
+  // Notifies that the layer tree host has completed a call to
+  // RequestMainFrameUpdate in response to a BeginMainFrame.
+  virtual void DidBeginMainFrame() = 0;
+
   // Requests a LayerTreeFrameSink to submit CompositorFrames to.
   virtual void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) = 0;
