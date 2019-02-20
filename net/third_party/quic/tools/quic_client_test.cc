@@ -54,13 +54,14 @@ size_t NumOpenSocketFDs() {
 
 // Creates a new QuicClient and Initializes it. Caller is responsible for
 // deletion.
-QuicClient* CreateAndInitializeQuicClient(QuicEpollServer* eps, uint16_t port) {
+std::unique_ptr<QuicClient> CreateAndInitializeQuicClient(QuicEpollServer* eps,
+                                                          uint16_t port) {
   QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
   QuicServerId server_id("hostname", server_address.port(), false);
   ParsedQuicVersionVector versions = AllSupportedVersions();
-  QuicClient* client =
-      new QuicClient(server_address, server_id, versions, eps,
-                     crypto_test_utils::ProofVerifierForTesting());
+  auto client =
+      QuicMakeUnique<QuicClient>(server_address, server_id, versions, eps,
+                                 crypto_test_utils::ProofVerifierForTesting());
   EXPECT_TRUE(client->Initialize());
   return client;
 }
@@ -71,8 +72,12 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   // Make sure that the QuicClient doesn't leak socket FDs. Doing so could cause
   // port exhaustion in long running processes which repeatedly create clients.
 
-  // Record initial number of FDs, after creation of EpollServer.
+  // Record initial number of FDs, after creating EpollServer and creating and
+  // destroying a single client (the latter is needed since initializing
+  // platform dependencies like certificate verifier may open a persistent
+  // socket).
   QuicEpollServer eps;
+  CreateAndInitializeQuicClient(&eps, QuicPickUnusedPortOrDie());
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   // Create a number of clients, initialize them, and verify this has resulted
