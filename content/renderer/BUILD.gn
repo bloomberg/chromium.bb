@@ -658,6 +658,8 @@ target(link_target_type, "renderer") {
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/mojom",
     "//services/device/public/mojom:constants",
+    "//services/image_annotation/public/cpp:cpp",
+    "//services/image_annotation/public/mojom:mojom",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",

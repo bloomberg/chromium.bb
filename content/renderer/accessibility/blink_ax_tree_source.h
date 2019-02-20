@@ -75,7 +75,7 @@ class BlinkAXTreeSource
 
   // The following methods add or remove an image annotator which is used to
   // provide automatic labels for images.
-  void AddImageAnnotator(const AXImageAnnotator* const annotator) {
+  void AddImageAnnotator(AXImageAnnotator* const annotator) {
     image_annotator_ = annotator;
   }
   void RemoveImageAnnotator() { image_annotator_ = nullptr; }
@@ -144,7 +144,7 @@ class BlinkAXTreeSource
 
   gfx::Size max_image_data_size_;
 
-  const AXImageAnnotator* image_annotator_ = nullptr;
+  AXImageAnnotator* image_annotator_ = nullptr;
 
   // These are updated when calling |Freeze|.
   bool frozen_ = false;

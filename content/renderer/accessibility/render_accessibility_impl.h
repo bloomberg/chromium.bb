@@ -67,8 +67,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                         AXContentTreeUpdate* response,
                                         ui::AXMode ax_mode);
 
-  RenderAccessibilityImpl(RenderFrameImpl* render_frame, ui::AXMode mode);
+  RenderAccessibilityImpl(RenderFrameImpl* const render_frame, ui::AXMode mode);
   ~RenderAccessibilityImpl() override;
+
+  RenderFrameImpl* render_frame() { return render_frame_; }
 
   // RenderAccessibility implementation.
   int GenerateAXID() override;
@@ -134,6 +136,12 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
+
+  // Automatically labels images for accessibility if the accessibility mode for
+  // this feature is turned on, otherwise stops automatic labeling and removes
+  // any automatic annotations that might have been added before.
+  void StartOrStopLabelingImages(ui::AXMode old_mode, ui::AXMode new_mode);
+
   void Scroll(const blink::WebAXObject& target,
               ax::mojom::Action scroll_action);
   void ScrollPlugin(int id_to_make_visible);
@@ -142,7 +150,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void RecordImageMetrics(AXContentTreeUpdate* update);
 
   // The RenderFrameImpl that owns us.
-  RenderFrameImpl* render_frame_;
+  RenderFrameImpl* const render_frame_;
 
   // This keeps accessibility enabled as long as it lives.
   std::unique_ptr<blink::WebAXContext> ax_context_;
