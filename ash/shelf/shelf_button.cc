@@ -93,4 +93,8 @@ std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
+const char* ShelfButton::GetClassName() const {
+  return "ash/ShelfButton";
+}
+
 }  // namespace ash

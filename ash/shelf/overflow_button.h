@@ -34,6 +34,7 @@ class ASH_EXPORT OverflowButton : public ShelfControlButton {
   // views::Button:
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void NotifyClick(const ui::Event& event) override;
+  const char* GetClassName() const override;
 
   const gfx::ImageSkia horizontal_dots_image_;
   views::ImageView* horizontal_dots_image_view_;
