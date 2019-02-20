@@ -61,7 +61,7 @@
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _detailTextLabel.numberOfLines = 0;
     _detailTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
     [contentView addSubview:_detailTextLabel];

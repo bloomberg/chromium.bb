@@ -101,7 +101,7 @@
 
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   _detailTextLabel.adjustsFontForContentSizeCategory = YES;
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _detailTextLabel.numberOfLines = 0;
