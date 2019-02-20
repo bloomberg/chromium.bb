@@ -3755,6 +3755,12 @@
       },
     },
 
+    'linux_specific_xr_gtests': {
+      'xr_browser_tests': {
+        'test': 'xr_browser_tests',
+      }
+    },
+
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
     },
@@ -4564,6 +4570,7 @@
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
+      'linux_specific_xr_gtests',
       'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',

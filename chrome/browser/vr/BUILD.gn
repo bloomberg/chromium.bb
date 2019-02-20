@@ -649,20 +649,19 @@ repack("vr_test_pak") {
   ]
 }
 
-if (is_win) {
-  # This is split out here instead of being part of //chrome/test:browser_tests
-  # because the tests have hardware requirements and this is cleaner than trying
-  # to conditionally skip tests based on hardware (browser tests don't have
-  # the equivalent to Android's @Restriction annotation that allows you to
-  # easily skip tests at runtime).
+# This is split out here instead of being part of //chrome/test:browser_tests
+# because the tests have hardware requirements and this is cleaner than trying
+# to conditionally skip tests based on hardware (browser tests don't have
+# the equivalent to Android's @Restriction annotation that allows you to
+# easily skip tests at runtime).
+if (!is_android) {
   test("xr_browser_tests") {
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    # Common infrastructure.
     sources = [
-      "test/browser_test_browser_renderer_browser_interface.cc",
-      "test/browser_test_browser_renderer_browser_interface.h",
       "test/mock_openvr_device_hook_base.cc",
       "test/mock_openvr_device_hook_base.h",
-      "test/ui_utils.cc",
-      "test/ui_utils.h",
       "test/webvr_browser_test.cc",
       "test/webvr_browser_test.h",
       "test/webxr_browser_test.cc",
@@ -671,32 +670,26 @@ if (is_win) {
       "test/webxr_vr_browser_test.h",
       "test/xr_browser_test.cc",
       "test/xr_browser_test.h",
-      "webxr_vr_frame_pose_browser_test.cc",
-      "webxr_vr_input_browser_test.cc",
-      "webxr_vr_permission_request_browser_test.cc",
-      "webxr_vr_pixel_browser_test.cc",
-      "webxr_vr_tab_browser_test.cc",
-      "webxr_vr_transition_browser_test.cc",
     ]
 
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+    # Common/partially common tests.
+    sources += [ "webxr_vr_transition_browser_test.cc" ]
 
+    # Common dependencies.
     deps = [
       ":vr_common",
       "//base",
+      "//chrome:packed_resources",
       "//chrome/test:browser_tests_runner",
       "//chrome/test:test_support",
       "//chrome/test:test_support_ui",
       "//device/vr:vr",
       "//device/vr/public/mojom:mojom",
       "//device/vr/public/mojom:test_mojom",
-      "//third_party/openvr:openvr",
     ]
+    data_deps = []
 
-    data_deps = [
-      "//device/vr:openvr_mock",
-    ]
-
+    # Common data
     data = [
       "//chrome/test/data/xr/e2e_test_files/",
       "//third_party/blink/web_tests/resources/testharness.js",
@@ -705,5 +698,29 @@ if (is_win) {
       "$root_out_dir/chrome_200_percent.pak",
       "$root_out_dir/resources.pak",
     ]
+
+    # Windows-only tests and dependencies.
+    if (is_win) {
+      # Infrastructure.
+      sources += [
+        "test/browser_test_browser_renderer_browser_interface.cc",
+        "test/browser_test_browser_renderer_browser_interface.h",
+        "test/ui_utils.cc",
+        "test/ui_utils.h",
+      ]
+
+      # Tests.
+      sources += [
+        "webxr_vr_frame_pose_browser_test.cc",
+        "webxr_vr_input_browser_test.cc",
+        "webxr_vr_permission_request_browser_test.cc",
+        "webxr_vr_pixel_browser_test.cc",
+        "webxr_vr_tab_browser_test.cc",
+      ]
+
+      deps += [ "//third_party/openvr:openvr" ]
+
+      data_deps += [ "//device/vr:openvr_mock" ]
+    }
   }
 }

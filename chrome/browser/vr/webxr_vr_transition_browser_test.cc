@@ -15,6 +15,58 @@
 
 namespace vr {
 
+// Tests that WebVR/WebXR is not exposed if the flag is not on and the page does
+// not have an origin trial token.
+void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
+                                       std::string filename) {
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->WaitOnJavaScriptStep();
+  t->EndTest();
+}
+
+// Tests that WebVR does not return any devices if OpenVR support is disabled.
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
+                       TestWebVrNoDevicesWithoutOpenVr) {
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("generic_webvr_page"));
+  EXPECT_FALSE(XrDeviceFound())
+      << "Found a VRDisplay even with OpenVR disabled";
+  AssertNoJavaScriptErrors();
+}
+
+// Tests that WebXR does not return any devices if OpenVR support is disabled.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
+                       TestWebXrNoDevicesWithoutOpenVr) {
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_does_not_return_device"));
+  WaitOnJavaScriptStep();
+  EndTest();
+}
+
+// Windows-specific tests.
+#ifdef OS_WIN
+
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestWebVrDisabled,
+                       TestWebVrDisabledWithoutFlagSet) {
+  TestApiDisabledWithoutFlagSetImpl(this,
+                                    "test_webvr_disabled_without_flag_set");
+}
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWebXrDisabled,
+                       TestWebXrDisabledWithoutFlagSet) {
+  TestApiDisabledWithoutFlagSetImpl(this,
+                                    "test_webxr_disabled_without_flag_set");
+}
+
+// Tests that window.requestAnimationFrame continues to fire when we have a
+// non-immersive WebXR session.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
+                       TestWindowRafFiresDuringNonImmersiveSession) {
+  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
+      "test_window_raf_fires_during_non_immersive_session"));
+  WaitOnJavaScriptStep();
+  EndTest();
+}
+
 // Tests that a successful requestPresent or requestSession call enters
 // an immersive session.
 void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
@@ -55,58 +107,6 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
       this, "webxr_test_window_raf_fires_while_presenting");
 }
 
-// Tests that WebVR/WebXR is not exposed if the flag is not on and the page does
-// not have an origin trial token. Since the API isn't actually used, we can
-// remove the GPU requirement.
-void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
-                                       std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
-  t->WaitOnJavaScriptStep();
-  t->EndTest();
-}
-
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestWebVrDisabled,
-                       TestWebVrDisabledWithoutFlagSet) {
-  TestApiDisabledWithoutFlagSetImpl(this,
-                                    "test_webvr_disabled_without_flag_set");
-}
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWebXrDisabled,
-                       TestWebXrDisabledWithoutFlagSet) {
-  TestApiDisabledWithoutFlagSetImpl(this,
-                                    "test_webxr_disabled_without_flag_set");
-}
-
-// Tests that WebVR does not return any devices if OpenVR support is disabled.
-// Since WebVR isn't actually used, we can remove the GPU requirement.
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
-                       TestWebVrNoDevicesWithoutOpenVr) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("generic_webvr_page"));
-  EXPECT_FALSE(XrDeviceFound())
-      << "Found a VRDisplay even with OpenVR disabled";
-  AssertNoJavaScriptErrors();
-}
-
-// Tests that WebXR does not return any devices if OpenVR support is disabled.
-// Since WebXR isn't actually used, we can remove the GPU requirement.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
-                       TestWebXrNoDevicesWithoutOpenVr) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_does_not_return_device"));
-  WaitOnJavaScriptStep();
-  EndTest();
-}
-
-// Tests that window.requestAnimationFrame continues to fire when we have a
-// non-immersive WebXR session.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       TestWindowRafFiresDuringNonImmersiveSession) {
-  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
-      "test_window_raf_fires_during_non_immersive_session"));
-  WaitOnJavaScriptStep();
-  EndTest();
-}
-
 // Tests that non-immersive sessions stop receiving rAFs during an immersive
 // session, but resume once the immersive session ends.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
@@ -120,5 +120,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
   ExecuteStepAndWait("stepAfterImmersive()");
   EndTest();
 }
+
+#endif  // OS_WIN
 
 }  // namespace vr

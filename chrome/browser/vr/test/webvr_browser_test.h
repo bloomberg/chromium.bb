@@ -32,6 +32,16 @@ class WebVrBrowserTestBase : public WebXrVrBrowserTestBase {
   using WebXrBrowserTestBase::EndSessionOrFail;
 };
 
+// Test class with OpenVR support disabled.
+class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
+ public:
+  WebVrBrowserTestOpenVrDisabled() {
+    append_switches_.push_back(switches::kEnableWebVR);
+  }
+};
+
+// OpenVR feature only defined on Windows.
+#ifdef OS_WIN
 // Test class with standard features enabled: WebVR and OpenVR support.
 class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
  public:
@@ -48,14 +58,7 @@ class WebVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
     enable_features_.push_back(features::kOpenVR);
   }
 };
-
-// Test class with OpenVR support disabled.
-class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
- public:
-  WebVrBrowserTestOpenVrDisabled() {
-    append_switches_.push_back(switches::kEnableWebVR);
-  }
-};
+#endif  // OS_WIN
 
 }  // namespace vr
 
