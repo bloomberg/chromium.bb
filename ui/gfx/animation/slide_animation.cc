@@ -73,9 +73,7 @@ void SlideAnimation::Hide() {
 
   // Make sure we actually have something to do.
   if (slide_duration_ == 0) {
-    // TODO(bruthig): Investigate if this should really be animating to 0.0, I
-    // think it should be animating to 1.0.
-    AnimateToState(0.0);  // Skip to the end of the animation.
+    AnimateToState(1.0);  // Skip to the end of the animation.
     if (delegate()) {
       delegate()->AnimationProgressed(this);
       delegate()->AnimationEnded(this);

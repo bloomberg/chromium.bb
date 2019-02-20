@@ -72,6 +72,9 @@ void DropdownBarHost::Init(views::View* host_view,
   }
 
   animation_.reset(new gfx::SlideAnimation(this));
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    animation_->SetSlideDuration(0);
+
   // Update the widget and |view_| bounds to the hidden state.
   AnimationProgressed(animation_.get());
 }
