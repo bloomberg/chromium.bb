@@ -987,6 +987,7 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
 void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                                      const TabStripModelChange& change,
                                      const TabStripSelectionChange& selection) {
+  TRACE_EVENT0("ui", "Browser::OnTabStripModelChanged");
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
       for (const auto& delta : change.deltas())
@@ -2123,6 +2124,7 @@ void Browser::OnActiveTabChanged(WebContents* old_contents,
                                  WebContents* new_contents,
                                  int index,
                                  int reason) {
+  TRACE_EVENT0("ui", "Browser::OnActiveTabChanged");
 // Mac correctly sets the initial background color of new tabs to the theme
 // background color, so it does not need this block of code. Aura should
 // implement this as well.
@@ -2252,6 +2254,7 @@ void Browser::OnDevToolsAvailabilityChanged() {
 // Browser, UI update coalescing and handling (private):
 
 void Browser::UpdateToolbar(bool should_restore_state) {
+  TRACE_EVENT0("ui", "Browser::UpdateToolbar");
   window_->UpdateToolbar(should_restore_state ?
       tab_strip_model_->GetActiveWebContents() : NULL);
 }

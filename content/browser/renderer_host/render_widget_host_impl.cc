@@ -792,7 +792,8 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   if (!is_hidden_)
     return;
 
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasShown");
+  TRACE_EVENT_WITH_FLOW0("renderer_host", "RenderWidgetHostImpl::WasShown",
+                         routing_id_, TRACE_EVENT_FLAG_FLOW_OUT);
   is_hidden_ = false;
 
   // If we navigated in background, clear the displayed graphics of the
