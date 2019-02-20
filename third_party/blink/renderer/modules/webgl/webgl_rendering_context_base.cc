@@ -3674,15 +3674,15 @@ ScriptValue WebGLRenderingContextBase::getUniform(
     LChar* name_ptr;
     scoped_refptr<StringImpl> name_impl =
         StringImpl::CreateUninitialized(max_name_length, name_ptr);
-    GLsizei length = 0;
+    GLsizei name_length = 0;
     GLint size = -1;
     GLenum type = 0;
-    ContextGL()->GetActiveUniform(program_id, i, max_name_length, &length,
+    ContextGL()->GetActiveUniform(program_id, i, max_name_length, &name_length,
                                   &size, &type,
                                   reinterpret_cast<GLchar*>(name_ptr));
     if (size < 0)
       return ScriptValue::CreateNull(script_state);
-    String name(name_impl->Substring(0, length));
+    String name(name_impl->Substring(0, name_length));
     StringBuilder name_builder;
     // Strip "[0]" from the name if it's an array.
     if (size > 1 && name.EndsWith("[0]"))
@@ -5250,7 +5250,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
       if (gl->is_origin_top_left_ && !canvas()->LowLatencyEnabled())
         flip_y = !flip_y;
-      ScopedTexture2DRestorer restorer(gl);
+      ScopedTexture2DRestorer inner_restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
               ContextGL(), target, target_texture, unpack_premultiply_alpha_,
               !flip_y, IntPoint(xoffset, yoffset), source_sub_rectangle,
