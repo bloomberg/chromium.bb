@@ -67,6 +67,11 @@ cr.define('chrome', function() {
       this.networkStates_ = this.networkStates_.concat(networks);
     },
 
+    /** @param {!{chrome.networkingPrivate.CertificateLists}} */
+    setCertificatesForTest: function(certificateLists) {
+      this.certificateLists_ = certificateLists;
+    },
+
     /**
      * @param {string} type
      * @return {?chrome.networkingPrivate.DeviceStateProperties}

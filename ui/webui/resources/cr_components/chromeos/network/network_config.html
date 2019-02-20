@@ -128,7 +128,8 @@
       <network-config-select id="serverCa" label="[[i18n('OncEAP-ServerCA')]]"
           value="{{selectedServerCaHash_}}" items="[[serverCaCerts_]]"
           hidden="[[!showEap_.ServerCA]]" cert-list
-          property="[[managedEapProperties_.UseSystemCAs]]">
+          property="[[managedEapProperties_.UseSystemCAs]]"
+          device-certs-only="[[deviceCertsOnly_]]">
       </network-config-select>
       <network-config-input label="[[i18n('OncEAP-SubjectMatch')]]"
           value="{{eapProperties_.SubjectMatch}}"
@@ -138,7 +139,8 @@
       <network-config-select id="userCert" label="[[i18n('OncEAP-UserCert')]]"
           value="{{selectedUserCertHash_}}" items="[[userCerts_]]"
           hidden="[[!showEap_.UserCert]]" cert-list
-          property="[[managedEapProperties_.ClientCertType]]">
+          property="[[managedEapProperties_.ClientCertType]]"
+          device-certs-only="[[deviceCertsOnly_]]">
       </network-config-select>
       <network-config-input label="[[i18n('OncEAP-Identity')]]"
           value="{{eapProperties_.Identity}}" hidden="[[!showEap_.Identity]]"
@@ -167,7 +169,7 @@
         <cr-toggle id="share" checked="{{shareNetwork_}}"
             disabled="[[!shareIsEnabled_(guid, configProperties_.*,
                       security_, eapProperties_.*, shareAllowEnable)]]"
-            aria-labeledby="shareLabel">
+            aria-labeledby="shareLabel" on-change="onShareChanged_">
         </cr-toggle>
       </div>
     </template>

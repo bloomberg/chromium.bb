@@ -905,6 +905,9 @@ namespace networkingPrivate {
 
     // Whether or not the certificate is hardware backed.
     boolean hardwareBacked;
+
+    // Whether or not the certificate is device wide.
+    boolean deviceWide;
   };
 
   dictionary CertificateLists {

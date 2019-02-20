@@ -260,8 +260,10 @@ Polymer({
     eapOuterItems_: {
       type: Array,
       readOnly: true,
-      computed: 'computeEapOuterItems_(' +
-          'guid, shareNetwork_, shareAllowEnable, shareDefault)',
+      value: [
+        CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
+        CrOnc.EAPType.EAP_TTLS
+      ],
     },
 
     /**
@@ -305,6 +307,15 @@ Polymer({
       ],
     },
 
+    /**
+     * Whether the current network configuration allows only device-wide
+     * certificates (e.g. shared EAP TLS networks).
+     * @private
+     */
+    deviceCertsOnly_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -372,6 +383,7 @@ Polymer({
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
+    this.updateDeviceCertsOnly_();
   },
 
   save: function() {
@@ -508,7 +520,14 @@ Polymer({
    * @private
    */
   getDefaultCert_: function(desc, hash) {
-    return {hardwareBacked: false, hash: hash, issuedBy: desc, issuedTo: ''};
+    return {
+      hardwareBacked: false,
+      hash: hash,
+      issuedBy: desc,
+      issuedTo: '',
+      isDefault: true,
+      deviceWide: false
+    };
   },
 
   /**
@@ -638,14 +657,13 @@ Polymer({
         this.shareNetwork_ = true;
         return;
       }
-      // Networks requiring a user certificate cannot be shared.
-      const eap = this.eapProperties_;
-      if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS) {
-        this.shareNetwork_ = false;
-        return;
-      }
     }
     this.shareNetwork_ = this.shareDefault;
+  },
+
+  /** @private */
+  onShareChanged_: function(event) {
+    this.updateDeviceCertsOnly_();
   },
 
   /**
@@ -1169,6 +1187,27 @@ Polymer({
     this.isConfigured_ = this.getIsConfigured_();
   },
 
+  /** @private */
+  updateDeviceCertsOnly_: function() {
+    // Only device-wide certificates can be used for networks that require a
+    // certificate and are shared.
+    const eap = this.eapProperties_;
+    if (!this.shareNetwork_ || !eap || eap.Outer != CrOnc.EAPType.EAP_TLS) {
+      this.deviceCertsOnly_ = false;
+      return;
+    }
+    // Clear selection if certificate is not device-wide.
+    let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+    if (cert && !cert.deviceWide) {
+      this.selectedUserCertHash_ = undefined;
+    }
+    cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+    if (cert && !(cert.deviceWide || cert.isDefault)) {
+      this.selectedServerCaHash_ = undefined;
+    }
+    this.deviceCertsOnly_ = true;
+  },
+
   /**
    * @param {CrOnc.Type} type The type to compare against.
    * @param {CrOnc.Type} networkType The current network type.
@@ -1187,30 +1226,6 @@ Polymer({
   /** @private */
   setEnableConnect_: function() {
     this.enableConnect = this.isConfigured_ && !this.propertiesSent_;
-  },
-
-  /**
-   * @param {string} guid
-   * @param {boolean} shareNetwork
-   * @param {boolean} shareAllowEnable
-   * @param {boolean} shareDefault
-   * @return {!Array<string>}
-   * @private
-   */
-  computeEapOuterItems_: function(
-      guid, shareNetwork, shareAllowEnable, shareDefault) {
-    // If a network must be shared, hide the TLS option. Otherwise selecting
-    // TLS will turn off and disable the shared state. NOTE: Ethernet EAP may
-    // be set at the Device level, but will be saved as a User configuration.
-    if (this.type != CrOnc.Type.ETHERNET &&
-        ((this.getSource_() != CrOnc.Source.NONE && shareNetwork) ||
-         (!shareAllowEnable && shareDefault))) {
-      return [CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TTLS];
-    }
-    return [
-      CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
-      CrOnc.EAPType.EAP_TTLS
-    ];
   },
 
   /**
@@ -1248,13 +1263,6 @@ Polymer({
       return false;
     }
 
-    if (this.security_ == CrOnc.Security.WPA_EAP) {
-      const eap = this.getEap_(this.configProperties_);
-      if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS) {
-        return false;
-      }
-    }
-
     if (this.type == CrOnc.Type.WI_FI) {
       // Insecure WiFi networks are always shared.
       if (this.security_ == CrOnc.Security.NONE) {
@@ -1285,6 +1293,18 @@ Polymer({
     if (eap.Outer != CrOnc.EAPType.EAP_TLS) {
       return true;
     }
+    // EAP TLS networks can be shared only for device-wide certificates.
+    if (this.deviceCertsOnly_) {  // network is shared
+      let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+      if (!cert || !cert.deviceWide) {
+        return false;
+      }
+      cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+      if (!cert.deviceWide || !cert.isDefault) {
+        return false;
+      }
+    }
+
     return this.selectedUserCertHashIsValid_();
   },
 

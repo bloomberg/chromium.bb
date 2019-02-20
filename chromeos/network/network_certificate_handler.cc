@@ -40,8 +40,7 @@ NetworkCertificateHandler::Certificate GetCertificate(CERTCertificate* cert,
   }
 
   result.hardware_backed = NetworkCertLoader::IsCertificateHardwareBacked(cert);
-
-  // TODO(https://crbug.com/904362): Forward is_device_wide to the UI.
+  result.device_wide = is_device_wide;
 
   return result;
 }
