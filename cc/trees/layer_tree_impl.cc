@@ -1934,18 +1934,10 @@ ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   auto it = element_id_to_scrollbar_layer_ids_.find(scroll_element_id);
   if (it != element_id_to_scrollbar_layer_ids_.end()) {
     const ScrollbarLayerIds& layer_ids = it->second;
-    if (layer_ids.horizontal != Layer::INVALID_ID) {
-      // TODO(bokan): It's a bug that element_id_to_scrollbar_layer_ids_ has a
-      // mapping to a non-scrollbar layer but avoid returning nullptrs to
-      // prevent crashes. https://crbug.com/924068.
-      if (auto* layer = LayerById(layer_ids.horizontal)->ToScrollbarLayer())
-        scrollbars.insert(layer);
-    }
-
-    if (layer_ids.vertical != Layer::INVALID_ID) {
-      if (auto* layer = LayerById(layer_ids.vertical)->ToScrollbarLayer())
-        scrollbars.insert(layer);
-    }
+    if (layer_ids.horizontal != Layer::INVALID_ID)
+      scrollbars.insert(LayerById(layer_ids.horizontal)->ToScrollbarLayer());
+    if (layer_ids.vertical != Layer::INVALID_ID)
+      scrollbars.insert(LayerById(layer_ids.vertical)->ToScrollbarLayer());
   }
   return scrollbars;
 }
