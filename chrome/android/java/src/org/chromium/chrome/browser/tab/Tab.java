@@ -330,10 +330,6 @@ public class Tab
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
 
-    private int mTopControlsHeight;
-    private int mBottomControlsHeight;
-    private boolean mControlsResizeView;
-
     /**
      * The publisher URL for pages hosted on a trusted CDN, or null otherwise.
      */
@@ -2344,27 +2340,6 @@ public class Tab
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
-    }
-
-    public void setTopControlsHeight(int height, boolean controlsResizeView) {
-        mTopControlsHeight = height;
-        mControlsResizeView = controlsResizeView;
-    }
-
-    public void setBottomControlsHeight(int height) {
-        mBottomControlsHeight = height;
-    }
-
-    int getTopControlsHeight() {
-        return mTopControlsHeight;
-    }
-
-    int getBottomControlsHeight() {
-        return mBottomControlsHeight;
-    }
-
-    boolean controlsResizeView() {
-        return mControlsResizeView;
     }
 
     /**
