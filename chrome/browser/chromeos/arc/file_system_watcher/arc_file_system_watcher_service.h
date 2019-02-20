@@ -62,12 +62,16 @@ class ArcFileSystemWatcherService
   void StartWatchingFileSystem();
   void StopWatchingFileSystem();
 
+  std::unique_ptr<FileSystemWatcher> CreateAndStartFileSystemWatcher(
+      const base::FilePath& cros_path,
+      const base::FilePath& android_path);
   void OnFileSystemChanged(const std::vector<std::string>& paths);
 
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   std::unique_ptr<FileSystemWatcher> downloads_watcher_;
+  std::unique_ptr<FileSystemWatcher> myfiles_watcher_;
   std::unique_ptr<FileSystemWatcher> removable_media_watcher_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
