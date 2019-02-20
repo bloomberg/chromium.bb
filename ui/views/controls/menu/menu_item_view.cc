@@ -10,6 +10,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -210,6 +211,13 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
         ax::mojom::StringAttribute::kKeyShortcuts,
         base::UTF16ToUTF8(base::string16(1, mnemonic)));
   }
+}
+
+bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  if (action_data.action != ax::mojom::Action::kDoDefault)
+    return View::HandleAccessibleAction(action_data);
+  GetMenuController()->Accept(this, ui::EF_NONE);
+  return true;
 }
 
 // static
