@@ -56,6 +56,14 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
     return nullptr;
   }
   uintptr_t Id() const override { return internal_->id(); }
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override {
+    return nullptr;
+  }
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override {
+    static webrtc::DtlsTransportInformation dummy(
+        webrtc::DtlsTransportState::kNew);
+    return dummy;
+  }
   WebMediaStreamTrack Track() const override { return internal_->track(); }
   WebVector<WebString> StreamIds() const override {
     return std::vector<WebString>({WebString::FromUTF8("DummyStringId")});
@@ -109,6 +117,14 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
     return nullptr;
   }
   uintptr_t Id() const override { return id_; }
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override {
+    return nullptr;
+  }
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override {
+    static webrtc::DtlsTransportInformation dummy(
+        webrtc::DtlsTransportState::kNew);
+    return dummy;
+  }
   const WebMediaStreamTrack& Track() const override { return track_; }
   WebVector<WebString> StreamIds() const override {
     return WebVector<WebString>();

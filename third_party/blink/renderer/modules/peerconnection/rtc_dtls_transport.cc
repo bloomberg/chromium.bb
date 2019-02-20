@@ -100,6 +100,11 @@ webrtc::DtlsTransportInterface* RTCDtlsTransport::native_transport() {
   return native_transport_.get();
 }
 
+void RTCDtlsTransport::ChangeState(webrtc::DtlsTransportInformation info) {
+  DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
+  current_state_ = info;
+}
+
 // Implementation of DtlsTransportProxy::Delegate
 void RTCDtlsTransport::OnStartCompleted(webrtc::DtlsTransportInformation info) {
   current_state_ = info;

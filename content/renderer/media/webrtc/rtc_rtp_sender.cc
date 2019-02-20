@@ -46,18 +46,26 @@ RtpSenderState::RtpSenderState(
     : main_task_runner_(std::move(main_task_runner)),
       signaling_task_runner_(std::move(signaling_task_runner)),
       webrtc_sender_(std::move(webrtc_sender)),
+      webrtc_dtls_transport_(webrtc_sender_->dtls_transport()),
+      webrtc_dtls_transport_information_(webrtc::DtlsTransportState::kNew),
       is_initialized_(false),
       track_ref_(std::move(track_ref)),
       stream_ids_(std::move(stream_ids)) {
   DCHECK(main_task_runner_);
   DCHECK(signaling_task_runner_);
   DCHECK(webrtc_sender_);
+  if (webrtc_dtls_transport_) {
+    webrtc_dtls_transport_information_ = webrtc_dtls_transport_->Information();
+  }
 }
 
 RtpSenderState::RtpSenderState(RtpSenderState&& other)
     : main_task_runner_(other.main_task_runner_),
       signaling_task_runner_(other.signaling_task_runner_),
       webrtc_sender_(std::move(other.webrtc_sender_)),
+      webrtc_dtls_transport_(std::move(other.webrtc_dtls_transport_)),
+      webrtc_dtls_transport_information_(
+          other.webrtc_dtls_transport_information_),
       is_initialized_(other.is_initialized_),
       track_ref_(std::move(other.track_ref_)),
       stream_ids_(std::move(other.stream_ids_)) {
@@ -77,6 +85,8 @@ RtpSenderState& RtpSenderState::operator=(RtpSenderState&& other) {
   other.main_task_runner_ = nullptr;
   other.signaling_task_runner_ = nullptr;
   webrtc_sender_ = std::move(other.webrtc_sender_);
+  webrtc_dtls_transport_ = std::move(other.webrtc_dtls_transport_);
+  webrtc_dtls_transport_information_ = other.webrtc_dtls_transport_information_;
   is_initialized_ = other.is_initialized_;
   track_ref_ = std::move(other.track_ref_);
   stream_ids_ = std::move(other.stream_ids_);
@@ -111,6 +121,18 @@ scoped_refptr<webrtc::RtpSenderInterface> RtpSenderState::webrtc_sender()
     const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return webrtc_sender_;
+}
+
+rtc::scoped_refptr<webrtc::DtlsTransportInterface>
+RtpSenderState::webrtc_dtls_transport() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return webrtc_dtls_transport_;
+}
+
+webrtc::DtlsTransportInformation
+RtpSenderState::webrtc_dtls_transport_information() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return webrtc_dtls_transport_information_;
 }
 
 const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
@@ -382,6 +404,15 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSender::ShallowCopy() const {
 
 uintptr_t RTCRtpSender::Id() const {
   return getId(internal_->state().webrtc_sender().get());
+}
+
+rtc::scoped_refptr<webrtc::DtlsTransportInterface>
+RTCRtpSender::DtlsTransport() {
+  return internal_->state().webrtc_dtls_transport();
+}
+
+webrtc::DtlsTransportInformation RTCRtpSender::DtlsTransportInformation() {
+  return internal_->state().webrtc_dtls_transport_information();
 }
 
 blink::WebMediaStreamTrack RTCRtpSender::Track() const {

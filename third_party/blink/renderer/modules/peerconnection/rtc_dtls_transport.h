@@ -64,6 +64,8 @@ class MODULES_EXPORT RTCDtlsTransport final
   ExecutionContext* GetExecutionContext() const override;
   // For garbage collection.
   void Trace(blink::Visitor* visitor) override;
+  // Others
+  void ChangeState(webrtc::DtlsTransportInformation info);
   webrtc::DtlsTransportInterface* native_transport();
 
  private:

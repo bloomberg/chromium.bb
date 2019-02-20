@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 
 namespace blink {
@@ -29,6 +30,11 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   // Two |WebRTCRtpReceiver|s referencing the same WebRTC-layer receiver have
   // the same |id|.
   virtual uintptr_t Id() const = 0;
+  virtual rtc::scoped_refptr<webrtc::DtlsTransportInterface>
+  DtlsTransport() = 0;
+  // Note: For convenience, DtlsTransportInformation always returns a value.
+  // The information is only interesting if DtlsTransport() is non-null.
+  virtual webrtc::DtlsTransportInformation DtlsTransportInformation() = 0;
   virtual const WebMediaStreamTrack& Track() const = 0;
   virtual WebVector<WebString> StreamIds() const = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() = 0;

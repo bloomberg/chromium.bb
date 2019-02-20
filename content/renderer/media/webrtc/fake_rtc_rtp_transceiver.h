@@ -34,6 +34,8 @@ class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
 
   std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
   uintptr_t Id() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override;
   blink::WebMediaStreamTrack Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
@@ -62,6 +64,8 @@ class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
 
   std::unique_ptr<blink::WebRTCRtpReceiver> ShallowCopy() const override;
   uintptr_t Id() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override;
   const blink::WebMediaStreamTrack& Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
