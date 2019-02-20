@@ -221,9 +221,11 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
         GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
-    EXPECT_FALSE(frame.render_pass_list.back()
-                     ->quad_list.back()
-                     ->ShouldDrawWithBlending());
+    auto* texture_draw_quad = viz::TextureDrawQuad::MaterialCast(
+        frame.render_pass_list.back()->quad_list.back());
+
+    EXPECT_FALSE(texture_draw_quad->ShouldDrawWithBlending());
+    EXPECT_EQ(SK_ColorBLACK, texture_draw_quad->background_color);
     EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
               frame.render_pass_list.back()->damage_rect);
   }
@@ -238,9 +240,10 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
         GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
-    EXPECT_TRUE(frame.render_pass_list.back()
-                    ->quad_list.back()
-                    ->ShouldDrawWithBlending());
+    auto* texture_draw_quad = viz::TextureDrawQuad::MaterialCast(
+        frame.render_pass_list.back()->quad_list.back());
+    EXPECT_TRUE(texture_draw_quad->ShouldDrawWithBlending());
+    EXPECT_EQ(SK_ColorTRANSPARENT, texture_draw_quad->background_color);
     EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
               frame.render_pass_list.back()->damage_rect);
   }
