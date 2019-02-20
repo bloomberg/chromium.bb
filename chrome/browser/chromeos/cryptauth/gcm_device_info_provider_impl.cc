@@ -74,22 +74,19 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
     // phones/tablets, but it must be set due to server API verification.
     gcm_device_info.set_device_display_diagonal_mils(0);
 
-    // Smart Lock and MultiDevice Setup are supported on all Chromebooks.
+    // Smart Lock, MultiDevice Setup and Messages are supported on all
+    // Chromebooks.
     gcm_device_info.add_supported_software_features(
         cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT);
     gcm_device_info.add_supported_software_features(
         cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT);
 
-    // Instant Tethering and Android Messages are only supported if their
-    // associated flags are enabled.
+    // Instant Tethering is only supported if the associated flag is enabled.
     if (base::FeatureList::IsEnabled(features::kInstantTethering)) {
       gcm_device_info.add_supported_software_features(
           cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT);
-    }
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kAndroidMessagesIntegration)) {
-      gcm_device_info.add_supported_software_features(
-          cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT);
     }
 
     return gcm_device_info;

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -29,16 +28,11 @@ bool ShouldStartAndroidSmsService(Profile* profile) {
   const bool multidevice_feature_allowed = multidevice_setup::IsFeatureAllowed(
       multidevice_setup::mojom::Feature::kMessages, profile->GetPrefs());
 
-  const bool android_messages_integration_enabled =
-      base::FeatureList::IsEnabled(
-          chromeos::features::kAndroidMessagesIntegration);
-
   const bool has_user_for_profile =
       !!ProfileHelper::Get()->GetUserByProfile(profile);
 
   return web_app::AreWebAppsEnabled(profile) && !profile->IsGuestSession() &&
-         multidevice_feature_allowed && android_messages_integration_enabled &&
-         has_user_for_profile;
+         multidevice_feature_allowed && has_user_for_profile;
 }
 
 content::BrowserContext* GetBrowserContextForAndroidSms(

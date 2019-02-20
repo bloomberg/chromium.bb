@@ -44,10 +44,6 @@ const char kAllowStartingServiceManagerOnlyDescription[] =
     "Allows running a lightweight service-manager-only mode, in which services "
     "can run without the browser process.";
 
-const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
-const char kAndroidMessagesIntegrationDescription[] =
-    "Enables Chrome OS integration with Android messages.";
-
 const char kUseMessagesGoogleComDomainName[] = "Use messages.google.com domain";
 const char kUseMessagesGoogleComDomainDescription[] =
     "Use the messages.google.com domain as part of the \"Messages\" "

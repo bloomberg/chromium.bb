@@ -8,10 +8,6 @@ namespace chromeos {
 
 namespace features {
 
-// Enables or disables integration with Android Messages on Chrome OS.
-const base::Feature kAndroidMessagesIntegration{
-    "AndroidMessagesIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
