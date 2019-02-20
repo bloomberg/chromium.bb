@@ -187,8 +187,6 @@ class CORE_EXPORT DocumentLoader
     return application_cache_host_.Get();
   }
 
-  void AppendRedirect(const KURL&);
-
   ClientHintsPreferences& GetClientHintsPreferences() {
     return client_hints_preferences_;
   }

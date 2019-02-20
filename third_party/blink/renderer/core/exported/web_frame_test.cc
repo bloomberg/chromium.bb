@@ -4551,9 +4551,8 @@ TEST_F(WebFrameTest, ReloadWhileProvisional) {
             KURL(document_loader->GetUrl()));
 }
 
-TEST_F(WebFrameTest, AppendRedirects) {
-  const std::string first_url = "about:blank";
-  const std::string second_url = "http://internal.test";
+TEST_F(WebFrameTest, RedirectChainContainsInitialUrl) {
+  const std::string first_url = "data:text/html,foo";
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(first_url);
@@ -4561,13 +4560,11 @@ TEST_F(WebFrameTest, AppendRedirects) {
   WebDocumentLoader* document_loader =
       web_view_helper.LocalMainFrame()->GetDocumentLoader();
   ASSERT_TRUE(document_loader);
-  document_loader->AppendRedirect(ToKURL(second_url));
 
   WebVector<WebURL> redirects;
   document_loader->RedirectChain(redirects);
-  ASSERT_EQ(2U, redirects.size());
+  ASSERT_EQ(1U, redirects.size());
   EXPECT_EQ(ToKURL(first_url), KURL(redirects[0]));
-  EXPECT_EQ(ToKURL(second_url), KURL(redirects[1]));
 }
 
 TEST_F(WebFrameTest, IframeRedirect) {

@@ -91,10 +91,6 @@ WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
 }
 
-void WebDocumentLoaderImpl::AppendRedirect(const WebURL& url) {
-  DocumentLoader::AppendRedirect(url);
-}
-
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
   result.Assign(redirect_chain_);
 }
