@@ -1464,8 +1464,7 @@ void HTMLTokenizer::UpdateStateFor(const String& tag_name) {
   else if (ThreadSafeMatch(tag_name, kStyleTag) ||
            ThreadSafeMatch(tag_name, kIFrameTag) ||
            ThreadSafeMatch(tag_name, kXmpTag) ||
-           (ThreadSafeMatch(tag_name, kNoembedTag) &&
-            options_.plugins_enabled) ||
+           ThreadSafeMatch(tag_name, kNoembedTag) ||
            ThreadSafeMatch(tag_name, kNoframesTag) ||
            (ThreadSafeMatch(tag_name, kNoscriptTag) && options_.script_enabled))
     SetState(HTMLTokenizer::kRAWTEXTState);

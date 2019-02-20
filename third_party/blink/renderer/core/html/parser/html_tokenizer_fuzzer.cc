@@ -18,10 +18,9 @@ int FuzzTokenizer(const uint8_t* data, size_t size) {
   static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
   FuzzedDataProvider fuzzed_data_provider(data, size);
 
-  // Use the first 2 bytes of fuzz data to randomize the tokenizer options.
+  // Use the first byte of fuzz data to randomize the tokenizer options.
   HTMLParserOptions options;
   options.script_enabled = fuzzed_data_provider.ConsumeBool();
-  options.plugins_enabled = fuzzed_data_provider.ConsumeBool();
 
   std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input;

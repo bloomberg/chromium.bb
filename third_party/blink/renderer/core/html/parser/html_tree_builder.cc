@@ -775,7 +775,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     ProcessGenericRawTextStartTag(token);
     return;
   }
-  if (token->GetName() == kNoembedTag && options_.plugins_enabled) {
+  if (token->GetName() == kNoembedTag) {
     ProcessGenericRawTextStartTag(token);
     return;
   }

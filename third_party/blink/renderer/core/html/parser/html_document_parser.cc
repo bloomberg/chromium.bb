@@ -81,8 +81,7 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
   if (context_tag.Matches(kTitleTag) || context_tag.Matches(kTextareaTag))
     return HTMLTokenizer::kRCDATAState;
   if (context_tag.Matches(kStyleTag) || context_tag.Matches(kXmpTag) ||
-      context_tag.Matches(kIFrameTag) ||
-      (context_tag.Matches(kNoembedTag) && options.plugins_enabled) ||
+      context_tag.Matches(kIFrameTag) || context_tag.Matches(kNoembedTag) ||
       (context_tag.Matches(kNoscriptTag) && options.script_enabled) ||
       context_tag.Matches(kNoframesTag))
     return report_errors ? HTMLTokenizer::kRAWTEXTState
