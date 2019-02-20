@@ -942,13 +942,15 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       viz::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-
+      SkColor background_color = SK_ColorTRANSPARENT;
+      if (current_resource_has_alpha_ && are_contents_opaque)
+        background_color = SK_ColorBLACK;  // Avoid writing alpha < 1
       texture_quad->SetNew(
-          quad_state, quad_rect, quad_rect, !are_contents_opaque,
-          current_resource_.id, true /* premultiplied_alpha */,
-          uv_crop.origin(), uv_crop.bottom_right(),
-          SK_ColorTRANSPARENT /* background_color */, vertex_opacity,
-          false /* y_flipped */, false /* nearest_neighbor */,
+          quad_state, quad_rect, quad_rect,
+          /* needs_blending=*/!are_contents_opaque, current_resource_.id,
+          /* premultiplied_alpha=*/true, uv_crop.origin(),
+          uv_crop.bottom_right(), background_color, vertex_opacity,
+          /* y_flipped=*/false, /* nearest_neighbor=*/false,
           state_.only_visible_on_secure_output, ui::ProtectedVideoType::kClear);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);

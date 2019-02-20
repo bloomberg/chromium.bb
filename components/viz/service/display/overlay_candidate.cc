@@ -274,7 +274,9 @@ bool OverlayCandidate::FromTextureQuad(
     DisplayResourceProvider* resource_provider,
     const TextureDrawQuad* quad,
     OverlayCandidate* candidate) {
-  if (quad->background_color != SK_ColorTRANSPARENT)
+  if (quad->background_color != SK_ColorTRANSPARENT &&
+      (quad->background_color != SK_ColorBLACK ||
+       quad->ShouldDrawWithBlending()))
     return false;
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(),
                             quad->y_flipped, candidate)) {
