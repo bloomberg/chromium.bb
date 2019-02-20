@@ -21,13 +21,12 @@ struct CC_PAINT_EXPORT NodeHolder {
   NodeHolder(const NodeHolder& node_holder);
   virtual ~NodeHolder();
 
-  enum class Type : bool { kTextHolder = false, kID = true };
+  bool IsEmpty() const { return tag == EMPTY; }
 
-  // Only valid if is_empty is false.
+  enum { EMPTY, TEXT_HOLDER, ID } tag;
+
   scoped_refptr<TextHolder> text_holder;
   int id;
-  Type type;
-  bool is_empty;
 };
 
 bool operator==(const NodeHolder& l, const NodeHolder& r);

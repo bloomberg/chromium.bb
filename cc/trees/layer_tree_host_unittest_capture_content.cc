@@ -83,7 +83,7 @@ class LayerTreeHostCaptureContentTest : public LayerTreeTest {
     EXPECT_EQ(expected_result->size(), captured_content_.size());
     size_t expected_left_result = expected_result->size();
     for (auto c : captured_content_) {
-      EXPECT_EQ(c.type, NodeHolder::Type::kTextHolder);
+      EXPECT_EQ(c.tag, NodeHolder::TEXT_HOLDER);
       for (auto it = expected_result->begin(); it != expected_result->end();
            ++it) {
         if (it->get() == c.text_holder.get()) {
