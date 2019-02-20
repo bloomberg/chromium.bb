@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 
@@ -70,19 +71,22 @@ void FrameRequestCallbackCollection::ExecuteCallbacks(
     // iframe, we need to check the condition for each callback.
     if (context_->IsContextDestroyed())
       break;
-
-    if (!callback->IsCancelled()) {
-      TRACE_EVENT1(
-          "devtools.timeline", "FireAnimationFrame", "data",
-          inspector_animation_frame_event::Data(context_, callback->Id()));
-      probe::AsyncTask async_task(context_, callback);
-      probe::UserCallback probe(context_, "requestAnimationFrame",
-                                AtomicString(), true);
-      if (callback->GetUseLegacyTimeBase())
-        callback->Invoke(high_res_now_ms_legacy);
-      else
-        callback->Invoke(high_res_now_ms);
+    if (callback->IsCancelled()) {
+      // Another requestAnimationFrame callback already cancelled this one
+      UseCounter::Count(context_,
+                        WebFeature::kAnimationFrameCancelledWithinFrame);
+      continue;
     }
+    TRACE_EVENT1(
+        "devtools.timeline", "FireAnimationFrame", "data",
+        inspector_animation_frame_event::Data(context_, callback->Id()));
+    probe::AsyncTask async_task(context_, callback);
+    probe::UserCallback probe(context_, "requestAnimationFrame",
+                              AtomicString(), true);
+    if (callback->GetUseLegacyTimeBase())
+      callback->Invoke(high_res_now_ms_legacy);
+    else
+      callback->Invoke(high_res_now_ms);
   }
 
   callbacks_to_invoke_.clear();
