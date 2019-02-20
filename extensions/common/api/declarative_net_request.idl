@@ -58,8 +58,8 @@ namespace declarativeNetRequest {
     //               specifies the start of a (sub-)domain of the URL.
     //
     // <b>'^'</b>  : Separator character: This matches anything except a letter, a
-    //               digit or one of the following: _ - . %.
-    //
+    //               digit or one of the following: _ - . %. This can also match
+    //               the end of the URL.
     //
     // Therefore <code>urlFilter</code> is composed of the following parts:
     // (optional Left/Domain name anchor) + pattern + (optional Right anchor).

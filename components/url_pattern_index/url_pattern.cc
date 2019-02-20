@@ -144,6 +144,80 @@ size_t FindSubdomainAnchoredSubpattern(base::StringPiece url,
   return base::StringPiece::npos;
 }
 
+// Helper for DoesTextMatchLastSubpattern. Treats kSeparatorPlaceholder as not
+// matching the end of the text.
+bool DoesTextMatchLastSubpatternInternal(proto::AnchorType anchor_left,
+                                         proto::AnchorType anchor_right,
+                                         base::StringPiece text,
+                                         url::Component url_host,
+                                         base::StringPiece subpattern) {
+  // Enumerate all possible combinations of |anchor_left| and |anchor_right|.
+  if (anchor_left == proto::ANCHOR_TYPE_NONE &&
+      anchor_right == proto::ANCHOR_TYPE_NONE) {
+    return FindSubpattern(text, subpattern) != base::StringPiece::npos;
+  }
+
+  if (anchor_left == proto::ANCHOR_TYPE_NONE &&
+      anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+    return EndsWithFuzzy(text, subpattern);
+  }
+
+  if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY &&
+      anchor_right == proto::ANCHOR_TYPE_NONE) {
+    return StartsWithFuzzy(text, subpattern);
+  }
+
+  if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY &&
+      anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+    return text.size() == subpattern.size() &&
+           StartsWithFuzzy(text, subpattern);
+  }
+
+  if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN &&
+      anchor_right == proto::ANCHOR_TYPE_NONE) {
+    return url_host.is_nonempty() &&
+           FindSubdomainAnchoredSubpattern(text, url_host, subpattern) !=
+               base::StringPiece::npos;
+  }
+
+  if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN &&
+      anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+    return url_host.is_nonempty() && text.size() >= subpattern.size() &&
+           IsSubdomainAnchored(text, url_host,
+                               text.size() - subpattern.size()) &&
+           EndsWithFuzzy(text, subpattern);
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// Matches the last |subpattern| against |text|. Special treatment is required
+// for the last subpattern since |kSeparatorPlaceholder| can also match the end
+// of the text.
+bool DoesTextMatchLastSubpattern(proto::AnchorType anchor_left,
+                                 proto::AnchorType anchor_right,
+                                 base::StringPiece text,
+                                 url::Component url_host,
+                                 base::StringPiece subpattern) {
+  DCHECK(!subpattern.empty());
+
+  if (DoesTextMatchLastSubpatternInternal(anchor_left, anchor_right, text,
+                                          url_host, subpattern)) {
+    return true;
+  }
+
+  // If the last |subpattern| ends with kSeparatorPlaceholder, then it can also
+  // match the end of text.
+  if (subpattern.back() == kSeparatorPlaceholder) {
+    subpattern.remove_suffix(1);
+    return DoesTextMatchLastSubpatternInternal(
+        anchor_left, proto::ANCHOR_TYPE_BOUNDARY, text, url_host, subpattern);
+  }
+
+  return false;
+}
+
 // Returns whether the given |url_pattern| matches the given |url_spec|.
 // Compares the pattern the the url in a case-sensitive manner.
 bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
@@ -157,6 +231,7 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
   auto subpattern_it = subpatterns.begin();
   auto subpattern_end = subpatterns.end();
 
+  // No subpatterns.
   if (subpattern_it == subpattern_end) {
     return anchor_left == proto::ANCHOR_TYPE_NONE ||
            anchor_right == proto::ANCHOR_TYPE_NONE;
@@ -165,22 +240,10 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
   base::StringPiece subpattern = *subpattern_it;
   ++subpattern_it;
 
-  // If there is only one |subpattern|, and it has a right anchor, then simply
-  // check that it is a suffix of the |url_spec|, and the left anchor is
-  // fulfilled.
-  if (subpattern_it == subpattern_end &&
-      anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
-    if (!EndsWithFuzzy(url_spec, subpattern))
-      return false;
-    if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY)
-      return url_spec.size() == subpattern.size();
-    if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
-      DCHECK_LE(subpattern.size(), url_spec.size());
-      return url_host.is_nonempty() &&
-             IsSubdomainAnchored(url_spec, url_host,
-                                 url_spec.size() - subpattern.size());
-    }
-    return true;
+  // There is only one |subpattern|.
+  if (subpattern_it == subpattern_end) {
+    return DoesTextMatchLastSubpattern(anchor_left, anchor_right, url_spec,
+                                       url_host, subpattern);
   }
 
   // Otherwise, the first |subpattern| does not have to be a suffix. But it
@@ -189,10 +252,6 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
   if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY) {
     if (!StartsWithFuzzy(url_spec, subpattern))
       return false;
-    if (subpattern_it == subpattern_end) {
-      DCHECK_EQ(anchor_right, proto::ANCHOR_TYPE_NONE);
-      return true;
-    }
     text.remove_prefix(subpattern.size());
   } else if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
     if (!url_host.is_nonempty())
@@ -201,10 +260,6 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
         FindSubdomainAnchoredSubpattern(url_spec, url_host, subpattern);
     if (match_begin == base::StringPiece::npos)
       return false;
-    if (subpattern_it == subpattern_end) {
-      DCHECK_EQ(anchor_right, proto::ANCHOR_TYPE_NONE);
-      return true;
-    }
     text.remove_prefix(match_begin + subpattern.size());
   } else {
     DCHECK_EQ(anchor_left, proto::ANCHOR_TYPE_NONE);
@@ -212,26 +267,24 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
     subpattern_it = subpatterns.begin();
   }
 
-  // Consecutively find all the remaining subpatterns in the |text|. If the
-  // pattern has a right anchor, don't search for the last subpattern, but
-  // instead check that it is a suffix of the |text|.
-  while (subpattern_it != subpattern_end) {
-    subpattern = *subpattern_it;
-    DCHECK(!subpattern.empty());
+  DCHECK(subpattern_it != subpattern_end);
+  subpattern = *subpattern_it;
 
-    if (++subpattern_it == subpattern_end &&
-        anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
-      break;
-    }
+  // Consecutively find all the remaining subpatterns in the |text|. Handle the
+  // last subpattern outside the loop.
+  while (++subpattern_it != subpattern_end) {
+    DCHECK(!subpattern.empty());
 
     const size_t match_position = FindSubpattern(text, subpattern);
     if (match_position == base::StringPiece::npos)
       return false;
     text.remove_prefix(match_position + subpattern.size());
+
+    subpattern = *subpattern_it;
   }
 
-  return anchor_right != proto::ANCHOR_TYPE_BOUNDARY ||
-         EndsWithFuzzy(text, subpattern);
+  return DoesTextMatchLastSubpattern(proto::ANCHOR_TYPE_NONE, anchor_right,
+                                     text, url::Component(), subpattern);
 }
 
 }  // namespace
