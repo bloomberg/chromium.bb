@@ -18,7 +18,6 @@ class PerfettoCoordinatorTest : public testing::Test,
     CoordinatorTestUtil::SetUp();
     coordinator_ = std::make_unique<PerfettoTracingCoordinator>(
         agent_registry(), base::RepeatingClosure());
-    coordinator_->FinishedReceivingRunningPIDs();
   }
   void TearDown() override { CoordinatorTestUtil::TearDown(); }
 };
@@ -27,7 +26,7 @@ TEST_F(PerfettoCoordinatorTest, TraceBufferSizeInBytes) {
   auto* agent = AddArrayAgent();
   agent->data_.push_back("e1");
 
-  StartTracing("{\"trace_buffer_size_in_kb\":4}", true);
+  StartTracing("{\"trace_buffer_size_in_kb\":4}");
   std::string output = StopAndFlush();
 
   auto json_value = base::JSONReader::Read(output);

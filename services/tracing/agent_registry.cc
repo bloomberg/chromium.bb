@@ -16,8 +16,6 @@
 
 namespace tracing {
 
-const int32_t kAgentResponseTimeoutInSeconds = 10;
-
 AgentRegistry::AgentEntry::AgentEntry(size_t id,
                                       AgentRegistry* agent_registry,
                                       mojom::AgentPtr agent,
@@ -42,17 +40,10 @@ void AgentRegistry::AgentEntry::AddDisconnectClosure(
     base::OnceClosure closure) {
   DCHECK_EQ(0u, closures_.count(closure_name));
   closures_[closure_name] = std::move(closure);
-
-  // Adding a disconnect closure means we're waiting for a response from the
-  // agent. If the client becomes unresponsive, we disconnect it.
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kAgentResponseTimeoutInSeconds),
-               this, &AgentRegistry::AgentEntry::OnConnectionError);
 }
 
 bool AgentRegistry::AgentEntry::RemoveDisconnectClosure(
     const void* closure_name) {
-  timer_.Stop();
   return closures_.erase(closure_name) > 0;
 }
 

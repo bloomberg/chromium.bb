@@ -22,6 +22,7 @@
 namespace tracing {
 
 class ServiceListener;
+class PerfettoTracingCoordinator;
 
 class TracingService : public service_manager::Service {
  public:
@@ -46,6 +47,7 @@ class TracingService : public service_manager::Service {
       registry_;
   std::unique_ptr<tracing::AgentRegistry> tracing_agent_registry_;
   std::unique_ptr<Coordinator> tracing_coordinator_;
+  std::unique_ptr<PerfettoTracingCoordinator> perfetto_tracing_coordinator_;
 
   std::unique_ptr<ServiceListener> service_listener_;
 
