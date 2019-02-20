@@ -25,7 +25,10 @@ Polymer({
   behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
-    disabled: Boolean,
+    disabled: {
+      type: Boolean,
+      observer: 'onDisabledChanged_',
+    },
 
     /** @private {string} */
     currentValue_: {
@@ -41,6 +44,12 @@ Polymer({
 
     /** @private {boolean} */
     inputValid_: Boolean,
+
+    /** @private {boolean} */
+    dropdownDisabled_: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * Mirroring the enum so that it can be used from HTML bindings.
@@ -130,21 +139,16 @@ Polymer({
    * @private
    */
   onInputChanged_: function() {
-    if (this.currentValue_ !== '') {
-      this.setSettingValid('scaling', this.inputValid_);
-    }
+    this.setSettingValid('scaling', this.inputValid_);
 
     if (this.currentValue_ !== '' && this.inputValid_) {
       this.setSetting('scaling', this.currentValue_);
     }
   },
 
-  /**
-   * @return {boolean} Whether the dropdown should be disabled.
-   * @private
-   */
-  dropdownDisabled_: function() {
-    return this.disabled && this.inputValid_;
+  /** @private */
+  onDisabledChanged_: function() {
+    this.dropdownDisabled_ = this.disabled && this.inputValid_;
   },
 
   /**
@@ -152,7 +156,7 @@ Polymer({
    * @private
    */
   inputDisabled_: function() {
-    return !this.customSelected_ || (this.disabled && this.inputValid_);
+    return !this.customSelected_ || this.dropdownDisabled_;
   },
 
   /**
