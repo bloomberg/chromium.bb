@@ -27,12 +27,16 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
       GaiaCookieManagerService* gaia_cookie_manager_service);
   ~AccountsCookieMutatorImpl() override;
 
-  void AddAccountToCookie(const std::string& account_id,
-                          gaia::GaiaSource source) override;
+  void AddAccountToCookie(
+      const std::string& account_id,
+      gaia::GaiaSource source,
+      AddAccountToCookieCompletedCallback completion_callback) override;
 
-  void AddAccountToCookieWithToken(const std::string& account_id,
-                                   const std::string& access_token,
-                                   gaia::GaiaSource source) override;
+  void AddAccountToCookieWithToken(
+      const std::string& account_id,
+      const std::string& access_token,
+      gaia::GaiaSource source,
+      AddAccountToCookieCompletedCallback completion_callback) override;
 
   void SetAccountsInCookie(
       const std::vector<std::string>& account_ids,

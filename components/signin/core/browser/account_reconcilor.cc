@@ -389,8 +389,10 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
     return;
   }
   VLOG(1) << "AccountReconcilor::PerformMergeAction: " << account_id;
-  cookie_manager_service_->AddAccountToCookie(account_id,
-                                              delegate_->GetGaiaApiSource());
+  cookie_manager_service_->AddAccountToCookie(
+      account_id, delegate_->GetGaiaApiSource(),
+      base::BindOnce(&AccountReconcilor::OnAddAccountToCookieCompleted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AccountReconcilor::PerformSetCookiesAction(

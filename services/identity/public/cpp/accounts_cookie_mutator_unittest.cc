@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
@@ -142,18 +143,23 @@ class AccountsCookieMutatorTest : public testing::Test {
 // results in an error due to such account not being available.
 TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_NonExistingAccount) {
   base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAddAccountToCookieCompletedCallback(
-      run_loop.QuitClosure());
+  std::string account_id_from_add_account_to_cookie_completed_callback;
+  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+        account_id_from_add_account_to_cookie_completed_callback = account_id;
+        error_from_add_account_to_cookie_completed_callback = error;
+        run_loop.Quit();
+      });
+
   accounts_cookie_mutator()->AddAccountToCookie(kTestUnavailableAccountId,
-                                                gaia::GaiaSource::kChrome);
+                                                gaia::GaiaSource::kChrome,
+                                                std::move(completion_callback));
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager_observer()
-                ->AccountFromAddAccountToCookieCompletedCallback(),
+  EXPECT_EQ(account_id_from_add_account_to_cookie_completed_callback,
             kTestUnavailableAccountId);
-  EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
-                .state(),
+  EXPECT_EQ(error_from_add_account_to_cookie_completed_callback.state(),
             GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 }
 
@@ -165,21 +171,26 @@ TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_ExistingAccount) {
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAddAccountToCookieCompletedCallback(
-      run_loop.QuitClosure());
-  accounts_cookie_mutator()->AddAccountToCookie(account_id,
-                                                gaia::GaiaSource::kChrome);
+  std::string account_id_from_add_account_to_cookie_completed_callback;
+  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+        account_id_from_add_account_to_cookie_completed_callback = account_id;
+        error_from_add_account_to_cookie_completed_callback = error;
+        run_loop.Quit();
+      });
+
+  accounts_cookie_mutator()->AddAccountToCookie(
+      account_id, gaia::GaiaSource::kChrome, std::move(completion_callback));
+
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       account_id, kTestAccessToken,
       base::Time::Now() + base::TimeDelta::FromHours(1));
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager_observer()
-                ->AccountFromAddAccountToCookieCompletedCallback(),
+  EXPECT_EQ(account_id_from_add_account_to_cookie_completed_callback,
             account_id);
-  EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
-                .state(),
+  EXPECT_EQ(error_from_add_account_to_cookie_completed_callback.state(),
             GoogleServiceAuthError::NONE);
 }
 
@@ -191,18 +202,23 @@ TEST_F(AccountsCookieMutatorTest,
       AccountsCookiesMutatorAction::kAddAccountToCookie);
 
   base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAddAccountToCookieCompletedCallback(
-      run_loop.QuitClosure());
+  std::string account_id_from_add_account_to_cookie_completed_callback;
+  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+        account_id_from_add_account_to_cookie_completed_callback = account_id;
+        error_from_add_account_to_cookie_completed_callback = error;
+        run_loop.Quit();
+      });
+
   accounts_cookie_mutator()->AddAccountToCookieWithToken(
-      kTestUnavailableAccountId, kTestAccessToken, gaia::GaiaSource::kChrome);
+      kTestUnavailableAccountId, kTestAccessToken, gaia::GaiaSource::kChrome,
+      std::move(completion_callback));
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager_observer()
-                ->AccountFromAddAccountToCookieCompletedCallback(),
+  EXPECT_EQ(account_id_from_add_account_to_cookie_completed_callback,
             kTestUnavailableAccountId);
-  EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
-                .state(),
+  EXPECT_EQ(error_from_add_account_to_cookie_completed_callback.state(),
             GoogleServiceAuthError::NONE);
 }
 
@@ -215,19 +231,24 @@ TEST_F(AccountsCookieMutatorTest,
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAddAccountToCookieCompletedCallback(
-      run_loop.QuitClosure());
+  std::string account_id_from_add_account_to_cookie_completed_callback;
+  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+        account_id_from_add_account_to_cookie_completed_callback = account_id;
+        error_from_add_account_to_cookie_completed_callback = error;
+        run_loop.Quit();
+      });
+
   accounts_cookie_mutator()->AddAccountToCookieWithToken(
-      account_id, kTestAccessToken, gaia::GaiaSource::kChrome);
+      account_id, kTestAccessToken, gaia::GaiaSource::kChrome,
+      std::move(completion_callback));
 
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager_observer()
-                ->AccountFromAddAccountToCookieCompletedCallback(),
+  EXPECT_EQ(account_id_from_add_account_to_cookie_completed_callback,
             account_id);
-  EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
-                .state(),
+  EXPECT_EQ(error_from_add_account_to_cookie_completed_callback.state(),
             GoogleServiceAuthError::NONE);
 }
 

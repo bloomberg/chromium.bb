@@ -138,13 +138,6 @@ class IdentityManager : public SigninManagerBase::Observer,
         const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
         const GoogleServiceAuthError& error) {}
 
-    // Called whenever an attempt to add |account_id| to the list of Gaia
-    // accounts in the cookie jar has finished. If |error| is equal to
-    // GoogleServiceAuthError::AuthErrorNone() then the addittion succeeded.
-    virtual void OnAddAccountToCookieCompleted(
-        const std::string& account_id,
-        const GoogleServiceAuthError& error) {}
-
     // Called when the Gaia cookie has been deleted explicitly by a user
     // action, e.g. from the settings or by an extension.
     virtual void OnAccountsCookieDeletedByUserAction() {}
@@ -524,9 +517,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& signed_in_accounts,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error) override;
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
       const GoogleServiceAuthError& error) override;
   void OnGaiaCookieDeletedByUserAction() override;
 

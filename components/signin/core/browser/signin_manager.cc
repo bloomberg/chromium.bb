@@ -239,8 +239,9 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (!IsAuthenticated())
     return;
 
-  cookie_manager_service_->AddAccountToCookie(GetAuthenticatedAccountId(),
-                                              gaia::GaiaSource::kSigninManager);
+  cookie_manager_service_->AddAccountToCookie(
+      GetAuthenticatedAccountId(), gaia::GaiaSource::kSigninManager,
+      GaiaCookieManagerService::AddAccountToCookieCompletedCallback());
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {

@@ -276,10 +276,9 @@ class AccountReconcilorTest : public ::testing::Test {
   std::string SeedAccountInfo(const std::string& gaia_id,
                               const std::string& username);
 
-  void SimulateAddAccountToCookieCompleted(
-      identity::IdentityManager::Observer* observer,
-      const std::string& account_id,
-      const GoogleServiceAuthError& error);
+  void SimulateAddAccountToCookieCompleted(AccountReconcilor* reconcilor,
+                                           const std::string& account_id,
+                                           const GoogleServiceAuthError& error);
 
   void SimulateCookieContentSettingsChanged(
       content_settings::Observer* observer,
@@ -450,10 +449,10 @@ std::string AccountReconcilorTest::SeedAccountInfo(
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
-    identity::IdentityManager::Observer* observer,
+    AccountReconcilor* reconcilor,
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  observer->OnAddAccountToCookieCompleted(account_id, error);
+  reconcilor->OnAddAccountToCookieCompleted(account_id, error);
 }
 
 void AccountReconcilorTest::SimulateSetAccountsInCookieCompleted(
