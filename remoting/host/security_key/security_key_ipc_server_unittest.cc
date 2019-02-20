@@ -25,6 +25,7 @@ namespace {
 const int kTestConnectionId = 42;
 const int kInitialConnectTimeoutMs = 250;
 const int kConnectionTimeoutErrorDeltaMs = 100;
+const int kLargeResponseTimeoutMs = 500;
 const int kLargeMessageSizeBytes = 256 * 1024;
 }  // namespace
 
@@ -406,8 +407,7 @@ TEST_F(SecurityKeyIpcServerTest, SecurityKeyResponseTimeout) {
   WaitForOperationComplete();
   base::TimeDelta elapsed_time = base::Time::NowFromSystemTime() - start_time;
 
-  ASSERT_NEAR(elapsed_time.InMilliseconds(), request_timeout.InMilliseconds(),
-              kConnectionTimeoutErrorDeltaMs);
+  ASSERT_LT(elapsed_time.InMilliseconds(), kLargeResponseTimeoutMs);
 }
 
 TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
