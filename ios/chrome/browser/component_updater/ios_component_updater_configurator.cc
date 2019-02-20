@@ -15,7 +15,7 @@
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/activity_data_service.h"
-#include "components/update_client/network.h"
+#include "components/update_client/net/network_chromium.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
@@ -144,7 +144,7 @@ scoped_refptr<update_client::NetworkFetcherFactory>
 IOSConfigurator::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
-        base::MakeRefCounted<update_client::NetworkFetcherFactory>(
+        base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             GetApplicationContext()->GetSharedURLLoaderFactory());
   }
   return network_fetcher_factory_;

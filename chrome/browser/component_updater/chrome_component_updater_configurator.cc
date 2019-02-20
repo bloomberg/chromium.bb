@@ -28,7 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/activity_data_service.h"
-#include "components/update_client/network.h"
+#include "components/update_client/net/network_chromium.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
@@ -176,7 +176,7 @@ scoped_refptr<update_client::NetworkFetcherFactory>
 ChromeConfigurator::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
-        base::MakeRefCounted<update_client::NetworkFetcherFactory>(
+        base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             g_browser_process->system_network_context_manager()
                 ->GetSharedURLLoaderFactory());
   }
