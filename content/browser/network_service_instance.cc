@@ -97,8 +97,9 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
-  if (!g_network_service_ptr->is_bound() ||
-      g_network_service_ptr->encountered_error()) {
+  if ((!g_network_service_ptr->is_bound() ||
+       g_network_service_ptr->encountered_error()) &&
+      !GetContentClient()->browser()->IsShuttingDown()) {
     if (is_network_service_enabled) {
       connector->BindInterface(mojom::kNetworkServiceName,
                                g_network_service_ptr);

@@ -1233,6 +1233,10 @@ void ChromeContentBrowserClient::SetBrowserStartupIsCompleteForTesting() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 }
 
+bool ChromeContentBrowserClient::IsShuttingDown() {
+  return browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID;
+}
+
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
     content::BrowserContext* browser_context,
     const GURL& site) {
