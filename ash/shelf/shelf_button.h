@@ -34,6 +34,7 @@ class ASH_EXPORT ShelfButton : public views::Button {
   void NotifyClick(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  const char* GetClassName() const override;
 
  private:
   // The shelf view hosting this button.

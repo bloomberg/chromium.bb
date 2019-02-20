@@ -48,4 +48,8 @@ void OverflowButton::NotifyClick(const ui::Event& event) {
   shelf_view()->ButtonPressed(this, event, nullptr);
 }
 
+const char* OverflowButton::GetClassName() const {
+  return "ash/OverflowButton";
+}
+
 }  // namespace ash

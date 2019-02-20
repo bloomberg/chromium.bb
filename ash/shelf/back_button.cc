@@ -27,6 +27,9 @@
 
 namespace ash {
 
+// static
+const char BackButton::kViewClassName[] = "ash/BackButton";
+
 BackButton::BackButton(ShelfView* shelf_view) : ShelfControlButton(shelf_view) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
 }
@@ -58,6 +61,10 @@ void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::ImageSkia img = CreateVectorIcon(kShelfBackIcon, SK_ColorWHITE);
   canvas->DrawImageInt(img, GetCenterPoint().x() - img.width() / 2,
                        GetCenterPoint().y() - img.height() / 2);
+}
+
+const char* BackButton::GetClassName() const {
+  return kViewClassName;
 }
 
 void BackButton::GenerateAndSendBackEvent(
