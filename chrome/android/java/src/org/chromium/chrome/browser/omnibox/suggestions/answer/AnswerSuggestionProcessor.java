@@ -132,8 +132,6 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
             PropertyModel model, SuggestionAnswer answer, SuggestionViewDelegate delegate) {
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
-        if (numAnswerLines == -1) numAnswerLines = 1;
 
         model.set(SuggestionViewProperties.IS_ANSWER, true);
 
@@ -170,8 +168,6 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
             PropertyModel model, SuggestionAnswer answer, SuggestionViewDelegate delegate) {
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
-        if (numAnswerLines == -1) numAnswerLines = 1;
 
         AnswerText[] details = AnswerTextNewLayout.from(mContext, answer);
 
@@ -219,14 +215,5 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         }
 
         model.set(AnswerSuggestionViewProperties.ANSWER_ICON_TYPE, icon);
-    }
-
-    private static int parseNumAnswerLines(List<SuggestionAnswer.TextField> textFields) {
-        for (int i = 0; i < textFields.size(); i++) {
-            if (textFields.get(i).hasNumLines()) {
-                return Math.min(3, textFields.get(i).getNumLines());
-            }
-        }
-        return -1;
     }
 }
