@@ -92,6 +92,7 @@ void BrowserSwitcherPrefs::Shutdown() {
 void BrowserSwitcherPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEnabled, false);
+  registry->RegisterIntegerPref(prefs::kDelay, 0);
   registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
   registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterBooleanPref(prefs::kKeepLastTab, true);
@@ -119,6 +120,10 @@ BrowserSwitcherPrefs::GetAlternativeBrowserParameters() const {
 
 bool BrowserSwitcherPrefs::KeepLastTab() const {
   return prefs_->GetBoolean(prefs::kKeepLastTab);
+}
+
+int BrowserSwitcherPrefs::GetDelay() const {
+  return prefs_->GetInteger(prefs::kDelay);
 }
 
 const RuleSet& BrowserSwitcherPrefs::GetRules() const {
@@ -256,6 +261,9 @@ const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
 
 // Disable browser_switcher unless this is set to true.
 const char kEnabled[] = "browser_switcher.enabled";
+
+// How long to wait on chrome://browser-switch (milliseconds).
+const char kDelay[] = "browser_switcher.delay";
 
 }  // namespace prefs
 }  // namespace browser_switcher

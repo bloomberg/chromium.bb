@@ -4399,6 +4399,16 @@
     ]
   },
 
+  "BrowserSwitcherDelay": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherDelay": 10000
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.delay" }
+    ]
+  },
+
   "BrowserSwitcherEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": {

@@ -971,6 +971,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherKeepLastChromeTab,
     browser_switcher::prefs::kKeepLastTab,
     base::Value::Type::BOOLEAN },
+  { key::kBrowserSwitcherDelay,
+    browser_switcher::prefs::kDelay,
+    base::Value::Type::INTEGER },
 #endif
 #if defined(OS_WIN)
   { key::kBrowserSwitcherUseIeSitelist,
