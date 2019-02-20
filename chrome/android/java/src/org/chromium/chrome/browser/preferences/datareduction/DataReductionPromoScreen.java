@@ -51,7 +51,7 @@ public class DataReductionPromoScreen extends PromoDialog {
     @Override
     protected DialogParams getDialogParams() {
         PromoDialog.DialogParams params = new PromoDialog.DialogParams();
-        params.drawableResource = R.drawable.data_reduction_illustration;
+        params.vectorDrawableResource = R.drawable.data_reduction_illustration;
         params.headerStringResource =
                 DataReductionBrandingResourceProvider.getDataSaverBrandedString(
                         R.string.data_reduction_promo_title);
