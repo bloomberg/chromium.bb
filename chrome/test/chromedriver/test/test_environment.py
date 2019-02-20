@@ -63,8 +63,7 @@ class BaseTestEnvironment(object):
     Returns:
       List of disabled test matchers, which may contain '*' wildcards.
     """
-    return _EXPECTATIONS['GetDisabledTestMatchers'](
-        self.GetOS(), self._chrome_version)
+    return _EXPECTATIONS['GetDisabledTestMatchers'](self.GetOS())
 
   def GetReadyToRunJavaTestMatchers(self):
     """Get the list of disabled for Chrome java test matchers
@@ -74,8 +73,7 @@ class BaseTestEnvironment(object):
       List of disabled for Chrome java test matchers
       but which already works.
     """
-    return _EXPECTATIONS['GetReadyToRunTestMatchers'](
-        self._chrome_version)
+    return _EXPECTATIONS['GetReadyToRunTestMatchers']()
 
   def GetPassedJavaTests(self):
     """Get the list of passed java tests.
@@ -85,8 +83,7 @@ class BaseTestEnvironment(object):
     """
     with open(os.path.join(_THIS_DIR, 'java_tests.txt'), 'r') as f:
       return _EXPECTATIONS['ApplyJavaTestFilter'](
-          self.GetOS(), self._chrome_version,
-          [t.strip('\n') for t in f.readlines()])
+          self.GetOS(), [t.strip('\n') for t in f.readlines()])
 
 
 class DesktopTestEnvironment(BaseTestEnvironment):

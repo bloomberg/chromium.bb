@@ -92,7 +92,8 @@ def _Run(java_tests_src_dir, test_filter, ready_to_run_tests,
     if util.IsLinux() and android_package_key is None:
       # Workaround for crbug.com/611886 and
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
-      chrome_wrapper_path = os.path.join(java_tests_src_dir, 'chrome-wrapper-no-sandbox')
+      chrome_wrapper_path = os.path.join(java_tests_src_dir,
+                                         'chrome-wrapper-no-sandbox')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
         f.write('exec "%s" --no-sandbox --disable-gpu "$@"\n' %
@@ -225,7 +226,8 @@ def _RunAntTest(java_tests_src_dir, jvm_args, verbose, sys_props):
 def PrintTestResults(results):
   """Prints the given results in a format recognized by the buildbot."""
 
-  # If no results that means something went wrong and we should return non zero value
+  # If no results that means something went wrong and
+  # we should return non zero value
   if len(results) == 0:
     print 'No tests were run'
     return 1
@@ -268,9 +270,6 @@ def main():
       '', '--log-path',
       help='Output verbose server logs to this file')
   parser.add_option(
-      '', '--chrome-version', default='HEAD',
-      help='Version of chrome. Default is \'HEAD\'')
-  parser.add_option(
       '', '--android-package', help='Android package key')
   parser.add_option(
       '', '--filter', type='string', default=None,
@@ -297,8 +296,7 @@ def main():
     environment = test_environment.AndroidTestEnvironment(
         options.android_package)
   else:
-    environment = test_environment.DesktopTestEnvironment(
-        options.chrome_version)
+    environment = test_environment.DesktopTestEnvironment()
 
   try:
     environment.GlobalSetUp()
@@ -353,7 +351,8 @@ def main():
       os.remove(os.path.join(java_tests_src_dir, "build.xml"))
     if(os.path.exists(os.path.join(java_tests_src_dir, "results.xml"))):
       os.remove(os.path.join(java_tests_src_dir, "results.xml"))
-    if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))):
+    if(os.path.exists(os.path.join(java_tests_src_dir,
+                                   "chrome-wrapper-no-sandbox"))):
       os.remove(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))
     if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper"))):
       os.remove(os.path.join(java_tests_src_dir, "chrome-wrapper"))

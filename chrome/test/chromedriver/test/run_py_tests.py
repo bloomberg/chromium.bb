@@ -83,29 +83,9 @@ _NEGATIVE_FILTER = [
     'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
-]
-
-_VERSION_SPECIFIC_FILTER = {}
-_VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
-
-_VERSION_SPECIFIC_FILTER['73'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
-    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-]
-
-_VERSION_SPECIFIC_FILTER['72'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
-    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-]
-
-_VERSION_SPECIFIC_FILTER['71'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
-    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-]
-
 
 
 _OS_SPECIFIC_FILTER = {}
@@ -125,14 +105,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
     'ChromeDriverTest.testTakeElementScreenshot',
     'ChromeDriverTest.testTakeElementScreenshotInIframe',
-]
-
-_OS_VERSION_SPECIFIC_FILTER = {}
-
-_OS_VERSION_SPECIFIC_FILTER['mac', 'HEAD'] = [
-]
-
-_OS_VERSION_SPECIFIC_FILTER['mac', '73'] = [
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -185,15 +157,11 @@ _INTEGRATION_NEGATIVE_FILTER = [
 ]
 
 
-def _GetDesktopNegativeFilter(version_name):
+def _GetDesktopNegativeFilter():
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
   os = util.GetPlatformName()
-  if (os, version_name) in _OS_VERSION_SPECIFIC_FILTER:
-    filter += _OS_VERSION_SPECIFIC_FILTER[os, version_name]
   if os in _OS_SPECIFIC_FILTER:
     filter += _OS_SPECIFIC_FILTER[os]
-  if version_name in _VERSION_SPECIFIC_FILTER:
-    filter += _VERSION_SPECIFIC_FILTER[version_name]
   return filter
 
 _ANDROID_NEGATIVE_FILTER = {}
@@ -3280,9 +3248,6 @@ if __name__ == '__main__':
   parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
-      '', '--chrome-version', default='HEAD',
-      help='Version of chrome. Default is \'HEAD\'.')
-  parser.add_option(
       '', '--filter', type='string', default='',
       help='Filter for specifying what tests to run, \"*\" will run all,'
       'including tests excluded by default. E.g., *testRunMethod')
@@ -3348,7 +3313,7 @@ if __name__ == '__main__':
     if _ANDROID_PACKAGE_KEY:
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE_KEY]
     else:
-      negative_filter = _GetDesktopNegativeFilter(options.chrome_version)
+      negative_filter = _GetDesktopNegativeFilter()
 
     if options.test_type is not None:
       if options.test_type == 'integration':

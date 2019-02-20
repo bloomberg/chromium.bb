@@ -29,7 +29,6 @@ def _GenerateTestCommand(script,
                          chromedriver,
                          ref_chromedriver=None,
                          chrome=None,
-                         chrome_version=None,
                          android_package=None,
                          verbose=False):
   _, log_path = tempfile.mkstemp(prefix='chromedriver_log_')
@@ -45,9 +44,6 @@ def _GenerateTestCommand(script,
 
   if chrome:
     cmd.append('--chrome=' + chrome)
-
-  if chrome_version:
-    cmd.append('--chrome-version=' + chrome_version)
 
   if verbose:
     cmd.append('--verbose')
@@ -84,37 +80,29 @@ def RunReplayTests(chromedriver, chrome,
 
 
 def RunPythonTests(chromedriver, ref_chromedriver,
-                   chrome=None, chrome_version=None,
-                   chrome_version_name=None, android_package=None):
-  version_info = ''
-  if chrome_version_name:
-    version_info = '(%s)' % chrome_version_name
-  util.MarkBuildStepStart('python_tests%s' % version_info)
+                   chrome=None,
+                   android_package=None):
+  util.MarkBuildStepStart('python_tests')
   code = util.RunCommand(
       _GenerateTestCommand('run_py_tests.py',
                            chromedriver,
                            ref_chromedriver=ref_chromedriver,
                            chrome=chrome,
-                           chrome_version=chrome_version,
                            android_package=android_package))
   if code:
     util.MarkBuildStepError()
   return code
 
 
-def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
-                 chrome_version_name=None, android_package=None,
+def RunJavaTests(chromedriver, chrome=None,
+                 android_package=None,
                  verbose=False):
-  version_info = ''
-  if chrome_version_name:
-    version_info = '(%s)' % chrome_version_name
-  util.MarkBuildStepStart('java_tests%s' % version_info)
+  util.MarkBuildStepStart('java_tests')
   code = util.RunCommand(
       _GenerateTestCommand('run_java_tests.py',
                            chromedriver,
                            ref_chromedriver=None,
                            chrome=chrome,
-                           chrome_version=chrome_version,
                            android_package=android_package,
                            verbose=verbose))
   if code:
@@ -231,13 +219,10 @@ def main():
         continue
       code1 = RunPythonTests(chromedriver,
                              ref_chromedriver,
-                             chrome=chrome_path,
-                             chrome_version=version,
-                             chrome_version_name='v%s' % version_name)
-      code2 = RunJavaTests(chromedriver, chrome=chrome_path,
-                           chrome_version=version,
-                           chrome_version_name='v%s' % version_name,
-                           verbose=True)
+                             chrome=chrome_path)
+      code2 = RunJavaTests(chromedriver,
+                           verbose=True,
+                           chrome=chrome_path)
       code3 = RunReplayTests(chromedriver,
                              chrome=chrome_path,
                              chrome_version=version,
