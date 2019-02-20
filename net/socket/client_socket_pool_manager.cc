@@ -62,6 +62,8 @@ int g_max_sockets_per_proxy_server[] = {
   kDefaultMaxSocketsPerProxyServer   // WEBSOCKET_SOCKET_POOL
 };
 
+base::TimeDelta g_unused_idle_socket_timeout = base::TimeDelta::FromSeconds(10);
+
 static_assert(base::size(g_max_sockets_per_proxy_server) ==
                   HttpNetworkSession::NUM_SOCKET_POOL_TYPES,
               "max sockets per proxy server length mismatch");
@@ -354,6 +356,19 @@ void ClientSocketPoolManager::set_max_sockets_per_proxy_server(
   // exceed the max number of sockets per proxy server.
   DCHECK_LE(g_max_sockets_per_group[pool_type], socket_count);
   g_max_sockets_per_proxy_server[pool_type] = socket_count;
+}
+
+// static
+base::TimeDelta ClientSocketPoolManager::unused_idle_socket_timeout(
+    HttpNetworkSession::SocketPoolType pool_type) {
+  return g_unused_idle_socket_timeout;
+}
+
+// static
+void ClientSocketPoolManager::set_unused_idle_socket_timeout(
+    HttpNetworkSession::SocketPoolType pool_type,
+    base::TimeDelta timeout) {
+  g_unused_idle_socket_timeout = timeout;
 }
 
 int InitSocketHandleForHttpRequest(

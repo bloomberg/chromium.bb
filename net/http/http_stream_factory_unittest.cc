@@ -470,6 +470,7 @@ CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
     CTPolicyEnforcer*)
     : ParentPool(0,
                  0,
+                 base::TimeDelta(),
                  nullptr /* socket_factory */,
                  host_resolver,
                  nullptr /* proxy_delegate */,

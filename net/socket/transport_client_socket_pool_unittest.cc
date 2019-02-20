@@ -53,6 +53,8 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
+constexpr base::TimeDelta kUnusedIdleSocketTimeout =
+    base::TimeDelta::FromSeconds(10);
 const RequestPriority kDefaultPriority = LOW;
 
 class SOCKS5MockData {
@@ -96,6 +98,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
+              kUnusedIdleSocketTimeout,
               &client_socket_factory_,
               host_resolver_.get(),
               nullptr /* proxy_delegate */,
@@ -113,6 +116,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         pool_for_real_sockets_(
             kMaxSockets,
             kMaxSocketsPerGroup,
+            kUnusedIdleSocketTimeout,
             ClientSocketFactory::GetDefaultFactory(),
             host_resolver_.get(),
             nullptr /* proxy_delegate */,
@@ -447,9 +451,10 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
   TransportClientSocketPool pool(
-      kMaxSockets, 1, &client_socket_factory_, host_resolver_.get(),
-      nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      kMaxSockets, 1, kUnusedIdleSocketTimeout, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       nullptr /* ssl_client_session_cache_privacy_mode */,
@@ -1160,9 +1165,10 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
     MockTaggingClientSocketFactory socket_factory;
     TransportClientSocketPool pool(
-        kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
-        nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
-        nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+        kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        &socket_factory, host_resolver_.get(), nullptr /* proxy_delegate */,
+        nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+        nullptr /* transport_security_state */,
         nullptr /* cert_transparency_verifier */,
         nullptr /* ct_policy_enforcer */,
         nullptr /* ssl_client_session_cache */,
@@ -1211,7 +1217,7 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   ASSERT_TRUE(test_server.Start());
 
   TransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup,
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
       ClientSocketFactory::GetDefaultFactory(), host_resolver_.get(),
       nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
       nullptr /* channel_id_server */, nullptr /* transport_security_state */,
@@ -1337,9 +1343,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   host_resolver_->set_synchronous_mode(true);
   MockTaggingClientSocketFactory socket_factory;
   TransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
-      nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+      &socket_factory, host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       nullptr /* ssl_client_session_cache_privacy_mode */,

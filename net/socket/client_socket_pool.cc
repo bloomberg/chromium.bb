@@ -8,29 +8,12 @@
 
 namespace {
 
-// The maximum duration, in seconds, to keep unused idle persistent sockets
-// alive.
-// TODO(ziadh): Change this timeout after getting histogram data on how long it
-// should be.
-int64_t g_unused_idle_socket_timeout_s = 10;
-
 // The maximum duration, in seconds, to keep used idle persistent sockets alive.
 int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 
 }  // namespace
 
 namespace net {
-
-// static
-base::TimeDelta ClientSocketPool::unused_idle_socket_timeout() {
-  return base::TimeDelta::FromSeconds(g_unused_idle_socket_timeout_s);
-}
-
-// static
-void ClientSocketPool::set_unused_idle_socket_timeout(base::TimeDelta timeout) {
-  DCHECK_GT(timeout.InSeconds(), 0);
-  g_unused_idle_socket_timeout_s = timeout.InSeconds();
-}
 
 // static
 base::TimeDelta ClientSocketPool::used_idle_socket_timeout() {

@@ -76,6 +76,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
               ? std::make_unique<WebSocketTransportClientSocketPool>(
                     max_sockets_per_pool(pool_type),
                     max_sockets_per_group(pool_type),
+                    unused_idle_socket_timeout(pool_type),
                     socket_factory_,
                     host_resolver,
                     proxy_delegate,
@@ -178,7 +179,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
           http_proxy,
           CreateTransportSocketPool(
               http_proxy, true /* use_socket_performance_watcher_factory */)));
-
   return ret.first->second.get();
 }
 
@@ -196,12 +196,13 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
   int sockets_per_proxy_server = max_sockets_per_proxy_server(pool_type_);
   int sockets_per_group = std::min(sockets_per_proxy_server,
                                    max_sockets_per_group(pool_type_));
-
   std::pair<TransportSocketPoolMap::iterator, bool> ret =
       ssl_socket_pools_for_proxies_.insert(std::make_pair(
           proxy_server,
           std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, socket_factory_,
+
+              sockets_per_proxy_server, sockets_per_group,
+              unused_idle_socket_timeout(pool_type_), socket_factory_,
               host_resolver_, proxy_delegate_, cert_verifier_,
               channel_id_service_, transport_security_state_,
               cert_transparency_verifier_, ct_policy_enforcer_,
@@ -259,8 +260,9 @@ ClientSocketPoolManagerImpl::CreateTransportSocketPool(
         std::min(sockets_per_proxy_server, max_sockets_per_group(pool_type_));
   }
   return std::make_unique<TransportClientSocketPool>(
-      sockets_per_proxy_server, sockets_per_group, socket_factory_,
-      host_resolver_, proxy_delegate_, cert_verifier_, channel_id_service_,
+      sockets_per_proxy_server, sockets_per_group,
+      unused_idle_socket_timeout(pool_type_), socket_factory_, host_resolver_,
+      proxy_delegate_, cert_verifier_, channel_id_service_,
       transport_security_state_, cert_transparency_verifier_,
       ct_policy_enforcer_, ssl_client_session_cache_,
       ssl_client_session_cache_privacy_mode_, ssl_config_service_,

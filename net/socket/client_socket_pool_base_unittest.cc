@@ -63,6 +63,8 @@ namespace {
 
 const int kDefaultMaxSockets = 4;
 const int kDefaultMaxSocketsPerGroup = 2;
+constexpr base::TimeDelta kUnusedIdleSocketTimeout =
+    base::TimeDelta::FromSeconds(10);
 
 // Make sure |handle| sets load times correctly when it has been assigned a
 // reused socket.
@@ -739,11 +741,9 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
   }
 
   void CreatePool(int max_sockets, int max_sockets_per_group) {
-    CreatePoolWithIdleTimeouts(
-        max_sockets,
-        max_sockets_per_group,
-        ClientSocketPool::unused_idle_socket_timeout(),
-        ClientSocketPool::used_idle_socket_timeout());
+    CreatePoolWithIdleTimeouts(max_sockets, max_sockets_per_group,
+                               kUnusedIdleSocketTimeout,
+                               ClientSocketPool::used_idle_socket_timeout());
   }
 
   void CreatePoolWithIdleTimeouts(

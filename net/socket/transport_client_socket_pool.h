@@ -105,6 +105,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
+      base::TimeDelta unused_idle_socket_timeout,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
