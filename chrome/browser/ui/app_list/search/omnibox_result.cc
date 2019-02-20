@@ -187,6 +187,10 @@ void OmniboxResult::InvokeAction(int action_index, int event_flags) {
   }
 }
 
+AutocompleteMatch::Type OmniboxResult::type() const {
+  return match_.type;
+}
+
 void OmniboxResult::UpdateIcon() {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
