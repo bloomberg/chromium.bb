@@ -56,8 +56,9 @@ void StreamTextureProxy::BindToTaskRunner(
   }
   // Unretained is safe here only because the object is deleted on |loop_|
   // thread.
-  task_runner->PostTask(FROM_HERE, base::Bind(&StreamTextureProxy::BindOnThread,
-                                              base::Unretained(this)));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(&StreamTextureProxy::BindOnThread,
+                                       base::Unretained(this)));
 }
 
 void StreamTextureProxy::BindOnThread() {

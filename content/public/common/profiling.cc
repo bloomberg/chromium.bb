@@ -65,7 +65,7 @@ void FlushProfilingData(base::Thread* thread) {
     }
   }
   thread->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&FlushProfilingData, thread),
+      FROM_HERE, base::BindOnce(&FlushProfilingData, thread),
       base::TimeDelta::FromSeconds(flush_seconds));
 }
 
@@ -80,8 +80,8 @@ class ProfilingThreadControl {
       return;
     thread_ = new base::Thread("Profiling_Flush");
     thread_->Start();
-    thread_->task_runner()->PostTask(FROM_HERE,
-                                     base::Bind(&FlushProfilingData, thread_));
+    thread_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&FlushProfilingData, thread_));
   }
 
   void Stop() {

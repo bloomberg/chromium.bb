@@ -5047,8 +5047,8 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   // javascript onselectionchanged is triggered.
   // See crbug.com/729488
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderFrameImpl::ShowDeferredContextMenu,
-                            weak_factory_.GetWeakPtr(), params));
+      FROM_HERE, base::BindOnce(&RenderFrameImpl::ShowDeferredContextMenu,
+                                weak_factory_.GetWeakPtr(), params));
 #else
   ShowDeferredContextMenu(params);
 #endif
