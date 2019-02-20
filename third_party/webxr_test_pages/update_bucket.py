@@ -149,10 +149,32 @@ def update_test_copies():
   return need_index_update
 
 def main():
-  parser = argparse.ArgumentParser(description="""
+  parser = argparse.ArgumentParser(
+      description="""
 Copies the current '%s' content to a Google Cloud Storage bucket
 subdirectory named after the Cr-Commit-Position, and writes an index.html file
-linking to the known test directories.""" % TEST_SUBDIR)
+linking to the known test directories, newest first.
+
+The intended workflow is as follows:
+
+- Create a CL that modifies the webxr_test_pages content. Ideally, if this
+  reflects an incompatible WebXR API change, the code change and test change
+  should be combined in the same CL.
+
+- After review, submit the CL as usual.
+
+- Rebase, or check out a fresh branch that includes the merged CL. The
+  "git log" history of the webxr_test_pages should contain the merged CL and
+  its Cr-Commit-Position, and there should be no local commits in the history.
+
+- Run this script to upload the new test snapshot and update the index.html
+  file to include it.
+
+The script has sanity checks to confirm that the state is as expected. It will
+not overwrite existing data, you need to manually remove bad or incomplete
+content from failed uploads using the cloud console before retrying.
+""" % TEST_SUBDIR,
+      formatter_class=argparse.RawDescriptionHelpFormatter)
 
   parser.add_argument('-v', '--verbose', action="store_true",
                       help="Print debugging info")
@@ -181,6 +203,10 @@ linking to the known test directories.""" % TEST_SUBDIR)
 
   if not os.path.isdir(TEST_SUBDIR):
     raise Exception('Must be run from webxr_test_pages directory')
+
+  node_modules = os.path.join(TEST_SUBDIR, 'js', 'cottontail', 'node_modules')
+  if os.path.isdir(node_modules):
+    raise Exception('Please delete the obsolete directory "%s"' % node_modules)
 
   need_index_update = False
   if g_flags.update_index_only:
