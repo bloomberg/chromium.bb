@@ -37,7 +37,7 @@ class FakeOAuthTokenGetter : public OAuthTokenGetter {
   void ExpectInvalidateCache();
 
   // OAuthTokenGetter overrides.
-  void CallWithToken(const TokenCallback& on_access_token) override;
+  void CallWithToken(TokenCallback on_access_token) override;
   void InvalidateCache() override;
 
   base::WeakPtr<FakeOAuthTokenGetter> GetWeakPtr();
@@ -66,8 +66,7 @@ void FakeOAuthTokenGetter::ResolveCallback(Status status,
                                            const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!on_access_token_.is_null());
-  on_access_token_.Run(status, user_email, access_token);
-  on_access_token_.Reset();
+  std::move(on_access_token_).Run(status, user_email, access_token);
 }
 
 void FakeOAuthTokenGetter::ExpectInvalidateCache() {
@@ -76,9 +75,9 @@ void FakeOAuthTokenGetter::ExpectInvalidateCache() {
   invalidate_cache_expected_ = true;
 }
 
-void FakeOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
+void FakeOAuthTokenGetter::CallWithToken(TokenCallback on_access_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  on_access_token_ = on_access_token;
+  on_access_token_ = std::move(on_access_token);
 }
 
 void FakeOAuthTokenGetter::InvalidateCache() {

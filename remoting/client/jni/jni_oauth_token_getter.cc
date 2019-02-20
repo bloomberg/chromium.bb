@@ -37,9 +37,12 @@ static void JNI_JniOAuthTokenGetter_ResolveOAuthTokenCallback(
       NOTREACHED();
       return;
   }
-  callback->Run(status,
-                user_email.is_null() ? "" : ConvertJavaStringToUTF8(user_email),
-                token.is_null() ? "" : ConvertJavaStringToUTF8(token));
+
+  std::string utf8_user_email =
+      user_email.is_null() ? "" : ConvertJavaStringToUTF8(user_email);
+  std::string utf8_token =
+      token.is_null() ? "" : ConvertJavaStringToUTF8(token);
+  std::move(*callback).Run(status, utf8_user_email, utf8_token);
   delete callback;
 }
 
@@ -52,12 +55,12 @@ JniOAuthTokenGetter::~JniOAuthTokenGetter() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void JniOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
+void JniOAuthTokenGetter::CallWithToken(TokenCallback on_access_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   JNIEnv* env = base::android::AttachCurrentThread();
-  TokenCallback* callback_copy = new TokenCallback(on_access_token);
-  Java_JniOAuthTokenGetter_fetchAuthToken(
-      env, reinterpret_cast<intptr_t>(callback_copy));
+  TokenCallback* callback = new TokenCallback(std::move(on_access_token));
+  Java_JniOAuthTokenGetter_fetchAuthToken(env,
+                                          reinterpret_cast<intptr_t>(callback));
 }
 
 void JniOAuthTokenGetter::InvalidateCache() {

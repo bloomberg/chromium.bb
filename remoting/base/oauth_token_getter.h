@@ -25,14 +25,13 @@ class OAuthTokenGetter {
     AUTH_ERROR,
   };
 
-  // TODO(crbug.com/824488): Change to use base::OnceCallback.
-  typedef base::Callback<void(Status status,
-                              const std::string& user_email,
-                              const std::string& access_token)>
+  typedef base::OnceCallback<void(Status status,
+                                  const std::string& user_email,
+                                  const std::string& access_token)>
       TokenCallback;
 
-  typedef base::Callback<void(const std::string& user_email,
-                              const std::string& refresh_token)>
+  typedef base::RepeatingCallback<void(const std::string& user_email,
+                                       const std::string& refresh_token)>
       CredentialsUpdatedCallback;
 
   // This structure contains information required to perform authorization
@@ -87,7 +86,7 @@ class OAuthTokenGetter {
 
   // Call |on_access_token| with an access token, or the failure status.
   virtual void CallWithToken(
-      const OAuthTokenGetter::TokenCallback& on_access_token) = 0;
+      OAuthTokenGetter::TokenCallback on_access_token) = 0;
 
   // Invalidates the cache, so the next CallWithToken() will get a fresh access
   // token.
