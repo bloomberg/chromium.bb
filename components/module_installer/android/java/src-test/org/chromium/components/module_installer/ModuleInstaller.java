@@ -4,6 +4,8 @@
 
 package org.chromium.components.module_installer;
 
+import android.content.Context;
+
 import org.chromium.base.VisibleForTesting;
 
 import java.util.HashSet;
@@ -14,6 +16,9 @@ public class ModuleInstaller {
     private static Set<String> sModulesRequestedDeffered = new HashSet<>();
 
     public static void init() {}
+
+    public static void initActivity(Context context) {}
+
     public static void updateCrashKeys(){};
 
     public static void install(
