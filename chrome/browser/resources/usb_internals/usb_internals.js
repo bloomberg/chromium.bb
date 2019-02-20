@@ -12,13 +12,9 @@ cr.define('usb_internals', function() {
       // browser process.
       this.usbManagerTest = null;
 
-      const pageHandler = new mojom.UsbInternalsPageHandlerPtr;
-      Mojo.bindInterface(
-          mojom.UsbInternalsPageHandler.name,
-          mojo.makeRequest(pageHandler).handle);
-
-      this.usbManagerTest = new device.mojom.UsbDeviceManagerTestPtr;
-      pageHandler.bindTestInterface(mojo.makeRequest(this.usbManagerTest));
+      const pageHandler = mojom.UsbInternalsPageHandler.getProxy();
+      this.usbManagerTest = new device.mojom.UsbDeviceManagerTestProxy;
+      pageHandler.bindTestInterface(this.usbManagerTest.createRequest());
 
       cr.ui.decorate('tabbox', cr.ui.TabBox);
       $('add-test-device-form').addEventListener('submit', (event) => {
