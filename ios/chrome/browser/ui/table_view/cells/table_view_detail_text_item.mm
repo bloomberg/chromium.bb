@@ -13,6 +13,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kMinimalHeight = 48;
+}  // namespace
+
 #pragma mark - TableViewDetailTextItem
 
 @implementation TableViewDetailTextItem
@@ -95,23 +99,20 @@
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [containerView addSubview:_detailTextLabel];
 
-    NSLayoutConstraint* heightConstraint = [self.contentView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kChromeTableViewCellHeight];
-    // Don't set the priority to required to avoid clashing with the estimated
-    // height.
-    heightConstraint.priority = UILayoutPriorityRequired - 1;
+    CGFloat margin = kTableViewHorizontalSpacing;
 
     [NSLayoutConstraint activateConstraints:@[
       // Minimal height.
-      heightConstraint,
+      [self.contentView.heightAnchor
+          constraintGreaterThanOrEqualToConstant:kMinimalHeight],
 
       // Container.
       [containerView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kTableViewHorizontalSpacing],
+                         constant:margin],
       [containerView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTableViewHorizontalSpacing],
+                         constant:-margin],
       [containerView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -132,8 +133,7 @@
     ]];
 
     // Make sure there are top and bottom margins of at least |margin|.
-    AddOptionalVerticalPadding(self.contentView, containerView,
-                               kTableViewTwoLabelsCellVerticalSpacing);
+    AddOptionalVerticalPadding(self.contentView, containerView, margin);
   }
   return self;
 }

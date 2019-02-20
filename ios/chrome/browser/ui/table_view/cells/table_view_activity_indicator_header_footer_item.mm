@@ -61,7 +61,7 @@
                                         forAxis:UILayoutConstraintAxisVertical];
     self.subtitleLabel = [[UILabel alloc] init];
     self.subtitleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.subtitleLabel.textColor = [UIColor lightGrayColor];
     [self.subtitleLabel
         setContentCompressionResistancePriority:UILayoutPriorityRequired

@@ -26,7 +26,7 @@ namespace {
 // |estimatedSection{Header|Footer}Height|.
 const CGFloat kDefaultHeaderFooterHeight = 10;
 // Estimated height of the header/footer, used to speed the constraints.
-const CGFloat kEstimatedHeaderFooterHeight = 50;
+const CGFloat kEstimatedHeaderFooterHeight = 35;
 
 enum SavedBarButtomItemPositionEnum {
   kUndefinedBarButtonItemPosition,

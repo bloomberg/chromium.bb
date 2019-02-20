@@ -131,7 +131,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _detailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
   _detailTextLabel.adjustsFontForContentSizeCategory = YES;
   _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
   [contentView addSubview:_detailTextLabel];
@@ -169,10 +169,10 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
         constraintEqualToAnchor:contentView.centerYAnchor],
     [_imageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-                                    constant:kTableViewVerticalSpacing],
+                                    constant:kTableViewLargeVerticalSpacing],
     [_imageView.bottomAnchor
         constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
-                                 constant:-kTableViewVerticalSpacing],
+                                 constant:-kTableViewLargeVerticalSpacing],
     [_textLabel.topAnchor
         constraintEqualToAnchor:verticalCenteringView.topAnchor],
     [_textLabel.bottomAnchor
@@ -185,12 +185,10 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
         constraintEqualToAnchor:contentView.centerYAnchor],
     [verticalCenteringView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-                                    constant:
-                                        kTableViewTwoLabelsCellVerticalSpacing],
+                                    constant:kTableViewVerticalSpacing],
     [verticalCenteringView.bottomAnchor
         constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
-                                 constant:
-                                     kTableViewTwoLabelsCellVerticalSpacing],
+                                 constant:kTableViewVerticalSpacing],
 
     // Set trailing anchors.
     [_errorIcon.trailingAnchor
