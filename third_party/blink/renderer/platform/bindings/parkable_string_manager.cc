@@ -51,15 +51,80 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
   }
 };
 
+using UnparkedMap =
+    HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>;
+using ParkedSet = HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>>;
+
 Vector<ParkableStringImpl*> GetUnparkedStrings(
-    const HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>&
-        unparked_strings) {
+    const UnparkedMap& unparked_strings) {
   WTF::Vector<ParkableStringImpl*> unparked;
   unparked.ReserveCapacity(unparked_strings.size());
   for (ParkableStringImpl* str : unparked_strings.Values())
     unparked.push_back(str);
 
   return unparked;
+}
+
+struct Statistics {
+  size_t original_size;
+  size_t uncompressed_size;
+  size_t compressed_original_size;
+  size_t compressed_size;
+  size_t metadata_size;
+  size_t overhead_size;
+  size_t total_size;
+  int64_t savings_size;
+};
+
+Statistics ComputeStatistics(const UnparkedMap& unparked,
+                             const ParkedSet& parked) {
+  Statistics stats = {};
+
+  for (ParkableStringImpl* str : unparked.Values()) {
+    size_t size = str->CharactersSizeInBytes();
+    stats.original_size += size;
+    stats.uncompressed_size += size;
+    stats.metadata_size += sizeof(ParkableStringImpl);
+
+    if (str->has_compressed_data())
+      stats.overhead_size += str->compressed_size();
+  }
+
+  for (ParkableStringImpl* str : parked) {
+    size_t size = str->CharactersSizeInBytes();
+    stats.compressed_original_size += size;
+    stats.original_size += size;
+    stats.compressed_size += str->compressed_size();
+    stats.metadata_size += sizeof(ParkableStringImpl);
+  }
+
+  stats.total_size = stats.uncompressed_size + stats.compressed_size +
+                     stats.metadata_size + stats.overhead_size;
+  size_t memory_footprint = stats.compressed_size + stats.uncompressed_size +
+                            stats.metadata_size + stats.overhead_size;
+  stats.savings_size =
+      stats.original_size - static_cast<int64_t>(memory_footprint);
+
+  return stats;
+}
+
+void RecordMemoryStatistics(const Statistics& stats,
+                            const std::string& suffix) {
+  base::UmaHistogramCounts100000("Memory.ParkableString.TotalSizeKb" + suffix,
+                                 stats.original_size / 1000);
+  base::UmaHistogramCounts100000(
+      "Memory.ParkableString.CompressedSizeKb" + suffix,
+      stats.compressed_size / 1000);
+  size_t savings = stats.compressed_original_size - stats.compressed_size;
+  base::UmaHistogramCounts100000("Memory.ParkableString.SavingsKb" + suffix,
+                                 savings / 1000);
+
+  if (stats.compressed_original_size != 0) {
+    size_t ratio_percentage =
+        (100 * stats.compressed_size) / stats.compressed_original_size;
+    base::UmaHistogramPercentage(
+        "Memory.ParkableString.CompressionRatio" + suffix, ratio_percentage);
+  }
 }
 
 }  // namespace
@@ -148,41 +213,17 @@ bool ParkableStringManager::OnMemoryDump(
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump("parkable_strings");
 
-  size_t original_size = 0;
-  size_t uncompressed_size = 0;
-  size_t compressed_size = 0;
-  size_t metadata_size = 0;
-  size_t overhead_size = 0;
+  Statistics stats = ComputeStatistics(unparked_strings_, parked_strings_);
 
-  for (ParkableStringImpl* str : unparked_strings_.Values()) {
-    original_size += str->CharactersSizeInBytes();
-    uncompressed_size += str->CharactersSizeInBytes();
-    metadata_size += sizeof(ParkableStringImpl);
-
-    if (str->has_compressed_data())
-      overhead_size += str->compressed_size();
-  }
-
-  for (ParkableStringImpl* str : parked_strings_) {
-    original_size += str->CharactersSizeInBytes();
-    compressed_size += str->compressed_size();
-    metadata_size += sizeof(ParkableStringImpl);
-  }
-
-  size_t total_size =
-      uncompressed_size + compressed_size + metadata_size + overhead_size;
-  size_t memory_footprint =
-      compressed_size + uncompressed_size + metadata_size + overhead_size;
+  dump->AddScalar("size", "bytes", stats.total_size);
+  dump->AddScalar("original_size", "bytes", stats.original_size);
+  dump->AddScalar("uncompressed_size", "bytes", stats.uncompressed_size);
+  dump->AddScalar("compressed_size", "bytes", stats.compressed_size);
+  dump->AddScalar("metadata_size", "bytes", stats.metadata_size);
+  dump->AddScalar("overhead_size", "bytes", stats.overhead_size);
   // Has to be uint64_t.
-  size_t savings_size =
-      original_size > memory_footprint ? original_size - memory_footprint : 0;
-  dump->AddScalar("size", "bytes", total_size);
-  dump->AddScalar("original_size", "bytes", original_size);
-  dump->AddScalar("uncompressed_size", "bytes", uncompressed_size);
-  dump->AddScalar("compressed_size", "bytes", compressed_size);
-  dump->AddScalar("metadata_size", "bytes", metadata_size);
-  dump->AddScalar("overhead_size", "bytes", overhead_size);
-  dump->AddScalar("savings_size", "bytes", savings_size);
+  dump->AddScalar("savings_size", "bytes",
+                  stats.savings_size > 0 ? stats.savings_size : 0);
 
   pmd->AddSuballocation(dump->guid(),
                         WTF::Partitions::kAllocatedObjectPoolName);
@@ -229,7 +270,7 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
     DCHECK(task_runner);
     task_runner->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&ParkableStringManager::RecordUnparkingCpuCost,
+        base::BindOnce(&ParkableStringManager::RecordStatisticsAfter5Minutes,
                        base::Unretained(this)),
         base::TimeDelta::FromMinutes(5));
     has_posted_unparking_time_accounting_task_ = true;
@@ -342,36 +383,15 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   ParkAllIfRendererBackgrounded(
       ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
 
-  size_t total_size = 0, total_before_compression_size = 0;
-  size_t total_compressed_size = 0;
-  for (ParkableStringImpl* str : parked_strings_) {
-    size_t size = str->CharactersSizeInBytes();
-    total_size += size;
-    total_before_compression_size += size;
-    total_compressed_size += str->compressed_size();
-  }
-
-  for (ParkableStringImpl* str : unparked_strings_.Values())
-    total_size += str->CharactersSizeInBytes();
-
-  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.TotalSizeKb",
-                              total_size / 1000);
-  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.CompressedSizeKb",
-                              total_compressed_size / 1000);
-  size_t savings = total_before_compression_size - total_compressed_size;
-  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.SavingsKb",
-                              savings / 1000);
-  if (total_before_compression_size != 0) {
-    size_t ratio_percentage =
-        (100 * total_compressed_size) / total_before_compression_size;
-    UMA_HISTOGRAM_PERCENTAGE("Memory.ParkableString.CompressionRatio",
-                             ratio_percentage);
-  }
+  Statistics stats = ComputeStatistics(unparked_strings_, parked_strings_);
+  RecordMemoryStatistics(stats, "");
 }
 
-void ParkableStringManager::RecordUnparkingCpuCost() const {
+void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
   base::UmaHistogramTimes("Memory.ParkableString.MainThreadTime.5min",
                           total_unparking_time_);
+  Statistics stats = ComputeStatistics(unparked_strings_, parked_strings_);
+  RecordMemoryStatistics(stats, ".5min");
 }
 
 void ParkableStringManager::AgeStringsAndPark() {

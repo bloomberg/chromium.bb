@@ -83,7 +83,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   void ParkAll(ParkableStringImpl::ParkingMode mode);
   void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
   void DropStringsWithCompressedDataAndRecordStatistics();
-  void RecordUnparkingCpuCost() const;
+  void RecordStatisticsAfter5Minutes() const;
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
 
