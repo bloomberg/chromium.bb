@@ -760,7 +760,7 @@ TEST_P(GlyphDataRangeTest, Data) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, data.direction);
 
-  auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
+  const auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
   auto glyphs = run.FindGlyphDataRange(data.start_offset, data.end_offset);
   unsigned start_glyph = std::distance(run.glyph_data_.begin(), glyphs.begin);
   EXPECT_EQ(data.start_glyph, start_glyph);

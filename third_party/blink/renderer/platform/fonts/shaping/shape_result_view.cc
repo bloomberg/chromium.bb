@@ -16,7 +16,7 @@ struct ShapeResultView::RunInfoPart {
   USING_FAST_MALLOC(RunInfoPart);
 
  public:
-  RunInfoPart(scoped_refptr<ShapeResult::RunInfo> run,
+  RunInfoPart(scoped_refptr<const ShapeResult::RunInfo> run,
               ShapeResult::RunInfo::GlyphDataRange range,
               unsigned start_index,
               unsigned offset,
@@ -54,7 +54,20 @@ struct ShapeResultView::RunInfoPart {
     return run_->GlyphToCharacterIndex(i);
   }
 
-  scoped_refptr<ShapeResult::RunInfo> run_;
+  // Common signatures with RunInfo, to templatize algorithms.
+  const ShapeResult::RunInfo* GetRunInfo() const { return run_.get(); }
+  const ShapeResult::RunInfo::GlyphDataRange& GetGlyphDataRange() const {
+    return range_;
+  }
+  ShapeResult::RunInfo::GlyphDataRange FindGlyphDataRange(
+      unsigned start_character_index,
+      unsigned end_character_index) const {
+    return GetGlyphDataRange().FindGlyphDataRange(Rtl(), start_character_index,
+                                                  end_character_index);
+  }
+  unsigned OffsetToRunStartIndex() const { return offset_; }
+
+  scoped_refptr<const ShapeResult::RunInfo> run_;
   ShapeResult::RunInfo::GlyphDataRange range_;
 
   // Start index for partial run, adjusted to ensure that runs are continuous.
@@ -87,7 +100,8 @@ unsigned ShapeResultView::RunInfoPart::PreviousSafeToBreakOffset(
   return 0;
 }
 
-ShapeResultView::ShapeResultView(const ShapeResult* other)
+template <class ShapeResultType>
+ShapeResultView::ShapeResultView(const ShapeResultType* other)
     : primary_font_(other->primary_font_),
       start_index_(0),
       num_characters_(0),
@@ -128,28 +142,34 @@ scoped_refptr<ShapeResult> ShapeResultView::CreateShapeResult() const {
   return base::AdoptRef(new_result);
 }
 
-void ShapeResultView::CreateViewsForResult(const ShapeResult* other,
+template <class ShapeResultType>
+void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
                                            unsigned start_index,
                                            unsigned end_index) {
   bool first_result = num_characters_ == 0;
-  for (const auto& run : other->runs_) {
-    if (!run)
+  for (const auto& run : other->RunsOrParts()) {
+    if (!run->GetRunInfo())
       continue;
-    unsigned part_start = run->start_index_;
+    // Compute start/end of the run, or of the part if ShapeResultView.
+    unsigned part_start = run->start_index_ + other->StartIndexOffsetForRun();
     unsigned run_end = part_start + run->num_characters_;
     if (start_index < run_end && end_index > part_start) {
       ShapeResult::RunInfo::GlyphDataRange range;
 
+      // Adjust start/end to the character index of |RunInfo|. The start index
+      // of |RunInfo| could be different from |part_start| for ShapeResultView.
+      DCHECK_GE(part_start, run->OffsetToRunStartIndex());
+      unsigned run_start = part_start - run->OffsetToRunStartIndex();
       unsigned adjusted_start =
-          start_index > part_start ? start_index - part_start : 0;
-      unsigned adjusted_end = std::min(end_index, run_end) - part_start;
+          start_index > run_start ? start_index - run_start : 0;
+      unsigned adjusted_end = std::min(end_index, run_end) - run_start;
       DCHECK(adjusted_end > adjusted_start);
       unsigned part_characters = adjusted_end - adjusted_start;
       float part_width;
 
       // Avoid O(log n) find operation if the entire run is in range.
       if (part_start >= start_index && run_end <= end_index) {
-        range = {run->glyph_data_.begin(), run->glyph_data_.end()};
+        range = run->GetGlyphDataRange();
         part_width = run->width_;
       } else {
         range = run->FindGlyphDataRange(adjusted_start, adjusted_end);
@@ -170,8 +190,8 @@ void ShapeResultView::CreateViewsForResult(const ShapeResult* other,
       }
 
       parts_.push_back(std::make_unique<RunInfoPart>(
-          run, range, part_start_index, part_offset, part_characters,
-          part_width));
+          run->GetRunInfo(), range, part_start_index, part_offset,
+          part_characters, part_width));
 
       num_characters_ += part_characters;
       num_glyphs_ += range.end - range.begin;
@@ -185,13 +205,30 @@ void ShapeResultView::CreateViewsForResult(const ShapeResult* other,
 
 scoped_refptr<ShapeResultView> ShapeResultView::Create(const Segment* segments,
                                                        size_t segment_count) {
-  ShapeResultView* out = new ShapeResultView(segments[0].result);
+  DCHECK_GT(segment_count, 0u);
+#if DCHECK_IS_ON()
+  for (unsigned i = 0; i < segment_count; ++i) {
+    DCHECK((segments[i].result || segments[i].view) &&
+           (!segments[i].result || !segments[i].view));
+  }
+#endif
+  ShapeResultView* out = segments[0].result
+                             ? new ShapeResultView(segments[0].result)
+                             : new ShapeResultView(segments[0].view);
   out->AddSegments(segments, segment_count);
   return base::AdoptRef(out);
 }
 
 scoped_refptr<ShapeResultView> ShapeResultView::Create(
     const ShapeResult* result,
+    unsigned start_index,
+    unsigned end_index) {
+  Segment segment = {result, start_index, end_index};
+  return Create(&segment, 1);
+}
+
+scoped_refptr<ShapeResultView> ShapeResultView::Create(
+    const ShapeResultView* result,
     unsigned start_index,
     unsigned end_index) {
   Segment segment = {result, start_index, end_index};
@@ -223,18 +260,28 @@ void ShapeResultView::AddSegments(const Segment* segments,
   // Compute start index offset for the overall run. This is added to the start
   // index of each glyph to ensure consistency with ShapeResult::SubRange
   if (!Rtl()) {  // Left-to-right
-    char_index_offset_ =
-        std::max(segments[0].result->StartIndex(), segments[0].start_index);
+    char_index_offset_ = segments[0].result ? segments[0].result->StartIndex()
+                                            : segments[0].view->StartIndex();
+    char_index_offset_ = std::max(char_index_offset_, segments[0].start_index);
   } else {  // Right to left
     char_index_offset_ = 0;
   }
 
   for (unsigned i = 0; i < segment_count; i++) {
     const Segment& segment = segments[Rtl() ? last_segment_index - i : i];
-    DCHECK_EQ(segment.result->Direction(), Direction());
-    CreateViewsForResult(segment.result, segment.start_index,
-                         segment.end_index);
-    has_vertical_offsets_ |= segment.result->has_vertical_offsets_;
+    if (segment.result) {
+      DCHECK_EQ(segment.result->Direction(), Direction());
+      CreateViewsForResult(segment.result, segment.start_index,
+                           segment.end_index);
+      has_vertical_offsets_ |= segment.result->has_vertical_offsets_;
+    } else if (segment.view) {
+      DCHECK_EQ(segment.view->Direction(), Direction());
+      CreateViewsForResult(segment.view, segment.start_index,
+                           segment.end_index);
+      has_vertical_offsets_ |= segment.view->has_vertical_offsets_;
+    } else {
+      NOTREACHED();
+    }
   }
 
   float origin = 0;

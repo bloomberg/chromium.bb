@@ -169,41 +169,20 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   // iterator pattern; i.e., |begin| is lower or equal to |end| in the address
   // space regardless of LTR/RTL. |begin| is inclusive, |end| is exclusive.
   struct GlyphDataRange {
-    HarfBuzzRunGlyphData* begin;
-    HarfBuzzRunGlyphData* end;
+    GlyphDataRange FindGlyphDataRange(bool is_rtl,
+                                      unsigned start_character_index,
+                                      unsigned end_character_index) const;
+
+    const HarfBuzzRunGlyphData* begin;
+    const HarfBuzzRunGlyphData* end;
   };
 
   // Find the range of HarfBuzzRunGlyphData for the specified character index
   // range. This function uses binary search twice, hence O(2 log n).
   GlyphDataRange FindGlyphDataRange(unsigned start_character_index,
-                                    unsigned end_character_index) {
-    const auto comparer = [](const HarfBuzzRunGlyphData& glyph_data,
-                             unsigned index) {
-      return glyph_data.character_index < index;
-    };
-    if (!Rtl()) {
-      HarfBuzzRunGlyphData* start_glyph =
-          std::lower_bound(glyph_data_.begin(), glyph_data_.end(),
-                           start_character_index, comparer);
-      if (UNLIKELY(start_glyph == glyph_data_.end()))
-        return {nullptr, nullptr};
-      HarfBuzzRunGlyphData* end_glyph = std::lower_bound(
-          start_glyph, glyph_data_.end(), end_character_index, comparer);
-      return {start_glyph, end_glyph};
-    }
-
-    // RTL needs to use reverse iterators because there maybe multiple glyphs
-    // for a character, and we want to find the first one in the logical order.
-    auto start_glyph =
-        std::lower_bound(glyph_data_.rbegin(), glyph_data_.rend(),
-                         start_character_index, comparer);
-    if (UNLIKELY(start_glyph == glyph_data_.rend()))
-      return {nullptr, nullptr};
-    auto end_glyph = std::lower_bound(start_glyph, glyph_data_.rend(),
-                                      end_character_index, comparer);
-    // Convert reverse iterators to pointers. Then increment to make |begin|
-    // inclusive and |end| exclusive.
-    return {&*end_glyph + 1, &*start_glyph + 1};
+                                    unsigned end_character_index) const {
+    return GetGlyphDataRange().FindGlyphDataRange(Rtl(), start_character_index,
+                                                  end_character_index);
   }
 
   // Creates a new RunInfo instance representing a subset of the current run.
@@ -264,6 +243,13 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
     }
   }
 
+  // Common signatures with RunInfoPart, to templatize algorithms.
+  const RunInfo* GetRunInfo() const { return this; }
+  const GlyphDataRange GetGlyphDataRange() const {
+    return {glyph_data_.begin(), glyph_data_.end()};
+  }
+  unsigned OffsetToRunStartIndex() const { return 0; }
+
   scoped_refptr<SimpleFontData> font_data_;
   hb_direction_t direction_;
   // For upright-in-vertical we need to tell the ShapeResultBloberizer to rotate
@@ -280,6 +266,42 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   unsigned num_characters_;
   float width_;
 };
+
+// Find the range of HarfBuzzRunGlyphData for the specified character index
+// range. This function uses binary search twice, hence O(2 log n).
+inline ShapeResult::RunInfo::GlyphDataRange
+ShapeResult::RunInfo::GlyphDataRange::FindGlyphDataRange(
+    bool is_rtl,
+    unsigned start_character_index,
+    unsigned end_character_index) const {
+  const auto comparer = [](const HarfBuzzRunGlyphData& glyph_data,
+                           unsigned index) {
+    return glyph_data.character_index < index;
+  };
+  if (!is_rtl) {
+    const HarfBuzzRunGlyphData* start_glyph =
+        std::lower_bound(begin, end, start_character_index, comparer);
+    if (UNLIKELY(start_glyph == end))
+      return {nullptr, nullptr};
+    const HarfBuzzRunGlyphData* end_glyph =
+        std::lower_bound(start_glyph, end, end_character_index, comparer);
+    return {start_glyph, end_glyph};
+  }
+
+  // RTL needs to use reverse iterators because there maybe multiple glyphs
+  // for a character, and we want to find the first one in the logical order.
+  const auto rbegin = std::reverse_iterator<const HarfBuzzRunGlyphData*>(end);
+  const auto rend = std::reverse_iterator<const HarfBuzzRunGlyphData*>(begin);
+  const auto start_glyph =
+      std::lower_bound(rbegin, rend, start_character_index, comparer);
+  if (UNLIKELY(start_glyph == rend))
+    return {nullptr, nullptr};
+  const auto end_glyph =
+      std::lower_bound(start_glyph, rend, end_character_index, comparer);
+  // Convert reverse iterators to pointers. Then increment to make |begin|
+  // inclusive and |end| exclusive.
+  return {&*end_glyph + 1, &*start_glyph + 1};
+}
 
 }  // namespace blink
 
