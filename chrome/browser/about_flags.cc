@@ -1469,10 +1469,6 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_DISABLE_VALUE_TYPE(
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
-    {"enable_android_messages_integration",
-     flag_descriptions::kAndroidMessagesIntegrationName,
-     flag_descriptions::kAndroidMessagesIntegrationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAndroidMessagesIntegration)},
     {"use_messages_google_com_domain",
      flag_descriptions::kUseMessagesGoogleComDomainName,
      flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,

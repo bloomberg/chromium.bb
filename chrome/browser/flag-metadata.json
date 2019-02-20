@@ -2021,11 +2021,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable_android_messages_integration",
-    "owners": [ "azeemarshad", "jlklein", "khorimoto" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "use_messages_google_com_domain",
     "owners": [ "azeemarshad", "khorimoto" ],
     "expiry_milestone": 76
