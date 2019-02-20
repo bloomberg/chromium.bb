@@ -56,8 +56,6 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetBounds(gfx::Size(snapped_replaced_rect.Size()));
       layer->SetIsDrawable(true);
       RecordForeignLayer(context, DisplayItem::kForeignLayerVideo, layer);
-      if (layout_video_.GetFrameView())
-        layout_video_.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
       return;
     }
   }

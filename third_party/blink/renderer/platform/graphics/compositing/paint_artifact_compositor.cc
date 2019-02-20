@@ -132,6 +132,13 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   if (!display_item.IsForeignLayer())
     return nullptr;
 
+  // When a foreign layer's offset_to_transform_parent() changes, we don't call
+  // PaintArtifaceCompositor::SetNeedsUpdate() because the update won't change
+  // anything but cause unnecessary commit. Though UpdateTouchActionRects()
+  // depends on offset_to_transform_parent(), a foreign layer chunk doesn't have
+  // hit_test_data.
+  DCHECK(!paint_chunk.hit_test_data);
+
   return static_cast<const ForeignLayerDisplayItem&>(display_item).GetLayer();
 }
 
