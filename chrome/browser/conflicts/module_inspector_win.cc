@@ -22,9 +22,6 @@
 
 namespace {
 
-constexpr base::Feature kWinOOPInspectModuleFeature = {
-    "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // The maximum amount of time a stale entry is kept in the cache before it is
 // deleted.
 constexpr base::TimeDelta kMaxEntryAge = base::TimeDelta::FromDays(30);
@@ -36,21 +33,6 @@ StringMapping GetPathMapping() {
       L"LOCALAPPDATA", L"ProgramFiles", L"ProgramData", L"USERPROFILE",
       L"SystemRoot", L"TEMP", L"TMP", L"CommonProgramFiles",
   });
-}
-
-// Returns a bound pointer to the UtilWin service.
-chrome::mojom::UtilWinPtr ConnectToUtilWinService(
-    base::OnceClosure connection_error_handler) {
-  chrome::mojom::UtilWinPtr util_win_ptr;
-
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr);
-
-  util_win_ptr.set_connection_error_handler(
-      std::move(connection_error_handler));
-
-  return util_win_ptr;
 }
 
 void ReportConnectionError(bool value) {
@@ -95,6 +77,9 @@ void WriteInspectionResultCacheOnBackgroundSequence(
 // static
 constexpr base::Feature ModuleInspector::kEnableBackgroundModuleInspection;
 
+// static
+constexpr base::Feature ModuleInspector::kWinOOPInspectModuleFeature;
+
 ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
@@ -110,6 +95,7 @@ ModuleInspector::ModuleInspector(
       connection_error_retry_count_(kConnectionErrorRetryCount),
       background_inspection_enabled_(
           base::FeatureList::IsEnabled(kEnableBackgroundModuleInspection)),
+      test_connector_(nullptr),
       weak_ptr_factory_(this) {
   // Use AfterStartupTaskUtils to be notified when startup is finished.
   AfterStartupTaskUtils::PostTask(
@@ -163,6 +149,31 @@ void ModuleInspector::OnModuleDatabaseIdle() {
       FROM_HERE, base::BindOnce(&WriteInspectionResultCacheOnBackgroundSequence,
                                 GetInspectionResultsCachePath(),
                                 inspection_results_cache_));
+}
+
+void ModuleInspector::EnsureUtilWinServiceBound() {
+  DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
+
+  // Use the |test_connector_| if set.
+  service_manager::Connector* connector = test_connector_;
+  if (!connector) {
+    // The ServiceManagerConnection can be null during shutdown.
+    content::ServiceManagerConnection* service_manager_connection =
+        content::ServiceManagerConnection::GetForProcess();
+    if (!service_manager_connection)
+      return;
+
+    connector = service_manager_connection->GetConnector();
+  }
+
+  connector->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
+  util_win_ptr_.set_connection_error_handler(
+      base::BindOnce(&ModuleInspector::OnUtilWinServiceConnectionError,
+                     base::Unretained(this)));
+
+  // Emit a false value to the connection error histogram to serve as a
+  // baseline.
+  ReportConnectionError(false);
 }
 
 void ModuleInspector::OnStartupFinished() {
@@ -231,31 +242,31 @@ void ModuleInspector::StartInspectingModule() {
     return;
   }
 
-  // There is a small priority inversion that happens when
-  // IncreaseInspectionPriority() is called while a module is currently being
-  // inspected.
-  //
-  // This is because all the subsequent tasks will be posted at a higher
-  // priority, but they are waiting on the current task that is currently
-  // running at a lower priority.
-  //
-  // In practice, this is not an issue because the only caller of
-  // IncreaseInspectionPriority() (chrome://conflicts) does not depend on the
-  // inspection to finish synchronously and is not blocking anything else.
   if (base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature)) {
-    // Make sure the pointer is bound to the service first.
-    if (!util_win_ptr_) {
-      util_win_ptr_ = ConnectToUtilWinService(
-          base::BindOnce(&ModuleInspector::OnUtilWinServiceConnectionError,
-                         base::Unretained(this)));
-      ReportConnectionError(false);
-    }
+    EnsureUtilWinServiceBound();
+
+    // An unbound InterfacePtr at this point means the service is not available.
+    // This is only possible during shutdown. In this case, just dropping the
+    // request and stop processing new modules is fine.
+    if (!util_win_ptr_)
+      return;
 
     util_win_ptr_->InspectModule(
         module_key.module_path,
         base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));
   } else {
+    // There is a small priority inversion that happens when
+    // IncreaseInspectionPriority() is called while a module is currently being
+    // inspected.
+    //
+    // This is because all the subsequent tasks on |inspection_task_runner_|
+    // will be posted at a higher priority, but they are waiting on the current
+    // task that is currently running at a lower priority.
+    //
+    // In practice, this is not an issue because the only caller of
+    // IncreaseInspectionPriority() (chrome://conflicts) does not depend on the
+    // inspection to finish synchronously and is not blocking anything else.
     base::PostTaskAndReplyWithResult(
         inspection_task_runner_.get(), FROM_HERE,
         base::BindOnce(&InspectModule, module_key.module_path),

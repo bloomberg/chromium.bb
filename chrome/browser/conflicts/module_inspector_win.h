@@ -24,6 +24,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 // This class takes care of inspecting several modules (identified by their
 // ModuleInfoKey) and returning the result via the OnModuleInspectedCallback on
 // the SequencedTaskRunner where it was created.
@@ -42,6 +46,10 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // TODO(pmonette): Remove when no longer needed. See https://crbug.com/928846.
   static constexpr base::Feature kEnableBackgroundModuleInspection = {
       "EnableBackgroundModuleInspection", base::FEATURE_ENABLED_BY_DEFAULT};
+
+  // Controls whether or not module inspection is done out of process.
+  static constexpr base::Feature kWinOOPInspectModuleFeature = {
+      "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
   using OnModuleInspectedCallback =
       base::Callback<void(const ModuleInfoKey& module_key,
@@ -64,7 +72,15 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // ModuleDatabaseObserver:
   void OnModuleDatabaseIdle() override;
 
+  void SetConnectorForTesting(service_manager::Connector* connector) {
+    test_connector_ = connector;
+  }
+
  private:
+  // Ensures the |util_win_ptr_| instance is bound to the UtilWin service. This
+  // may result in an unbounded pointer if Chrome is currently shutting down.
+  void EnsureUtilWinServiceBound();
+
   // Invoked when Chrome has finished starting up to initiate the inspection of
   // queued modules.
   void OnStartupFinished();
@@ -134,6 +150,9 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // kBackgroundModuleInspection feature state, but will be set unconditionally
   // to true if IncreaseInspectionPriority() is called.
   bool background_inspection_enabled_;
+
+  // Used to connect to the UtilWin service during tests.
+  service_manager::Connector* test_connector_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
