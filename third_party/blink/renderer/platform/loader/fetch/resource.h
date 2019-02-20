@@ -233,9 +233,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   size_t DecodedSize() const { return decoded_size_; }
   size_t OverheadSize() const { return overhead_size_; }
-  size_t CodeCacheSize() const {
-    return (cache_handler_) ? cache_handler_->GetCodeCacheSize() : 0;
-  }
 
   bool IsLoaded() const { return status_ > ResourceStatus::kPending; }
 

@@ -91,7 +91,6 @@ class PLATFORM_EXPORT MemoryCache final
     size_t decoded_size;
     size_t encoded_size;
     size_t overhead_size;
-    size_t code_cache_size;
     size_t encoded_size_duplicated_in_data_urls;
 
     TypeStatistic()
