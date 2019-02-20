@@ -2659,11 +2659,19 @@ RenderWidgetHostImpl* WebContentsImpl::GetKeyboardLockWidget() {
   return keyboard_lock_widget_;
 }
 
-void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
-  if (visible && !GetOuterWebContents()->IsHidden())
-    WasShown();
-  else if (!visible)
-    WasHidden();
+void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  switch (visibility) {
+    case blink::mojom::FrameVisibility::kRenderedInViewport:
+      WasShown();
+      break;
+    case blink::mojom::FrameVisibility::kNotRendered:
+      WasHidden();
+      break;
+    case blink::mojom::FrameVisibility::kRenderedOutOfViewport:
+      WasOccluded();
+      break;
+  }
 }
 
 void WebContentsImpl::CreateNewWindow(

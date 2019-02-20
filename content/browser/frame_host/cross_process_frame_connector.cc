@@ -394,7 +394,7 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
   if (frame_proxy_in_parent_renderer_->frame_tree_node()
           ->render_manager()
           ->ForInnerDelegate()) {
-    view_->host()->delegate()->OnRenderFrameProxyVisibilityChanged(visible);
+    view_->host()->delegate()->OnRenderFrameProxyVisibilityChanged(visibility_);
     return;
   }
 
