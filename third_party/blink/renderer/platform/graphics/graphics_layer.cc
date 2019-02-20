@@ -455,7 +455,6 @@ void GraphicsLayer::UpdateContentsRect() {
     const auto& offset = GetContentsOffsetFromTransformNode();
     contents_layer->SetOffsetToTransformParent(
         gfx::Vector2dF(offset.X(), offset.Y()));
-    SetPaintArtifactCompositorNeedsUpdate();
   }
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
