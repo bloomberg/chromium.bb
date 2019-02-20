@@ -568,6 +568,10 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // an otherwise healthy backing store.
   leveldb::Status RevertSchemaToV2();
 
+  base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  protected:
   friend class base::RefCounted<IndexedDBBackingStore>;
   virtual ~IndexedDBBackingStore();
@@ -668,6 +672,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 #if DCHECK_IS_ON()
   bool initialized_ = false;
 #endif
+  base::WeakPtrFactory<IndexedDBBackingStore> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStore);
 };
 

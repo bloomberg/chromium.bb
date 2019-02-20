@@ -525,7 +525,8 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       task_runner_(task_runner),
       db_(std::move(db)),
       active_blob_registry_(this),
-      committing_transaction_count_(0) {
+      committing_transaction_count_(0),
+      weak_factory_(this) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
@@ -1317,7 +1318,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       WriteDescriptorVec;
   static scoped_refptr<ChainedBlobWriterImpl> Create(
       int64_t database_id,
-      IndexedDBBackingStore* backing_store,
+      base::WeakPtr<IndexedDBBackingStore> backing_store,
       WriteDescriptorVec* blobs,
       scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback) {
     auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
@@ -1365,7 +1366,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
  private:
   ChainedBlobWriterImpl(
       int64_t database_id,
-      IndexedDBBackingStore* backing_store,
+      base::WeakPtr<IndexedDBBackingStore> backing_store,
       scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback)
       : waiting_for_callback_(false),
         database_id_(database_id),
@@ -1385,7 +1386,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       callback_->Run(BlobWriteResult::SUCCESS_ASYNC);
       return;
     } else {
-      if (!backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
+      if (!backing_store_ ||
+          !backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
         callback_->Run(BlobWriteResult::FAILURE_ASYNC);
         return;
       }
@@ -1398,7 +1400,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
   int64_t database_id_;
-  IndexedDBBackingStore* backing_store_;
+  base::WeakPtr<IndexedDBBackingStore> backing_store_;
   // Callback result is useless as call stack is no longer transaction's
   // operations queue. Errors are instead handled in
   // IndexedDBTransaction::BlobWriteComplete.
@@ -3144,7 +3146,7 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
   chained_blob_writer_ = ChainedBlobWriterImpl::Create(
-      database_id_, backing_store_, new_files_to_write,
+      database_id_, backing_store_->AsWeakPtr(), new_files_to_write,
       new BlobWriteCallbackWrapper(ptr_factory_.GetWeakPtr(), this, callback));
 }
 
