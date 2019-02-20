@@ -20,7 +20,7 @@ RefcountedKeyedServiceFactory::~RefcountedKeyedServiceFactory() {
 }
 
 void RefcountedKeyedServiceFactory::SetTestingFactory(
-    base::SupportsUserData* context,
+    void* context,
     TestingFactory testing_factory) {
   // Ensure that |context| is not marked as stale (e.g., due to it aliasing an
   // instance that was destroyed in an earlier test) in order to avoid accesses
@@ -39,17 +39,18 @@ void RefcountedKeyedServiceFactory::SetTestingFactory(
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-    base::SupportsUserData* context,
+    void* context,
+    void* side_parameter,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
-  return GetServiceForContext(context, true);
+  return GetServiceForContext(context, side_parameter, true);
 }
 
 scoped_refptr<RefcountedKeyedService>
-RefcountedKeyedServiceFactory::GetServiceForContext(
-    base::SupportsUserData* context,
-    bool create) {
+RefcountedKeyedServiceFactory::GetServiceForContext(void* context,
+                                                    void* side_parameter,
+                                                    bool create) {
   context = GetContextToUse(context);
   if (!context)
     return nullptr;
@@ -74,22 +75,21 @@ RefcountedKeyedServiceFactory::GetServiceForContext(
       service = factory_iterator->second.Run(context);
     }
   } else {
-    service = BuildServiceInstanceFor(context);
+    service = BuildServiceInstanceFor(context, side_parameter);
   }
 
   return Associate(context, std::move(service));
 }
 
 scoped_refptr<RefcountedKeyedService> RefcountedKeyedServiceFactory::Associate(
-    base::SupportsUserData* context,
+    void* context,
     scoped_refptr<RefcountedKeyedService> service) {
   DCHECK(!base::ContainsKey(mapping_, context));
   auto iterator = mapping_.emplace(context, std::move(service)).first;
   return iterator->second;
 }
 
-void RefcountedKeyedServiceFactory::Disassociate(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::Disassociate(void* context) {
   // We "merely" drop our reference to the service. Hopefully this will cause
   // the service to be destroyed. If not, oh well.
   auto iterator = mapping_.find(context);
@@ -97,15 +97,13 @@ void RefcountedKeyedServiceFactory::Disassociate(
     mapping_.erase(iterator);
 }
 
-void RefcountedKeyedServiceFactory::ContextShutdown(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::ContextShutdown(void* context) {
   auto iterator = mapping_.find(context);
   if (iterator != mapping_.end() && iterator->second.get())
     iterator->second->ShutdownOnUIThread();
 }
 
-void RefcountedKeyedServiceFactory::ContextDestroyed(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::ContextDestroyed(void* context) {
   Disassociate(context);
 
   // For unit tests, we also remove the factory function both so we don't
@@ -117,17 +115,14 @@ void RefcountedKeyedServiceFactory::ContextDestroyed(
   KeyedServiceBaseFactory::ContextDestroyed(context);
 }
 
-void RefcountedKeyedServiceFactory::SetEmptyTestingFactory(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::SetEmptyTestingFactory(void* context) {
   SetTestingFactory(context, TestingFactory());
 }
 
-bool RefcountedKeyedServiceFactory::HasTestingFactory(
-    base::SupportsUserData* context) {
+bool RefcountedKeyedServiceFactory::HasTestingFactory(void* context) {
   return base::ContainsKey(testing_factories_, context);
 }
 
-void RefcountedKeyedServiceFactory::CreateServiceNow(
-    base::SupportsUserData* context) {
-  GetServiceForContext(context, true);
+void RefcountedKeyedServiceFactory::CreateServiceNow(void* context) {
+  GetServiceForContext(context, nullptr /* side_parameter */, true);
 }

@@ -80,7 +80,7 @@ class KEYED_SERVICE_EXPORT BrowserStateDependencyManager
 
 #ifndef NDEBUG
   // DependencyManager:
-  void DumpContextDependencies(base::SupportsUserData* context) const final;
+  void DumpContextDependencies(void* context) const final;
 #endif  // NDEBUG
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateDependencyManager);

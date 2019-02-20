@@ -35,7 +35,7 @@ void DependencyManager::AddEdge(KeyedServiceBaseFactory* depended,
 }
 
 void DependencyManager::RegisterPrefsForServices(
-    base::SupportsUserData* context,
+    void* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   std::vector<DependencyNode*> construction_order;
   if (!dependency_graph_.GetConstructionOrder(&construction_order)) {
@@ -49,7 +49,7 @@ void DependencyManager::RegisterPrefsForServices(
   }
 }
 
-void DependencyManager::CreateContextServices(base::SupportsUserData* context,
+void DependencyManager::CreateContextServices(void* context,
                                               bool is_testing_context) {
   MarkContextLive(context);
 
@@ -74,8 +74,7 @@ void DependencyManager::CreateContextServices(base::SupportsUserData* context,
   }
 }
 
-void DependencyManager::DestroyContextServices(
-    base::SupportsUserData* context) {
+void DependencyManager::DestroyContextServices(void* context) {
   std::vector<DependencyNode*> destruction_order;
   if (!dependency_graph_.GetDestructionOrder(&destruction_order)) {
     NOTREACHED();
@@ -101,8 +100,7 @@ void DependencyManager::DestroyContextServices(
   }
 }
 
-void DependencyManager::AssertContextWasntDestroyed(
-    base::SupportsUserData* context) const {
+void DependencyManager::AssertContextWasntDestroyed(void* context) const {
   if (dead_context_pointers_.find(context) != dead_context_pointers_.end()) {
 #if DCHECK_IS_ON()
     NOTREACHED() << "Attempted to access a context that was ShutDown(). "
@@ -116,7 +114,7 @@ void DependencyManager::AssertContextWasntDestroyed(
   }
 }
 
-void DependencyManager::MarkContextLive(base::SupportsUserData* context) {
+void DependencyManager::MarkContextLive(void* context) {
   dead_context_pointers_.erase(context);
 }
 

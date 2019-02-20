@@ -13,17 +13,13 @@
 
 class DependencyManager;
 
-namespace base {
-class SupportsUserData;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Base class for factories that take a base::SupportsUserData and return some
-// service. Not for direct usage, instead use descendent classes that deal with
-// more specific context objects.
+// Base class for factories that take an opaque pointer and return some service.
+// Not for direct usage, instead use descendent classes that deal with more
+// specific context objects.
 //
 // This object describes general dependency management between factories while
 // direct subclasses react to lifecycle events and implement memory management.
@@ -42,18 +38,17 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
 
   // Runtime assertion to check if |context| is considered stale. Should be used
   // by subclasses when accessing |context|.
-  void AssertContextWasntDestroyed(base::SupportsUserData* context) const;
+  void AssertContextWasntDestroyed(void* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
   // |context| aliasing an instance from a prior construction (i.e., 0xWhatever
   // might be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLive(base::SupportsUserData* context);
+  void MarkContextLive(void* context);
 
   // Finds which context (if any) to use.
-  virtual base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const = 0;
+  virtual void* GetContextToUse(void* context) const = 0;
 
   // By default, instance of a service are created lazily when GetForContext()
   // is called by the subclass. Some services need to be created as soon as the
@@ -76,8 +71,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   //   service with GetForContext() will NOTREACHED() and code should delete/
   //   deref/do other final memory management during this phase. The base class
   //   method *must* be called as the last thing.
-  virtual void ContextShutdown(base::SupportsUserData* context) = 0;
-  virtual void ContextDestroyed(base::SupportsUserData* context);
+  virtual void ContextShutdown(void* context) = 0;
+  virtual void ContextDestroyed(void* context);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -94,13 +89,13 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
 
   // Used by DependencyManager to disable creation of the service when the
   // method ServiceIsNULLWhileTesting() returns true.
-  virtual void SetEmptyTestingFactory(base::SupportsUserData* context) = 0;
+  virtual void SetEmptyTestingFactory(void* context) = 0;
 
   // Returns true if a testing factory function has been set for |context|.
-  virtual bool HasTestingFactory(base::SupportsUserData* context) = 0;
+  virtual bool HasTestingFactory(void* context) = 0;
 
   // Create the service associated with |context|.
-  virtual void CreateServiceNow(base::SupportsUserData* context) = 0;
+  virtual void CreateServiceNow(void* context) = 0;
 
   // A static string passed in to the constructor. Should be unique across all
   // services.

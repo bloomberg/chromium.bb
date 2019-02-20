@@ -4,6 +4,8 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -18,8 +20,7 @@ void BrowserContextKeyedServiceFactory::SetTestingFactory(
   KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
     wrapped_factory = base::BindRepeating(
-        [](const TestingFactory& testing_factory,
-           base::SupportsUserData* context) {
+        [](const TestingFactory& testing_factory, void* context) {
           return testing_factory.Run(
               static_cast<content::BrowserContext*>(context));
         },
@@ -33,13 +34,13 @@ KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return KeyedServiceFactory::SetTestingFactoryAndUse(
-      context, base::BindRepeating(
-                   [](const TestingFactory& testing_factory,
-                      base::SupportsUserData* context) {
-                     return testing_factory.Run(
-                         static_cast<content::BrowserContext*>(context));
-                   },
-                   std::move(testing_factory)));
+      context, nullptr /* side_parameter */,
+      base::BindRepeating(
+          [](const TestingFactory& testing_factory, void* context) {
+            return testing_factory.Run(
+                static_cast<content::BrowserContext*>(context));
+          },
+          std::move(testing_factory)));
 }
 
 BrowserContextKeyedServiceFactory::BrowserContextKeyedServiceFactory(
@@ -54,7 +55,8 @@ BrowserContextKeyedServiceFactory::~BrowserContextKeyedServiceFactory() {
 KeyedService* BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
     content::BrowserContext* context,
     bool create) {
-  return KeyedServiceFactory::GetServiceForContext(context, create);
+  return KeyedServiceFactory::GetServiceForContext(
+      context, nullptr /* side_parameter */, create);
 }
 
 content::BrowserContext*
@@ -91,20 +93,19 @@ void BrowserContextKeyedServiceFactory::BrowserContextDestroyed(
 
 std::unique_ptr<KeyedService>
 BrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
-    base::SupportsUserData* context) const {
+    void* context,
+    void* side_parameter) const {
   // TODO(isherman): The wrapped BuildServiceInstanceFor() should return a
   // scoped_ptr as well.
   return base::WrapUnique(
       BuildServiceInstanceFor(static_cast<content::BrowserContext*>(context)));
 }
 
-bool BrowserContextKeyedServiceFactory::IsOffTheRecord(
-    base::SupportsUserData* context) const {
+bool BrowserContextKeyedServiceFactory::IsOffTheRecord(void* context) const {
   return static_cast<content::BrowserContext*>(context)->IsOffTheRecord();
 }
 
-base::SupportsUserData* BrowserContextKeyedServiceFactory::GetContextToUse(
-    base::SupportsUserData* context) const {
+void* BrowserContextKeyedServiceFactory::GetContextToUse(void* context) const {
   AssertContextWasntDestroyed(context);
   return GetBrowserContextToUse(static_cast<content::BrowserContext*>(context));
 }
@@ -113,17 +114,20 @@ bool BrowserContextKeyedServiceFactory::ServiceIsCreatedWithContext() const {
   return ServiceIsCreatedWithBrowserContext();
 }
 
-void BrowserContextKeyedServiceFactory::ContextShutdown(
-    base::SupportsUserData* context) {
+void BrowserContextKeyedServiceFactory::ContextShutdown(void* context) {
   BrowserContextShutdown(static_cast<content::BrowserContext*>(context));
 }
 
-void BrowserContextKeyedServiceFactory::ContextDestroyed(
-    base::SupportsUserData* context) {
+void BrowserContextKeyedServiceFactory::ContextDestroyed(void* context) {
   BrowserContextDestroyed(static_cast<content::BrowserContext*>(context));
 }
 
 void BrowserContextKeyedServiceFactory::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
+}
+
+void BrowserContextKeyedServiceFactory::CreateServiceNow(void* context) {
+  KeyedServiceFactory::GetServiceForContext(context,
+                                            nullptr /* side_parameter */, true);
 }

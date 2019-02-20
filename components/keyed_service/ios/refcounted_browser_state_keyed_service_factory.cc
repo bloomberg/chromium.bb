@@ -16,8 +16,7 @@ void RefcountedBrowserStateKeyedServiceFactory::SetTestingFactory(
   RefcountedKeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
     wrapped_factory = base::BindRepeating(
-        [](const TestingFactory& testing_factory,
-           base::SupportsUserData* context) {
+        [](const TestingFactory& testing_factory, void* context) {
           return testing_factory.Run(static_cast<web::BrowserState*>(context));
         },
         std::move(testing_factory));
@@ -32,13 +31,13 @@ RefcountedBrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-      context, base::BindRepeating(
-                   [](const TestingFactory& testing_factory,
-                      base::SupportsUserData* context) {
-                     return testing_factory.Run(
-                         static_cast<web::BrowserState*>(context));
-                   },
-                   std::move(testing_factory)));
+      context, nullptr /* side_parameter*/,
+      base::BindRepeating(
+          [](const TestingFactory& testing_factory, void* context) {
+            return testing_factory.Run(
+                static_cast<web::BrowserState*>(context));
+          },
+          std::move(testing_factory)));
 }
 
 RefcountedBrowserStateKeyedServiceFactory::
@@ -56,7 +55,8 @@ scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::GetServiceForBrowserState(
     web::BrowserState* context,
     bool create) {
-  return RefcountedKeyedServiceFactory::GetServiceForContext(context, create);
+  return RefcountedKeyedServiceFactory::GetServiceForContext(
+      context, nullptr /* side_parameter*/, create);
 }
 
 web::BrowserState*
@@ -94,18 +94,18 @@ void RefcountedBrowserStateKeyedServiceFactory::BrowserStateDestroyed(
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::BuildServiceInstanceFor(
-    base::SupportsUserData* context) const {
+    void* context,
+    void* side_parameter) const {
   return BuildServiceInstanceFor(static_cast<web::BrowserState*>(context));
 }
 
 bool RefcountedBrowserStateKeyedServiceFactory::IsOffTheRecord(
-    base::SupportsUserData* context) const {
+    void* context) const {
   return static_cast<web::BrowserState*>(context)->IsOffTheRecord();
 }
 
-base::SupportsUserData*
-RefcountedBrowserStateKeyedServiceFactory::GetContextToUse(
-    base::SupportsUserData* context) const {
+void* RefcountedBrowserStateKeyedServiceFactory::GetContextToUse(
+    void* context) const {
   AssertContextWasntDestroyed(context);
   return GetBrowserStateToUse(static_cast<web::BrowserState*>(context));
 }
@@ -115,13 +115,12 @@ bool RefcountedBrowserStateKeyedServiceFactory::ServiceIsCreatedWithContext()
   return ServiceIsCreatedWithBrowserState();
 }
 
-void RefcountedBrowserStateKeyedServiceFactory::ContextShutdown(
-    base::SupportsUserData* context) {
+void RefcountedBrowserStateKeyedServiceFactory::ContextShutdown(void* context) {
   BrowserStateShutdown(static_cast<web::BrowserState*>(context));
 }
 
 void RefcountedBrowserStateKeyedServiceFactory::ContextDestroyed(
-    base::SupportsUserData* context) {
+    void* context) {
   BrowserStateDestroyed(static_cast<web::BrowserState*>(context));
 }
 

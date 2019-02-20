@@ -122,15 +122,15 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserStateKeyedServiceFactory
 
   // RefcountedKeyedServiceFactory:
   scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
-      base::SupportsUserData* context) const final;
-  bool IsOffTheRecord(base::SupportsUserData* context) const final;
+      void* context,
+      void* side_parameter) const final;
+  bool IsOffTheRecord(void* context) const final;
 
   // KeyedServiceBaseFactory:
-  base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const final;
+  void* GetContextToUse(void* context) const final;
   bool ServiceIsCreatedWithContext() const final;
-  void ContextShutdown(base::SupportsUserData* context) final;
-  void ContextDestroyed(base::SupportsUserData* context) final;
+  void ContextShutdown(void* context) final;
+  void ContextDestroyed(void* context) final;
   void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
 
   DISALLOW_COPY_AND_ASSIGN(RefcountedBrowserStateKeyedServiceFactory);
