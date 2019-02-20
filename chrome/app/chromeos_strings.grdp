@@ -3369,6 +3369,9 @@
   <message name="IDS_CROSTINI_INSTALLER_INSTALLING" desc="Text shown in the Crostini installer dialog while  Linux is installing.">
     Installing Linux...
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_CANCELING" desc="Text shown in the Crostini installer dialog when the install is canceled.">
+    Canceling...
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
     Error installing Linux...
   </message>

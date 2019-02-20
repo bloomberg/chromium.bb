@@ -72,6 +72,7 @@ class CrostiniInstallerView
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
   bool Accept() override;
