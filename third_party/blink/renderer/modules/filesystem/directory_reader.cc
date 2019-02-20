@@ -133,8 +133,8 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
   error_callback_ = ToV8PersistentCallbackInterface(error_callback);
 }
 
-void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
-  entries_.AppendVector(entries);
+void DirectoryReader::AddEntries(const EntryHeapVector& entries_to_add) {
+  entries_.AppendVector(entries_to_add);
   error_callback_ = nullptr;
   if (auto* entries_callback = entries_callback_.Release()) {
     EntryHeapVector entries;
