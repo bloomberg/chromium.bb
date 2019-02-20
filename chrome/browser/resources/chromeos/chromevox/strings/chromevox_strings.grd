@@ -3025,6 +3025,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_END">
         Strike through end
       </message>
+      <message desc="Spoken to describe bolded text." name="IDS_CHROMEVOX_BOLD">
+        Bold
+      </message>
+      <message desc="Spoken to describe italicized text." name="IDS_CHROMEVOX_ITALIC">
+        Italic
+      </message>
+      <message desc="Spoken to describe underlined text." name="IDS_CHROMEVOX_UNDERLINE">
+        Underline
+      </message>
+      <message desc="Spoken to describe line-through text." name="IDS_CHROMEVOX_LINETHROUGH">
+        Line through
+      </message>
       <message desc="Spoken when a user navigates to the beginning of a link's text." name="IDS_CHROMEVOX_LINK_START">
         Link start
       </message>
@@ -3212,6 +3224,439 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="The text label for ChromeVox language switching checkbox."
         name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
         Automatically detect and switch ChromeVox language.
+      </message>
+
+      <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
+        Text formatting.
+        <ph name="font_size_string">$1</ph>
+        <ph name="color_string">$2</ph>
+        <ph name="bold_string">$3</ph>
+        <ph name="italic_string">$4</ph>
+        <ph name="underline_string">$5</ph>
+        <ph name="line_through_string">$6</ph>
+        <ph name="font_family_string">$7</ph>
+      </message>
+
+      <!-- Colors -->
+      <message desc="Spoken to describe color and opacity of text" name="IDS_CHROMEVOX_COLOR_DESCRIPTION">
+        <ph name="color">$1</ph>, <ph name="opacity_percentage">$2</ph>% opacity.
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLACK">
+        Black
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GREEN">
+        Dark Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREEN">
+        Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PURPLE">
+        Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GOLDEN_ROD">
+        Dark Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LEMON_CHIFFON">
+        Lemon Chiffon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SIENNA">
+        Sienna
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORANGE">
+        Orange
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SADDLE_BROWN">
+        Saddle Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CYAN">
+        Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREEN_YELLOW">
+        Green Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CHOCOLATE">
+        Chocolate
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MAROON">
+        Maroon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GOLDEN_ROD">
+        Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FOREST_GREEN">
+        Forest Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLIVE_DRAB">
+        Olive Drab
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_IVORY">
+        Ivory
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BEIGE">
+        Beige
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BROWN">
+        Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_YELLOW_GREEN">
+        Yellow Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORANGE_RED">
+        Orange Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_OLIVE_GREEN">
+        Dark Olive Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIME_GREEN">
+        Lime Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIME">
+        Lime
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_GOLDEN_ROD">
+        Pale Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_HOT_PINK">
+        Hot Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CRIMSON">
+        Crimson
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_POWDER_BLUE">
+        Powder Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLIVE">
+        Olive
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_YELLOW">
+        Light Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LINEN">
+        Linen
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_BLUE">
+        Dark Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GHOST_WHITE">
+        Ghost White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TOMATO">
+        Tomato
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_KHAKI">
+        Khaki
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SLATE_GREY">
+        Dark Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORAL">
+        Coral
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MINT_CREAM">
+        Mint Cream
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TEAL">
+        Teal
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_MAGENTA">
+        Dark Magenta
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SALMON">
+        Light Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SEA_GREEN">
+        Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_RED">
+        Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ROSY_BROWN">
+        Rosy Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_INDIAN_RED">
+        Indian Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GREY">
+        Light Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SANDY_BROWN">
+        Sandy Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GREEN">
+        Light Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_BLUE">
+        Light Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_ORANGE">
+        Dark Orange
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DIM_GREY">
+        Dim Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLANCHED_ALMOND">
+        Blanched Almond
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_KHAKI">
+        Dark Khaki
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MAGENTA">
+        Magenta
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MIDNIGHT_BLUE">
+        Midnight Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SEA_GREEN">
+        Medium Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SALMON">
+        Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DEEP_PINK">
+        Deep Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SALMON">
+        Dark Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PERU">
+        Peru
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SPRING_GREEN">
+        Spring Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_NAVY">
+        Navy
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_CORAL">
+        Light Coral
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_INDIGO">
+        Indigo
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHITE">
+        White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_VIOLET_RED">
+        Medium Violet Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BURLY_WOOD">
+        Burly Wood
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAVENDER">
+        Lavender
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SLATE_BLUE">
+        Dark Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TAN">
+        Tan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SEA_GREEN">
+        Dark Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SLATE_GREY">
+        Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_VIOLET_RED">
+        Pale Violet Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORNSILK">
+        Cornsilk
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_TURQUOISE">
+        Pale Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SLATE_GREY">
+        Light Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_GREEN">
+        Pale Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_REBECCA_PURPLE">
+        Rebecca Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SPRING_GREEN">
+        Medium Spring Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PINK">
+        Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CADET_BLUE">
+        Cadet Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREY">
+        Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_VIOLET">
+        Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GREY">
+        Dark Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SEA_GREEN">
+        Light Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_CYAN">
+        Dark Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_NAVAJO_WHITE">
+        Navajo White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ALICE_BLUE">
+        Alice Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FLORAL_WHITE">
+        Floral White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MISTY_ROSE">
+        Misty Rose
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHEAT">
+        Wheat
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_STEEL_BLUE">
+        Steel Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MOCCASIN">
+        Moccasin
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PEACH_PUFF">
+        Peach Puff
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GOLD">
+        Gold
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAVENDER_BLUSH">
+        Lavender Blush
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SILVER">
+        Silver
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_PINK">
+        Light Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_AZURE">
+        Azure
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BISQUE">
+        Bisque
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_ORCHID">
+        Dark Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLD_LACE">
+        Old Lace
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_TURQUOISE">
+        Medium Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SLATE_BLUE">
+        Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_BLUE">
+        Medium Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TURQUOISE">
+        Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_TURQUOISE">
+        Dark Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GOLDEN_ROD_YELLOW">
+        Light Golden Rod Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_VIOLET">
+        Dark Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_AQUAMARINE">
+        Aquamarine
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PAPAYA_WHIP">
+        Papaya Whip
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORCHID">
+        Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ANTIQUE_WHITE">
+        Antique White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_THISTLE">
+        Thistle
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_PURPLE">
+        Medium Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GAINSBORO">
+        Gainsboro
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PLUM">
+        Plum
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_STEEL_BLUE">
+        Light Steel Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_RED">
+        Dark Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SEA_SHELL">
+        Sea Shell
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ROYAL_BLUE">
+        Royal Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLUE_VIOLET">
+        Blue Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAWN_GREEN">
+        Lawn Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_CYAN">
+        Light Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FIRE_BRICK">
+        Fire Brick
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SKY_BLUE">
+        Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORNFLOWER_BLUE">
+        Cornflower Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SLATE_BLUE">
+        Medium Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLUE">
+        Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_HONEYDEW">
+        HoneyDew
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_ORCHID">
+        Medium Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHITE_SMOKE">
+        White Smoke
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_YELLOW">
+        Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SKY_BLUE">
+        Light Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DEEP_SKY_BLUE">
+        Deep Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SNOW">
+        Snow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_AQUA_MARINE">
+        Medium Aqua Marine
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CHARTREUSE">
+        Chartreuse
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DODGER_BLUE">
+        Dodger Blue
       </message>
     </messages>
   </release>
