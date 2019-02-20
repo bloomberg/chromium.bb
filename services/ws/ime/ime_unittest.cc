@@ -50,7 +50,7 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override {
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, false);
   }
   void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
   void SetEditableSelectionRange(const gfx::Range& range) override {}

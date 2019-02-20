@@ -20,9 +20,10 @@ namespace {
 // event was handled.
 void OnKeyEventProcessed(
     ws::mojom::TextInputClient::DispatchKeyEventPostIMECallback callback,
-    bool handled) {
+    bool handled,
+    bool stopped_propagation) {
   if (callback)
-    std::move(callback).Run(handled);
+    std::move(callback).Run(handled, stopped_propagation);
 }
 
 }  // namespace
@@ -82,8 +83,10 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
     std::unique_ptr<ui::Event> event,
     DispatchKeyEventPostIMECallback callback) {
   if (!delegate_) {
-    if (callback)
-      std::move(callback).Run(false);
+    if (callback) {
+      std::move(callback).Run(/* handled */ false,
+                              /* stopped_propagation */ false);
+    }
     return;
   }
   ui::KeyEvent* key_event = event->AsKeyEvent();
@@ -100,8 +103,8 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
     return;  // Event is being processed async.
 
   // The delegate finished processing the event. Run the ack now.
-  const bool handled = key_event->handled();
-  key_event->WillHandleAsync().Run(handled);
+  key_event->WillHandleAsync().Run(key_event->handled(),
+                                   key_event->stopped_propagation());
 }
 
 void TextInputClientImpl::EnsureCaretNotInRect(const gfx::Rect& rect) {

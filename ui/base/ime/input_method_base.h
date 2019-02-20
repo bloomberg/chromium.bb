@@ -71,6 +71,9 @@ class UI_BASE_IME_EXPORT InputMethodBase
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
  protected:
+  // See InputMethodDelegate for details on this.
+  using ResultCallback = base::OnceCallback<void(bool, bool)>;
+
   explicit InputMethodBase(internal::InputMethodDelegate* delegate = nullptr);
   InputMethodBase(internal::InputMethodDelegate* delegate,
                   std::unique_ptr<InputMethodKeyboardController> controller);
@@ -106,9 +109,11 @@ class UI_BASE_IME_EXPORT InputMethodBase
   // input type is not TEXT_INPUT_TYPE_NONE.
   void OnInputMethodChanged() const;
 
+  // See InputMethodDelegate::DispatchKeyEventPostIME(() for details on
+  // callback.
   virtual ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) const WARN_UNUSED_RESULT;
+      ResultCallback result_callback) const WARN_UNUSED_RESULT;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

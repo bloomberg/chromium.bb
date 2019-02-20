@@ -1318,13 +1318,13 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
 
 ui::EventDispatchDetails BridgedNativeWidgetHostImpl::DispatchKeyEventPostIME(
     ui::KeyEvent* key,
-    base::OnceCallback<void(bool)> ack_callback) {
+    DispatchKeyEventPostIMECallback callback) {
   DCHECK(focus_manager_);
   if (!focus_manager_->OnKeyEvent(*key))
     key->StopPropagation();
   else
     native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  CallDispatchKeyEventPostIMEAck(key, std::move(ack_callback));
+  RunDispatchKeyEventPostIMECallback(key, std::move(callback));
   return ui::EventDispatchDetails();
 }
 

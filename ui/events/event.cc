@@ -1149,7 +1149,7 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() & ~mask);
 }
 
-base::OnceCallback<void(bool)> KeyEvent::WillHandleAsync() {
+base::OnceCallback<void(bool, bool)> KeyEvent::WillHandleAsync() {
   if (cancelable())
     SetHandled();
   return std::move(async_callback_);

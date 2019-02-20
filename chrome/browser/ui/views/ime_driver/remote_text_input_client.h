@@ -27,7 +27,8 @@ class RemoteTextInputClient : public ui::TextInputClient,
 
  private:
   // See |pending_callbacks_| for details.
-  void OnDispatchKeyEventPostIMECompleted(bool completed);
+  void OnDispatchKeyEventPostIMECompleted(bool handled,
+                                          bool stopped_propagation);
 
   // ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -65,11 +66,11 @@ class RemoteTextInputClient : public ui::TextInputClient,
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) override;
+      DispatchKeyEventPostIMECallback callback) override;
 
   // Removes the callback at the front of |pending_callbacks_| and runs it with
-  // |completed| as the argument.
-  void RunNextPendingCallback(bool completed);
+  // |handled| and |stopped_propagation| as arguments.
+  void RunNextPendingCallback(bool handled, bool stopped_propagation);
 
   ws::mojom::TextInputClientPtr remote_client_;
   ws::mojom::SessionDetailsPtr details_;
@@ -80,7 +81,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   // This is done to ensure if we are destroyed all the callbacks are run.
   // This is necessary as the callbacks may have originated from a remote
   // client.
-  base::queue<base::OnceCallback<void(bool)>> pending_callbacks_;
+  base::queue<DispatchKeyEventPostIMECallback> pending_callbacks_;
 
   base::WeakPtrFactory<RemoteTextInputClient> weak_ptr_factory_{this};
 

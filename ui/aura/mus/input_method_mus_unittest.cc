@@ -31,9 +31,9 @@ class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key,
-      base::OnceCallback<void(bool)> ack_callback) override {
+      DispatchKeyEventPostIMECallback callback) override {
     was_dispatch_key_event_post_ime_called_ = true;
-    CallDispatchKeyEventPostIMEAck(key, std::move(ack_callback));
+    RunDispatchKeyEventPostIMECallback(key, std::move(callback));
     return ui::EventDispatchDetails();
   }
 
@@ -279,10 +279,10 @@ class TestInputMethodDelegate2 : public ui::internal::InputMethodDelegate {
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key,
-      base::OnceCallback<void(bool)> ack_callback) override {
+      DispatchKeyEventPostIMECallback callback) override {
     was_dispatch_key_event_post_ime_called_ = true;
     input_method_mus_->SetFocusedTextInputClient(text_input_client_);
-    CallDispatchKeyEventPostIMEAck(key, std::move(ack_callback));
+    RunDispatchKeyEventPostIMECallback(key, std::move(callback));
     return ui::EventDispatchDetails();
   }
 

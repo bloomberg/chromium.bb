@@ -178,7 +178,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) final;
+      DispatchKeyEventPostIMECallback callback) final;
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;

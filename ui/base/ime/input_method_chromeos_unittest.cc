@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
-#include <cstring>
+#include <queue>
+#include <string>
 
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -69,13 +71,16 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   };
 
   // Overridden from InputMethodChromeOS:
-  ui::EventDispatchDetails ProcessKeyEventPostIME(ui::KeyEvent* key_event,
-                                                  AckCallback ack_callback,
-                                                  bool skip_process_filtered,
-                                                  bool handled) override {
+  ui::EventDispatchDetails ProcessKeyEventPostIME(
+      ui::KeyEvent* key_event,
+      ResultCallback result_callback,
+      bool skip_process_filtered,
+      bool handled,
+      bool stopped_propagation) override {
     ui::EventDispatchDetails details =
         InputMethodChromeOS::ProcessKeyEventPostIME(
-            key_event, std::move(ack_callback), skip_process_filtered, handled);
+            key_event, std::move(result_callback), skip_process_filtered,
+            handled, stopped_propagation);
     if (!skip_process_filtered) {
       process_key_event_post_ime_args_.event = *key_event;
       process_key_event_post_ime_args_.handled = handled;
@@ -196,6 +201,29 @@ class NiceMockIMEEngine : public chromeos::MockIMEEngineHandler {
                void(const std::string&, uint32_t, uint32_t, uint32_t));
 };
 
+class CachingInputMethodDelegate : public internal::InputMethodDelegate {
+ public:
+  CachingInputMethodDelegate() = default;
+  ~CachingInputMethodDelegate() override = default;
+
+  std::queue<DispatchKeyEventPostIMECallback>& callbacks() {
+    return callbacks_;
+  }
+
+  // internal::InputMethodDelegate:
+  EventDispatchDetails DispatchKeyEventPostIME(
+      KeyEvent* key_event,
+      DispatchKeyEventPostIMECallback callback) override {
+    callbacks_.emplace(std::move(callback));
+    return EventDispatchDetails();
+  }
+
+ private:
+  std::queue<DispatchKeyEventPostIMECallback> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingInputMethodDelegate);
+};
+
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
                                 public testing::Test,
                                 public DummyTextInputClient {
@@ -221,7 +249,13 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     IMEBridge::Get()->SetCandidateWindowHandler(
         mock_ime_candidate_window_handler_.get());
 
-    ime_.reset(new TestableInputMethodChromeOS(this));
+    internal::InputMethodDelegate* ime_delegate = this;
+    if (ShouldCreateCachingInputMethodDelegate()) {
+      caching_input_method_delegate_ =
+          std::make_unique<CachingInputMethodDelegate>();
+      ime_delegate = caching_input_method_delegate_.get();
+    }
+    ime_ = std::make_unique<TestableInputMethodChromeOS>(ime_delegate);
     ime_->SetFocusedTextInputClient(this);
 
     // InputMethodManager owns and delete it in InputMethodManager::Shutdown().
@@ -247,11 +281,11 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) override {
+      DispatchKeyEventPostIMECallback callback) override {
     dispatched_key_event_ = *event;
     if (stop_propagation_post_ime_)
       event->StopPropagation();
-    CallDispatchKeyEventPostIMEAck(event, std::move(ack_callback));
+    RunDispatchKeyEventPostIMECallback(event, std::move(callback));
     return ui::EventDispatchDetails();
   }
 
@@ -318,7 +352,12 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     caret_bounds_ = gfx::Rect();
   }
 
+ protected:
+  virtual bool ShouldCreateCachingInputMethodDelegate() { return false; }
+
   std::unique_ptr<TestableInputMethodChromeOS> ime_;
+
+  std::unique_ptr<CachingInputMethodDelegate> caching_input_method_delegate_;
 
   // Copy of the dispatched key event.
   ui::KeyEvent dispatched_key_event_;
@@ -1019,8 +1058,9 @@ TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
                       0,
                       DomKey::DeadKeyFromCombiningCharacter('^'),
                       EventTimeForNow());
-  ime_->ProcessKeyEventPostIME(&eventA, InputMethodChromeOS::AckCallback(),
-                               false, true);
+  ime_->ProcessKeyEventPostIME(
+      &eventA, InputMethodDelegate::DispatchKeyEventPostIMECallback(), false,
+      true, true);
 
   const ui::KeyEvent& key_event = dispatched_key_event_;
 
@@ -1052,6 +1092,100 @@ TEST_F(InputMethodChromeOSKeyEventTest, JP106KeyTest) {
   ime_->DispatchKeyEvent(&eventDbeDbc);
   EXPECT_TRUE(input_method_manager_->state()->is_jp_kbd());
   EXPECT_FALSE(input_method_manager_->state()->is_jp_ime());
+}
+
+class InputMethodChromeOSAsyncTest : public InputMethodChromeOSTest {
+ public:
+  InputMethodChromeOSAsyncTest() = default;
+  ~InputMethodChromeOSAsyncTest() override = default;
+
+ protected:
+  // InputMethodChromeOSTest:
+  bool ShouldCreateCachingInputMethodDelegate() override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSAsyncTest);
+};
+
+TEST_F(InputMethodChromeOSAsyncTest, StopPropagation) {
+  KeyEvent event(ET_KEY_PRESSED, VKEY_A, EF_NONE);
+
+  // As CachingInputMethodDelegate doesn't immediately dispatch, the callback
+  // should not be run immediately.
+  bool async_callback_run = false;
+  bool async_callback_handled_result = false;
+  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
+    async_callback_handled_result = handled;
+    async_callback_run = true;
+  }));
+  EXPECT_FALSE(async_callback_run);
+  ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
+
+  // Run the queued callback in the delegate, which should then notify the
+  // callback supplied to DispatchKeyEvent().
+  auto callback =
+      std::move(caching_input_method_delegate_->callbacks().front());
+  caching_input_method_delegate_->callbacks().pop();
+  std::move(callback).Run(/* handled */ true, /* stopped_propagation */ true);
+  EXPECT_TRUE(async_callback_run);
+  EXPECT_TRUE(async_callback_handled_result);
+
+  // Because |stopped_propagation| was false, no character should be inserted.
+  EXPECT_FALSE(inserted_char_);
+}
+
+TEST_F(InputMethodChromeOSAsyncTest, DidNotStopPropagation) {
+  KeyEvent event(ET_KEY_PRESSED, VKEY_A, EF_NONE);
+
+  // As CachingInputMethodDelegate doesn't immediately dispatch, the callback
+  // should not be run immediately.
+  bool async_callback_run = false;
+  bool async_callback_handled_result = false;
+  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
+    async_callback_handled_result = handled;
+    async_callback_run = true;
+  }));
+  EXPECT_FALSE(async_callback_run);
+  ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
+
+  // Run the queued callback in the delegate, which should then notify the
+  // callback supplied to DispatchKeyEvent().
+  auto callback =
+      std::move(caching_input_method_delegate_->callbacks().front());
+  caching_input_method_delegate_->callbacks().pop();
+  std::move(callback).Run(/* handled */ true, /* stopped_propagation */ false);
+  EXPECT_TRUE(async_callback_run);
+  EXPECT_TRUE(async_callback_handled_result);
+
+  // Because |stopped_propagation| was true, a character should be inserted.
+  EXPECT_TRUE(inserted_char_);
+}
+
+TEST_F(InputMethodChromeOSAsyncTest, UnhandledAndDidNotStopPropatation) {
+  KeyEvent event(ET_KEY_PRESSED, VKEY_A, EF_NONE);
+
+  // As CachingInputMethodDelegate doesn't immediately dispatch, the callback
+  // should not be run immediately.
+  bool async_callback_run = false;
+  bool async_callback_handled_result = false;
+  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
+    async_callback_handled_result = handled;
+    async_callback_run = true;
+  }));
+  EXPECT_FALSE(async_callback_run);
+  ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
+
+  // Run the queued callback in the delegate, which should then notify the
+  // callback supplied to DispatchKeyEvent().
+  auto callback =
+      std::move(caching_input_method_delegate_->callbacks().front());
+  caching_input_method_delegate_->callbacks().pop();
+  std::move(callback).Run(/* handled */ false, /* stopped_propagation */ false);
+  EXPECT_TRUE(async_callback_run);
+  EXPECT_FALSE(async_callback_handled_result);
+
+  // Because |stopped_propagation| was true, a character should be inserted.
+  EXPECT_TRUE(inserted_char_);
 }
 
 }  // namespace ui

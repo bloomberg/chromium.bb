@@ -346,8 +346,11 @@ class RenderWidgetHostImpl::KeyEventResultTracker {
   }
 
   ~KeyEventResultTracker() {
-    if (is_async_ && async_callback_)
-      std::move(async_callback_).Run(false);
+    if (is_async_ && async_callback_) {
+      std::move(async_callback_)
+          .Run(/* handled */ false,
+               /* stopped_propagation */ false);
+    }
   }
 
   base::WeakPtr<KeyEventResultTracker> GetWeakPtr() {
@@ -371,10 +374,13 @@ class RenderWidgetHostImpl::KeyEventResultTracker {
   // Called when processing is complete. This may never be called, in which case
   // the destructor is responsible for updating the callback from the event.
   void OnEventProcessingDone(bool handled) {
-    if (is_async_ && async_callback_)
-      std::move(async_callback_).Run(handled);
-    else if (!is_async_ && handled)
+    if (is_async_ && async_callback_) {
+      // This supplies false for |stopped_propagation| so that InsertChar() gets
+      // called. Content never calls StopPropagation().
+      std::move(async_callback_).Run(handled, /* stopped_propagation */ false);
+    } else if (!is_async_ && handled) {
       key_event_->SetHandled();
+    }
   }
 
  private:
@@ -386,7 +392,7 @@ class RenderWidgetHostImpl::KeyEventResultTracker {
 
   // Callback from the event. This is obtained from |key_event_| if the event is
   // handled async.
-  base::OnceCallback<void(bool)> async_callback_;
+  base::OnceCallback<void(bool, bool)> async_callback_;
 
   base::WeakPtrFactory<KeyEventResultTracker> weak_factory_{this};
 

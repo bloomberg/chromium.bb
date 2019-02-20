@@ -41,16 +41,17 @@ class TestInputMethod : public mojom::InputMethod {
     // Using base::Unretained is safe because |client_| is owned by this class.
     client_->DispatchKeyEventPostIME(
         std::move(key_event),
-        base::BindOnce(&TestInputMethod::PostProcssKeyEvent,
+        base::BindOnce(&TestInputMethod::PostProcessKeyEvent,
                        base::Unretained(this), std::move(cloned_event),
                        std::move(callback)));
   }
   void CancelComposition() override { NOTIMPLEMENTED_LOG_ONCE(); }
   void ShowVirtualKeyboardIfEnabled() override { NOTIMPLEMENTED_LOG_ONCE(); }
 
-  void PostProcssKeyEvent(std::unique_ptr<ui::Event> key_event,
-                          ProcessKeyEventCallback callback,
-                          bool stopped_propagation) {
+  void PostProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
+                           ProcessKeyEventCallback callback,
+                           bool handled,
+                           bool stopped_propagation) {
     // Ignore any events with modifiers set. This is useful for running things
     // like ash_shell_with_content and having accelerators (such as control-n)
     // work.

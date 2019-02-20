@@ -163,12 +163,14 @@ void InputMethodBase::OnInputMethodChanged() const {
 
 ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
-    base::OnceCallback<void(bool)> ack_callback) const {
-  if (delegate_)
-    return delegate_->DispatchKeyEventPostIME(event, std::move(ack_callback));
+    ResultCallback result_callback) const {
+  if (delegate_) {
+    return delegate_->DispatchKeyEventPostIME(event,
+                                              std::move(result_callback));
+  }
 
-  if (ack_callback)
-    std::move(ack_callback).Run(false);
+  if (result_callback)
+    std::move(result_callback).Run(false, false);
   return EventDispatchDetails();
 }
 

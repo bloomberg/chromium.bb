@@ -235,8 +235,13 @@ interface TextInputClient {
   // for more details.
   InsertChar(ui.mojom.Event event);
 
-  // Dispatch a key event skipping IME. Returns true if event was consumed.
-  DispatchKeyEventPostIME(ui.mojom.Event event) => (bool stopped_propagation);
+  // Dispatch a key event after minimal processing by the IME. The results of
+  // the callback indicated whether the event was handled, and whether any
+  // further processing should be performed. That is, if |stopped_propagation|
+  // is true, IME does no further processing.
+  DispatchKeyEventPostIME(ui.mojom.Event event) => (
+      bool handled,
+      bool stopped_propagation);
 
   // Ensure the caret is not in |rect|.  |rect| is in dip screen coordinates
   // and may extend beyond the bounds of this TextInputClient.
