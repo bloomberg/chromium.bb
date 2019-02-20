@@ -107,8 +107,6 @@ Still reading?
     <ignore regexp="tools/android/audio_focus_grabber/java/res/drawable-xxxhdpi/notification_icon.png"/>
   </issue>
   <issue id="IconDensities">
-    <!-- The large assets below only include a few densities to reduce APK size. -->
-    <ignore regexp="data_reduction_illustration.png"/>
     <!-- This is intentional to save on WebAPKs' size. -->
     <ignore regexp="chrome/android/webapk/shell_apk/res/drawable-*"/>
     <!-- crbug.com/457918 is tracking missing assets -->

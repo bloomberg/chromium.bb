@@ -121,7 +121,7 @@ public class PromoDialogTest {
     public void testBasic_Visibility() throws Exception {
         // Create a full dialog.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.vectorDrawableResource = R.drawable.data_reduction_illustration;
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary;
         dialogParams.primaryButtonStringResource = R.string.ok;
@@ -150,7 +150,7 @@ public class PromoDialogTest {
         View footer = promoDialogLayout.findViewById(R.id.footer);
 
         // Any controls not specified by the DialogParams won't exist.
-        checkControlVisibility(illustration, dialogParams.drawableResource != 0);
+        checkControlVisibility(illustration, dialogParams.vectorDrawableResource != 0);
         checkControlVisibility(header, dialogParams.headerStringResource != 0);
         checkControlVisibility(subheader, dialogParams.subheaderStringResource != 0);
         checkControlVisibility(primary, dialogParams.primaryButtonStringResource != 0);
@@ -171,7 +171,7 @@ public class PromoDialogTest {
     @SmallTest
     public void testBasic_Orientation() throws Exception {
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.vectorDrawableResource = R.drawable.data_reduction_illustration;
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary;
         dialogParams.primaryButtonStringResource = R.string.ok;
@@ -249,7 +249,7 @@ public class PromoDialogTest {
     public void testBasic_HeaderBehavior_WithIllustration() throws Exception {
         // With an illustration, the header View is part of the scrollable content.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.drawableResource = R.drawable.data_reduction_main_menu_chart;
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
 
