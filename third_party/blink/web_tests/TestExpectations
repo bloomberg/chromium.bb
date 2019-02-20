@@ -5985,8 +5985,7 @@ crbug.com/907125 external/wpt/lifecycle/child-display-none.tentative.html [ Skip
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming
 # task to hang.
 crbug.com/927860 [ Win10 ] virtual/user-activation-v2/ [ Skip ]
-crbug.com/927862 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
-crbug.com/927862 [ Linux ] virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
+crbug.com/927862 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
 
 # Recently became flaky on multiple platforms (Linux and Windows primarily)
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
