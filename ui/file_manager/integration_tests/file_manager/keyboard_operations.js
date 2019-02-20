@@ -391,3 +391,38 @@ testcase.keyboardDisableCopyWhenDialogDisplayed = async function() {
   const files = TestEntryInfo.getExpectedRows([ENTRIES.hello]);
   await remoteCall.waitForFiles(appId, files);
 };
+
+/**
+ * Tests Ctrl+N opens a new windows crbug.com/933302.
+ */
+testcase.keyboardOpenNewWindow = async function() {
+  // Open Files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Grab the current open windows.
+  const initialWindows =
+      await remoteCall.callRemoteTestUtil('getWindows', null, []);
+  const initialWindowsCount = Object.keys(initialWindows).length;
+  console.log(JSON.stringify(initialWindows));
+
+  // Send Ctrl+N to open a new window.
+  const key = ['#file-list', 'n', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Wait for the new window to appear.
+  return repeatUntil(async () => {
+    const caller = getCaller();
+    const currentWindows =
+        await remoteCall.callRemoteTestUtil('getWindows', null, []);
+    const currentWindowsIds = Object.keys(currentWindows);
+    if (initialWindowsCount < currentWindowsIds.length) {
+      return true;
+    }
+    return pending(
+        caller,
+        'Waiting for new window to open, current windows: ' +
+            currentWindowsIds);
+  });
+};

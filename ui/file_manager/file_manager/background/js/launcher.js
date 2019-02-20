@@ -5,7 +5,7 @@
 /**
  * @type {!Object}
  */
-const launcher = {};
+var launcher = {};
 
 /**
  * Type of a Files app's instance launch.
