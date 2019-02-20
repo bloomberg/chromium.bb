@@ -238,9 +238,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
-  if (!CanUseNewLayout()) {
+  if (!CanUseNewLayout())
     return RunOldLayout(constraint_space);
-  }
 
   LayoutBlockFlow* block_flow =
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
@@ -898,8 +897,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->GetCachedLayoutResult();
 
-  if (box_->NeedsLayout() || !layout_result ||
-      layout_result->GetConstraintSpaceForCaching() != constraint_space) {
+  // We need to force a layout on the child if the constraint space given will
+  // change the layout.
+  bool needs_force_relayout =
+      layout_result && !MaySkipLayout(*this, *layout_result, constraint_space);
+
+  if (box_->NeedsLayout() || !layout_result || needs_force_relayout) {
     BoxLayoutExtraInput input(*box_);
     input.containing_block_content_inline_size =
         CalculateAvailableInlineSizeForLegacy(*box_, constraint_space);
@@ -926,7 +929,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
     // compared to |LayoutObject::ForceChildLayout|.
     DCHECK(!box_->IsLayoutNGMixin());
-    if (box_->NeedsLayout())
+    if (box_->NeedsLayout() && !needs_force_relayout)
       box_->LayoutIfNeeded();
     else
       box_->ForceChildLayout();
