@@ -113,11 +113,19 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
   base::string16 text_lowercase(base::i18n::ToLower(text));
 
   ACMatchClassification::Style class_of_find_text =
-      text_is_search_query ? ACMatchClassification::NONE
-                           : ACMatchClassification::MATCH;
+      ACMatchClassification::MATCH;
   ACMatchClassification::Style class_of_additional_text =
-      text_is_search_query ? ACMatchClassification::MATCH
-                           : ACMatchClassification::NONE;
+      ACMatchClassification::NONE;
+
+  // For search queries, we give the "additional text" the bolded "match"
+  // classification instead of the user-entered "find text". But if the
+  // "Bold user-text for search suggestions" experiment is on, we bold the
+  // user-entered text, just like on navigation suggestions.
+  if (text_is_search_query &&
+      !base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentBoldUserTextOnSearchSuggestions)) {
+    std::swap(class_of_find_text, class_of_additional_text);
+  }
 
   // For this experiment, we want to color the search query text blue like URLs.
   // Therefore, we add the URL class to the find and additional text.
