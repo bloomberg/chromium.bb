@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "components/update_client/net/network_chromium.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -156,13 +157,13 @@ void NetworkFetcherImpl::OnResponseStartedCallback(
            response_head.content_length);
 }
 
-NetworkFetcherFactory::NetworkFetcherFactory(
+NetworkFetcherChromiumFactory::NetworkFetcherChromiumFactory(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory)
     : shared_url_network_factory_(shared_url_network_factory) {}
 
-NetworkFetcherFactory::~NetworkFetcherFactory() = default;
+NetworkFetcherChromiumFactory::~NetworkFetcherChromiumFactory() = default;
 
-std::unique_ptr<NetworkFetcher> NetworkFetcherFactory::Create() const {
+std::unique_ptr<NetworkFetcher> NetworkFetcherChromiumFactory::Create() const {
   return std::make_unique<NetworkFetcherImpl>(shared_url_network_factory_);
 }
 

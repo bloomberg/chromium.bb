@@ -17,7 +17,6 @@ class SharedURLLoaderFactory;
 
 namespace update_client {
 
-// TODO(sorin): enable the Chromium network factory.
 class NetworkFetcherChromiumFactory : public NetworkFetcherFactory {
  public:
   explicit NetworkFetcherChromiumFactory(

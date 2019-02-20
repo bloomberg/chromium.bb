@@ -10,11 +10,17 @@ include_rules = [
   "+crypto",
   "+libxml",
   "+mojo",
-  "+net",
-  "+services/network/public/cpp",
-  "+services/network/test",
   "+services/service_manager/public",
   "+third_party/libxml",
   "+third_party/re2",
   "+third_party/zlib",
 ]
+
+# Allow the unit tests to depend on the network for testing purposes.
+specific_include_rules = {
+  "(test_configurator|.*_unittest\.(cc|h))" : [
+    "+net",
+    "+services/network/public/cpp",
+    "+services/network/test",
+  ]
+}

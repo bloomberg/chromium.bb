@@ -17,7 +17,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/activity_data_service.h"
-#include "components/update_client/network.h"
+#include "components/update_client/net/network_chromium.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_context.h"
@@ -170,7 +170,7 @@ scoped_refptr<update_client::NetworkFetcherFactory>
 ChromeUpdateClientConfig::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
-        base::MakeRefCounted<update_client::NetworkFetcherFactory>(
+        base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             content::BrowserContext::GetDefaultStoragePartition(context_)
                 ->GetURLLoaderFactoryForBrowserProcess());
   }

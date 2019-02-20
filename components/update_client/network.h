@@ -21,10 +21,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace update_client {
 
 class NetworkFetcher {
@@ -70,19 +66,14 @@ class NetworkFetcher {
 
 class NetworkFetcherFactory : public base::RefCounted<NetworkFetcherFactory> {
  public:
-  explicit NetworkFetcherFactory(scoped_refptr<network::SharedURLLoaderFactory>
-                                     shared_url_network_factory);
-
-  // TODO(sorin): make this class pure virtual. Instead of this
-  // class, instantiate NetworkFetcherChromiumFactory from update_client/net.
-  virtual std::unique_ptr<NetworkFetcher> Create() const;
+  virtual std::unique_ptr<NetworkFetcher> Create() const = 0;
 
  protected:
   friend class base::RefCounted<NetworkFetcherFactory>;
-  virtual ~NetworkFetcherFactory();
+  NetworkFetcherFactory() = default;
+  virtual ~NetworkFetcherFactory() = default;
 
  private:
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory_;
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 
