@@ -121,7 +121,7 @@ void ScreenOrientationControllerImpl::PageVisibilityChanged() {
 
   // The orientation type and angle are tied in a way that if the angle has
   // changed, the type must have changed.
-  unsigned short current_angle =
+  uint16_t current_angle =
       GetPage()->GetChromeClient().GetScreenInfo().orientation_angle;
 
   // FIXME: sendOrientationChangeEvent() currently send an event all the

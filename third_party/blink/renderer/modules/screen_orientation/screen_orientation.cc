@@ -134,7 +134,7 @@ String ScreenOrientation::type() const {
   return OrientationTypeToString(type_);
 }
 
-unsigned short ScreenOrientation::angle() const {
+uint16_t ScreenOrientation::angle() const {
   return angle_;
 }
 
@@ -142,7 +142,7 @@ void ScreenOrientation::SetType(WebScreenOrientationType type) {
   type_ = type;
 }
 
-void ScreenOrientation::SetAngle(unsigned short angle) {
+void ScreenOrientation::SetAngle(uint16_t angle) {
   angle_ = angle;
 }
 

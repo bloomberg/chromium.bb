@@ -37,10 +37,10 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   String type() const;
-  unsigned short angle() const;
+  uint16_t angle() const;
 
   void SetType(WebScreenOrientationType);
-  void SetAngle(unsigned short);
+  void SetAngle(uint16_t);
 
   ScriptPromise lock(ScriptState*, const AtomicString& orientation);
   void unlock();
@@ -56,7 +56,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   ScreenOrientationControllerImpl* Controller();
 
   WebScreenOrientationType type_;
-  unsigned short angle_;
+  uint16_t angle_;
 };
 
 }  // namespace blink
