@@ -69,6 +69,8 @@ class PagePlaceholderTabHelper
 
   base::WeakPtrFactory<PagePlaceholderTabHelper> weak_factory_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PagePlaceholderTabHelper);
 };
 

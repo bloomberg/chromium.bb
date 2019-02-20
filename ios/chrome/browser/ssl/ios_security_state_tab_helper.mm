@@ -61,3 +61,5 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
 
   return state;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(IOSSecurityStateTabHelper)

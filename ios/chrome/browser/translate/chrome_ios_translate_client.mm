@@ -224,3 +224,5 @@ void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   // with nullptr WebState.
   translate_manager_.reset();
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ChromeIOSTranslateClient)

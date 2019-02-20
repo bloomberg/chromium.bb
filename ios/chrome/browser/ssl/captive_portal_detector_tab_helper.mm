@@ -53,3 +53,5 @@ void CaptivePortalDetectorTabHelper::DisplayCaptivePortalLoginPage(
 }
 
 CaptivePortalDetectorTabHelper::~CaptivePortalDetectorTabHelper() = default;
+
+WEB_STATE_USER_DATA_KEY_IMPL(CaptivePortalDetectorTabHelper)

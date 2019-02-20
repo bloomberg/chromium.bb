@@ -56,6 +56,8 @@ class PasswordTabHelper : public web::WebStateObserver,
   password_manager::PasswordGenerationManager* GetPasswordGenerationManager();
 
  private:
+  friend class web::WebStateUserData<PasswordTabHelper>;
+
   explicit PasswordTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver implementation.
@@ -63,6 +65,8 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // The Objective-C password controller instance.
   __strong PasswordController* controller_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PasswordTabHelper);
 };

@@ -31,6 +31,8 @@ class FormSuggestionTabHelper
   id<FormInputSuggestionsProvider> GetAccessoryViewProvider();
 
  private:
+  friend class web::WebStateUserData<FormSuggestionTabHelper>;
+
   FormSuggestionTabHelper(web::WebState* web_state,
                           NSArray<id<FormSuggestionProvider>>* providers);
 
@@ -39,6 +41,8 @@ class FormSuggestionTabHelper
 
   // The Objective-C password controller instance.
   __strong FormSuggestionController* controller_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(FormSuggestionTabHelper);
 };

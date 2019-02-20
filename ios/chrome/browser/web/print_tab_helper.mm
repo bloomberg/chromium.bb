@@ -56,3 +56,5 @@ bool PrintTabHelper::OnPrintCommand(web::WebState* web_state,
   [printer_ printWebState:web_state];
   return true;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(PrintTabHelper)

@@ -134,3 +134,5 @@ bool IOSChromeSyncedTabDelegate::ShouldSync(
   }
   return false;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

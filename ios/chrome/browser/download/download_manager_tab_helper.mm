@@ -129,3 +129,5 @@ void DownloadManagerTabHelper::DidCreateDownload(
                     didCreateDownload:task_.get()
                     webStateIsVisible:web_state_->IsVisible()];
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(DownloadManagerTabHelper)

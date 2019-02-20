@@ -55,8 +55,12 @@ class SourceUrlRecorderWebStateObserver
 
   SourceId last_committed_source_id_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SourceUrlRecorderWebStateObserver);
 };
+
+WEB_STATE_USER_DATA_KEY_IMPL(SourceUrlRecorderWebStateObserver)
 
 SourceUrlRecorderWebStateObserver::SourceUrlRecorderWebStateObserver(
     web::WebState* web_state)

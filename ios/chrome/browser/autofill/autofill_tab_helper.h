@@ -45,6 +45,8 @@ class AutofillTabHelper : public web::WebStateObserver,
   id<FormSuggestionProvider> GetSuggestionProvider();
 
  private:
+  friend class web::WebStateUserData<AutofillTabHelper>;
+
   AutofillTabHelper(
       web::WebState* web_state,
       password_manager::PasswordGenerationManager* password_generation_manager);
@@ -60,6 +62,8 @@ class AutofillTabHelper : public web::WebStateObserver,
 
   // The iOS AutofillClient instance.
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTabHelper);
 };

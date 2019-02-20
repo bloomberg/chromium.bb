@@ -84,6 +84,8 @@ class FindTabHelper : public web::WebStateObserver,
   // The ObjC find in page controller.
   FindInPageController* controller_;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(FindTabHelper);
 };
 

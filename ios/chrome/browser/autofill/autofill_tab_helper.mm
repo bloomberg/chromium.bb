@@ -67,3 +67,5 @@ void AutofillTabHelper::WebStateDestroyed(web::WebState* web_state) {
   autofill_agent_ = nil;
   web_state->RemoveObserver(this);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(AutofillTabHelper)

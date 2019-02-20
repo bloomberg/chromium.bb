@@ -101,6 +101,8 @@ class WebViewTranslateClient
   // ObjC class that wraps this class.
   __weak CWVTranslationController* translation_controller_ = nil;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebViewTranslateClient);
 };
 

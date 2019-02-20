@@ -148,4 +148,6 @@ void WebViewTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   translate_manager_.reset();
 }
 
+WEB_STATE_USER_DATA_KEY_IMPL(WebViewTranslateClient)
+
 }  // namespace ios_web_view

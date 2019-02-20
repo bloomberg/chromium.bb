@@ -31,6 +31,7 @@ class InsecureInputTabHelper
 
  private:
   friend class web::WebStateUserData<InsecureInputTabHelper>;
+
   explicit InsecureInputTabHelper(web::WebState* web_state);
 
   // FormActivityObserver implementation.
@@ -47,6 +48,8 @@ class InsecureInputTabHelper
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.
   web::WebState* web_state_ = nullptr;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InsecureInputTabHelper);
 };

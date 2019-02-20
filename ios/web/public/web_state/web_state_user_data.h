@@ -10,52 +10,61 @@
 #include "base/supports_user_data.h"
 #import "ios/web/public/web_state/web_state.h"
 
+// This macro declares a static variable inside the class that inherits from
+// WebStateUserData. The address of this static variable is used as the key to
+// store/retrieve an instance of the class on/from a WebState.
+#define WEB_STATE_USER_DATA_KEY_DECL() static constexpr int kUserDataKey = 0
+
+// This macro instantiates the static variable declared by the previous macro.
+// It must live in a .mm/.cc file to ensure that there is only one instantiation
+// of the static variable.
+#define WEB_STATE_USER_DATA_KEY_IMPL(Type) const int Type::kUserDataKey;
+
 namespace web {
 
 // A base class for classes attached to, and scoped to, the lifetime of a
 // WebState. For example:
 //
-// --- in foo.h ---
-// class Foo : public web::WebStateUserData<Foo> {
+// --- in foo_tab_helper.h ---
+// class FooTabHelper : public web::WebStateUserData<FooTabHelper> {
 //  public:
-//   ~Foo() override;
+//   ~FooTabHelper() override;
 //   // ... more public stuff here ...
 //  private:
-//   explicit Foo(web::WebState* web_state);
-//   friend class web::WebStateUserData<Foo>;
+//   explicit FooTabHelper(web::WebState* web_state);
+//   friend class web::WebStateUserData<FooTabHelper>;
+//   WEB_STATE_USER_DATA_KEY_DECL();
 //   // ... more private stuff here ...
-// }
+// };
 //
+// --- in foo_tab_helper.cc ---
+// WEB_STATE_USER_DATA_KEY_IMPL(FooTabHelper)
 template <typename T>
 class WebStateUserData : public base::SupportsUserData::Data {
  public:
   // Creates an object of type T, and attaches it to the specified WebState.
   // If an instance is already attached, does nothing.
   static void CreateForWebState(WebState* web_state) {
-    DCHECK(web_state);
     if (!FromWebState(web_state))
       web_state->SetUserData(UserDataKey(), base::WrapUnique(new T(web_state)));
   }
 
   // Retrieves the instance of type T that was attached to the specified
   // WebState (via CreateForWebState above) and returns it. If no instance
-  // of the type was attached, returns null.
+  // of the type was attached, returns nullptr.
   static T* FromWebState(WebState* web_state) {
     return static_cast<T*>(web_state->GetUserData(UserDataKey()));
   }
   static const T* FromWebState(const WebState* web_state) {
     return static_cast<const T*>(web_state->GetUserData(UserDataKey()));
   }
+
   // Removes the instance attached to the specified WebState.
   static void RemoveFromWebState(WebState* web_state) {
     web_state->RemoveUserData(UserDataKey());
   }
 
- protected:
-  static inline const void* UserDataKey() {
-    static const int kId = 0;
-    return &kId;
-  }
+  static const void* UserDataKey() { return &T::kUserDataKey; }
 };
 
 }  // namespace web

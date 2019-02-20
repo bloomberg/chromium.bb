@@ -27,6 +27,7 @@ class PrintTabHelper : public web::WebStateObserver,
   void set_printer(id<WebStatePrinter> printer);
 
  private:
+  friend class web::WebStateUserData<PrintTabHelper>;
 
   // web::WebStateObserver overrides:
   void WebStateDestroyed(web::WebState* web_state) override;
@@ -40,6 +41,8 @@ class PrintTabHelper : public web::WebStateObserver,
                       web::WebFrame* sender_frame);
 
   __weak id<WebStatePrinter> printer_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrintTabHelper);
 };

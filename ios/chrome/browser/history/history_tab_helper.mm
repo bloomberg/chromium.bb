@@ -245,3 +245,5 @@ history::HistoryService* HistoryTabHelper::GetHistoryService() {
   return ios::HistoryServiceFactory::GetForBrowserState(
       browser_state, ServiceAccessType::IMPLICIT_ACCESS);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(HistoryTabHelper)

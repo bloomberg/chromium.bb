@@ -40,6 +40,8 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   bool is_showing_sad_tab() const { return showing_sad_tab_; }
 
  private:
+  friend class web::WebStateUserData<SadTabTabHelper>;
+
   // Constructs a SadTabTabHelper, assigning the helper to a web_state. A
   // default repeat_failure_interval will be used.
   explicit SadTabTabHelper(web::WebState* web_state);
@@ -125,6 +127,8 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // Observer for UIApplicationDidBecomeActiveNotification.
   __strong id<NSObject> application_did_become_active_observer_ = nil;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(SadTabTabHelper);
 };

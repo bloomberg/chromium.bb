@@ -47,6 +47,8 @@ class JavaScriptConsoleTabHelper
   // WebStateDestroyed has been called.
   web::WebState* web_state_ = nullptr;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(JavaScriptConsoleTabHelper);
 };
 
