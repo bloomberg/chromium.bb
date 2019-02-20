@@ -65,8 +65,6 @@ class FileDeletionQueue {
         File file = mFiles.poll();
         if (file == null) return;
 
-        System.out.println("dtrainor: Starting " + file.getName());
-
         mTask = new FileDeletionTask(file);
         mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
