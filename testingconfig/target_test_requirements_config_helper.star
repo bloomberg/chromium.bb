@@ -60,13 +60,15 @@ def target_test_requirements(
     moblab_test_configs = sorted(moblab_test_configs, key=lambda t: t.test_type)
     moblab_vm_test_cfg = config_pb.MoblabVmTestCfg(moblab_test=moblab_test_configs)
 
-  vm_test_cfg = None
-  if vm_test_configs or tast_vm_test_configs:
+  tast_vm_test_cfg = None
+  if tast_vm_test_configs:
     tast_vm_test_configs = sorted(tast_vm_test_configs, key=lambda t: t.suite_name)
+    tast_vm_test_cfg = config_pb.TastVmTestCfg(tast_vm_test=tast_vm_test_configs)
+
+  vm_test_cfg = None
+  if vm_test_configs:
     vm_test_configs = sorted(vm_test_configs, key=lambda t: t.test_suite)
-    vm_test_cfg = config_pb.VmTestCfg(
-        tast_vm_test=tast_vm_test_configs,
-        vm_test=vm_test_configs)
+    vm_test_cfg = config_pb.VmTestCfg(vm_test=vm_test_configs)
 
   if reference_design:
     target_name = reference_design
@@ -82,6 +84,7 @@ def target_test_requirements(
       gce_test_cfg=gce_test_cfg,
       hw_test_cfg=hw_test_cfg,
       moblab_vm_test_cfg=moblab_vm_test_cfg,
+      tast_vm_test_cfg=tast_vm_test_cfg,
       vm_test_cfg=vm_test_cfg)
   graph.add_node(
       graph.key(test_reqs_kind, target_name),
@@ -205,9 +208,9 @@ def tast_vm_cq_test_config():
   Returns:
     config_pb.TastVmTest
   """
-  tast_test_expr = [config_pb.VmTestCfg.TastTestExpr(
+  tast_test_expr = [config_pb.TastVmTestCfg.TastTestExpr(
     test_expr='(!disabled && !"group:*" && !informational)')]
-  return config_pb.VmTestCfg.TastVmTest(
+  return config_pb.TastVmTestCfg.TastVmTest(
     suite_name='tast_vm_paladin',
     tast_test_expr=tast_test_expr)
 
