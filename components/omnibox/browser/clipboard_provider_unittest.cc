@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/clipboard_url_provider.h"
+#include "components/omnibox/browser/clipboard_provider.h"
 
 #include <memory>
 #include <string>
@@ -35,19 +35,19 @@ const char kClipboardTitleText[] = "\"Search for me\"";
 
 }  // namespace
 
-class ClipboardURLProviderTest : public testing::Test,
-                                 public AutocompleteProviderListener {
+class ClipboardProviderTest : public testing::Test,
+                              public AutocompleteProviderListener {
  public:
-  ClipboardURLProviderTest()
+  ClipboardProviderTest()
       : client_(new MockAutocompleteProviderClient()),
-        provider_(new ClipboardURLProvider(client_.get(),
-                                           this,
-                                           nullptr,
-                                           &clipboard_content_)) {
+        provider_(new ClipboardProvider(client_.get(),
+                                        this,
+                                        nullptr,
+                                        &clipboard_content_)) {
     SetClipboardUrl(GURL(kClipboardURL));
   }
 
-  ~ClipboardURLProviderTest() override {}
+  ~ClipboardProviderTest() override {}
 
   void ClearClipboard() { clipboard_content_.SuppressClipboardContent(); }
 
@@ -79,37 +79,37 @@ class ClipboardURLProviderTest : public testing::Test,
   TestSchemeClassifier classifier_;
   FakeClipboardRecentContent clipboard_content_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;
-  scoped_refptr<ClipboardURLProvider> provider_;
+  scoped_refptr<ClipboardProvider> provider_;
 };
 
-void ClipboardURLProviderTest::OnProviderUpdate(bool updated_matches) {
+void ClipboardProviderTest::OnProviderUpdate(bool updated_matches) {
   // No action required.
 }
 
-TEST_F(ClipboardURLProviderTest, NotFromOmniboxFocus) {
+TEST_F(ClipboardProviderTest, NotFromOmniboxFocus) {
   provider_->Start(CreateAutocompleteInput(false), false);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-TEST_F(ClipboardURLProviderTest, EmptyClipboard) {
+TEST_F(ClipboardProviderTest, EmptyClipboard) {
   ClearClipboard();
   provider_->Start(CreateAutocompleteInput(true), false);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-TEST_F(ClipboardURLProviderTest, ClipboardIsCurrentURL) {
+TEST_F(ClipboardProviderTest, ClipboardIsCurrentURL) {
   SetClipboardUrl(GURL(kCurrentURL));
   provider_->Start(CreateAutocompleteInput(true), false);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-TEST_F(ClipboardURLProviderTest, HasMultipleMatches) {
+TEST_F(ClipboardProviderTest, HasMultipleMatches) {
   provider_->Start(CreateAutocompleteInput(true), false);
   ASSERT_GE(provider_->matches().size(), 1U);
   EXPECT_EQ(GURL(kClipboardURL), provider_->matches().back().destination_url);
 }
 
-TEST_F(ClipboardURLProviderTest, MatchesText) {
+TEST_F(ClipboardProviderTest, MatchesText) {
   base::test::ScopedFeatureList feature_list;
   base::Feature textFeature = omnibox::kEnableClipboardProviderTextSuggestions;
   feature_list.InitAndEnableFeature(textFeature);
@@ -123,7 +123,7 @@ TEST_F(ClipboardURLProviderTest, MatchesText) {
             provider_->matches().back().contents);
 }
 
-TEST_F(ClipboardURLProviderTest, MatchesImage) {
+TEST_F(ClipboardProviderTest, MatchesImage) {
   base::test::ScopedFeatureList feature_list;
   base::Feature imageFeature =
       omnibox::kEnableClipboardProviderImageSuggestions;
