@@ -135,8 +135,7 @@ std::string ConsentSyncBridgeImpl::GetStorageKey(
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_consent());
 }
 
-ModelTypeSyncBridge::StopSyncResponse
-ConsentSyncBridgeImpl::ApplyStopSyncChanges(
+void ConsentSyncBridgeImpl::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be stopped after initialization.
   DCHECK(deferred_consents_while_initializing_.empty());
@@ -155,8 +154,6 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
                              base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
                                             weak_ptr_factory_.GetWeakPtr()));
   }
-
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {

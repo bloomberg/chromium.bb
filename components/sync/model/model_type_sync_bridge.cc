@@ -46,14 +46,13 @@ ConflictResolution ModelTypeSyncBridge::ResolveConflict(
   return ConflictResolution::UseRemote();
 }
 
-ModelTypeSyncBridge::StopSyncResponse ModelTypeSyncBridge::ApplyStopSyncChanges(
+void ModelTypeSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   if (delete_metadata_change_list) {
     // Nothing to do if this fails, so just ignore the error it might return.
     ApplySyncChanges(std::move(delete_metadata_change_list),
                      EntityChangeList());
   }
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {

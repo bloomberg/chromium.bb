@@ -423,8 +423,7 @@ ConflictResolution SyncableServiceBasedBridge::ResolveConflict(
   return ConflictResolution::UseLocal();
 }
 
-ModelTypeSyncBridge::StopSyncResponse
-SyncableServiceBasedBridge::ApplyStopSyncChanges(
+void SyncableServiceBasedBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
@@ -438,8 +437,6 @@ SyncableServiceBasedBridge::ApplyStopSyncChanges(
     syncable_service_->StopSyncing(type_);
     syncable_service_started_ = false;
   }
-
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 size_t SyncableServiceBasedBridge::EstimateSyncOverheadMemoryUsage() const {

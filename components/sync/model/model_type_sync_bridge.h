@@ -36,13 +36,6 @@ class ModelTypeSyncBridge {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
-  // TODO(crbug.com/863870): Remove this enum now the sessions has migrated
-  // away.
-  enum class StopSyncResponse {
-    kModelStillReadyToSync,
-    kModelNoLongerReadyToSync
-  };
-
   ModelTypeSyncBridge(
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
@@ -166,7 +159,7 @@ class ModelTypeSyncBridge {
   // was disabled), and |*delete_metadata_change_list| contains a change list to
   // remove all metadata that the processor knows about (the bridge may decide
   // to implement deletion by other means).
-  virtual StopSyncResponse ApplyStopSyncChanges(
+  virtual void ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
   // Returns an estimate of memory usage attributed to sync (that is, excludes

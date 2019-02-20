@@ -216,9 +216,7 @@ TEST_F(UserEventSyncBridgeTest, ApplyStopSyncChanges) {
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 

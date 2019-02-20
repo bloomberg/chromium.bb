@@ -2200,43 +2200,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldNotConnectImmediatelyAfterGuidMismatchIfNotReadyToSync) {
-  // Commit item.
-  InitializeToReadyState();
-  WriteItemAndAck(kKey1, kValue1);
-  // Reset the processor to simulate a restart.
-  ResetState(/*keep_db=*/true);
-
-  // Force future stops cause the model to become unready.
-  bridge()->SetStopSyncResponse(
-      ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync);
-
-  // A new processor loads the metadata after changing the cache GUID.
-  bridge()->SetInitialSyncDone(true);
-
-  std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
-  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
-  model_type_state.set_cache_guid("WRONG_CACHE_GUID");
-  metadata_batch->SetModelTypeState(model_type_state);
-
-  type_processor()->ModelReadyToSync(std::move(metadata_batch));
-  ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
-
-  OnSyncStarting();
-
-  // Model should not be ready to sync.
-  ASSERT_FALSE(type_processor()->IsModelReadyToSyncForTest());
-  // OnSyncStarting() should NOT have completed.
-  EXPECT_EQ(nullptr, worker());
-  // Upon a mismatch, metadata should have been cleared.
-  EXPECT_EQ(0U, db()->metadata_count());
-
-  // Calling ModelReadyToSync() should complete OnSyncStarting().
-  type_processor()->ModelReadyToSync(std::make_unique<MetadataBatch>());
-  EXPECT_NE(nullptr, worker());
-}
-
-TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldClearOrphanMetadataInGetLocalChangesWhenDataIsMissing) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
