@@ -167,9 +167,7 @@ void GCDApiFlowImpl::OnDownloadedToString(
     return;
   }
 
-  base::JSONReader reader;
-  std::unique_ptr<const base::Value> value(
-      reader.ReadDeprecated(*response_body));
+  base::Optional<base::Value> value = base::JSONReader::Read(*response_body);
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value)) {

@@ -226,14 +226,14 @@ bool ParseSettings(const base::Value& settings,
     NOTREACHED();
     return false;
   }
-  std::unique_ptr<base::Value> ticket_value =
-      base::JSONReader::ReadDeprecated(*ticket_opt);
+  base::Optional<base::Value> ticket_value =
+      base::JSONReader::Read(*ticket_opt);
   if (!ticket_value)
     return false;
 
   *out_destination_id = *destination_id_opt;
   *out_capabilities = *capabilities_opt;
-  *out_ticket = base::Value::FromUniquePtrValue(std::move(ticket_value));
+  *out_ticket = std::move(*ticket_value);
   return true;
 }
 

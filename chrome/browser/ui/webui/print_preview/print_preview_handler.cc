@@ -282,9 +282,8 @@ const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
 base::Value GetSettingsDictionary(const std::string& json_str) {
-  std::unique_ptr<base::Value> settings =
-      base::JSONReader::ReadDeprecated(json_str);
-  if (!settings->is_dict()) {
+  base::Optional<base::Value> settings = base::JSONReader::Read(json_str);
+  if (!settings || !settings->is_dict()) {
     NOTREACHED() << "Print job settings must be a dictionary.";
     return base::Value();
   }
@@ -294,7 +293,7 @@ base::Value GetSettingsDictionary(const std::string& json_str) {
     return base::Value();
   }
 
-  return base::Value::FromUniquePtrValue(std::move(settings));
+  return std::move(*settings);
 }
 
 // Track the popularity of print settings and report the stats.
