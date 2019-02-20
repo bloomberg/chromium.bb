@@ -214,9 +214,9 @@ const CGFloat kEditIconLength = 18;
           constraintEqualToAnchor:_editIconView.heightAnchor],
     ]];
     AddOptionalVerticalPadding(contentView, _textLabel,
-                               kTableViewOneLabelCellVerticalSpacing);
+                               kTableViewLargeVerticalSpacing);
     AddOptionalVerticalPadding(contentView, _textField,
-                               kTableViewOneLabelCellVerticalSpacing);
+                               kTableViewLargeVerticalSpacing);
 
     [self updateForAccessibilityContentSizeCategory:
               UIContentSizeCategoryIsAccessibilityCategory(

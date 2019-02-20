@@ -19,6 +19,9 @@ namespace {
 // Padding used between the icon and the text labels.
 const CGFloat kIconTrailingPadding = 12;
 
+// Padding used on the top and bottom edges of the cell.
+const CGFloat kVerticalPadding = 16;
+
 // Size of the icon image.
 const CGFloat kIconImageSize = 28;
 }  // namespace
@@ -113,13 +116,13 @@ const CGFloat kIconImageSize = 28;
     _accessibilityConstraints = @[
       [_switchView.topAnchor
           constraintEqualToAnchor:textLayoutGuide.bottomAnchor
-                         constant:kTableViewLargeVerticalSpacing],
+                         constant:kVerticalPadding],
       [_switchView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       [_switchView.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTableViewLargeVerticalSpacing],
+                         constant:-kVerticalPadding],
       [textLayoutGuide.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kTableViewHorizontalSpacing],
@@ -160,7 +163,7 @@ const CGFloat kIconImageSize = 28;
     }
 
     AddOptionalVerticalPadding(self.contentView, textLayoutGuide,
-                               kTableViewOneLabelCellVerticalSpacing);
+                               kVerticalPadding);
   }
   return self;
 }

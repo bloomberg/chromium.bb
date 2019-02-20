@@ -95,20 +95,18 @@
         constraintEqualToAnchor:contentView.centerYAnchor],
     [_imageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-                                    constant:kTableViewVerticalSpacing],
+                                    constant:kTableViewLargeVerticalSpacing],
     [contentView.bottomAnchor
         constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
-                                    constant:kTableViewVerticalSpacing],
+                                    constant:kTableViewLargeVerticalSpacing],
     [textStackView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
     [textStackView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-                                    constant:
-                                        kTableViewTwoLabelsCellVerticalSpacing],
+                                    constant:kTableViewLargeVerticalSpacing],
     [contentView.bottomAnchor
         constraintGreaterThanOrEqualToAnchor:textStackView.bottomAnchor
-                                    constant:
-                                        kTableViewTwoLabelsCellVerticalSpacing],
+                                    constant:kTableViewLargeVerticalSpacing],
   ]];
 }
 

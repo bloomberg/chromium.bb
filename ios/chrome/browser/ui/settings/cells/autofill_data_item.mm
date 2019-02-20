@@ -20,6 +20,12 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 
 @implementation AutofillDataItem
 
+@synthesize deletable = _deletable;
+@synthesize GUID = _GUID;
+@synthesize text = _text;
+@synthesize leadingDetailText = _leadingDetailText;
+@synthesize trailingDetailText = _trailingDetailText;
+
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
@@ -38,12 +44,6 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   cell.trailingDetailTextLabel.text = self.trailingDetailText;
 }
 
-@end
-
-#pragma mark - AutofillDataCell
-
-@interface AutofillDataCell ()
-@property(nonatomic, strong) UIStackView* mainLabelsContainer;
 @end
 
 @implementation AutofillDataCell
@@ -67,13 +67,12 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   UIView* contentView = self.contentView;
 
   _textLabel = [[UILabel alloc] init];
-  _leadingDetailTextLabel = [[UILabel alloc] init];
+  _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_textLabel];
 
-  _mainLabelsContainer = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ _textLabel, _leadingDetailTextLabel ]];
-  _mainLabelsContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  _mainLabelsContainer.axis = UILayoutConstraintAxisVertical;
-  [contentView addSubview:_mainLabelsContainer];
+  _leadingDetailTextLabel = [[UILabel alloc] init];
+  _leadingDetailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_leadingDetailTextLabel];
 
   _trailingDetailTextLabel = [[UILabel alloc] init];
   _trailingDetailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -95,7 +94,7 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   _leadingDetailTextLabel.numberOfLines = 0;
   _leadingDetailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
   _leadingDetailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
   _leadingDetailTextLabel.adjustsFontForContentSizeCategory = YES;
   _leadingDetailTextLabel.textColor =
       UIColorFromRGB(kSettingsCellsDetailTextColor);
@@ -112,12 +111,16 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 
   [NSLayoutConstraint activateConstraints:@[
     // Set horizontal anchors.
-    [_mainLabelsContainer.leadingAnchor
+    [_textLabel.leadingAnchor
         constraintEqualToAnchor:contentView.leadingAnchor
                        constant:kTableViewHorizontalSpacing],
-    [_mainLabelsContainer.trailingAnchor
+    [_textLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:_trailingDetailTextLabel.leadingAnchor
                                  constant:-kTableViewHorizontalSpacing],
+    [_leadingDetailTextLabel.leadingAnchor
+        constraintEqualToAnchor:_textLabel.leadingAnchor],
+    [_leadingDetailTextLabel.trailingAnchor
+        constraintEqualToAnchor:_textLabel.trailingAnchor],
     [_trailingDetailTextLabel.trailingAnchor
         constraintEqualToAnchor:contentView.trailingAnchor
                        constant:-kTableViewHorizontalSpacing],
@@ -128,18 +131,16 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
                                multiplier:kDetailTextWidthMultiplier],
 
     // Set vertical anchors.
-    [_mainLabelsContainer.centerYAnchor
-        constraintEqualToAnchor:contentView.centerYAnchor],
+    [_leadingDetailTextLabel.topAnchor
+        constraintEqualToAnchor:_textLabel.bottomAnchor],
     [_trailingDetailTextLabel.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
 
-  AddOptionalVerticalPadding(contentView, _mainLabelsContainer
-
-                             ,
-                             kTableViewTwoLabelsCellVerticalSpacing);
+  AddOptionalVerticalPadding(contentView, _textLabel, _leadingDetailTextLabel,
+                             kTableViewLargeVerticalSpacing);
   AddOptionalVerticalPadding(contentView, _trailingDetailTextLabel,
-                             kTableViewOneLabelCellVerticalSpacing);
+                             kTableViewLargeVerticalSpacing);
 }
 
 #pragma mark - UITableViewCell

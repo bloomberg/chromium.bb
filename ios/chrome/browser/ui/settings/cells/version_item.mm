@@ -75,15 +75,10 @@ const CGFloat kVerticalSpacing = 16;
         forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:button];
 
-    NSLayoutConstraint* heightConstraint = [self.contentView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kChromeTableViewCellHeight];
-    // Don't set the priority to required to avoid clashing with the estimated
-    // height.
-    heightConstraint.priority = UILayoutPriorityRequired - 1;
-
     AddSameConstraints(button, self.contentView);
     [NSLayoutConstraint activateConstraints:@[
-      heightConstraint,
+      [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:
+                                         kTableViewHeaderFooterViewHeight],
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor],
       [_textLabel.trailingAnchor

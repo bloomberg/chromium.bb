@@ -13,6 +13,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Vertical spacing between label and the container view of a cell.
+const CGFloat kLabelCellVerticalSpacing = 11.0;
+}  // namespace
+
 @implementation TableViewImageItem
 
 @synthesize image = _image;
@@ -92,12 +97,6 @@
     horizontalStack.alignment = UIStackViewAlignmentCenter;
 
     [self.contentView addSubview:horizontalStack];
-
-    NSLayoutConstraint* heightConstraint = [self.contentView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kChromeTableViewCellHeight];
-    // Don't set the priority to required to avoid clashing with the estimated
-    // height.
-    heightConstraint.priority = UILayoutPriorityRequired - 1;
     [NSLayoutConstraint activateConstraints:@[
       // Horizontal Stack constraints.
       [horizontalStack.leadingAnchor
@@ -106,15 +105,12 @@
       [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
-      [horizontalStack.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
       [horizontalStack.topAnchor
-          constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kTableViewVerticalSpacing],
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kLabelCellVerticalSpacing],
       [horizontalStack.bottomAnchor
-          constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kTableViewVerticalSpacing],
-      heightConstraint,
+          constraintEqualToAnchor:self.contentView.bottomAnchor
+                         constant:-kLabelCellVerticalSpacing],
     ]];
   }
   return self;
