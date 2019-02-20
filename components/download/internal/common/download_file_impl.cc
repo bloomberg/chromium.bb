@@ -335,6 +335,12 @@ void DownloadFileImpl::CreateIntermediateUriForPublish(
     reason = file_.Rename(content_path);
   OnRenameComplete(reason, content_path, callback);
 }
+
+void DownloadFileImpl::PublishDownload(
+    const RenameCompletionCallback& callback) {
+  DownloadInterruptReason reason = file_.PublishDownload();
+  OnRenameComplete(reason, file_.full_path(), callback);
+}
 #endif  // defined(OS_ANDROID)
 
 base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(

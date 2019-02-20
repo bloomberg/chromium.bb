@@ -117,6 +117,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
       const base::FilePath& file_name,
       const std::string& mime_type,
       const RenameCompletionCallback& callback) = 0;
+
+  // Publishes the download to public. Once completes, |callback| is called with
+  // the final content URI.
+  virtual void PublishDownload(const RenameCompletionCallback& callback) = 0;
 #endif  // defined(OS_ANDROID)
 };
 

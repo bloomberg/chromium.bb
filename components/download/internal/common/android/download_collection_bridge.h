@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file.h"
@@ -26,11 +27,21 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   // Returns whether a download needs to be published.
   static bool ShouldPublishDownload(const base::FilePath& file_path);
 
-  // Move existing file content to the intermediate URI, and remove
+  // Moves existing file content to the intermediate Uri, and remove
   // |source_path|.
   static DownloadInterruptReason MoveFileToIntermediateUri(
       const base::FilePath& source_path,
       const base::FilePath& destination_uri);
+
+  // Deletes the intermediate Uri that is being written to.
+  static void DeleteIntermediateUri(const base::FilePath& intermediate_uri);
+
+  // Publishes the intermediate Uri to public download collection, and returns
+  // the final Uri.
+  static base::FilePath PublishDownload(const base::FilePath& intermediate_uri);
+
+  // Opens the intermediate Uri for writing.
+  static base::File OpenIntermediateUri(const base::FilePath& intermediate_uri);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCollectionBridge);

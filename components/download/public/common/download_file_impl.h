@@ -83,6 +83,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
       const base::FilePath& file_name,
       const std::string& mime_type,
       const RenameCompletionCallback& callback) override;
+  void PublishDownload(const RenameCompletionCallback& callback) override;
 #endif  // defined(OS_ANDROID)
 
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta

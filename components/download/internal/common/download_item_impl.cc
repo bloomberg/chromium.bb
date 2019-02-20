@@ -1690,6 +1690,17 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
+#if defined(OS_ANDROID)
+  if (DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DownloadFile::PublishDownload,
+                       // Safe because we control download file lifetime.
+                       base::Unretained(download_file_.get()),
+                       std::move(callback)));
+    return;
+  }
+#endif  // defined(OS_ANDROID)
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndAnnotate,
@@ -1725,7 +1736,15 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
     return;
   }
 
+#if defined(OS_ANDROID)
+  // Target file path may be different from the full path if the latter is a
+  // content Uri.
+  if (GetTargetFilePath() != full_path) {
+    DCHECK(full_path.IsContentUri());
+  }
+#else
   DCHECK(GetTargetFilePath() == full_path);
+#endif  // defined(OS_ANDROID)
 
   if (full_path != GetFullPath()) {
     // full_path is now the current and target file path.
@@ -2056,7 +2075,12 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
   // directory.
   DCHECK(!GetTargetFilePath().empty());
   DCHECK(!GetFullPath().empty());
+#if defined(OS_ANDROID)
+  DCHECK(GetFullPath().IsContentUri() ||
+         GetTargetFilePath().DirName() == GetFullPath().DirName());
+#else
   DCHECK(GetTargetFilePath().DirName() == GetFullPath().DirName());
+#endif  // defined(OS_ANDROID)
 
   // Give the delegate a chance to hold up a stop sign.  It'll call
   // use back through the passed callback if it does and that state changes.
@@ -2099,6 +2123,16 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
     case IN_PROGRESS_INTERNAL:
       DCHECK(!GetFullPath().empty()) << "Current output path must be known.";
       DCHECK(!GetTargetFilePath().empty()) << "Target path must be known.";
+#if defined(OS_ANDROID)
+      DCHECK(GetFullPath().IsContentUri() ||
+             GetFullPath().DirName() == GetTargetFilePath().DirName())
+          << "Current output directory must match target directory or current "
+             "output path is a content uri.";
+#else
+      DCHECK(GetFullPath().DirName() == GetTargetFilePath().DirName())
+          << "Current output directory must match target directory.";
+#endif  // defined(OS_ANDROID)
+
       DCHECK(GetFullPath().DirName() == GetTargetFilePath().DirName())
           << "Current output directory must match target directory.";
       DCHECK(download_file_) << "Output file must be owned by download item.";
@@ -2113,8 +2147,14 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
       DCHECK(!download_file_)
           << "Download file must be released prior to completion.";
       DCHECK(!GetTargetFilePath().empty()) << "Target path must be known.";
+#if defined(OS_ANDROID)
+      DCHECK(GetFullPath().IsContentUri() ||
+             GetFullPath() == GetTargetFilePath())
+          << "Current output path must match target path or is a content Uri.";
+#else
       DCHECK(GetFullPath() == GetTargetFilePath())
           << "Current output path must match target path.";
+#endif  // defined(OS_ANDROID)
 
       TRACE_EVENT_INSTANT2("download", "DownloadItemCompleting",
                            TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",

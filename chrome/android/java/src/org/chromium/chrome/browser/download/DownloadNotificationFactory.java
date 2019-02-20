@@ -243,7 +243,8 @@ public final class DownloadNotificationFactory {
                     Intent intent;
                     if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())) {
                         Preconditions.checkNotNull(downloadUpdate.getContentId());
-                        Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1);
+                        Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1
+                                || DownloadUtils.isContentUri(downloadUpdate.getFilePath()));
 
                         intent = new Intent(ACTION_NOTIFICATION_CLICKED);
                         long[] idArray = {downloadUpdate.getSystemDownloadId()};

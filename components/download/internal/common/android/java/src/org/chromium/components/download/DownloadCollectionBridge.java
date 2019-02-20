@@ -4,8 +4,12 @@
 
 package org.chromium.components.download;
 
+import android.content.ContentResolver;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -17,6 +21,7 @@ import org.chromium.base.annotations.JNINamespace;
 public class DownloadCollectionBridge {
     // Singleton instance that allows embedders to replace their implementation.
     private static DownloadCollectionBridge sDownloadCollectionBridge;
+    private static final String TAG = "DownloadCollection";
 
     /**
      * Return getDownloadCollectionBridge singleton.
@@ -42,7 +47,7 @@ public class DownloadCollectionBridge {
      * @param filePath File path of the download.
      * @return True if the download needs to be published, or false otherwise.
      */
-    protected boolean needToPublishDownload(String filePath) {
+    protected boolean needToPublishDownload(final String filePath) {
         return false;
     }
 
@@ -65,7 +70,7 @@ public class DownloadCollectionBridge {
      * @param pendingUri Destination Uri to be copied to.
      * @return true on success, or false otherwise.
      */
-    protected boolean copyFileToPendingUri(String sourcePath, String pendingUri) {
+    protected boolean copyFileToPendingUri(final String sourcePath, final String pendingUri) {
         return false;
     }
 
@@ -73,12 +78,12 @@ public class DownloadCollectionBridge {
      * Abandon the the intermediate Uri.
      * @param pendingUri Intermediate Uri that is going to be deleted.
      */
-    protected void abandonPendingUri(String pendingUri) {}
+    protected void abandonPendingUri(final String pendingUri) {}
 
     /**
      * Publish a completed download to public repository.
      * @param pendingUri Pending uri to publish.
-
+     * @return Uri of the published file.
      */
     protected Uri publishCompletedDownload(final String pendingUri) {
         return null;
@@ -106,18 +111,57 @@ public class DownloadCollectionBridge {
      * @return True if the download needs to be published, or false otherwise.
      */
     @CalledByNative
-    private static boolean shouldPublishDownload(String filePath) {
+    private static boolean shouldPublishDownload(final String filePath) {
         return getDownloadCollectionBridge().needToPublishDownload(filePath);
     }
 
     /**
-     * Copy file content from a source file to the destination Uri.
+     * Copies file content from a source file to the destination Uri.
      * @param sourcePath File content to be copied from.
      * @param destinationUri Destination Uri to be copied to.
      * @return True on success, or false otherwise.
      */
     @CalledByNative
-    private static boolean copyFileToIntermediateUri(String sourcePath, String destinationUri) {
+    private static boolean copyFileToIntermediateUri(
+            final String sourcePath, final String destinationUri) {
         return getDownloadCollectionBridge().copyFileToPendingUri(sourcePath, destinationUri);
+    }
+
+    /**
+     * Deletes the intermediate Uri.
+     * @param uri Intermediate Uri that is going to be deleted.
+     */
+    @CalledByNative
+    private static void deleteIntermediateUri(final String uri) {
+        getDownloadCollectionBridge().abandonPendingUri(uri);
+    }
+
+    /**
+     * Publishes the completed download to public download collection.
+     * @param intermediateUri Intermediate Uri that is going to be published.
+     * @return Uri of the published file.
+     */
+    @CalledByNative
+    private static String publishDownload(final String intermediateUri) {
+        Uri uri = getDownloadCollectionBridge().publishCompletedDownload(intermediateUri);
+        return uri == null ? null : uri.toString();
+    }
+
+    /**
+     * Opens the intermediate Uri for writing.
+     * @param intermediateUri Intermediate Uri that is going to be written to.
+     * @return file descriptor that is opened for writing.
+     */
+    @CalledByNative
+    private static int openIntermediateUri(final String intermediateUri) {
+        try {
+            ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
+            ParcelFileDescriptor pfd =
+                    resolver.openFileDescriptor(Uri.parse(intermediateUri), "rw");
+            return pfd.detachFd();
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot open intermediate Uri.", e);
+        }
+        return -1;
     }
 }

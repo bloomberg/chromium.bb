@@ -84,7 +84,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
                     || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
-            DownloadUtils.openFile(article.getAssetDownloadFile(),
+            DownloadUtils.openFile(article.getAssetDownloadFile().getPath(),
                     article.getAssetDownloadMimeType(), article.getAssetDownloadGuid(), false, null,
                     null, DownloadMetrics.DownloadOpenSource.NEW_TAP_PAGE);
             return;
