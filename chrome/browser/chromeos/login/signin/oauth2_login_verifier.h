@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -53,17 +54,19 @@ class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
 
  private:
   // IdentityManager::Observer
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
+
+  void OnAddAccountToCookieCompleted(const std::string& account_id,
+                                     const GoogleServiceAuthError& error);
 
   OAuth2LoginVerifier::Delegate* delegate_;
   identity::IdentityManager* identity_manager_;
   const std::string primary_account_id_;
   const std::string access_token_;
+
+  base::WeakPtrFactory<OAuth2LoginVerifier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginVerifier);
 };

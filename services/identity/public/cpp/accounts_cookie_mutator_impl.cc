@@ -20,16 +20,19 @@ AccountsCookieMutatorImpl::~AccountsCookieMutatorImpl() {}
 
 void AccountsCookieMutatorImpl::AddAccountToCookie(
     const std::string& account_id,
-    gaia::GaiaSource source) {
-  gaia_cookie_manager_service_->AddAccountToCookie(account_id, source);
+    gaia::GaiaSource source,
+    AddAccountToCookieCompletedCallback completion_callback) {
+  gaia_cookie_manager_service_->AddAccountToCookie(
+      account_id, source, std::move(completion_callback));
 }
 
 void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
     const std::string& account_id,
     const std::string& access_token,
-    gaia::GaiaSource source) {
+    gaia::GaiaSource source,
+    AddAccountToCookieCompletedCallback completion_callback) {
   gaia_cookie_manager_service_->AddAccountToCookieWithToken(
-      account_id, access_token, source);
+      account_id, access_token, source, std::move(completion_callback));
 }
 
 void AccountsCookieMutatorImpl::SetAccountsInCookie(

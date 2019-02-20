@@ -22,7 +22,8 @@ OAuth2LoginVerifier::OAuth2LoginVerifier(
     : delegate_(delegate),
       identity_manager_(identity_manager),
       primary_account_id_(primary_account_id),
-      access_token_(oauthlogin_access_token) {
+      access_token_(oauthlogin_access_token),
+      weak_ptr_factory_(this) {
   DCHECK(delegate);
   identity_manager_->AddObserver(this);
 }
@@ -47,13 +48,19 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 
 void OAuth2LoginVerifier::VerifyProfileTokens() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GaiaCookieManagerService::AddAccountToCookieCompletedCallback
+      completion_callback =
+          base::BindOnce(&OAuth2LoginVerifier::OnAddAccountToCookieCompleted,
+                         weak_ptr_factory_.GetWeakPtr());
   if (access_token_.empty()) {
     identity_manager_->GetAccountsCookieMutator()->AddAccountToCookie(
-        primary_account_id_, gaia::GaiaSource::kOAuth2LoginVerifier);
+        primary_account_id_, gaia::GaiaSource::kOAuth2LoginVerifier,
+        std::move(completion_callback));
   } else {
     identity_manager_->GetAccountsCookieMutator()->AddAccountToCookieWithToken(
         primary_account_id_, access_token_,
-        gaia::GaiaSource::kOAuth2LoginVerifier);
+        gaia::GaiaSource::kOAuth2LoginVerifier, std::move(completion_callback));
   }
 }
 

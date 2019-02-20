@@ -52,11 +52,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   const GoogleServiceAuthError& ErrorFromAccountsInCookieUpdatedCallback()
       const;
 
-  void SetOnAddAccountToCookieCompletedCallback(base::OnceClosure callback);
-  const std::string& AccountFromAddAccountToCookieCompletedCallback() const;
-  const GoogleServiceAuthError& ErrorFromAddAccountToCookieCompletedCallback()
-      const;
-
   void SetOnCookieDeletedByUserCallback(base::OnceClosure callback);
 
   const AccountInfo& AccountFromAccountUpdatedCallback();
@@ -86,9 +81,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
 
   void OnAccountsInCookieUpdated(
       const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
-      const GoogleServiceAuthError& error) override;
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
       const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
 
@@ -125,10 +117,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
   GoogleServiceAuthError error_from_cookie_change_callback_;
-
-  base::OnceClosure on_add_account_to_cookie_completed_callback_;
-  std::string account_from_add_account_to_cookie_completed_callback_;
-  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
 
   base::OnceClosure on_cookie_deleted_by_user_callback_;
 

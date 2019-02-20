@@ -105,23 +105,6 @@ TestIdentityManagerObserver::ErrorFromAccountsInCookieUpdatedCallback() const {
   return error_from_cookie_change_callback_;
 }
 
-void TestIdentityManagerObserver::SetOnAddAccountToCookieCompletedCallback(
-    base::OnceClosure callback) {
-  on_add_account_to_cookie_completed_callback_ = std::move(callback);
-}
-
-const std::string&
-TestIdentityManagerObserver::AccountFromAddAccountToCookieCompletedCallback()
-    const {
-  return account_from_add_account_to_cookie_completed_callback_;
-}
-
-const GoogleServiceAuthError&
-TestIdentityManagerObserver::ErrorFromAddAccountToCookieCompletedCallback()
-    const {
-  return error_from_add_account_to_cookie_completed_callback_;
-}
-
 void TestIdentityManagerObserver::SetOnCookieDeletedByUserCallback(
     base::OnceClosure callback) {
   on_cookie_deleted_by_user_callback_ = std::move(callback);
@@ -213,15 +196,6 @@ void TestIdentityManagerObserver::OnAccountsInCookieUpdated(
   error_from_cookie_change_callback_ = error;
   if (on_accounts_in_cookie_updated_callback_)
     std::move(on_accounts_in_cookie_updated_callback_).Run();
-}
-
-void TestIdentityManagerObserver::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  account_from_add_account_to_cookie_completed_callback_ = account_id;
-  error_from_add_account_to_cookie_completed_callback_ = error;
-  if (on_add_account_to_cookie_completed_callback_)
-    std::move(on_add_account_to_cookie_completed_callback_).Run();
 }
 
 void TestIdentityManagerObserver::OnAccountsCookieDeletedByUserAction() {
