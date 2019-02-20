@@ -333,3 +333,12 @@ message NeedsDircryptoMigrationRequest {
 message NeedsDircryptoMigrationReply {
   bool needs_dircrypto_migration = 1;
 }
+
+message GetSupportedKeyPoliciesRequest {
+}
+
+// Response that informs the caller which KeyPolicy features are supported.
+message GetSupportedKeyPoliciesReply {
+  // Whether low entropy credentials is supported by the policies
+  bool low_entropy_credentials_supported = 1;
+}
