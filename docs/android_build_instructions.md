@@ -353,11 +353,6 @@ Args that affect build speed:
    * What it does: Uses multiple `.so` files instead of just one (faster links)
  * `is_java_debug = true` *(default=`is_debug`)*
    * What it does: Disables ProGuard (slow build step)
- * `enable_incremental_javac = true` *(default=`false`)*
-   * What it does: Tries to compile only a subset of `.java` files within an
-     `android_library` for subsequent builds.
-   * Can cause infrequent (once a month-ish) failures due to not recompiling a
-     class that should be recompiled.
 
 #### Incremental Install
 "Incremental install" uses reflection and side-loading to speed up the edit
