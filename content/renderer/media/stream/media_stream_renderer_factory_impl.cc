@@ -50,11 +50,11 @@ MediaStreamRendererFactoryImpl::MediaStreamRendererFactoryImpl() {
 MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 }
 
-scoped_refptr<MediaStreamVideoRenderer>
+scoped_refptr<blink::WebMediaStreamVideoRenderer>
 MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   DCHECK(!web_stream.IsNull());
@@ -74,7 +74,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
                                           std::move(main_render_task_runner));
 }
 
-scoped_refptr<MediaStreamAudioRenderer>
+scoped_refptr<blink::WebMediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
     int render_frame_id,

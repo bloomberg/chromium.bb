@@ -17,8 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/media_stream_audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -30,12 +30,13 @@ class AudioParameters;
 
 namespace content {
 
-// TrackAudioRenderer is a MediaStreamAudioRenderer for plumbing audio data
-// generated from either local or remote (but not PeerConnection/WebRTC-sourced)
-// MediaStreamAudioTracks to an audio output device, reconciling differences in
-// the rates of production and consumption of the audio data.  Note that remote
-// PeerConnection-sourced tracks are NOT rendered by this implementation (see
-// MediaStreamRendererFactoryImpl).
+// TrackAudioRenderer is a blink::WebMediaStreamAudioRenderer for plumbing audio
+// data generated from either local or remote (but not
+// PeerConnection/WebRTC-sourced) MediaStreamAudioTracks to an audio output
+// device, reconciling differences in the rates of production and consumption of
+// the audio data.  Note that remote PeerConnection-sourced tracks are NOT
+// rendered by this implementation (see
+// blink::WebMediaStreamRendererFactoryImpl).
 //
 // This class uses AudioDeviceFactory to create media::AudioRendererSink and
 // owns/manages their lifecycles.  Output devices are automatically re-created
@@ -50,7 +51,7 @@ namespace content {
 // and skip audio to maintain time synchronization between the producer and
 // consumer.
 class CONTENT_EXPORT TrackAudioRenderer
-    : public MediaStreamAudioRenderer,
+    : public blink::WebMediaStreamAudioRenderer,
       public blink::WebMediaStreamAudioSink,
       public media::AudioRendererSink::RenderCallback {
  public:
@@ -66,7 +67,7 @@ class CONTENT_EXPORT TrackAudioRenderer
                      int session_id,
                      const std::string& device_id);
 
-  // MediaStreamAudioRenderer implementation.
+  // blink::WebMediaStreamAudioRenderer implementation.
   // Called on the main thread.
   void Start() override;
   void Stop() override;

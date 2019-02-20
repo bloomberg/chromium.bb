@@ -15,9 +15,6 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
-#include "content/public/renderer/media_stream_audio_renderer.h"
-#include "content/public/renderer/media_stream_renderer_factory.h"
-#include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
@@ -34,6 +31,9 @@
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -76,11 +76,12 @@ const gfx::Size WebMediaPlayerMS::kUseGpuMemoryBufferVideoFramesMinResolution =
 // should be destructed on the IO thread.
 class WebMediaPlayerMS::FrameDeliverer {
  public:
-  FrameDeliverer(const base::WeakPtr<WebMediaPlayerMS>& player,
-                 const MediaStreamVideoRenderer::RepaintCB& enqueue_frame_cb,
-                 scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-                 scoped_refptr<base::TaskRunner> worker_task_runner,
-                 media::GpuVideoAcceleratorFactories* gpu_factories)
+  FrameDeliverer(
+      const base::WeakPtr<WebMediaPlayerMS>& player,
+      const blink::WebMediaStreamVideoRenderer::RepaintCB& enqueue_frame_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<base::TaskRunner> worker_task_runner,
+      media::GpuVideoAcceleratorFactories* gpu_factories)
       : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
@@ -160,7 +161,7 @@ class WebMediaPlayerMS::FrameDeliverer {
     render_frame_suspended_ = render_frame_suspended;
   }
 
-  MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
+  blink::WebMediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
     return base::Bind(&FrameDeliverer::OnVideoFrame,
                       weak_factory_.GetWeakPtr());
   }
@@ -210,7 +211,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const base::WeakPtr<WebMediaPlayerMS> player_;
-  const MediaStreamVideoRenderer::RepaintCB enqueue_frame_cb_;
+  const blink::WebMediaStreamVideoRenderer::RepaintCB enqueue_frame_cb_;
 
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   std::unique_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
@@ -230,7 +231,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebMediaPlayerClient* client,
     media::WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
-    std::unique_ptr<MediaStreamRendererFactory> factory,
+    std::unique_ptr<blink::WebMediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,

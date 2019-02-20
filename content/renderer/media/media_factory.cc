@@ -599,14 +599,13 @@ MediaFactory::GetWebMediaPlayerDelegate() {
   return media_player_delegate_;
 }
 
-std::unique_ptr<MediaStreamRendererFactory>
+std::unique_ptr<blink::WebMediaStreamRendererFactory>
 MediaFactory::CreateMediaStreamRendererFactory() {
-  std::unique_ptr<MediaStreamRendererFactory> factory =
+  std::unique_ptr<blink::WebMediaStreamRendererFactory> factory =
       GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
   if (factory.get())
     return factory;
-  return std::unique_ptr<MediaStreamRendererFactory>(
-      new MediaStreamRendererFactoryImpl());
+  return std::make_unique<MediaStreamRendererFactoryImpl>();
 }
 
 media::DecoderFactory* MediaFactory::GetDecoderFactory() {

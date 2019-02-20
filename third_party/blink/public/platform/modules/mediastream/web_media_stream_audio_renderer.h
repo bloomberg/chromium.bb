@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
-#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_RENDERER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_RENDERER_H_
 
 #include <string>
 
@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "media/base/output_device_info.h"
 
-namespace content {
+namespace blink {
 
-class MediaStreamAudioRenderer
-    : public base::RefCountedThreadSafe<MediaStreamAudioRenderer> {
+class WebMediaStreamAudioRenderer
+    : public base::RefCountedThreadSafe<WebMediaStreamAudioRenderer> {
  public:
   // Starts rendering audio.
   virtual void Start() = 0;
@@ -52,11 +52,11 @@ class MediaStreamAudioRenderer
   virtual bool IsLocalRenderer() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<MediaStreamAudioRenderer>;
+  friend class base::RefCountedThreadSafe<WebMediaStreamAudioRenderer>;
 
-  virtual ~MediaStreamAudioRenderer() {}
+  virtual ~WebMediaStreamAudioRenderer() {}
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_RENDERER_H_

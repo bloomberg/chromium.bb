@@ -46,7 +46,7 @@ const int kRenderTimeHistogramMaxMicroseconds = 1 * 1000 * 1000;  // 1 second
 // and 'started' states to avoid problems related to incorrect usage which
 // might violate the implementation assumptions inside WebRtcAudioRenderer
 // (see the play reference count).
-class SharedAudioRenderer : public MediaStreamAudioRenderer {
+class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
  public:
   // Callback definition for a callback that is called when when Play(), Pause()
   // or SetVolume are called (whenever the internal |playing_state_| changes).
@@ -59,10 +59,11 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   using OnPlayStateRemoved =
       base::OnceCallback<void(WebRtcAudioRenderer::PlayingState*)>;
 
-  SharedAudioRenderer(const scoped_refptr<MediaStreamAudioRenderer>& delegate,
-                      const blink::WebMediaStream& media_stream,
-                      const OnPlayStateChanged& on_play_state_changed,
-                      OnPlayStateRemoved on_play_state_removed)
+  SharedAudioRenderer(
+      const scoped_refptr<blink::WebMediaStreamAudioRenderer>& delegate,
+      const blink::WebMediaStream& media_stream,
+      const OnPlayStateChanged& on_play_state_changed,
+      OnPlayStateRemoved on_play_state_removed)
       : delegate_(delegate),
         media_stream_(media_stream),
         started_(false),
@@ -138,7 +139,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
  private:
   THREAD_CHECKER(thread_checker_);
-  const scoped_refptr<MediaStreamAudioRenderer> delegate_;
+  const scoped_refptr<blink::WebMediaStreamAudioRenderer> delegate_;
   const blink::WebMediaStream media_stream_;
   bool started_;
   WebRtcAudioRenderer::PlayingState playing_state_;
@@ -217,7 +218,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   return true;
 }
 
-scoped_refptr<MediaStreamAudioRenderer>
+scoped_refptr<blink::WebMediaStreamAudioRenderer>
 WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
     const blink::WebMediaStream& media_stream) {
   SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
