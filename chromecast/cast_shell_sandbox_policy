@@ -1,5 +1,8 @@
 {
-  "features": [ "persistent-storage", "root-ssl-certificates", "system-temp",
+  "features": [
+      "isolated-persistent-storage",
+      "root-ssl-certificates",
+      "system-temp",
       "vulkan" ],
   "dev": ["null", "zero"],
   "services": [
