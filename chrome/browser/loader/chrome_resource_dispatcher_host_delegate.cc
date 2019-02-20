@@ -152,11 +152,11 @@ void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
 #if BUILDFLAG(ENABLE_NACL)
 void AppendComponentUpdaterThrottles(
     net::URLRequest* request,
-    const ResourceRequestInfo& info,
+    ResourceRequestInfo* info,
     content::ResourceContext* resource_context,
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  if (info.IsPrerendering())
+  if (info->IsPrerendering())
     return;
 
   const char* crx_id = NULL;
@@ -311,7 +311,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES) || BUILDFLAG(ENABLE_NACL)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -353,7 +353,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_type,
                                   throttles);
 #if BUILDFLAG(ENABLE_NACL)
-  AppendComponentUpdaterThrottles(request, *info, resource_context,
+  AppendComponentUpdaterThrottles(request, info, resource_context,
                                   resource_type, throttles);
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
@@ -365,8 +365,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     bool must_download,
     bool is_new_request,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
+  content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
     throttles->push_back(std::make_unique<DownloadResourceThrottle>(
@@ -432,7 +432,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     GURL* origin,
     std::string* payload) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::string extension_id =
       PluginUtils::GetExtensionIdForMimeType(info->GetContext(), mime_type);
   if (!extension_id.empty()) {
@@ -452,7 +452,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
     std::unique_ptr<content::StreamInfo> stream) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   auto ix = stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
   bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
@@ -525,8 +525,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   // TODO(maksims): remove this and use net_error argument in RequestComplete
   // once ResourceDispatcherHostDelegate is modified.
   int net_error = url_request->status().error();
-  const ResourceRequestInfo* info =
-      ResourceRequestInfo::ForRequest(url_request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(url_request);
 
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(info->GetContext());

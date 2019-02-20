@@ -57,7 +57,7 @@ ContentLoFiDecider::DetermineCommittedServerPreviewsState(
 void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     const net::URLRequest& request,
     net::HttpRequestHeaders* headers) const {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   if (!request_info)
@@ -76,7 +76,7 @@ void ContentLoFiDecider::RemoveAcceptTransformHeader(
 
 bool ContentLoFiDecider::IsClientLoFiImageRequest(
     const net::URLRequest& request) const {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   return request_info &&
          request_info->GetResourceType() == content::RESOURCE_TYPE_IMAGE &&
@@ -85,7 +85,7 @@ bool ContentLoFiDecider::IsClientLoFiImageRequest(
 
 bool ContentLoFiDecider::IsClientLoFiAutoReloadRequest(
     const net::URLRequest& request) const {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   return request_info &&
          (request_info->GetPreviewsState() & content::CLIENT_LOFI_AUTO_RELOAD);

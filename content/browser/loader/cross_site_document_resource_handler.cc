@@ -650,7 +650,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     return false;
 
   // Only block if this is a request made from a renderer process.
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info || info->GetChildID() == -1)
     return false;
 

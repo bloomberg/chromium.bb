@@ -156,7 +156,7 @@ DownloadResourceHandler::DownloadResourceHandler(
   // before StartOnUIThread gets called.  This is safe because deletion
   // will occur via PostTask() as well, which will serialized behind this
   // PostTask()
-  const ResourceRequestInfoImpl* request_info = GetRequestInfo();
+  ResourceRequestInfoImpl* request_info = GetRequestInfo();
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
@@ -305,7 +305,7 @@ void DownloadResourceHandler::OnStart(
     return;
   }
 
-  const ResourceRequestInfoImpl* request_info = GetRequestInfo();
+  ResourceRequestInfoImpl* request_info = GetRequestInfo();
   create_info->has_user_gesture = request_info->HasUserGesture();
   create_info->transition_type = request_info->GetPageTransition();
 
@@ -332,7 +332,7 @@ void DownloadResourceHandler::OnReadyToRead() {
 void DownloadResourceHandler::CancelRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info = GetRequestInfo();
   ResourceDispatcherHostImpl::Get()->CancelRequest(
       info->GetChildID(),
       info->GetRequestID());
@@ -340,7 +340,7 @@ void DownloadResourceHandler::CancelRequest() {
 }
 
 std::string DownloadResourceHandler::DebugString() const {
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info = GetRequestInfo();
   return base::StringPrintf("{"
                             " url_ = " "\"%s\""
                             " info = {"

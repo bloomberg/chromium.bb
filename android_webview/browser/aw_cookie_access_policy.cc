@@ -68,7 +68,7 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
   int child_id = 0;
   int render_frame_id = 0;
   int frame_tree_node_id = content::RenderFrameHost::kNoFrameTreeNodeId;
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     child_id = info->GetChildID();
     render_frame_id = info->GetRenderFrameID();

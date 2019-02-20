@@ -88,7 +88,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
     Cancel();
     return;
   }
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;

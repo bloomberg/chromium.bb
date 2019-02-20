@@ -121,7 +121,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   if (!request->url().SchemeIsHTTPOrHTTPS())
     return data_use_recorders_.end();
 
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!request_info ||
       request_info->GetGlobalRequestID() == content::GlobalRequestID()) {
@@ -248,7 +248,7 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
   }
 
   {
-    const content::ResourceRequestInfo* request_info =
+    content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
     if (request_info &&
         request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
@@ -274,7 +274,7 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
   // map.
   bool page_load_is_tracked = frame_is_tracked;
 
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
   // If the frame is not tracked, but this is a main frame request, it might be

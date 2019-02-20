@@ -312,7 +312,7 @@ ChromeNetworkDelegate::OnAuthRequired(net::URLRequest* request,
 bool ChromeNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
                                             const net::CookieList& cookie_list,
                                             bool allowed_from_caller) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
@@ -328,7 +328,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            const net::CanonicalCookie& cookie,
                                            net::CookieOptions* options,
                                            bool allowed_from_caller) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},

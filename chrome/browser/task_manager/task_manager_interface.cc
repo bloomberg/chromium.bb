@@ -26,7 +26,7 @@ namespace {
 BytesTransferredKey KeyForRequest(const net::URLRequest& request) {
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have an associated ResourceRequestInfo and a render frame associated.
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   // Requests without ResourceRequestInfo are attributed to the browser process.

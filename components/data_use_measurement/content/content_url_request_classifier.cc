@@ -45,7 +45,7 @@ namespace data_use_measurement {
 DataUseUserData::DataUseContentType ContentURLRequestClassifier::GetContentType(
     const net::URLRequest& request,
     const net::HttpResponseHeaders& response_headers) const {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   std::string mime_type;
   if (response_headers.GetMimeType(&mime_type)) {
@@ -137,7 +137,7 @@ void ContentURLRequestClassifier::RecordPageTransitionUMA(
 
 bool ContentURLRequestClassifier::IsFavIconRequest(
     const net::URLRequest& request) const {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   return request_info && request_info->GetResourceType() ==
                              content::ResourceType::RESOURCE_TYPE_FAVICON;

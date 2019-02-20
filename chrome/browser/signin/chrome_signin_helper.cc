@@ -427,12 +427,12 @@ bool ChromeRequestAdapter::IsMainRequestContext(ProfileIOData* io_data) {
 
 content::ResourceRequestInfo::WebContentsGetter
 ChromeRequestAdapter::GetWebContentsGetter() const {
-  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info->GetWebContentsGetterForRequest();
 }
 
 content::ResourceType ChromeRequestAdapter::GetResourceType() const {
-  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info->GetResourceType();
 }
 
@@ -456,12 +456,12 @@ ResponseAdapter::~ResponseAdapter() = default;
 
 content::ResourceRequestInfo::WebContentsGetter
 ResponseAdapter::GetWebContentsGetter() const {
-  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info->GetWebContentsGetterForRequest();
 }
 
 bool ResponseAdapter::IsMainFrame() const {
-  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info && (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME);
 }
 

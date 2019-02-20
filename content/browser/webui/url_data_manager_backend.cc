@@ -465,7 +465,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   if (!source)
     return false;
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (!source->source()->ShouldServiceRequest(
           request->url(), info ? info->GetContext() : nullptr,
           info ? info->GetChildID() : -1)) {

@@ -60,7 +60,7 @@ bool AreExperimentalFeaturesEnabled2() {
 }
 
 bool IsNavigationRequest(net::URLRequest* request) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   return info && IsResourceTypeFrame(info->GetResourceType());
 }
 
@@ -442,7 +442,7 @@ void ClearSiteDataThrottle::TaskFinished() {
 }
 
 void ClearSiteDataThrottle::OutputConsoleMessages() {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info)
     delegate_->OutputMessages(info->GetWebContentsGetterForRequest());
 }

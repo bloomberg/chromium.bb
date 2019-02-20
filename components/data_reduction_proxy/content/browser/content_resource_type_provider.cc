@@ -20,7 +20,7 @@ static const size_t kMaxCacheSize = 15;
 // Returns the content type of |request|.
 ResourceTypeProvider::ContentType GetContentTypeInternal(
     const net::URLRequest& request) {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   if (!request_info)
@@ -70,7 +70,7 @@ void ContentResourceTypeProvider::SetContentType(
 
 bool ContentResourceTypeProvider::IsNonContentInitiatedRequest(
     const net::URLRequest& request) const {
-  const auto* resource_request_info =
+  auto* resource_request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   return !resource_request_info ||
          (resource_request_info->GetGlobalRequestID() ==

@@ -611,8 +611,7 @@ class PageTransitionResourceDispatcherHostDelegate
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     if (request->url() == watch_url_) {
-      const ResourceRequestInfo* info =
-          ResourceRequestInfo::ForRequest(request);
+      ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
       page_transition_ = info->GetPageTransition();
     }
   }

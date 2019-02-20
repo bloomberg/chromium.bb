@@ -31,8 +31,6 @@ class ResourceRequestInfo {
  public:
   // Returns the ResourceRequestInfo associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfo* ForRequest(
-      net::URLRequest* request);
-  CONTENT_EXPORT static const ResourceRequestInfo* ForRequest(
       const net::URLRequest* request);
 
   // Allocates a new, dummy ResourceRequestInfo and associates it with the
@@ -89,63 +87,63 @@ class ResourceRequestInfo {
   // thread.
   // Note: Not all resource requests will be owned by a WebContents. For
   // example, requests made by a ServiceWorker.
-  virtual WebContentsGetter GetWebContentsGetterForRequest() const = 0;
+  virtual WebContentsGetter GetWebContentsGetterForRequest() = 0;
 
   // Returns a callback that returns an int with the frame tree node id
   //   associated with this request, or -1 if it no longer exists. This
   //   callback should only be run on the UI thread.
   // Note: Not all resource requests will be associated with a frame. For
   // example, requests made by a ServiceWorker.
-  virtual FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() const = 0;
+  virtual FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() = 0;
 
   // Returns the associated ResourceContext.
-  virtual ResourceContext* GetContext() const = 0;
+  virtual ResourceContext* GetContext() = 0;
 
   // The child process unique ID of the requestor.
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
-  virtual int GetChildID() const = 0;
+  virtual int GetChildID() = 0;
 
   // The IPC route identifier for this request (this identifies the RenderView
   // or like-thing in the renderer that the request gets routed to).
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
   // Don't use this method for new code, as RenderViews are going away.
-  virtual int GetRouteID() const = 0;
+  virtual int GetRouteID() = 0;
 
   // The globally unique identifier for this request.
-  virtual GlobalRequestID GetGlobalRequestID() const = 0;
+  virtual GlobalRequestID GetGlobalRequestID() = 0;
 
   // The child process unique ID of the originating process, if the request is
   // was proxied through a renderer process on behalf of a pepper plugin
   // process; -1 otherwise.
-  virtual int GetPluginChildID() const = 0;
+  virtual int GetPluginChildID() = 0;
 
   // Returns the FrameTreeNode ID for this frame. This ID is browser-global and
   // uniquely identifies a frame that hosts content.
   // Note: Returns -1 for all requests except PlzNavigate requests.
-  virtual int GetFrameTreeNodeId() const = 0;
+  virtual int GetFrameTreeNodeId() = 0;
 
   // The IPC route identifier of the RenderFrame.
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
   // TODO(jam): once all navigation and resource requests are sent between
   // frames and RenderView/RenderViewHost aren't involved we can remove this and
   // just use GetRouteID above.
-  virtual int GetRenderFrameID() const = 0;
+  virtual int GetRenderFrameID() = 0;
 
   // True if GetRenderFrameID() represents a main frame in the RenderView.
-  virtual bool IsMainFrame() const = 0;
+  virtual bool IsMainFrame() = 0;
 
   // Returns the associated resource type.
-  virtual ResourceType GetResourceType() const = 0;
+  virtual ResourceType GetResourceType() = 0;
 
   // Returns the associated referrer policy.
-  virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
+  virtual network::mojom::ReferrerPolicy GetReferrerPolicy() = 0;
 
   // Returns whether the frame that initiated this request is used for
   // prerendering.
-  virtual bool IsPrerendering() const = 0;
+  virtual bool IsPrerendering() = 0;
 
   // Returns the associated page transition type.
-  virtual ui::PageTransition GetPageTransition() const = 0;
+  virtual ui::PageTransition GetPageTransition() = 0;
 
   // True if the request was initiated by a user action (like a tap to follow
   // a link).
@@ -156,25 +154,25 @@ class ResourceRequestInfo {
   // wanted this request to happen nor is aware of it.
   //
   // DO NOT BASE SECURITY DECISIONS ON THIS FLAG!
-  virtual bool HasUserGesture() const = 0;
+  virtual bool HasUserGesture() = 0;
 
   // Returns false if there is NOT an associated render frame.
   virtual bool GetAssociatedRenderFrame(int* render_process_id,
-                                        int* render_frame_id) const = 0;
+                                        int* render_frame_id) = 0;
 
   // Returns true if this is associated with an asynchronous request.
-  virtual bool IsAsync() const = 0;
+  virtual bool IsAsync() = 0;
 
   // Whether this is a download.
-  virtual bool IsDownload() const = 0;
+  virtual bool IsDownload() = 0;
 
   // Returns the current state of Previews.
-  virtual PreviewsState GetPreviewsState() const = 0;
+  virtual PreviewsState GetPreviewsState() = 0;
 
   // PlzNavigate
   // Only used for navigations. Returns opaque data set by the embedder on the
   // UI thread at the beginning of navigation.
-  virtual NavigationUIData* GetNavigationUIData() const = 0;
+  virtual NavigationUIData* GetNavigationUIData() = 0;
 
   // Used to annotate requests blocked using net::ERR_BLOCKED_BY_CLIENT and
   // net::ERR_BLOCKED_BY_RESPONSE errors, with a ResourceRequestBlockedReason.
@@ -184,13 +182,13 @@ class ResourceRequestInfo {
   // Returns the ResourceRequestBlockedReason for this request, else
   // base::nullopt.
   virtual base::Optional<blink::ResourceRequestBlockedReason>
-  GetResourceRequestBlockedReason() const = 0;
+  GetResourceRequestBlockedReason() = 0;
 
   // When the client of a request decides to cancel it, it may optionally
   // provide an application-defined description of the canncellation reason.
   // This method returns the custom reason. If no such reason has been provided,
   // it returns an empty string.
-  virtual base::StringPiece GetCustomCancelReason() const = 0;
+  virtual base::StringPiece GetCustomCancelReason() = 0;
 
  protected:
   virtual ~ResourceRequestInfo() {}

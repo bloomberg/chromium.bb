@@ -35,7 +35,7 @@ void ConvertRequestHeadersToVectors(const net::HttpRequestHeaders& headers,
 
 AwWebResourceRequest::AwWebResourceRequest(const net::URLRequest& request)
     : url(request.url().spec()), method(request.method()) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(&request);
   is_main_frame =
       info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;

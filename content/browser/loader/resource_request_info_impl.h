@@ -39,10 +39,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
  public:
   // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
-      net::URLRequest* request);
-
-  // And, a const version for cases where you only need read access.
-  CONTENT_EXPORT static const ResourceRequestInfoImpl* ForRequest(
       const net::URLRequest* request);
 
   CONTENT_EXPORT ResourceRequestInfoImpl(
@@ -76,38 +72,38 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
-  WebContentsGetter GetWebContentsGetterForRequest() const override;
-  FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() const override;
-  ResourceContext* GetContext() const override;
-  int GetChildID() const override;
-  int GetRouteID() const override;
-  GlobalRequestID GetGlobalRequestID() const override;
-  int GetPluginChildID() const override;
-  int GetRenderFrameID() const override;
-  int GetFrameTreeNodeId() const override;
-  bool IsMainFrame() const override;
-  ResourceType GetResourceType() const override;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
-  bool IsPrerendering() const override;
-  ui::PageTransition GetPageTransition() const override;
-  bool HasUserGesture() const override;
+  WebContentsGetter GetWebContentsGetterForRequest() override;
+  FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() override;
+  ResourceContext* GetContext() override;
+  int GetChildID() override;
+  int GetRouteID() override;
+  GlobalRequestID GetGlobalRequestID() override;
+  int GetPluginChildID() override;
+  int GetRenderFrameID() override;
+  int GetFrameTreeNodeId() override;
+  bool IsMainFrame() override;
+  ResourceType GetResourceType() override;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() override;
+  bool IsPrerendering() override;
+  ui::PageTransition GetPageTransition() override;
+  bool HasUserGesture() override;
   bool GetAssociatedRenderFrame(int* render_process_id,
-                                int* render_frame_id) const override;
-  bool IsAsync() const override;
-  bool IsDownload() const override;
+                                int* render_frame_id) override;
+  bool IsAsync() override;
+  bool IsDownload() override;
   // Returns a bitmask of potentially several Previews optimizations.
-  PreviewsState GetPreviewsState() const override;
-  NavigationUIData* GetNavigationUIData() const override;
+  PreviewsState GetPreviewsState() override;
+  NavigationUIData* GetNavigationUIData() override;
   void SetResourceRequestBlockedReason(
       blink::ResourceRequestBlockedReason reason) override;
   base::Optional<blink::ResourceRequestBlockedReason>
-  GetResourceRequestBlockedReason() const override;
-  base::StringPiece GetCustomCancelReason() const override;
+  GetResourceRequestBlockedReason() override;
+  base::StringPiece GetCustomCancelReason() override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
   CONTENT_EXPORT int GetRequestID() const;
-  GlobalRoutingID GetGlobalRoutingID() const;
+  GlobalRoutingID GetGlobalRoutingID();
 
   // Returns true if raw response headers (including sensitive data such as
   // cookies) should be included with the response.

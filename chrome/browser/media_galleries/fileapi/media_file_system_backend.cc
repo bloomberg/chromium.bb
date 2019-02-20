@@ -209,7 +209,7 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
     web_contents_getter = base::BindRepeating(
         &GetWebContentsFromFrameTreeNodeID, request_info.content_id);
   } else {
-    const content::ResourceRequestInfo* resource_request_info =
+    content::ResourceRequestInfo* resource_request_info =
         content::ResourceRequestInfo::ForRequest(request_info.request);
     if (!resource_request_info)
       return false;

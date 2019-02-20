@@ -52,7 +52,7 @@ bool IsCancelledBySafeBrowsing(const net::URLRequest* request) {
 
   // Check whether the request is cancelled by
   // safe_browsing::{Browser,Renderer}URLLoaderThrottle.
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   return request_info && request_info->GetCustomCancelReason().as_string() ==
                              safe_browsing::kCustomCancelReasonForURLLoader;
