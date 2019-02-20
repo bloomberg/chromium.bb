@@ -26,7 +26,7 @@ class DelayedHttpResponse : public net::test_server::BasicHttpResponse {
       const net::test_server::SendBytesCallback& send,
       const net::test_server::SendCompleteCallback& done) override {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(send, ToResponseString(), done),
+        FROM_HERE, base::BindOnce(send, ToResponseString(), done),
         base::TimeDelta::FromSecondsD(delay_));
   }
 

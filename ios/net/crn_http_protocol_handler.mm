@@ -951,7 +951,7 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE,
-                 base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
+                 base::BindOnce(&net::HttpProtocolHandlerCore::Cancel, _core));
 }
 
 @end
@@ -1060,8 +1060,8 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   DCHECK(_protocolProxy);
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
-      ->PostTask(FROM_HERE, base::Bind(&net::HttpProtocolHandlerCore::Start,
-                                       _core, _protocolProxy));
+      ->PostTask(FROM_HERE, base::BindOnce(&net::HttpProtocolHandlerCore::Start,
+                                           _core, _protocolProxy));
 }
 
 - (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy {
@@ -1087,7 +1087,7 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE,
-                 base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
+                 base::BindOnce(&net::HttpProtocolHandlerCore::Cancel, _core));
   [_protocolProxy invalidate];
 }
 

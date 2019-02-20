@@ -98,9 +98,9 @@ void ExternalFileRemoverImpl::RemoveAfterDelay(base::TimeDelta delay,
   bool remove_all_files = delay == base::TimeDelta::FromSeconds(0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExternalFileRemoverImpl::RemoveFiles,
-                 weak_ptr_factory_.GetWeakPtr(), remove_all_files,
-                 base::Passed(&closure_runner)),
+      base::BindOnce(&ExternalFileRemoverImpl::RemoveFiles,
+                     weak_ptr_factory_.GetWeakPtr(), remove_all_files,
+                     std::move(closure_runner)),
       delay);
 }
 

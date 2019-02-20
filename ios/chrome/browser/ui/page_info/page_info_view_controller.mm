@@ -123,8 +123,8 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   // can be delivered.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PageInfoModelBubbleBridge::PerformLayout,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PageInfoModelBubbleBridge::PerformLayout,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(1000 /* milliseconds */));
 }
 

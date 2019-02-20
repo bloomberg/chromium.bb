@@ -460,8 +460,9 @@ void AuthenticationService::OnIdentityListChanged() {
   // If the identity list changed while the authentication service was in
   // background, the user should be warned about it.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AuthenticationService::HandleIdentityListChanged,
-                            GetWeakPtr(), !is_in_foreground_));
+      FROM_HERE,
+      base::BindOnce(&AuthenticationService::HandleIdentityListChanged,
+                     GetWeakPtr(), !is_in_foreground_));
 }
 
 bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
@@ -517,8 +518,8 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
   // might still be accessible in SSO, and |OnIdentityListChanged| will handle
   // this when |identity| will actually disappear from SSO.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AuthenticationService::HandleForgottenIdentity,
-                            base::Unretained(this), identity, true));
+      FROM_HERE, base::BindOnce(&AuthenticationService::HandleForgottenIdentity,
+                                base::Unretained(this), identity, true));
 }
 
 void AuthenticationService::OnChromeIdentityServiceWillBeDestroyed() {
