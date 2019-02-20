@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <poll.h>
 #include <signal.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "api/public/mdns_service_listener_factory.h"
 #include "api/public/mdns_service_publisher_factory.h"
 #include "api/public/message_demuxer.h"
 #include "api/public/network_service_manager.h"
+#include "api/public/presentation/presentation_controller.h"
+#include "api/public/presentation/presentation_receiver.h"
 #include "api/public/protocol_connection_client.h"
 #include "api/public/protocol_connection_client_factory.h"
 #include "api/public/protocol_connection_server.h"
@@ -28,6 +32,9 @@
 
 namespace openscreen {
 namespace {
+
+const char* kReceiverLogFilename = "_recv_fifo";
+const char* kControllerLogFilename = "_cntl_fifo";
 
 bool g_done = false;
 bool g_dump_services = false;
@@ -194,31 +201,81 @@ class ConnectionServerObserver final
       connections_;
 };
 
-class ConnectionMessageCallback final : public MessageDemuxer::MessageCallback {
+class ReceiverConnectionDelegate final
+    : public presentation::Connection::Delegate {
  public:
-  ~ConnectionMessageCallback() override = default;
+  ReceiverConnectionDelegate() = default;
+  ~ReceiverConnectionDelegate() override = default;
 
-  ErrorOr<size_t> OnStreamMessage(uint64_t endpoint_id,
-                                  uint64_t connection_id,
-                                  msgs::Type message_type,
-                                  const uint8_t* buffer,
-                                  size_t buffer_size,
-                                  platform::TimeDelta now) override {
-    msgs::PresentationConnectionMessage message;
-    ssize_t result = msgs::DecodePresentationConnectionMessage(
-        buffer, buffer_size, &message);
-    if (result < 0) {
-      // TODO(btolsch): Need something better than including tinycbor.
-      if (result == -CborErrorUnexpectedEOF) {
-        return Error::Code::kCborIncompleteMessage;
-      } else {
-        return Error::Code::kCborParsing;
-      }
-    } else {
-      OSP_LOG << "message: " << message.message.str;
-      return result;
-    }
+  void OnConnected() override {
+    OSP_LOG << "presentation connection connected";
   }
+  void OnClosedByRemote() override {
+    OSP_LOG << "presentation connection closed by remote";
+  }
+  void OnDiscarded() override {}
+  void OnError(const absl::string_view message) override {}
+  void OnTerminatedByRemote() override { OSP_LOG << "presentation terminated"; }
+
+  void OnStringMessage(const absl::string_view message) override {
+    OSP_LOG << "got message: " << message;
+    connection->SendString("--echo-- " + std::string(message));
+  }
+  void OnBinaryMessage(const std::vector<uint8_t>& data) override {}
+
+  presentation::Connection* connection;
+};
+
+class ReceiverDelegate final : public presentation::ReceiverDelegate {
+ public:
+  ~ReceiverDelegate() override = default;
+
+  std::vector<msgs::PresentationUrlAvailability> OnUrlAvailabilityRequest(
+      uint64_t client_id,
+      uint64_t request_duration,
+      std::vector<std::string> urls) override {
+    std::vector<msgs::PresentationUrlAvailability> result;
+    result.reserve(urls.size());
+    for (const auto& url : urls) {
+      OSP_LOG << "got availability request for: " << url;
+      result.push_back(msgs::kCompatible);
+    }
+    return result;
+  }
+
+  bool StartPresentation(const presentation::Connection::PresentationInfo& info,
+                         uint64_t source_id,
+                         const std::string& http_headers) override {
+    presentation_id = info.id;
+    connection = std::make_unique<presentation::Connection>(
+        info, presentation::Connection::Role::kReceiver, &cd);
+    cd.connection = connection.get();
+    presentation::Receiver::Get()->OnPresentationStarted(
+        info.id, connection.get(), presentation::ResponseResult::kSuccess);
+    return true;
+  }
+
+  bool ConnectToPresentation(uint64_t request_id,
+                             const std::string& id,
+                             uint64_t source_id) override {
+    connection = std::make_unique<presentation::Connection>(
+        presentation::Connection::PresentationInfo{
+            id, connection->get_presentation_info().url},
+        presentation::Connection::Role::kReceiver, &cd);
+    cd.connection = connection.get();
+    presentation::Receiver::Get()->OnConnectionCreated(
+        request_id, connection.get(), presentation::ResponseResult::kSuccess);
+    return true;
+  }
+
+  void TerminatePresentation(const std::string& id,
+                             presentation::TerminationReason reason) override {
+    presentation::Receiver::Get()->OnPresentationTerminated(id, reason);
+  }
+
+  std::string presentation_id;
+  std::unique_ptr<presentation::Connection> connection;
+  ReceiverConnectionDelegate cd;
 };
 
 void ListenerDemo() {
@@ -250,8 +307,77 @@ void ListenerDemo() {
   NetworkServiceManager::Dispose();
 }
 
+void HandleReceiverCommand(absl::string_view command,
+                           absl::string_view argument_tail,
+                           ReceiverDelegate& delegate,
+                           NetworkServiceManager* manager) {
+  if (command == "avail") {
+    ServicePublisher* publisher = manager->GetMdnsServicePublisher();
+
+    if (publisher->state() == ServicePublisher::State::kSuspended) {
+      publisher->Resume();
+    } else {
+      publisher->Suspend();
+    }
+  } else if (command == "close") {
+    delegate.connection->Close(presentation::Connection::CloseReason::kClosed);
+  } else if (command == "msg") {
+    delegate.connection->SendString(argument_tail);
+  } else if (command == "term") {
+    presentation::Receiver::Get()->OnPresentationTerminated(
+        delegate.presentation_id,
+        presentation::TerminationReason::kReceiverUserTerminated);
+  } else {
+    OSP_LOG_FATAL << "Received unknown receiver command: " << command;
+  }
+}
+
+void RunReceiverPollLoop(pollfd& file_descriptor,
+                         NetworkServiceManager* manager,
+                         ReceiverDelegate& delegate) {
+  write(STDOUT_FILENO, "$ ", 2);
+
+  while (poll(&file_descriptor, 1, 10) >= 0) {
+    if (g_done) {
+      break;
+    }
+
+    manager->RunEventLoopOnce();
+
+    if (file_descriptor.revents == 0) {
+      continue;
+    } else if (file_descriptor.revents & (POLLERR | POLLHUP)) {
+      break;
+    }
+
+    std::string line;
+    if (!std::getline(std::cin, line)) {
+      break;
+    }
+
+    std::size_t split_index = line.find_first_of(' ');
+    absl::string_view line_view(line);
+
+    HandleReceiverCommand(line_view.substr(0, split_index),
+                          line_view.substr(split_index), delegate, manager);
+
+    write(STDOUT_FILENO, "$ ", 2);
+  }
+}
+
+void CleanupPublisherDemo(NetworkServiceManager* manager) {
+  presentation::Receiver::Get()->SetReceiverDelegate(nullptr);
+  presentation::Receiver::Get()->Deinit();
+  manager->GetMdnsServicePublisher()->Stop();
+  manager->GetProtocolConnectionServer()->Stop();
+
+  NetworkServiceManager::Dispose();
+}
+
 void PublisherDemo(absl::string_view friendly_name) {
   SignalThings();
+
+  constexpr uint16_t server_port = 6667;
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
@@ -259,7 +385,8 @@ void PublisherDemo(absl::string_view friendly_name) {
   publisher_config.friendly_name = std::string(friendly_name);
   publisher_config.hostname = "turtle-deadbeef";
   publisher_config.service_instance_name = "deadbeef";
-  publisher_config.connection_server_port = 6667;
+  publisher_config.connection_server_port = server_port;
+
   auto mdns_publisher = MdnsServicePublisherFactory::Create(
       publisher_config, &publisher_observer);
 
@@ -268,13 +395,10 @@ void PublisherDemo(absl::string_view friendly_name) {
       platform::GetInterfaceAddresses();
   for (const auto& interface : interfaces) {
     server_config.connection_endpoints.push_back(
-        IPEndpoint{interface.addresses[0].address, 6667});
+        IPEndpoint{interface.addresses[0].address, server_port});
   }
 
   MessageDemuxer demuxer;
-  ConnectionMessageCallback message_callback;
-  MessageDemuxer::MessageWatch message_watch = demuxer.WatchMessageType(
-      0, msgs::Type::kPresentationConnectionMessage, &message_callback);
   ConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
       server_config, &demuxer, &server_observer);
@@ -282,17 +406,17 @@ void PublisherDemo(absl::string_view friendly_name) {
       NetworkServiceManager::Create(nullptr, std::move(mdns_publisher), nullptr,
                                     std::move(connection_server));
 
+  ReceiverDelegate receiver_delegate;
+  presentation::Receiver::Get()->Init();
+  presentation::Receiver::Get()->SetReceiverDelegate(&receiver_delegate);
   network_service->GetMdnsServicePublisher()->Start();
   network_service->GetProtocolConnectionServer()->Start();
 
-  while (!g_done) {
-    network_service->RunEventLoopOnce();
-  }
+  pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
 
-  network_service->GetMdnsServicePublisher()->Stop();
-  network_service->GetProtocolConnectionServer()->Stop();
+  RunReceiverPollLoop(stdin_pollfd, network_service, receiver_delegate);
 
-  NetworkServiceManager::Dispose();
+  CleanupPublisherDemo(network_service);
 }
 
 }  // namespace
@@ -333,15 +457,20 @@ int main(int argc, char** argv) {
             << std::endl;
 
   InputArgs args = GetInputArgs(argc, argv);
-  openscreen::platform::LogInit(nullptr);
+
+  const bool is_receiver_demo = !args.friendly_server_name.empty();
+  const char* log_filename = is_receiver_demo
+                                 ? openscreen::kReceiverLogFilename
+                                 : openscreen::kControllerLogFilename;
+  openscreen::platform::LogInit(log_filename);
 
   LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
   openscreen::platform::SetLogLevel(level);
 
-  if (argc == 1) {
-    openscreen::ListenerDemo();
-  } else {
+  if (is_receiver_demo) {
     openscreen::PublisherDemo(args.friendly_server_name);
+  } else {
+    openscreen::ListenerDemo();
   }
 
   return 0;

@@ -39,6 +39,7 @@ class Error {
     kNoPresentationFound,
     kPreviousStartInProgress,
     kUnknownStartError,
+    kUnknownRequestId,
 
     kAddressInUse,
     kAlreadyListening,

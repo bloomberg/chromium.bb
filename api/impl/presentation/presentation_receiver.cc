@@ -124,6 +124,8 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       if (!presentation_id) {
         msgs::PresentationInitiationResponse response;
         response.request_id = request.request_id;
+
+        // TODO(jophba): remove decltype? Can we do it in generated code?
         response.result = static_cast<decltype(response.result)>(
             msgs::kInvalidPresentationId);
         Error write_error = WritePresentationInitiationResponse(
@@ -369,6 +371,39 @@ Error Receiver::OnPresentationStarted(const std::string& presentation_id,
                                              raw_protocol_connection_ptr);
 }
 
+Error Receiver::OnConnectionCreated(uint64_t request_id,
+                                    Connection* connection,
+                                    ResponseResult result) {
+  const auto presentation_id = connection->get_presentation_info().id;
+
+  ErrorOr<QueuedResponseIterator> connection_response =
+      GetQueuedResponse(presentation_id, request_id);
+  if (connection_response.is_error()) {
+    return connection_response.error();
+  }
+  connection->OnConnected(
+      connection_response.value()->connection_id,
+      connection_response.value()->endpoint_id,
+      NetworkServiceManager::Get()
+          ->GetProtocolConnectionServer()
+          ->CreateProtocolConnection(connection_response.value()->endpoint_id));
+
+  started_presentations_[presentation_id].connections.push_back(connection);
+  connection_manager_->AddConnection(connection);
+
+  msgs::PresentationConnectionOpenResponse response;
+  response.request_id = request_id;
+  response.result = static_cast<decltype(response.result)>(msgs::kSuccess);
+
+  auto protocol_connection =
+      GetProtocolConnection(connection_response.value()->endpoint_id);
+
+  WritePresentationConnectionOpenResponse(response, protocol_connection.get());
+
+  DeleteQueuedResponse(presentation_id, connection_response.value());
+  return Error::None();
+}
+
 Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
                                          TerminationReason reason) {
   auto presentation_entry = started_presentations_.find(presentation_id);
@@ -425,6 +460,38 @@ void Receiver::OnConnectionDestroyed(Connection* connection) {
 Receiver::Receiver() = default;
 
 Receiver::~Receiver() = default;
+
+void Receiver::DeleteQueuedResponse(const std::string& presentation_id,
+                                    Receiver::QueuedResponseIterator response) {
+  auto entry = queued_responses_.find(presentation_id);
+  entry->second.erase(response);
+  if (entry->second.empty())
+    queued_responses_.erase(entry);
+}
+
+ErrorOr<Receiver::QueuedResponseIterator> Receiver::GetQueuedResponse(
+    const std::string& presentation_id,
+    uint64_t request_id) const {
+  auto entry = queued_responses_.find(presentation_id);
+  if (entry == queued_responses_.end()) {
+    OSP_LOG_WARN << "connection created for unknown request";
+    return Error::Code::kUnknownRequestId;
+  }
+
+  const std::vector<QueuedResponse>& responses = entry->second;
+  Receiver::QueuedResponseIterator it =
+      std::find_if(responses.begin(), responses.end(),
+                   [request_id](const QueuedResponse& response) {
+                     return response.request_id == request_id;
+                   });
+
+  if (it == responses.end()) {
+    OSP_LOG_WARN << "connection created for unknown request";
+    return Error::Code::kUnknownRequestId;
+  }
+
+  return it;
+}
 
 }  // namespace presentation
 }  // namespace openscreen

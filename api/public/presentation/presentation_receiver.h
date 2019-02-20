@@ -76,6 +76,10 @@ class Receiver final : public MessageDemuxer::MessageCallback {
                               Connection* connection,
                               ResponseResult result);
 
+  Error OnConnectionCreated(uint64_t request_id,
+                            Connection* connection,
+                            ResponseResult result);
+
   // Called by the embedder to report that a presentation has been terminated.
   Error OnPresentationTerminated(const std::string& presentation_id,
                                  TerminationReason reason);
@@ -94,15 +98,10 @@ class Receiver final : public MessageDemuxer::MessageCallback {
   struct QueuedResponse {
     enum class Type { kInitiation, kConnection };
 
-    QueuedResponse() = default;
-    QueuedResponse(QueuedResponse&&) = default;
-
     Type type;
     uint64_t request_id;
     uint64_t connection_id;
     uint64_t endpoint_id;
-
-    DISALLOW_COPY_AND_ASSIGN(QueuedResponse);
   };
 
   struct Presentation {
@@ -115,7 +114,18 @@ class Receiver final : public MessageDemuxer::MessageCallback {
   Receiver();
   ~Receiver();
 
+  using QueuedResponseIterator = std::vector<QueuedResponse>::const_iterator;
+
+  void DeleteQueuedResponse(const std::string& presentation_id,
+                            QueuedResponseIterator response);
+  ErrorOr<QueuedResponseIterator> GetQueuedResponse(
+      const std::string& presentation_id,
+      uint64_t request_id) const;
+
   ReceiverDelegate* delegate_ = nullptr;
+
+  // TODO(jophba): scope requests by endpoint, not presentation. This doesn't
+  // work properly for multiple controllers.
   std::map<std::string, std::vector<QueuedResponse>> queued_responses_;
 
   // Presentations are added when the embedder starts the presentation,
