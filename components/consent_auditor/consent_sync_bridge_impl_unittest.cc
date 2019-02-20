@@ -197,9 +197,7 @@ TEST_F(ConsentSyncBridgeImplTest, ShouldNotDeleteConsentsWhenSyncIsDisabled) {
       std::make_unique<UserConsentSpecifics>(user_consent_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -314,9 +312,7 @@ TEST_F(ConsentSyncBridgeImplTest,
 
   // User disables sync, hovewer, the consent hasn't been submitted yet. It is
   // preserved to be submitted when sync is re-enabled.
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -385,9 +381,7 @@ TEST_F(ConsentSyncBridgeImplTest,
       std::make_unique<UserConsentSpecifics>(user_consent_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -404,9 +398,7 @@ TEST_F(ConsentSyncBridgeImplTest,
                           EntityChangeList());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   base::RunLoop().RunUntilIdle();
 
   // This time their consent should be resubmitted, because it is for the same

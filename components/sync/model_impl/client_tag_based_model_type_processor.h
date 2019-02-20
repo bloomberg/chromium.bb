@@ -116,7 +116,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Clears all metadata and directs the bridge to clear the persisted metadata
   // as well. In addition, it resets the state of the processor and clears all
   // tracking maps such as |entities_| and |storage_key_to_tag_hash_|.
-  ModelTypeSyncBridge::StopSyncResponse ClearMetadataAndResetState();
+  void ClearMetadataAndResetState();
 
   // Returns true if the model is ready or encountered an error.
   bool IsModelReadyOrError() const;

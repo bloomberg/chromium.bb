@@ -64,9 +64,8 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-  StopSyncResponse ApplyStopSyncChanges(
-      std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
-      override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // LocalSessionEventHandlerImpl::Delegate implementation.
   std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>

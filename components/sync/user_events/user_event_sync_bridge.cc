@@ -145,14 +145,12 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
-ModelTypeSyncBridge::StopSyncResponse UserEventSyncBridge::ApplyStopSyncChanges(
+void UserEventSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   if (delete_metadata_change_list) {
     store_->DeleteAllDataAndMetadata(base::BindOnce(
         &UserEventSyncBridge::OnCommit, weak_ptr_factory_.GetWeakPtr()));
   }
-
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 void UserEventSyncBridge::RecordUserEvent(

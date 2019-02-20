@@ -54,9 +54,8 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
   bool SupportsGetStorageKey() const override;
-  ModelTypeSyncBridge::StopSyncResponse ApplyStopSyncChanges(
-      std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
-      override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
  private:
   // Password store responsible for persistence.

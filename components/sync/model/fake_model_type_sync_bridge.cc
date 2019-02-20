@@ -361,22 +361,16 @@ ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
   return std::move(*conflict_resolution_);
 }
 
-ModelTypeSyncBridge::StopSyncResponse
-FakeModelTypeSyncBridge::ApplyStopSyncChanges(
+void FakeModelTypeSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   ModelTypeSyncBridge::ApplyStopSyncChanges(
       std::move(delete_metadata_change_list));
-  return stop_sync_response_;
 }
 
 void FakeModelTypeSyncBridge::SetConflictResolution(
     ConflictResolution resolution) {
   conflict_resolution_ =
       std::make_unique<ConflictResolution>(std::move(resolution));
-}
-
-void FakeModelTypeSyncBridge::SetStopSyncResponse(StopSyncResponse response) {
-  stop_sync_response_ = response;
 }
 
 void FakeModelTypeSyncBridge::ErrorOnNextCall() {

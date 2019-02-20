@@ -292,7 +292,7 @@ std::string SessionSyncBridge::GetStorageKey(
   return SessionStore::GetStorageKey(entity_data.specifics.session());
 }
 
-ModelTypeSyncBridge::StopSyncResponse SessionSyncBridge::ApplyStopSyncChanges(
+void SessionSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   DCHECK(store_);
   local_session_event_router_->Stop();
@@ -300,7 +300,6 @@ ModelTypeSyncBridge::StopSyncResponse SessionSyncBridge::ApplyStopSyncChanges(
     store_->DeleteAllDataAndMetadata();
   }
   syncing_.reset();
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>

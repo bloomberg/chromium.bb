@@ -193,27 +193,13 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // and the one received from sync and stored it |activation_request_|. This
     // indicates that the stored metadata are invalid (e.g. has been
     // manipulated) and don't belong to the current syncing client.
-    const ModelTypeSyncBridge::StopSyncResponse response =
-        ClearMetadataAndResetState();
+    ClearMetadataAndResetState();
 
-    switch (response) {
-      case ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync:
-        // The model is still ready to sync (with the same |bridge_|) - replay
-        // the initialization.
-        model_ready_to_sync_ = true;
-        // Notify the bridge sync is starting to simulate an enable event.
-        bridge_->OnSyncStarting(activation_request_);
-        break;
-      case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
-        // Model not ready to sync, so wait until the bridge calls
-        // ModelReadyToSync().
-        DCHECK(!model_ready_to_sync_);
-        // Notify the bridge sync is starting to simulate an enable event.
-        bridge_->OnSyncStarting(activation_request_);
-        // Return early to avoid replying to OnSyncStarting() immediately. This
-        // will be handled in ModelReadyToSync().
-        return;
-    }
+    // The model is still ready to sync (with the same |bridge_|) - replay
+    // the initialization.
+    model_ready_to_sync_ = true;
+    // Notify the bridge sync is starting to simulate an enable event.
+    bridge_->OnSyncStarting(activation_request_);
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
@@ -252,38 +238,21 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
 
   switch (metadata_fate) {
     case KEEP_METADATA: {
-      switch (bridge_->ApplyStopSyncChanges(
-          /*delete_metadata_change_list=*/nullptr)) {
-        case ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync:
-          // The model is still ready to sync (with the same |bridge_|) and same
-          // sync metadata.
-          ResetState(KEEP_METADATA);
-          DCHECK(model_ready_to_sync_);
-          break;
-        case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
-          // Model not ready to sync, so wait until the bridge calls
-          // ModelReadyToSync(), and meanwhile throw away all metadata.
-          ResetState(CLEAR_METADATA);
-          DCHECK(!model_ready_to_sync_);
-          break;
-      }
+      bridge_->ApplyStopSyncChanges(
+          /*delete_metadata_change_list=*/nullptr);
+      // The model is still ready to sync (with the same |bridge_|) and same
+      // sync metadata.
+      ResetState(KEEP_METADATA);
+      DCHECK(model_ready_to_sync_);
       break;
     }
 
     case CLEAR_METADATA: {
-      switch (ClearMetadataAndResetState()) {
-        case ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync:
-          // The model is still ready to sync (with the same |bridge_|) - replay
-          // the initialization.
-          ModelReadyToSync(std::make_unique<MetadataBatch>());
-          DCHECK(model_ready_to_sync_);
-          break;
-        case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
-          // Model not ready to sync, so wait until the bridge calls
-          // ModelReadyToSync().
-          DCHECK(!model_ready_to_sync_);
-          break;
-      }
+      ClearMetadataAndResetState();
+      // The model is still ready to sync (with the same |bridge_|) - replay
+      // the initialization.
+      ModelReadyToSync(std::make_unique<MetadataBatch>());
+      DCHECK(model_ready_to_sync_);
       break;
     }
   }
@@ -291,8 +260,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
   DCHECK(!IsConnected());
 }
 
-ModelTypeSyncBridge::StopSyncResponse
-ClientTagBasedModelTypeProcessor::ClearMetadataAndResetState() {
+void ClientTagBasedModelTypeProcessor::ClearMetadataAndResetState() {
   std::unique_ptr<MetadataChangeList> change_list;
 
   // Clear metadata if MergeSyncData() was called before.
@@ -309,13 +277,10 @@ ClientTagBasedModelTypeProcessor::ClearMetadataAndResetState() {
     DCHECK(entities_.empty());
   }
 
-  const ModelTypeSyncBridge::StopSyncResponse response =
-      bridge_->ApplyStopSyncChanges(std::move(change_list));
+  bridge_->ApplyStopSyncChanges(std::move(change_list));
 
   // Reset all the internal state of the processor.
   ResetState(CLEAR_METADATA);
-
-  return response;
 }
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
