@@ -1184,15 +1184,15 @@ RTCDtlsTransport* RTCPeerConnection::LookupDtlsTransportByMid(String mid) {
     return nullptr;
   // Check for previously created RTCDtlsTransport objects referencing
   // this transport.
-  auto transport_iterator = dtls_transports_by_mid_.find(mid);
-  if (transport_iterator != dtls_transports_by_mid_.end()) {
-    if (transport_iterator->value->native_transport() !=
+  auto transport_lookup_result = dtls_transports_by_mid_.find(mid);
+  if (transport_lookup_result != dtls_transports_by_mid_.end()) {
+    if (transport_lookup_result->value->native_transport() !=
         native_transport.get()) {
       // The mid's transport has changed. Erase the reference to
       // the old transport, and continue.
-      dtls_transports_by_mid_.erase(transport_iterator);
+      dtls_transports_by_mid_.erase(transport_lookup_result);
     } else {
-      return transport_iterator->value;
+      return transport_lookup_result->value;
     }
   }
 
