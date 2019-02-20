@@ -61,10 +61,10 @@ public class BrowserTaskExecutor implements TaskExecutor {
     public static void register() {
         // In some tests we will get called multiple times.
         if (sRegistered) return;
+        sRegistered = true;
 
         PostTask.registerTaskExecutor(
-                UiThreadTaskTraitsImpl.EXTENSION_ID, new BrowserTaskExecutor());
-        sRegistered = true;
+                UiThreadTaskTraitsImpl.DESCRIPTOR.getId(), new BrowserTaskExecutor());
     }
 
     private final WeakHashMap<TaskTraits, SingleThreadTaskRunner> mTaskRunners =
