@@ -178,9 +178,8 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
       std::make_unique<ImagePlanes>(planes, row_bytes);
   decoder->SetImagePlanes(std::move(image_planes));
 
-  DCHECK(decoder->CanDecodeToYUV());
-
-  if (decoder->DecodeToYUV()) {
+  decoder->DecodeToYUV();
+  if (!decoder->Failed()) {
     // TODO(crbug.com/910276): Set this properly for alpha support.
     SetHasAlpha(index, false);
     return true;

@@ -47,7 +47,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   IntSize DecodedYUVSize(int component) const override;
   size_t DecodedYUVWidthBytes(int component) const override;
   bool CanDecodeToYUV() override;
-  bool DecodeToYUV() override;
+  void DecodeToYUV() override;
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   std::vector<SkISize> GetSupportedDecodeSizes() const override;
   bool HasImagePlanes() const { return image_planes_.get(); }
@@ -63,6 +63,9 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   void SetDecodedSize(unsigned width, unsigned height);
 
   void SetSupportedDecodeSizes(std::vector<SkISize> sizes);
+  void SetDecodeToYuvForTesting(bool decode_to_yuv) {
+    decode_to_yuv_for_testing_ = decode_to_yuv;
+  }
 
  private:
   // ImageDecoder:
@@ -78,6 +81,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
   std::vector<SkISize> supported_decode_sizes_;
+  bool decode_to_yuv_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(JPEGImageDecoder);
 };
