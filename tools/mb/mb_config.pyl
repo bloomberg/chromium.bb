@@ -654,12 +654,12 @@
 
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
-      # when the PFQ has it enabled.
+      # and two kevin bots when the PFQ has it enabled.
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk_dchecks_always_on',
-      'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
-      'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
+      'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
