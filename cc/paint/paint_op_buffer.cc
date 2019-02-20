@@ -1205,7 +1205,21 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
+  // TODO(crbug.com/931704): make sure to support the case where paint worklet
+  // generated images are used in other raster work such as canvas2d.
   SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
+
+  if (op->image.IsPaintWorklet()) {
+    DCHECK(params.image_provider);
+    ImageProvider::ScopedResult result =
+        params.image_provider->GetRasterContent(DrawImage(op->image));
+
+    DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
+    SkAutoCanvasRestore save_restore(canvas, true);
+    canvas->translate(op->left, op->top);
+    result.paint_record()->Playback(canvas, params);
+    return;
+  }
 
   if (!params.image_provider) {
     const bool needs_scale = !IsScaleAdjustmentIdentity(op->scale_adjustment);
@@ -1245,6 +1259,7 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
   canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
 }
 
+// TODO(xidachen): ensure paint worklet generated images are correctly handled.
 void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
                                       const PaintFlags* flags,
                                       SkCanvas* canvas,
@@ -2393,8 +2408,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   PlaybackParams new_params(params.image_provider, canvas->getTotalMatrix(),
                             params.custom_callback,
                             params.did_draw_op_callback);
-  // TODO(xidachen): retrieve the PaintRecord stored in PaintWorkletImageCache,
-  // from the PaintWorkletImageProvider in the params.
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
     const PaintOp* op = *iter;
 

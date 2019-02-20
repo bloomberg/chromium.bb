@@ -24,6 +24,7 @@ namespace cc {
 class CC_PAINT_EXPORT DrawImage {
  public:
   DrawImage();
+  explicit DrawImage(PaintImage image);
   DrawImage(PaintImage image,
             const SkIRect& src_rect,
             SkFilterQuality filter_quality,
