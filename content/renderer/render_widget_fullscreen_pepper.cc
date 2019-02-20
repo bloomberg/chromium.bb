@@ -390,7 +390,7 @@ void RenderWidgetFullscreenPepper::UpdateLayerBounds() {
 
   // The |layer_| is sized here to cover the entire renderer's compositor
   // viewport.
-  gfx::Size layer_size = PhysicalPixelViewportSize();
+  gfx::Size layer_size = gfx::Rect(ViewRect()).size();
   // When IsUseZoomForDSFEnabled() is true, layout and compositor layer sizes
   // given by blink are all in physical pixels. When IsUseZoomForDSFEnabled() is
   // false, layout and compositor layer sizes given by blink are all in DIP, and
