@@ -244,9 +244,11 @@ class SimpleBuilder(generic_builders.Builder):
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
         lambda: self._RunHWTests(builder_run, board),
-        lambda: self._RunVMTests(builder_run, board),
         lambda: self._RunDebugSymbolStages(builder_run, board),
     ])
+    # Move VMTests out of parallel execution due to high failure rate.
+    # http://crbug/932644
+    self._RunVMTests(builder_run, board)
 
   def RunSetupBoard(self):
     """Run the SetupBoard stage for all child configs and boards."""
