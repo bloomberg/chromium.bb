@@ -34,6 +34,11 @@ void DidLogServiceEvent(blink::ServiceWorkerStatusCode status) {
   // TODO(rayankans): Log errors to UMA.
 }
 
+void DidClearServiceEvents(blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(rayankans): Log errors to UMA.
+}
+
 void UpdateDevToolsBackgroundServiceExpiration(
     BrowserContext* browser_context,
     devtools::proto::BackgroundService service,
@@ -98,6 +103,11 @@ void DevToolsBackgroundServicesContext::StopRecording(
                      browser_context_, service, base::Time()));
 }
 
+bool DevToolsBackgroundServicesContext::IsRecording(
+    devtools::proto::BackgroundService service) {
+  return !expiration_times_[service].is_null();
+}
+
 void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
     devtools::proto::BackgroundService service,
     GetLoggedBackgroundServiceEventsCallback callback) {
@@ -142,18 +152,23 @@ void DevToolsBackgroundServicesContext::DidGetUserData(
   std::move(callback).Run(std::move(service_states));
 }
 
+void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEvents(
+    devtools::proto::BackgroundService service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->ClearUserDataForAllRegistrationsByKeyPrefix(
+      CreateEntryKeyPrefix(service), base::BindOnce(&DidClearServiceEvents));
+}
+
 void DevToolsBackgroundServicesContext::LogTestBackgroundServiceEvent(
     uint64_t service_worker_registration_id,
     const url::Origin& origin,
     devtools::proto::TestBackgroundServiceEvent event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto service = devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE;
-  if (expiration_times_[service].is_null())
-    return;
-
   devtools::proto::BackgroundServiceState service_state;
-  service_state.set_background_service(service);
+  service_state.set_background_service(
+      devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
   *service_state.mutable_test_event() = std::move(event);
 
   LogBackgroundServiceState(service_worker_registration_id, origin,
@@ -166,7 +181,8 @@ void DevToolsBackgroundServicesContext::LogBackgroundServiceState(
     devtools::proto::BackgroundServiceState service_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(!expiration_times_[service_state.background_service()].is_null());
+  if (!IsRecording(service_state.background_service()))
+    return;
 
   // Add common metadata.
   service_state.set_timestamp(
