@@ -5,12 +5,12 @@ import "build_api.proto";
 import "common.proto";
 
 
-// Autotest archive messages and service.
+// Test archive messages and service.
 
-// Message for creating Hardware Test archives.
+// Message for creating archives.
 // Example Json:
 // {"build_target":{"name":"board"},"output_directory":"/tmp/archives"}
-message CreateHwTestArchivesRequest {
+message CreateArchiveRequest {
   // The board whose tarballs are being created.
   BuildTarget build_target = 1;
   // The directory where the completed archive(s) should be saved.
@@ -23,8 +23,8 @@ message ArchiveFile {
   string path = 1;
 }
 
-// Response from creating Hardware Test archives.
-message CreateHwTestArchivesResponse {
+// Response from creating archives.
+message CreateArchiveResponse {
   // The created archive files.
   repeated ArchiveFile files = 1;
 }
@@ -37,6 +37,6 @@ service ArchiveService {
   };
 
   // Create the HW Test archive.
-  rpc CreateHwTestArchives(CreateHwTestArchivesRequest)
-    returns (CreateHwTestArchivesResponse);
+  rpc CreateHwTestArchives(CreateArchiveRequest)
+    returns (CreateArchiveResponse);
 }

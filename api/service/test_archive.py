@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Autotest archive creation service.
+"""Test archive creation service.
 
 The CI system requires archives of autotest files for a number of stages.
 This service handles the creation of those archives.
@@ -11,16 +11,16 @@ This service handles the creation of those archives.
 
 from __future__ import print_function
 
-from chromite.lib.api import autotest
 from chromite.lib import cros_build_lib
+from chromite.lib.api import test_archive
 
 
 def CreateHwTestArchives(input_proto, output_proto):
   """Create the HW Test archives.
 
   Args:
-    input_proto (CreateHwTestArchiveRequest): The input arguments message.
-    output_proto (CreateHwTestArchiveResponse): The empty output message.
+    input_proto (CreateArchiveRequest): The input arguments message.
+    output_proto (CreateArchiveResponse): The empty output message.
   """
   board = input_proto.build_target.name
   output_dir = input_proto.output_directory
@@ -31,8 +31,8 @@ def CreateHwTestArchives(input_proto, output_proto):
     cros_build_lib.Die('An output directory must be specified.')
 
   try:
-    files = autotest.CreateHwTestArchives(board, output_dir)
-  except autotest.ArchiveBaseDirNotFound as e:
+    files = test_archive.CreateHwTestArchives(board, output_dir)
+  except test_archive.ArchiveBaseDirNotFound as e:
     cros_build_lib.Die(e.message)
 
   for current in files.values():

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Autotest functionality."""
+"""Test archive functionality."""
 
 from __future__ import print_function
 
@@ -34,7 +34,7 @@ class ArchiveBaseDirNotFound(Error):
 
 
 def CreateHwTestArchives(board, output_directory):
-  """Create the Autotest Hardware Test archives.
+  """Create the Hardware Test archives.
 
   Args:
     board (str): The name of the board whose artifacts are being created.
