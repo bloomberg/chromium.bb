@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -27,6 +28,8 @@ namespace blink {
 // changed.
 
 class FindPropertiesNeedingUpdateScope {
+  STACK_ALLOCATED();
+
  public:
   FindPropertiesNeedingUpdateScope(const LayoutObject& object,
                                    const FragmentData& fragment_data,

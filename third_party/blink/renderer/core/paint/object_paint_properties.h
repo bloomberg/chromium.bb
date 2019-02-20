@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -46,6 +47,8 @@ class CORE_EXPORT ObjectPaintProperties {
   ~ObjectPaintProperties() { DCHECK(!is_immutable_); }
 
   class UpdateResult {
+    STACK_ALLOCATED();
+
    public:
     bool Unchanged() const { return result_ == kUnchanged; }
     bool NewNodeCreated() const { return result_ == kNewNodeCreated; }
