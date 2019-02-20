@@ -1526,9 +1526,13 @@ bool IndexedDBBackingStore::WriteBlobFile(
   if (!MakeIDBBlobDirectory(blob_path_, database_id, descriptor.key()))
     return false;
 
+  bool use_copy_file = descriptor.is_file() && !descriptor.file_path().empty();
+  UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.WriteBlobFileViaCopy",
+                        use_copy_file);
+
   FilePath path = GetBlobFileName(database_id, descriptor.key());
 
-  if (descriptor.is_file() && !descriptor.file_path().empty()) {
+  if (use_copy_file) {
     if (!base::CopyFile(descriptor.file_path(), path))
       return false;
 
