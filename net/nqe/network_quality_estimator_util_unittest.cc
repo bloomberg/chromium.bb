@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
@@ -46,31 +48,13 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
 
   EXPECT_EQ(0u, mock_host_resolver.num_resolve());
 
-  {
-    // Resolve example1.com so that the resolution entry is cached.
-    TestCompletionCallback callback;
-    std::unique_ptr<HostResolver::Request> request;
-    AddressList ignored;
-    int rv = mock_host_resolver.Resolve(
-        HostResolver::RequestInfo(HostPortPair("example1.com", 443)),
-        DEFAULT_PRIORITY, &ignored, callback.callback(), &request,
-        NetLogWithSource());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
-    EXPECT_EQ(OK, callback.WaitForResult());
-  }
-
-  {
-    // Resolve example2.com so that the resolution entry is cached.
-    TestCompletionCallback callback;
-    std::unique_ptr<HostResolver::Request> request;
-    AddressList ignored;
-    int rv = mock_host_resolver.Resolve(
-        HostResolver::RequestInfo(HostPortPair("example2.com", 443)),
-        DEFAULT_PRIORITY, &ignored, callback.callback(), &request,
-        NetLogWithSource());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
-    EXPECT_EQ(OK, callback.WaitForResult());
-  }
+  // Load hostnames into HostResolver cache.
+  int rv = mock_host_resolver.LoadIntoCache(HostPortPair("example1.com", 443),
+                                            base::nullopt);
+  EXPECT_EQ(OK, rv);
+  rv = mock_host_resolver.LoadIntoCache(HostPortPair("example2.com", 443),
+                                        base::nullopt);
+  EXPECT_EQ(OK, rv);
 
   EXPECT_EQ(2u, mock_host_resolver.num_non_local_resolves());
 
@@ -115,19 +99,11 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
       IsPrivateHost(&mock_host_resolver, HostPortPair("example3.com", 443)));
   EXPECT_EQ(0u, mock_host_resolver.num_non_local_resolves());
 
-  {
-    // Resolve example3.com so that the resolution entry is cached.
-    TestCompletionCallback callback;
-    std::unique_ptr<HostResolver::Request> request;
-    AddressList ignored;
-    int rv = mock_host_resolver.Resolve(
-        HostResolver::RequestInfo(HostPortPair("example3.com", 443)),
-        DEFAULT_PRIORITY, &ignored, callback.callback(), &request,
-        NetLogWithSource());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
-    EXPECT_EQ(OK, callback.WaitForResult());
-    EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
-  }
+  int rv = mock_host_resolver.LoadIntoCache(HostPortPair("example3.com", 443),
+                                            base::nullopt);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
+
   EXPECT_TRUE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("example3.com", 443)));
 
