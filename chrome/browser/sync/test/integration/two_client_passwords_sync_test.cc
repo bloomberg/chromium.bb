@@ -56,6 +56,17 @@ class TwoClientPasswordsSyncTest
     const bool should_enable_uss =
         index == 0 ? std::get<0>(GetParam()) : std::get<1>(GetParam());
 
+    // In order to avoid test flakiness, for any client other than the first, we
+    // need to make sure the feature toggle has been fully read by PasswordStore
+    // before overriding it again. The way to achieve that, for the current
+    // implementation of PasswordStore, is to make a round trip to the backend
+    // sequence, which guarantees that initialization has completed.
+    if (index != 0) {
+      // We ignore the returned value since all we want is to wait for the
+      // round trip to be completed.
+      GetPasswordCount(index - 1);
+    }
+
     // The value of the feature kSyncUSSPasswords only matters during the
     // setup of each client, when the profile is created, ProfileSyncService
     // instantiated as well as the datatype controllers. By overriding the
