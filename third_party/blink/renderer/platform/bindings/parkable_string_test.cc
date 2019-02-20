@@ -916,7 +916,8 @@ TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
 
   // Need to make the string really large, otherwise unparking takes less than
   // 1ms, and the 0 bucket is populated.
-  std::vector<char> data(5 * 1000 * 1000, 'a');
+  const size_t original_size = 5 * 1000 * 1000;
+  std::vector<char> data(original_size, 'a');
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
   ParkAndWait(parkable);
@@ -926,12 +927,25 @@ TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
     WaitForAging();
     CheckOnlyCpuCostTaskRemains();
   }
+  const size_t compressed_size = parkable.Impl()->compressed_size();
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   histogram_tester.ExpectTotalCount("Memory.ParkableString.MainThreadTime.5min",
                                     1);
   histogram_tester.ExpectBucketCount(
       "Memory.ParkableString.MainThreadTime.5min", 0, 0);
+
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",
+                                      original_size / 1000, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.CompressedSizeKb.5min", compressed_size / 1000, 1);
+
+  size_t expected_savings = original_size - compressed_size;
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.SavingsKb.5min",
+                                      expected_savings / 1000, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.CompressionRatio.5min",
+      100 * compressed_size / original_size, 1);
 }
 
 }  // namespace blink
