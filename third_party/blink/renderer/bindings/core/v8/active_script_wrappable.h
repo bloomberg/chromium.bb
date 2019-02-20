@@ -6,8 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ACTIVE_SCRIPT_WRAPPABLE_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -48,13 +50,31 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   bool IsContextDestroyed() const final {
     const auto* execution_context =
         static_cast<const T*>(this)->GetExecutionContext();
-    return !execution_context || execution_context->IsContextDestroyed();
+    if (!execution_context)
+      return true;
+
+    if (execution_context->IsContextDestroyed())
+      return true;
+
+    if (const auto* doc = DynamicTo<Document>(execution_context)) {
+      // Not all Document objects have an ExecutionContext that is actually
+      // destroyed. In such cases we defer to the ContextDocument if possible.
+      // If no such Document exists we consider the ExecutionContext as
+      // destroyed. This is needed to ensure that an ActiveScriptWrappable that
+      // always returns true in HasPendingActivity does not result in a memory
+      // leak.
+      const Document* context_doc = doc->ContextDocument();
+      if (!context_doc)
+        return true;
+      return context_doc->IsContextDestroyed();
+    }
+
+    return false;
   }
 
   bool DispatchHasPendingActivity() const final {
     return static_cast<const T*>(this)->HasPendingActivity();
   }
-
   ScriptWrappable* ToScriptWrappable() final { return static_cast<T*>(this); }
 
  private:
