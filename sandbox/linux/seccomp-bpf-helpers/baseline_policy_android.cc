@@ -140,9 +140,6 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_socket:
 #endif
 
-    // Ptrace is allowed so the Breakpad Microdumper can fork in a renderer
-    // and then ptrace the parent.
-    case __NR_ptrace:
       override_and_allow = true;
       break;
   }
@@ -150,6 +147,12 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
   // https://crbug.com/772441 and https://crbug.com/760020.
   if (SyscallSets::IsEventFd(sysno)) {
     return Allow();
+  }
+
+  // Ptrace is allowed so the crash reporter can fork in a renderer
+  // and then ptrace the parent. https://crbug.com/933418
+  if (sysno == __NR_ptrace) {
+    return RestrictPtrace();
   }
 
   // https://crbug.com/644759

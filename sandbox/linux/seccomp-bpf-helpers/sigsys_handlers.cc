@@ -33,6 +33,7 @@
 #define SECCOMP_MESSAGE_IOCTL_CONTENT "ioctl() failure"
 #define SECCOMP_MESSAGE_KILL_CONTENT "(tg)kill() failure"
 #define SECCOMP_MESSAGE_FUTEX_CONTENT "futex() failure"
+#define SECCOMP_MESSAGE_PTRACE_CONTENT "ptrace() failure"
 
 namespace {
 
@@ -305,6 +306,19 @@ intptr_t SIGSYSFutexFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
+intptr_t SIGSYSPtraceFailure(const struct arch_seccomp_data& args,
+                             void* /* aux */) {
+  static const char kSeccompPtraceError[] =
+      __FILE__ ":**CRASHING**:" SECCOMP_MESSAGE_PTRACE_CONTENT "\n";
+  WriteToStdErr(kSeccompPtraceError, sizeof(kSeccompPtraceError) - 1);
+  SetSeccompCrashKey(args);
+  volatile int ptrace_op = args.args[0];
+  volatile char* addr = reinterpret_cast<volatile char*>(ptrace_op & 0xFFF);
+  *addr = '\0';
+  for (;;)
+    _exit(1);
+}
+
 intptr_t SIGSYSSchedHandler(const struct arch_seccomp_data& args,
                             void* aux) {
   switch (args.nr) {
@@ -363,6 +377,10 @@ bpf_dsl::ResultExpr CrashSIGSYSFutex() {
   return bpf_dsl::Trap(SIGSYSFutexFailure, NULL);
 }
 
+bpf_dsl::ResultExpr CrashSIGSYSPtrace() {
+  return bpf_dsl::Trap(SIGSYSPtraceFailure, NULL);
+}
+
 bpf_dsl::ResultExpr RewriteSchedSIGSYS() {
   return bpf_dsl::Trap(SIGSYSSchedHandler, NULL);
 }
@@ -399,6 +417,10 @@ const char* GetKillErrorMessageContentForTests() {
 
 const char* GetFutexErrorMessageContentForTests() {
   return SECCOMP_MESSAGE_FUTEX_CONTENT;
+}
+
+const char* GetPtraceErrorMessageContentForTests() {
+  return SECCOMP_MESSAGE_PTRACE_CONTENT;
 }
 
 }  // namespace sandbox.
