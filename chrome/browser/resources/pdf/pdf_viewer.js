@@ -250,6 +250,10 @@ function PDFViewer(browserApi) {
     this.toolbar_.addEventListener('save', () => this.save());
     this.toolbar_.addEventListener('print', () => this.print());
     this.toolbar_.addEventListener(
+        'undo', () => this.currentController_.undo());
+    this.toolbar_.addEventListener(
+        'redo', () => this.currentController_.redo());
+    this.toolbar_.addEventListener(
         'rotate-right', () => this.currentController_.rotateClockwise());
     this.toolbar_.addEventListener(
         'annotation-mode-changed', e => this.annotationModeChanged_(e));
@@ -1227,6 +1231,16 @@ class ContentController {
   print() {}
 
   /**
+   * Undo an edit action.
+   */
+  undo() {}
+
+  /**
+   * Redo an edit action.
+   */
+  redo() {}
+
+  /**
    * Requests that the current document be saved.
    * @param {boolean} requireResult whether a response is required, otherwise
    *     the controller may save the document to disk internally.
@@ -1291,6 +1305,16 @@ class InkController extends ContentController {
   /** @override */
   save(requireResult) {
     return this.inkHost_.saveDocument();
+  }
+
+  /** @override */
+  undo() {
+    this.inkHost_.undo();
+  }
+
+  /** @override */
+  redo() {
+    this.inkHost_.redo();
   }
 
   /** @override */

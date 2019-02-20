@@ -90,6 +90,14 @@ class InkAPI {
     const event = new PointerEvent(type, init);
     document.querySelector('#ink-engine').dispatchEvent(event);
   }
+
+  undo() {
+    this.embed_.undo();
+  }
+
+  redo() {
+    this.embed_.redo();
+  }
 }
 
 /** @return {Promise<InkAPI>} */
