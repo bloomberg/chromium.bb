@@ -68,6 +68,27 @@ void CloseAssistantUi(AssistantExitPoint exit_point) {
     Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
+// Minimize all windows that aren't the app list in reverse order to preserve
+// the mru ordering.
+// Returns false if no window is minimized.
+bool MinimizeAllWindows() {
+  bool handled = false;
+  aura::Window* app_list_container =
+      Shell::Get()->GetPrimaryRootWindow()->GetChildById(
+          kShellWindowId_AppListTabletModeContainer);
+  aura::Window::Windows windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  std::reverse(windows.begin(), windows.end());
+  for (auto* window : windows) {
+    if (!app_list_container->Contains(window) &&
+        !wm::GetWindowState(window)->IsMinimized()) {
+      wm::GetWindowState(window)->Minimize();
+      handled = true;
+    }
+  }
+  return handled;
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -671,7 +692,9 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (!assistant::util::IsEmbeddedUiEntryPoint(entry_point.value()))
         break;
 
-      if (!IsVisible()) {
+      if (IsTabletMode()) {
+        MinimizeAllWindows();
+      } else if (!IsVisible()) {
         Show(GetDisplayIdToShowAppListOn(), app_list::kAssistantEntryPoint,
              base::TimeTicks());
       }
@@ -688,10 +711,16 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (!IsShowingEmbeddedAssistantUI())
         break;
 
-      if (exit_point == AssistantExitPoint::kBackInLauncher)
+      if (exit_point == AssistantExitPoint::kBackInLauncher) {
         presenter_.ShowEmbeddedAssistantUI(false);
-      else
+      } else if (!IsTabletMode()) {
         DismissAppList();
+      }
+      if (IsTabletMode()) {
+        presenter_.GetView()->app_list_main_view()->ResetForShow();
+        presenter_.GetView()->SetState(
+            app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      }
       break;
   }
 }
@@ -725,23 +754,8 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
     }
   }
 
-  if (!handled) {
-    // Minimize all windows that aren't the app list in reverse order to
-    // preserve the mru ordering.
-    aura::Window* app_list_container =
-        Shell::Get()->GetPrimaryRootWindow()->GetChildById(
-            kShellWindowId_AppListTabletModeContainer);
-    aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-    std::reverse(windows.begin(), windows.end());
-    for (auto* window : windows) {
-      if (!app_list_container->Contains(window) &&
-          !wm::GetWindowState(window)->IsMinimized()) {
-        wm::GetWindowState(window)->Minimize();
-        handled = true;
-      }
-    }
-  }
+  if (!handled)
+    handled = MinimizeAllWindows();
 
   // Perform the "back" action for the app list.
   if (!handled)
@@ -1011,6 +1025,9 @@ void AppListControllerImpl::NotifyHomeLauncherTargetPositionChanged(
 void AppListControllerImpl::NotifyHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
+  CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
+                         : AssistantExitPoint::kLauncherClose);
+
   for (auto& observer : observers_)
     observer.OnHomeLauncherAnimationComplete(shown, display_id);
 }
