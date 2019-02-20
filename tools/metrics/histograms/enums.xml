@@ -6519,6 +6519,28 @@ histogram as enum -->
   <int value="10" label="FollowBookmark"/>
   <int value="11" label="PageSelectorNavigateFirst"/>
   <int value="12" label="PageSelectorNavigate"/>
+  <int value="13" label="SaveFirst"/>
+  <int value="14" label="Save"/>
+  <int value="15" label="SaveWithAnnotationFirst"/>
+  <int value="16" label="SaveWithAnnotation"/>
+  <int value="17" label="PrintFirst"/>
+  <int value="18" label="Print"/>
+  <int value="19" label="EnterAnnotationModeFirst"/>
+  <int value="20" label="EnterAnnotationMode"/>
+  <int value="21" label="ExitAnnotationModeFirst"/>
+  <int value="22" label="ExitAnnotationMode"/>
+  <int value="23" label="AnnotateStrokeToolPenFirst"/>
+  <int value="24" label="AnnotateStrokeToolPen"/>
+  <int value="25" label="AnnotateStrokeToolEraserFirst"/>
+  <int value="26" label="AnnotateStrokeToolEraser"/>
+  <int value="27" label="AnnotateStrokeToolHighlighterFirst"/>
+  <int value="28" label="AnnotateStrokeToolHighlighter"/>
+  <int value="29" label="AnnotateStrokeDeviceTouchFirst"/>
+  <int value="30" label="AnnotateStrokeDeviceTouch"/>
+  <int value="31" label="AnnotateStrokeDeviceMouseFirst"/>
+  <int value="32" label="AnnotateStrokeDeviceMouse"/>
+  <int value="33" label="AnnotateStrokeDevicePenFirst"/>
+  <int value="34" label="AnnotateStrokeDevicePen"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">

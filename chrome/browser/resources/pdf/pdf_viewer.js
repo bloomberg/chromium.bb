@@ -503,9 +503,10 @@ PDFViewer.prototype = {
   annotationModeChanged_: async function(e) {
     const annotationMode = e.detail.value;
     if (annotationMode) {
+      // Enter annotation mode.
+      PDFMetrics.record(PDFMetrics.UserAction.ENTER_ANNOTATION_MODE);
       this.hasEnteredAnnotationMode_ = true;
       assert(this.currentController_ == this.pluginController_);
-      // Enter annotation mode.
       // TODO(dstockwell): set plugin read-only, begin transition
       this.updateProgress(0);
       // TODO(dstockwell): handle save failure
@@ -519,6 +520,7 @@ PDFViewer.prototype = {
       this.updateProgress(100);
     } else {
       // Exit annotation mode.
+      PDFMetrics.record(PDFMetrics.UserAction.EXIT_ANNOTATION_MODE);
       assert(this.currentController_ == this.inkController_);
       // TODO(dstockwell): set ink read-only, begin transition
       this.updateProgress(0);
@@ -1151,6 +1153,10 @@ PDFViewer.prototype = {
    * Saves the current PDF document to disk.
    */
   save: async function() {
+    PDFMetrics.record(PDFMetrics.UserAction.SAVE);
+    if (this.hasEnteredAnnotationMode_) {
+      PDFMetrics.record(PDFMetrics.UserAction.SAVE_WITH_ANNOTATION);
+    }
     // If we have entered annotation mode we must require the local
     // contents to ensure annotations are saved. Otherwise we would
     // save the cached or remote copy without annotatios.
@@ -1189,6 +1195,7 @@ PDFViewer.prototype = {
   },
 
   print: async function() {
+    PDFMetrics.record(PDFMetrics.UserAction.PRINT);
     await this.exitAnnotationMode_();
     this.currentController_.print();
   }

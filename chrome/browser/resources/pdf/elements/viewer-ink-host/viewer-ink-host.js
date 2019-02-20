@@ -50,6 +50,9 @@ Polymer({
   /** @type {Viewport} */
   viewport: null,
 
+  /** @type {?AnnotationTool} */
+  tool_: null,
+
   /**
    * Whether we should suppress pointer events due to a gesture,
    * eg. pinch-zoom.
@@ -168,6 +171,24 @@ Polymer({
     this.activePointer_ = null;
     if (!this.pointerGesture_) {
       this.dispatchPointerEvent_(e);
+      // If the stroke was not cancelled, record metrics.
+      if (e.type == 'pointerup') {
+        if (e.pointerType == 'mouse') {
+          PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_MOUSE);
+        } else if (e.pointerType == 'pen') {
+          PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN);
+        } else if (e.pointerType == 'touch') {
+          PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_TOUCH);
+        }
+        if (this.tool_.tool == 'eraser') {
+          PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_ERASER);
+        } else if (this.tool_.tool == 'pen') {
+          PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_PEN);
+        } else if (this.tool_.tool == 'highlighter') {
+          PDFMetrics.record(
+              PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_HIGHLIGHTER);
+        }
+      }
     }
     this.pointerGesture_ = false;
   },
