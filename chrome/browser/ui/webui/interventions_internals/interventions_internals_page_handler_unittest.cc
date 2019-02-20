@@ -280,21 +280,28 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     mojom::InterventionsInternalsPageHandlerPtr page_handler_ptr;
-    handler_request_ = mojo::MakeRequest(&page_handler_ptr);
+
+    mojom::InterventionsInternalsPageHandlerRequest handler_request =
+        mojo::MakeRequest(&page_handler_ptr);
     page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(
-        std::move(handler_request_), previews_ui_service_.get());
+        std::move(handler_request), previews_ui_service_.get());
 
     mojom::InterventionsInternalsPagePtr page_ptr;
-    page_request_ = mojo::MakeRequest(&page_ptr);
+    mojom::InterventionsInternalsPageRequest page_request =
+        mojo::MakeRequest(&page_ptr);
     page_ = std::make_unique<TestInterventionsInternalsPage>(
-        std::move(page_request_));
+        std::move(page_request));
 
     page_handler_->SetClientPage(std::move(page_ptr));
 
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
-  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
+  void TearDown() override {
+    profile_manager_.DeleteAllTestingProfiles();
+    page_handler_.reset();
+    page_.reset();
+  }
 
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -306,11 +313,9 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
 
   // InterventionsInternalPageHandler's variables.
-  mojom::InterventionsInternalsPageHandlerRequest handler_request_;
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
 
   // InterventionsInternalPage's variables.
-  mojom::InterventionsInternalsPageRequest page_request_;
   std::unique_ptr<TestInterventionsInternalsPage> page_;
 
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
