@@ -931,13 +931,31 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
 void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
-                                     bool node_is_radio_button) const {
+                                     const AXNode& original_node) const {
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {
     if (local_parent->data().role == ordered_set->data().role)
       return;
   }
+
+  // Initialize necessary variables.
+  // Default hierarchical_level is 0, which represents that no hierarchical
+  // level was detected on original_node.
+  int original_level = original_node.GetIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel);
+  // If original node is ordered set, then set its hierarchical level equal to
+  // its first child to ensure the items vector gets populated.
+  // This is due to ordered sets having a hierarchical level of 0, while their
+  // nodes have non-zero hierarchical values.
+  if ((ordered_set == &original_node) &&
+      ordered_set->GetUnignoredChildAtIndex(0)) {
+    original_level = ordered_set->GetUnignoredChildAtIndex(0)->GetIntAttribute(
+        ax::mojom::IntAttribute::kHierarchicalLevel);
+  }
+  int original_node_index = original_node.GetUnignoredIndexInParent();
+  bool node_is_radio_button =
+      (original_node.data().role == ax::mojom::Role::kRadioButton);
 
   for (int i = 0; i < local_parent->child_count(); ++i) {
     const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
@@ -950,6 +968,23 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
     // are never higher.
     if (child->data().HasState(ax::mojom::State::kInvisible) &&
         !IsCollapsed(local_parent) && !IsCollapsed(local_parent->parent())) {
+      continue;
+    }
+
+    int child_level =
+        child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+
+    if (child_level < original_level) {
+      // If a decrease in level occurs after the original node has been
+      // examined, stop adding to this set.
+      if (original_node_index < i)
+        break;
+      // If a decrease in level has been detected before the original node
+      // has been examined, then everything previously added to items actually
+      // belongs to a different set. Clear items vector.
+      items.clear();
+      continue;
+    } else if (child_level > original_level) {
       continue;
     }
 
@@ -967,7 +1002,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
     // Recurse if there is a generic container or is ignored.
     if (child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kIgnored) {
-      PopulateOrderedSetItems(ordered_set, child, items, node_is_radio_button);
+      PopulateOrderedSetItems(ordered_set, child, items, original_node);
     }
   }
 }
@@ -979,20 +1014,15 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
                                             const AXNode* ordered_set) {
   DCHECK(ordered_set);
   std::vector<const AXNode*> items;
-
-  // True if the role of AXNode GetPosInSet() was called on is a kRadioButton.
-  bool node_is_radio_button =
-      (node.data().role == ax::mojom::Role::kRadioButton);
-
   // Find all items within ordered_set and add to vector.
-  PopulateOrderedSetItems(ordered_set, ordered_set, items,
-                          node_is_radio_button);
+  PopulateOrderedSetItems(ordered_set, ordered_set, items, node);
 
   // Keep track of the number of elements ordered_set has.
   int32_t num_elements = 0;
-
   // Necessary for calculating set_size.
   int32_t largest_assigned_set_size = 0;
+  int hierarchical_level =
+      node.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
 
   // Compute pos_in_set_values.
   for (size_t i = 0; i < items.size(); ++i) {
@@ -1008,6 +1038,13 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
     pos_in_set_value =
         std::max(pos_in_set_value,
                  item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+
+    // If level is specified, use author-provided value, if present.
+    if (hierarchical_level != 0 &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
+      pos_in_set_value =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+    }
 
     // Assign pos_in_set and update role counts.
     ordered_set_info_map_[item->id()].pos_in_set = pos_in_set_value;
@@ -1035,22 +1072,29 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   int32_t set_size_value = std::max(
       std::max(num_elements, largest_assigned_set_size), ordered_set_candidate);
 
-  // If ordered_set is not in the cache, assign it a new set_size.
-  if (ordered_set_info_map_.find(ordered_set->id()) ==
-      ordered_set_info_map_.end())
-    ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
-
   // Assign set_size to ordered_set.
   // Must meet one of two conditions:
   // 1. Node role matches ordered set role.
   // 2. The node that calculations were called on is the ordered_set.
-  if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node)
-    ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+  if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node) {
+    // If ordered_set is not in the cache, assign it a new set_size.
+    if (ordered_set_info_map_.find(ordered_set->id()) ==
+        ordered_set_info_map_.end()) {
+      ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
+      ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+    }
+  }
 
   // Assign set_size to items.
   for (size_t j = 0; j < items.size(); ++j) {
     const AXNode* item = items[j];
-    ordered_set_info_map_[item->id()].set_size = set_size_value;
+    // If level is specified, use author-provided value, if present.
+    if (hierarchical_level != 0 &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+      ordered_set_info_map_[item->id()].set_size =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+    else
+      ordered_set_info_map_[item->id()].set_size = set_size_value;
   }
 }
 

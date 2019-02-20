@@ -924,6 +924,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaSetCountsWithTreeLevels) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-set-counts-with-tree-levels.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaSortOnHtmlTable) {
   RunAriaTest(FILE_PATH_LITERAL("aria-sort-html-table.html"));
 }
