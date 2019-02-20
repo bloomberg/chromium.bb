@@ -1663,8 +1663,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutUnit logical_height_value,
       const LayoutBoxModelObject* container_block,
       LayoutUnit container_logical_height);
-  bool SkipContainingBlockForPercentHeightCalculation(
-      const LayoutBox* containing_block) const;
+  static bool SkipContainingBlockForPercentHeightCalculation(
+      const LayoutBox* containing_block);
 
   LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
