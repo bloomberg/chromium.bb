@@ -556,7 +556,7 @@ void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
       BlobDataHandle::Create(binary_data->Uuid(), binary_data->type(), size));
 }
 
-void DOMWebSocket::close(unsigned short code,
+void DOMWebSocket::close(uint16_t code,
                          const String& reason,
                          ExceptionState& exception_state) {
   CloseInternal(code, reason, exception_state);
@@ -567,7 +567,7 @@ void DOMWebSocket::close(ExceptionState& exception_state) {
                 exception_state);
 }
 
-void DOMWebSocket::close(unsigned short code, ExceptionState& exception_state) {
+void DOMWebSocket::close(uint16_t code, ExceptionState& exception_state) {
   CloseInternal(code, String(), exception_state);
 }
 
@@ -795,7 +795,7 @@ void DOMWebSocket::DidStartClosingHandshake() {
 
 void DOMWebSocket::DidClose(
     ClosingHandshakeCompletionStatus closing_handshake_completion,
-    unsigned short code,
+    uint16_t code,
     const String& reason) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidClose()";
   ReflectBufferedAmountConsumption();

@@ -51,7 +51,7 @@ class WebPepperSocketChannelClientProxy final
     impl_->DidStartClosingHandshake();
   }
   void DidClose(ClosingHandshakeCompletionStatus status,
-                unsigned short code,
+                uint16_t code,
                 const String& reason) override {
     WebPepperSocketImpl* impl = impl_;
     impl_ = nullptr;

@@ -168,7 +168,7 @@ void WebPepperSocketImpl::DidStartClosingHandshake() {
 
 void WebPepperSocketImpl::DidClose(
     WebSocketChannelClient::ClosingHandshakeCompletionStatus status,
-    unsigned short code,
+    uint16_t code,
     const String& reason) {
   is_closing_or_closed_ = true;
   client_->DidClose(
