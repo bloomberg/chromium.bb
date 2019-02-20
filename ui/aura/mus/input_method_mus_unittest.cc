@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/test/bind_test_util.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
@@ -21,8 +23,8 @@ namespace {
 // Empty implementation of InputMethodDelegate.
 class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
  public:
-  TestInputMethodDelegate() {}
-  ~TestInputMethodDelegate() override {}
+  TestInputMethodDelegate() = default;
+  ~TestInputMethodDelegate() override = default;
 
   bool was_dispatch_key_event_post_ime_called() const {
     return was_dispatch_key_event_post_ime_called_;
@@ -51,11 +53,15 @@ using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
 // ProcessKeyEvent().
 class TestInputMethod : public ws::mojom::InputMethod {
  public:
-  TestInputMethod() {}
-  ~TestInputMethod() override {}
+  TestInputMethod() = default;
+  ~TestInputMethod() override = default;
 
   ProcessKeyEventCallbacks* process_key_event_callbacks() {
     return &process_key_event_callbacks_;
+  }
+
+  void set_on_carent_bounds_changed_closure(base::OnceClosure closure) {
+    on_caret_bounds_changed_closure_ = std::move(closure);
   }
 
   // ui::ime::InputMethod:
@@ -65,6 +71,8 @@ class TestInputMethod : public ws::mojom::InputMethod {
   }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
     was_on_caret_bounds_changed_called_ = true;
+    if (on_caret_bounds_changed_closure_)
+      std::move(on_caret_bounds_changed_closure_).Run();
   }
   void OnTextInputClientDataChanged(
       ws::mojom::TextInputClientDataPtr data) override {
@@ -119,8 +127,8 @@ class TestInputMethod : public ws::mojom::InputMethod {
   bool was_cancel_composition_called_ = false;
   bool was_show_virtual_keyboard_if_enabled_called_ = false;
   ProcessKeyEventCallbacks process_key_event_callbacks_;
-
   ws::mojom::TextInputClientDataPtr text_input_client_data_;
+  base::OnceClosure on_caret_bounds_changed_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
 };
@@ -489,6 +497,28 @@ TEST_F(InputMethodMusTest, IsTextEditCommandEnabled) {
     EXPECT_EQ(edit_command_enabled, test_input_method.text_input_client_data()
                                         ->edit_command_enabled.value());
   }
+}
+
+// Tests that text input client data is sent over before caret change.
+TEST_F(InputMethodMusTest, TextInputClientDataAvailableBeforeCaretChange) {
+  TestTextInputClient focused_input_client;
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, nullptr);
+  input_method_mus.SetFocusedTextInputClient(&focused_input_client);
+
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+
+  EXPECT_FALSE(
+      test_input_method.was_on_text_input_client_data_changed_called());
+
+  test_input_method.set_on_carent_bounds_changed_closure(
+      base::BindLambdaForTesting([&] {
+        EXPECT_TRUE(
+            test_input_method.was_on_text_input_client_data_changed_called());
+      }));
+  InputMethodMusTestApi::CallOnCaretBoundsChanged(&input_method_mus,
+                                                  &focused_input_client);
 }
 
 }  // namespace aura

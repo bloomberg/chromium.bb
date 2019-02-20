@@ -143,7 +143,8 @@ bool RemoteTextInputClient::DeleteRange(const gfx::Range& range) {
 bool RemoteTextInputClient::GetTextFromRange(const gfx::Range& range,
                                              base::string16* text) const {
   if (!details_->data->text.has_value() ||
-      range.GetMin() >= details_->data->text->length()) {
+      !details_->data->text_range.has_value() ||
+      !details_->data->text_range->Contains(range)) {
     return false;
   }
 
