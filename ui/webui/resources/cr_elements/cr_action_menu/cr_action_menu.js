@@ -170,7 +170,7 @@ Polymer({
   listeners: {
     'keydown': 'onKeyDown_',
     'mouseover': 'onMouseover_',
-    'tap': 'onTap_',
+    'click': 'onClick_',
   },
 
   /** override */
@@ -224,7 +224,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onTap_: function(e) {
+  onClick_: function(e) {
     if (e.target == this) {
       this.close();
       e.stopPropagation();
