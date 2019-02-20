@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -19,7 +21,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -49,9 +50,17 @@ class TabListMediator {
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
         public void run(int tabId) {
-            mTabModelSelector.getCurrentModel().setIndex(
-                    TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId),
-                    TabSelectionType.FROM_USER);
+            int currentIndex = mTabModelSelector.getCurrentModel().index();
+            int newIndex =
+                    TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId);
+            mTabModelSelector.getCurrentModel().setIndex(newIndex, TabSelectionType.FROM_USER);
+
+            if (newIndex == currentIndex) {
+                RecordUserAction.record("MobileTabReturnedToCurrentTab");
+            } else {
+                RecordHistogram.recordSparseHistogram(
+                        "Tabs.TabOffsetOfSwitch", currentIndex - newIndex);
+            }
         }
     };
 
@@ -60,6 +69,7 @@ class TabListMediator {
         public void run(int tabId) {
             mTabModelSelector.getCurrentModel().closeTab(
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
+            RecordUserAction.record("MobileStackViewCloseTab");
         }
     };
 
@@ -91,7 +101,6 @@ class TabListMediator {
      * ChromeActivity.
      * @param model The Model to keep state about a list of {@link Tab}s.
      * @param context The context to use for accessing {@link android.content.res.Resources}
-     * @param toolbarManager {@link ToolbarManager} to send any signals about overriding behavior.
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                                                 the tabs concerned.
      * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
@@ -108,10 +117,14 @@ class TabListMediator {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (tab.getId() == lastId) return;
-                if (mModel.indexFromId(lastId) != TabModel.INVALID_TAB_INDEX) {
-                    mModel.get(mModel.indexFromId(lastId)).set(TabProperties.IS_SELECTED, false);
+                int oldIndex = mModel.indexFromId(lastId);
+                if (oldIndex != TabModel.INVALID_TAB_INDEX) {
+                    mModel.get(oldIndex).set(TabProperties.IS_SELECTED, false);
                 }
-                mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.IS_SELECTED, true);
+                int newIndex = mModel.indexFromId(tab.getId());
+                if (newIndex == TabModel.INVALID_TAB_INDEX) return;
+
+                mModel.get(newIndex).set(TabProperties.IS_SELECTED, true);
             }
 
             @Override
