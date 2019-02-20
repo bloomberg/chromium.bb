@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/network_location_provider.h"
+#include "services/device/geolocation/position_cache.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "url/gurl.h"
@@ -29,8 +31,7 @@ namespace device {
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class LocationArbitrator : public LocationProvider,
-                           public NetworkLocationProvider::LastPositionCache {
+class LocationArbitrator : public LocationProvider {
  public:
   // The TimeDelta newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher
@@ -42,7 +43,8 @@ class LocationArbitrator : public LocationProvider,
   LocationArbitrator(
       const CustomLocationProviderCallback& custom_location_provider_getter,
       const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& api_key);
+      const std::string& api_key,
+      std::unique_ptr<PositionCache> position_cache);
   ~LocationArbitrator() override;
 
   static GURL DefaultNetworkProviderURL();
@@ -55,10 +57,6 @@ class LocationArbitrator : public LocationProvider,
   void StopProvider() override;
   const mojom::Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
-
-  // NetworkLocationProvider::LastPositionCache implementation.
-  void SetLastNetworkPosition(const mojom::Geoposition& position) override;
-  const mojom::Geoposition& GetLastNetworkPosition() override;
 
  protected:
   // These functions are useful for injection of dependencies in derived
@@ -109,10 +107,7 @@ class LocationArbitrator : public LocationProvider,
   // The current best estimate of our position.
   mojom::Geoposition position_;
 
-  // The most recent position estimate returned by the network location
-  // provider. This must be preserved by LocationArbitrator so it is not lost
-  // when the provider is destroyed in StopProvider.
-  mojom::Geoposition last_network_position_;
+  std::unique_ptr<PositionCache> position_cache_;
 
   // Tracks whether providers should be running.
   bool is_running_;

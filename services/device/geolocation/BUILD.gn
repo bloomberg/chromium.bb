@@ -37,6 +37,9 @@ source_set("geolocation") {
     "network_location_provider.h",
     "network_location_request.cc",
     "network_location_request.h",
+    "position_cache.h",
+    "position_cache_impl.cc",
+    "position_cache_impl.h",
     "public_ip_address_geolocation_provider.cc",
     "public_ip_address_geolocation_provider.h",
     "public_ip_address_geolocator.cc",
@@ -156,6 +159,10 @@ source_set("test_support") {
   sources = [
     "fake_location_provider.cc",
     "fake_location_provider.h",
+    "fake_position_cache.cc",
+    "fake_position_cache.h",
+    "position_cache_test_util.cc",
+    "position_cache_test_util.h",
   ]
   public_deps = [
     ":geolocation",

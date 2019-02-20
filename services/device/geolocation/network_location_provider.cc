@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/device/geolocation/position_cache.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -28,88 +29,17 @@ const int kDataCompleteWaitSeconds = 2;
 const int kLastPositionMaxAgeSeconds = 10 * 60;  // 10 minutes
 }  // namespace
 
-// static
-const size_t NetworkLocationProvider::PositionCache::kMaximumSize = 10;
-
-NetworkLocationProvider::PositionCache::PositionCache() = default;
-
-NetworkLocationProvider::PositionCache::~PositionCache() = default;
-
-bool NetworkLocationProvider::PositionCache::CachePosition(
-    const WifiData& wifi_data,
-    const mojom::Geoposition& position) {
-  // Check that we can generate a valid key for the wifi data.
-  base::string16 key;
-  if (!MakeKey(wifi_data, &key)) {
-    return false;
-  }
-  // If the cache is full, remove the oldest entry.
-  if (cache_.size() == kMaximumSize) {
-    DCHECK(cache_age_list_.size() == kMaximumSize);
-    CacheAgeList::iterator oldest_entry = cache_age_list_.begin();
-    DCHECK(oldest_entry != cache_age_list_.end());
-    cache_.erase(*oldest_entry);
-    cache_age_list_.erase(oldest_entry);
-  }
-  DCHECK_LT(cache_.size(), kMaximumSize);
-  // Insert the position into the cache.
-  std::pair<CacheMap::iterator, bool> result =
-      cache_.insert(std::make_pair(key, position));
-  if (!result.second) {
-    NOTREACHED();  // We never try to add the same key twice.
-    CHECK_EQ(cache_.size(), cache_age_list_.size());
-    return false;
-  }
-  cache_age_list_.push_back(result.first);
-  DCHECK_EQ(cache_.size(), cache_age_list_.size());
-  return true;
-}
-
-// Searches for a cached position response for the current WiFi data. Returns
-// the cached position if available, nullptr otherwise.
-const mojom::Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
-    const WifiData& wifi_data) {
-  base::string16 key;
-  if (!MakeKey(wifi_data, &key)) {
-    return nullptr;
-  }
-  CacheMap::const_iterator iter = cache_.find(key);
-  return iter == cache_.end() ? nullptr : &iter->second;
-}
-
-// Makes the key for the map of cached positions, using the available data.
-// Returns true if a good key was generated, false otherwise.
-//
-// static
-bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
-                                                     base::string16* key) {
-  // Currently we use only WiFi data and base the key only on the MAC addresses.
-  DCHECK(key);
-  key->clear();
-  const size_t kCharsPerMacAddress = 6 * 3 + 1;  // e.g. "11:22:33:44:55:66|"
-  key->reserve(wifi_data.access_point_data.size() * kCharsPerMacAddress);
-  const base::string16 separator(base::ASCIIToUTF16("|"));
-  for (const auto& access_point_data : wifi_data.access_point_data) {
-    *key += separator;
-    *key += access_point_data.mac_address;
-    *key += separator;
-  }
-  // If the key is the empty string, return false, as we don't want to cache a
-  // position for such data.
-  return !key->empty();
-}
-
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key,
-    LastPositionCache* last_position_cache)
+    PositionCache* position_cache)
     : wifi_data_provider_manager_(nullptr),
       wifi_data_update_callback_(
           base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
                      base::Unretained(this))),
       is_wifi_data_complete_(false),
-      last_position_delegate_(last_position_cache),
+      position_cache_(position_cache),
       is_permission_granted_(false),
       is_new_data_available_(false),
       request_(new NetworkLocationRequest(
@@ -117,9 +47,8 @@ NetworkLocationProvider::NetworkLocationProvider(
           api_key,
           base::Bind(&NetworkLocationProvider::OnLocationResponse,
                      base::Unretained(this)))),
-      position_cache_(new PositionCache),
       weak_factory_(this) {
-  DCHECK(last_position_delegate_);
+  DCHECK(position_cache_);
 }
 
 NetworkLocationProvider::~NetworkLocationProvider() {
@@ -174,14 +103,13 @@ void NetworkLocationProvider::OnLocationResponse(
     const WifiData& wifi_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Record the position and update our cache.
-  last_position_delegate_->SetLastNetworkPosition(position);
+  position_cache_->SetLastUsedNetworkPosition(position);
   if (ValidateGeoposition(position))
     position_cache_->CachePosition(wifi_data, position);
 
   // Let listeners know that we now have a position available.
   if (!location_provider_update_callback_.is_null()) {
-    location_provider_update_callback_.Run(
-        this, last_position_delegate_->GetLastNetworkPosition());
+    location_provider_update_callback_.Run(this, position);
   }
 }
 
@@ -214,7 +142,7 @@ void NetworkLocationProvider::StopProvider() {
 }
 
 const mojom::Geoposition& NetworkLocationProvider::GetPosition() {
-  return last_position_delegate_->GetLastNetworkPosition();
+  return position_cache_->GetLastUsedNetworkPosition();
 }
 
 void NetworkLocationProvider::RequestPosition() {
@@ -230,7 +158,7 @@ void NetworkLocationProvider::RequestPosition() {
   // there is no pending network request), report the last network position
   // estimate as if it were a fresh estimate.
   const mojom::Geoposition& last_position =
-      last_position_delegate_->GetLastNetworkPosition();
+      position_cache_->GetLastUsedNetworkPosition();
   if (!is_new_data_available_ && !request_->is_request_pending() &&
       ValidateGeoposition(last_position)) {
     base::Time now = base::Time::Now();
@@ -261,7 +189,7 @@ void NetworkLocationProvider::RequestPosition() {
     is_new_data_available_ = false;
 
     // Record the position.
-    last_position_delegate_->SetLastNetworkPosition(position);
+    position_cache_->SetLastUsedNetworkPosition(position);
 
     // Let listeners know that we now have a position available.
     if (!location_provider_update_callback_.is_null())
