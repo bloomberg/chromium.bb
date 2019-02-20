@@ -1787,6 +1787,7 @@
     'accelerator_table': ['derat+watch@chromium.org',
                           'yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
+                      'akihiroota@chromium.org',
                       'aleventhal+watch@chromium.org',
                       'dmazzoni+watch@chromium.org',
                       'dougt+watch@chromium.org',
