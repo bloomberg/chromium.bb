@@ -1332,7 +1332,7 @@ void LocalFrame::SetAdTrackerForTesting(AdTracker* ad_tracker) {
   ad_tracker_ = ad_tracker;
 }
 
-DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);
+DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame)
 
 FrameNavigationDisabler::FrameNavigationDisabler(LocalFrame& frame)
     : frame_(&frame) {

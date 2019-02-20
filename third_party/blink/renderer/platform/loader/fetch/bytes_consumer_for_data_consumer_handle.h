@@ -24,7 +24,7 @@ class PLATFORM_EXPORT BytesConsumerForDataConsumerHandle final
     : public BytesConsumer,
       public WebDataConsumerHandle::Client {
   EAGERLY_FINALIZE();
-  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
 
  public:
   BytesConsumerForDataConsumerHandle(
