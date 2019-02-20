@@ -136,8 +136,8 @@ class GpuIntegrationTest(
         cls.tab = cls.browser.tabs[0]
         return
       except Exception:
-        logging.warning('Browser start failed (attempt %d of %d)',
-                        x, _START_BROWSER_RETRIES)
+        logging.exception('Browser start failed (attempt %d of %d). Backtrace:',
+                          x, _START_BROWSER_RETRIES)
         # If we are on the last try and there is an exception take a screenshot
         # to try and capture more about the browser failure and raise
         if x == _START_BROWSER_RETRIES:
