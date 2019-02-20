@@ -87,7 +87,6 @@ class MockAccountReconcilor : public AccountReconcilor {
       : AccountReconcilor(
             nullptr,
             client,
-            nullptr,
             std::make_unique<signin::AccountReconcilorDelegate>()) {}
   MOCK_METHOD1(OnReceivedManageAccountsResponse, void(signin::GAIAServiceType));
 };

@@ -28,6 +28,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
@@ -189,12 +190,10 @@ AccountReconcilor::ScopedSyncedDataDeletion::~ScopedSyncedDataDeletion() {
 AccountReconcilor::AccountReconcilor(
     identity::IdentityManager* identity_manager,
     SigninClient* client,
-    GaiaCookieManagerService* cookie_manager_service,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : delegate_(std::move(delegate)),
       identity_manager_(identity_manager),
       client_(client),
-      cookie_manager_service_(cookie_manager_service),
       registered_with_identity_manager_(false),
       registered_with_content_settings_(false),
       is_reconcile_started_(false),
@@ -379,7 +378,7 @@ void AccountReconcilor::OnErrorStateOfRefreshTokenUpdatedForAccount(
   // This should cover well the Mirror and Desktop Identity Consistency cases as
   // the cookies are always bound to the refresh tokens in these cases.
   if (error != GoogleServiceAuthError::AuthErrorNone())
-    cookie_manager_service_->TriggerListAccounts();
+    identity_manager_->GetAccountsCookieMutator()->TriggerCookieJarUpdate();
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
@@ -389,7 +388,7 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
     return;
   }
   VLOG(1) << "AccountReconcilor::PerformMergeAction: " << account_id;
-  cookie_manager_service_->AddAccountToCookie(
+  identity_manager_->GetAccountsCookieMutator()->AddAccountToCookie(
       account_id, delegate_->GetGaiaApiSource(),
       base::BindOnce(&AccountReconcilor::OnAddAccountToCookieCompleted,
                      weak_factory_.GetWeakPtr()));
@@ -404,7 +403,7 @@ void AccountReconcilor::PerformSetCookiesAction(
   //
   // Using Unretained is safe here because the CookieManagerService outlives
   // the AccountReconcilor.
-  cookie_manager_service_->SetAccountsInCookie(
+  identity_manager_->GetAccountsCookieMutator()->SetAccountsInCookie(
       parameters.accounts_to_send, delegate_->GetGaiaApiSource(),
       base::BindOnce(&AccountReconcilor::OnSetAccountsInCookieCompleted,
                      base::Unretained(this)));
@@ -415,7 +414,8 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
   if (!delegate_->IsAccountConsistencyEnforced())
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
-  cookie_manager_service_->LogOutAllAccounts(delegate_->GetGaiaApiSource());
+  identity_manager_->GetAccountsCookieMutator()->LogOutAllAccounts(
+      delegate_->GetGaiaApiSource());
 }
 
 void AccountReconcilor::StartReconcile() {
@@ -659,7 +659,7 @@ std::vector<std::string> AccountReconcilor::LoadValidAccountsFromTokenService()
 void AccountReconcilor::OnReceivedManageAccountsResponse(
     signin::GAIAServiceType service_type) {
   if (service_type == signin::GAIA_SERVICE_TYPE_ADDSESSION) {
-    cookie_manager_service_->TriggerListAccounts();
+    identity_manager_->GetAccountsCookieMutator()->TriggerCookieJarUpdate();
   }
 }
 

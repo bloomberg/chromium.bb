@@ -125,12 +125,10 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   DummyAccountReconcilorWithDelegate(
       identity::IdentityManager* identity_manager,
       SigninClient* client,
-      GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency)
       : AccountReconcilor(
             identity_manager,
             client,
-            cookie_manager_service,
             CreateAccountReconcilorDelegate(client,
                                             identity_manager,
                                             account_consistency)) {
@@ -145,12 +143,10 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   DummyAccountReconcilorWithDelegate(
       identity::IdentityManager* identity_manager,
       SigninClient* client,
-      GaiaCookieManagerService* cookie_manager_service,
       signin::AccountReconcilorDelegate* delegate)
       : AccountReconcilor(
             identity_manager,
             client,
-            cookie_manager_service,
             std::unique_ptr<signin::AccountReconcilorDelegate>(delegate)) {
 #if defined(OS_IOS)
     SetIsWKHTTPSystemCookieStoreEnabled(true);
@@ -190,13 +186,11 @@ class MockAccountReconcilor
   explicit MockAccountReconcilor(
       identity::IdentityManager* identity_manager,
       SigninClient* client,
-      GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency);
 
   explicit MockAccountReconcilor(
       identity::IdentityManager* identity_manager,
       SigninClient* client,
-      GaiaCookieManagerService* cookie_manager_service,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
@@ -208,23 +202,19 @@ class MockAccountReconcilor
 MockAccountReconcilor::MockAccountReconcilor(
     identity::IdentityManager* identity_manager,
     SigninClient* client,
-    GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
           identity_manager,
           client,
-          cookie_manager_service,
           account_consistency) {}
 
 MockAccountReconcilor::MockAccountReconcilor(
     identity::IdentityManager* identity_manager,
     SigninClient* client,
-    GaiaCookieManagerService* cookie_manager_service,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
           identity_manager,
           client,
-          cookie_manager_service,
           delegate.release()) {}
 
 struct Cookie {
@@ -403,7 +393,7 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   if (!mock_reconcilor_) {
     mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
         identity_test_env_.identity_manager(), &test_signin_client_,
-        &cookie_manager_service_, account_consistency_);
+        account_consistency_);
   }
 
   return mock_reconcilor_.get();
@@ -413,7 +403,7 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor(
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate) {
   mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
       identity_test_env_.identity_manager(), &test_signin_client_,
-      &cookie_manager_service_, std::move(delegate));
+      std::move(delegate));
 
   return mock_reconcilor_.get();
 }

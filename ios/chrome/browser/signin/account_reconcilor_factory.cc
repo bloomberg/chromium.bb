@@ -12,7 +12,6 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/web/public/features.h"
@@ -24,7 +23,6 @@ AccountReconcilorFactory::AccountReconcilorFactory()
     : BrowserStateKeyedServiceFactory(
           "AccountReconcilor",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
@@ -53,7 +51,6 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
   std::unique_ptr<AccountReconcilor> reconcilor(new AccountReconcilor(
       identity_manager,
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           identity_manager)));
 #if defined(OS_IOS)
