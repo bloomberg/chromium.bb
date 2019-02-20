@@ -52,8 +52,7 @@ config("runtime_library") {
   } else {
     # Don't leak any symbols on a static build.
     defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
-    if (!export_libcxxabi_from_executables) {
-      assert(!is_win, "don't use libcxxabi on win, see below")
+    if (!export_libcxxabi_from_executables && !is_win) {
       defines += [ "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" ]
     }
   }
@@ -69,6 +68,8 @@ config("runtime_library") {
     # implements the Itanium C++ ABI, and not the Microsoft ABI which we use on
     # Windows (and we need to use in order to interoperate correctly with COM
     # among other things).
+    assert(!is_win, "Don't use libcxxabi on Windows.")
+
     cflags_cc +=
         [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
 
