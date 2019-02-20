@@ -15,9 +15,14 @@
 
 using GoogleToolboxForMacTest = PlatformTest;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // [NSDictionary gtm_dictionaryWithHttpArgumentsString] is used downstream.
 // This test ensures that we keep compiling the file.
 TEST_F(GoogleToolboxForMacTest, dictionaryWithHttpArgumentsString) {
   NSDictionary* dict = [NSDictionary gtm_dictionaryWithHttpArgumentsString:@""];
   EXPECT_EQ(0u, [dict count]);
 }
+
+#pragma clang diagnostic pop
