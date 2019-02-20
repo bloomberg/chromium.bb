@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 
@@ -98,18 +99,13 @@ public class EmptyTabObserver implements TabObserver {
             Tab tab, boolean isMainFrame, int errorCode, String description, String failingUrl) {}
 
     @Override
-    public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isSameDocument, long navigationHandleProxy) {}
+    public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {}
 
     @Override
-    public void onDidRedirectNavigation(
-            Tab tab, String url, boolean isInMainFrame, long navigationHandleProxy) {}
+    public void onDidRedirectNavigation(Tab tab, NavigationHandle navigationHandle) {}
 
     @Override
-    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-            boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-            int httpStatusCode) {}
+    public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {}
 
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {}

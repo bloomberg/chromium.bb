@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
@@ -631,23 +632,20 @@ public class WebappActivity extends SingleTabActivity {
 
     protected TabObserver createTabObserver() {
         return new EmptyTabObserver() {
-
             @Override
-            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                    int httpStatusCode) {
-                if (hasCommitted && isInMainFrame) {
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
                     tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
 
                     RecordHistogram.recordBooleanHistogram(
-                            HISTOGRAM_NAVIGATION_STATUS, !isErrorPage);
+                            HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
 
                     updateToolbarCloseButtonVisibility();
 
-                    if (!WebappScopePolicy.isUrlInScope(scopePolicy(), mWebappInfo, url)) {
+                    if (!WebappScopePolicy.isUrlInScope(
+                                scopePolicy(), mWebappInfo, navigation.getUrl())) {
                         // Briefly show the toolbar for off-scope navigations.
                         getFullscreenManager()
                                 .getBrowserVisibilityDelegate()

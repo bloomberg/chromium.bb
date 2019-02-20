@@ -24,6 +24,7 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -333,25 +334,21 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void didStartNavigation(String url, boolean isInMainFrame,
-                            boolean isSameDocument, long navigationHandleProxy) {
-                        if (isInMainFrame && !isSameDocument) {
+                    public void didStartNavigation(NavigationHandle navigation) {
+                        if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
+                            String url = navigation.getUrl();
                             mContentDelegate.onMainFrameLoadStarted(
                                     url, !TextUtils.equals(url, mLoadedUrl));
                         }
                     }
 
                     @Override
-                    public void didFinishNavigation(String url, boolean isInMainFrame,
-                            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                            boolean isFragmentNavigation, boolean isRendererInitiated,
-                            boolean isDownload, Integer pageTransition, int errorCode,
-                            String errorDescription, int httpStatusCode) {
-                        if (hasCommitted && isInMainFrame) {
+                    public void didFinishNavigation(NavigationHandle navigation) {
+                        if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                             mIsProcessingPendingNavigation = false;
-                            mContentDelegate.onMainFrameNavigation(url,
-                                    !TextUtils.equals(url, mLoadedUrl),
-                                    isHttpFailureCode(httpStatusCode));
+                            mContentDelegate.onMainFrameNavigation(navigation.getUrl(),
+                                    !TextUtils.equals(navigation.getUrl(), mLoadedUrl),
+                                    isHttpFailureCode(navigation.httpStatusCode()));
                         }
                     }
                 };

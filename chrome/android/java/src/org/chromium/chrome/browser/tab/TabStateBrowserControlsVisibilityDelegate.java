@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -86,11 +87,8 @@ public class TabStateBrowserControlsVisibilityDelegate
             }
 
             @Override
-            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                    int httpStatusCode) {
-                if (!hasCommitted || !isInMainFrame) return;
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
                 mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
                 mHandler.sendEmptyMessageDelayed(
                         MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, getLoadDelayMs());

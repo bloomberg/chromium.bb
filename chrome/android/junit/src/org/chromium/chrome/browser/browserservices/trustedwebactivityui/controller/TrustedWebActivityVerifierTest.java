@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.NavigationHandle;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -228,8 +229,18 @@ public class TrustedWebActivityVerifierTest {
 
     private void navigateToUrl(String url) {
         when(mTab.getUrl()).thenReturn(url);
+        NavigationHandle navigation =
+                new NavigationHandle(0 /* navigationHandleProxy */, url, true /* isMainFrame */,
+                        false /* isSameDocument */, false /* isRendererInitiated */);
         for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
-            tabObserver.onDidFinishNavigation(mTab, url, true, false, true, true, false, 0, 0, 0);
+            tabObserver.onDidStartNavigation(mTab, navigation);
+        }
+
+        navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
+                false /* isFragmentNavigation */, false /* isDownload */, 0 /* pageTransition */,
+                0 /* errorCode*/, 200 /* httpStatusCode*/);
+        for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
+            tabObserver.onDidFinishNavigation(mTab, navigation);
         }
     }
 

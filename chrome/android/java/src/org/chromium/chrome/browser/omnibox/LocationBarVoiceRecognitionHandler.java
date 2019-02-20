@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -193,11 +193,11 @@ public class LocationBarVoiceRecognitionHandler {
         }
 
         @Override
-        public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                boolean isRendererInitiated, boolean isDownload, @Nullable Integer pageTransition,
-                int errorCode, String errorDescription, int httpStatusCode) {
-            if (hasCommitted && isInMainFrame && !isErrorPage) setReceivedUserGesture(url);
+        public void didFinishNavigation(NavigationHandle navigation) {
+            if (navigation.hasCommitted() && navigation.isInMainFrame()
+                    && !navigation.isErrorPage()) {
+                setReceivedUserGesture(navigation.getUrl());
+            }
             destroy();
         }
     }

@@ -11,6 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -37,13 +38,10 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onDidFinishNavigation(final Tab tab, final String url, boolean isInMainFrame,
-            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-            boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-            int httpStatusCode) {
-        if (!isInMainFrame) return;
+    public void onDidFinishNavigation(final Tab tab, NavigationHandle navigation) {
+        if (!navigation.isInMainFrame()) return;
 
-        switch (errorCode) {
+        switch (navigation.errorCode()) {
             case ERROR_OK:
                 mDelegate.hideWebApkNetworkErrorDialog();
                 break;
@@ -51,10 +49,10 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
                 onNetworkChanged(tab);
                 break;
             default:
-                onNetworkError(tab, errorCode);
+                onNetworkError(tab, navigation.errorCode());
                 break;
         }
-        WebApkUma.recordNetworkErrorWhenLaunch(-errorCode);
+        WebApkUma.recordNetworkErrorWhenLaunch(-navigation.errorCode());
     }
 
     private void onNetworkChanged(Tab tab) {

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerifica
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.MessagePort.MessageCallback;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -68,12 +69,9 @@ public class PostMessageHandler implements OriginVerificationListener {
             private boolean mNavigatedOnce;
 
             @Override
-            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                    boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                    boolean isRendererInitiated, boolean isDownload, Integer pageTransition,
-                    int errorCode, String errorDescription, int httpStatusCode) {
-                if (mNavigatedOnce && hasCommitted && isInMainFrame && !isSameDocument
-                        && mChannel != null) {
+            public void didFinishNavigation(NavigationHandle navigation) {
+                if (mNavigatedOnce && navigation.hasCommitted() && navigation.isInMainFrame()
+                        && !navigation.isSameDocument() && mChannel != null) {
                     webContents.removeObserver(this);
                     disconnectChannel();
                     return;

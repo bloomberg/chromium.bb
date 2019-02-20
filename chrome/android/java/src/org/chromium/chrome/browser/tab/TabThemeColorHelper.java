@@ -12,6 +12,7 @@ import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.NavigationHandle;
 
 /**
  * Manages theme color used for {@link Tab}. Destroyed together with the tab.
@@ -162,11 +163,8 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     @Override
-    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-            boolean isFragmentNavigation, @Nullable Integer pageTransition, int errorCode,
-            int httpStatusCode) {
-        if (errorCode != 0) updateIfNeeded(true);
+    public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+        if (navigation.errorCode() != 0) updateIfNeeded(true);
     }
 
     @Override

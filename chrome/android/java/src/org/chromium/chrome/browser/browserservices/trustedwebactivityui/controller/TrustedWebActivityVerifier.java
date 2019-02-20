@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -81,16 +82,13 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     /** A {@link TabObserver} that checks whether we are on a verified Origin on page navigation. */
     private final TabObserver mVerifyOnPageLoadObserver = new EmptyTabObserver() {
         @Override
-        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                int httpStatusCode) {
-            if (!hasCommitted || !isInMainFrame) return;
+        public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+            if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
                 assert false : "Shouldn't observe navigation when TWAs are disabled";
                 return;
             }
-            verify(new Origin(url));
+            verify(new Origin(navigation.getUrl()));
         }
     };
 

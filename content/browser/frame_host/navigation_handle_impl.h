@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -33,6 +34,11 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#include "content/browser/android/navigation_handle_proxy.h"
+#endif
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
@@ -154,6 +160,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   NavigationData* GetNavigationData() override;
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
+
+#if defined(OS_ANDROID)
+  // Returns a reference to this NavigationHandle Java counterpart. It is used
+  // by Java WebContentsObservers.
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle();
+#endif
 
   // Used in tests.
   State state_for_testing() const { return state_; }
@@ -553,6 +565,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // Owns the NavigationThrottles associated with this navigation, and is
   // responsible for notifying them about the various navigation events.
   NavigationThrottleRunner throttle_runner_;
+
+#if defined(OS_ANDROID)
+  // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
+  // bridge in between the two.
+  std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
+#endif
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

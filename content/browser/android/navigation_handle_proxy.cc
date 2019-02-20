@@ -4,29 +4,98 @@
 
 #include "content/browser/android/navigation_handle_proxy.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "content/public/browser/navigation_handle.h"
-#include "jni/NavigationHandleProxy_jni.h"
+#include "jni/NavigationHandle_jni.h"
+
+using base::android::AttachCurrentThread;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace content {
+
+NavigationHandleProxy::NavigationHandleProxy(
+    NavigationHandle* cpp_navigation_handle)
+    : cpp_navigation_handle_(cpp_navigation_handle) {
+  JNIEnv* env = AttachCurrentThread();
+  java_navigation_handle_ = Java_NavigationHandle_Constructor(
+      env, reinterpret_cast<jlong>(this),
+      ConvertUTF8ToJavaString(env, cpp_navigation_handle_->GetURL().spec()),
+      cpp_navigation_handle_->IsInMainFrame(),
+      cpp_navigation_handle_->IsSameDocument(),
+      cpp_navigation_handle_->IsRendererInitiated());
+}
+
+void NavigationHandleProxy::DidRedirect() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_NavigationHandle_didRedirect(
+      env, java_navigation_handle_,
+      ConvertUTF8ToJavaString(env, cpp_navigation_handle_->GetURL().spec()));
+}
+
+void NavigationHandleProxy::DidFinish() {
+  JNIEnv* env = AttachCurrentThread();
+  // Matches logic in
+  // components/navigation_interception/navigation_params_android.cc
+  ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
+      env, cpp_navigation_handle_->GetBaseURLForDataURL().is_empty()
+               ? cpp_navigation_handle_->GetURL().spec()
+               : cpp_navigation_handle_->GetBaseURLForDataURL()
+                     .possibly_invalid_spec()));
+
+  bool is_fragment_navigation = cpp_navigation_handle_->IsSameDocument();
+
+  if (cpp_navigation_handle_->HasCommitted()) {
+    // See http://crbug.com/251330 for why it's determined this way.
+    url::Replacements<char> replacements;
+    replacements.ClearRef();
+    bool urls_same_ignoring_fragment =
+        cpp_navigation_handle_->GetURL().ReplaceComponents(replacements) ==
+        cpp_navigation_handle_->GetPreviousURL().ReplaceComponents(
+            replacements);
+    is_fragment_navigation &= urls_same_ignoring_fragment;
+  }
+
+  Java_NavigationHandle_didFinish(
+      env, java_navigation_handle_, jstring_url,
+      cpp_navigation_handle_->IsErrorPage(),
+      cpp_navigation_handle_->HasCommitted(), is_fragment_navigation,
+      cpp_navigation_handle_->IsDownload(),
+      cpp_navigation_handle_->HasCommitted()
+          ? cpp_navigation_handle_->GetPageTransition()
+          : -1,
+      cpp_navigation_handle_->GetNetErrorCode(),
+      // TODO(shaktisahu): Change default status to -1 after fixing
+      // crbug/690041.
+      cpp_navigation_handle_->GetResponseHeaders()
+          ? cpp_navigation_handle_->GetResponseHeaders()->response_code()
+          : 200);
+}
+
+NavigationHandleProxy::~NavigationHandleProxy() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_NavigationHandle_release(env, java_navigation_handle_);
+}
 
 // Called from Java.
 void NavigationHandleProxy::SetRequestHeader(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& name,
-    const base::android::JavaParamRef<jstring>& value) {
-  navigation_handle_->SetRequestHeader(
-      base::android::ConvertJavaStringToUTF8(name),
-      base::android::ConvertJavaStringToUTF8(value));
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& name,
+    const JavaParamRef<jstring>& value) {
+  cpp_navigation_handle_->SetRequestHeader(ConvertJavaStringToUTF8(name),
+                                           ConvertJavaStringToUTF8(value));
 }
 
 // Called from Java.
 void NavigationHandleProxy::RemoveRequestHeader(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& name) {
-  navigation_handle_->RemoveRequestHeader(
-      base::android::ConvertJavaStringToUTF8(name));
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& name) {
+  cpp_navigation_handle_->RemoveRequestHeader(ConvertJavaStringToUTF8(name));
 }
 
 }  // namespace content

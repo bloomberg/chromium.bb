@@ -109,6 +109,7 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.AsyncViewProvider;
@@ -566,9 +567,8 @@ public class ToolbarManager
             }
 
             @Override
-            public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isSameDocument, long navigationHandleProxy) {
-                if (!isInMainFrame) return;
+            public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInMainFrame()) return;
                 // Update URL as soon as it becomes available when it's a new tab.
                 // But we want to update only when it's a new tab. So we check whether the current
                 // navigation entry is initial, meaning whether it has the same target URL as the
@@ -579,14 +579,14 @@ public class ToolbarManager
                     mLocationBar.setUrlToPageUrl();
                 }
 
-                if (isSameDocument) return;
+                if (navigation.isSameDocument()) return;
                 // This event is used as the primary trigger for the progress bar because it
                 // is the earliest indication that a load has started for a particular frame. In
                 // the case of the progress bar, it should only traverse the screen a single time
                 // per page load. So if this event states the main frame has started loading the
                 // progress bar is started.
 
-                if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) {
+                if (NativePageFactory.isNativePageUrl(navigation.getUrl(), tab.isIncognito())) {
                     finishLoadProgress(false);
                     return;
                 }
@@ -597,15 +597,13 @@ public class ToolbarManager
             }
 
             @Override
-            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                    int httpStatusCode) {
-                if (hasCommitted && isInMainFrame && !isSameDocument) {
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                if (navigation.hasCommitted() && navigation.isInMainFrame()
+                        && !navigation.isSameDocument()) {
                     mToolbar.onNavigatedToDifferentPage();
                 }
 
-                if (hasCommitted && tab.isPreview()) {
+                if (navigation.hasCommitted() && tab.isPreview()) {
                     // Some previews are not fully decided until the page commits. If this
                     // is a preview, update the security icon which will also update the verbose
                     // status view to make sure the "Lite" badge is displayed.
@@ -613,12 +611,13 @@ public class ToolbarManager
                     PreviewsUma.recordLitePageAtCommit(
                             PreviewsAndroidBridge.getInstance().getPreviewsType(
                                     tab.getWebContents()),
-                            isInMainFrame);
+                            navigation.isInMainFrame());
                 }
 
                 // If the load failed due to a different navigation, there is no need to reset the
                 // location bar animations.
-                if (errorCode != 0 && isInMainFrame && !hasPendingNonNtpNavigation(tab)) {
+                if (navigation.errorCode() != 0 && navigation.isInMainFrame()
+                        && !hasPendingNonNtpNavigation(tab)) {
                     NewTabPage ntp = mLocationBarModel.getNewTabPageForCurrentTab();
                     if (ntp == null) return;
 
