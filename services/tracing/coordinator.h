@@ -57,7 +57,7 @@ class Coordinator : public mojom::Coordinator {
 
  private:
   friend std::default_delete<Coordinator>;
-  friend class CoordinatorTest;  // For testing.
+  friend class CoordinatorTestUtil;  // For testing.
 
   class TraceStreamer;
 

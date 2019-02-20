@@ -84,7 +84,7 @@ class AgentRegistry : public mojom::AgentRegistry {
 
  private:
   friend class AgentRegistryTest;  // For testing.
-  friend class CoordinatorTest;    // For testing.
+  friend class CoordinatorTestUtil;  // For testing.
 
   // mojom::AgentRegistry
   void RegisterAgent(mojom::AgentPtr agent,

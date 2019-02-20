@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/trace_event/trace_log.h"
@@ -21,15 +22,6 @@
 
 namespace tracing {
 
-namespace {
-
-bool IsArgumentFilterEnabled(const std::string& config) {
-  base::trace_event::TraceConfig chrome_trace_config_obj(config);
-  return chrome_trace_config_obj.IsArgumentFilterEnabled();
-}
-
-}  // namespace
-
 // A TracingSession acts as a perfetto consumer and is used to wrap all the
 // associated state of an on-going tracing session, for easy setup and cleanup.
 //
@@ -40,21 +32,26 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
  public:
   TracingSession(const std::string& config,
                  base::OnceClosure tracing_over_callback)
-      : json_trace_exporter_(std::make_unique<JSONTraceExporter>(
-            IsArgumentFilterEnabled(config)
-                ? base::trace_event::TraceLog::GetInstance()
-                      ->GetArgumentFilterPredicate()
-                : JSONTraceExporter::ArgumentFilterPredicate(),
-            base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
-                                base::Unretained(this)))),
-        tracing_over_callback_(std::move(tracing_over_callback)) {
+      : tracing_over_callback_(std::move(tracing_over_callback)) {
+    base::trace_event::TraceConfig chrome_trace_config_obj(config);
+    json_trace_exporter_.reset(new JSONTraceExporter(
+        chrome_trace_config_obj.IsArgumentFilterEnabled()
+            ? base::trace_event::TraceLog::GetInstance()
+                  ->GetArgumentFilterPredicate()
+            : JSONTraceExporter::ArgumentFilterPredicate(),
+        base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
+                            base::Unretained(this))));
     perfetto::TracingService* service =
         PerfettoService::GetInstance()->GetService();
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
 
     // Start tracing.
     perfetto::TraceConfig trace_config;
-    trace_config.add_buffers()->set_size_kb(4096 * 100);
+    size_t size_limit = chrome_trace_config_obj.GetTraceBufferSizeInKb();
+    if (size_limit == 0) {
+      size_limit = 400 * 1024;
+    }
+    trace_config.add_buffers()->set_size_kb(size_limit);
 
     // Perfetto uses clock_gettime for its internal snapshotting, which gets
     // blocked by the sandboxed and isn't needed for Chrome regardless.
