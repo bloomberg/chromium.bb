@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/android/usage_stats/website_event.pb.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
