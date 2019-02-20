@@ -3696,7 +3696,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PreviewsDisallowedOnReloads",
+                    "name": "Enabled",
                     "enable_features": [
                         "PreviewsDisallowedOnReloads"
                     ]
