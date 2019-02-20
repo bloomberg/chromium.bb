@@ -98,11 +98,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     virtual void DrawingBufferClientRestorePixelPackBufferBinding() = 0;
   };
 
-  struct WebGLContextLimits {
-    uint32_t max_active_webgl_contexts = 0;
-    uint32_t max_active_webgl_contexts_on_worker = 0;
-  };
-
   enum PreserveDrawingBuffer {
     kPreserve,
     kDiscard,
@@ -209,7 +204,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   Client* client() { return client_; }
   WebGLVersion webgl_version() const { return webgl_version_; }
   bool destroyed() const { return destruction_in_progress_; }
-  const WebGLContextLimits& webgl_context_limits();
 
   // cc::TextureLayerClient implementation.
   bool PrepareTransferableResource(
@@ -476,7 +470,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   const PreserveDrawingBuffer preserve_drawing_buffer_;
   const WebGLVersion webgl_version_;
-  WebGLContextLimits webgl_context_limits_;
 
   std::unique_ptr<WebGraphicsContext3DProviderWrapper> context_provider_;
   // Lifetime is tied to the m_contextProvider.

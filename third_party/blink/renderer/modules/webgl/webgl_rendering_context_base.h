@@ -1731,7 +1731,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void HoldReferenceToDrawingBuffer(DrawingBuffer*);
 
   static void InitializeWebGLContextLimits(
-      const DrawingBuffer::WebGLContextLimits&);
+      WebGraphicsContext3DProvider* context_provider);
   static unsigned CurrentMaxGLContexts();
 
   static bool webgl_context_limits_initialized_;
