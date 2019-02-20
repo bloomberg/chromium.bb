@@ -24,7 +24,6 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       is_platform_app_(false),
       show_in_launcher_(false),
       weak_ptr_factory_(this) {
-  constexpr bool allow_placeholder_icon = true;
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
 
   if (proxy) {
@@ -36,20 +35,10 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
           update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
     });
 
-    proxy->LoadIcon(
-        app_id, apps::mojom::IconCompression::kUncompressed,
-        AppListConfig::instance().GetPreferredIconDimension(display_type()),
-        allow_placeholder_icon,
-        base::BindOnce(&AppServiceAppResult::OnLoadIcon,
-                       weak_ptr_factory_.GetWeakPtr(), false));
-
+    constexpr bool allow_placeholder_icon = true;
+    CallLoadIcon(false, allow_placeholder_icon);
     if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
-      proxy->LoadIcon(
-          app_id, apps::mojom::IconCompression::kUncompressed,
-          AppListConfig::instance().suggestion_chip_icon_dimension(),
-          allow_placeholder_icon,
-          base::BindOnce(&AppServiceAppResult::OnLoadIcon,
-                         weak_ptr_factory_.GetWeakPtr(), true));
+      CallLoadIcon(true, allow_placeholder_icon);
     }
   }
 
@@ -115,12 +104,27 @@ void AppServiceAppResult::Launch(int event_flags,
   }
 }
 
+void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  if (proxy) {
+    proxy->LoadIcon(
+        app_id(), apps::mojom::IconCompression::kUncompressed,
+        chip ? AppListConfig::instance().suggestion_chip_icon_dimension()
+             : AppListConfig::instance().GetPreferredIconDimension(
+                   display_type()),
+        allow_placeholder_icon,
+        base::BindOnce(&AppServiceAppResult::OnLoadIcon,
+                       weak_ptr_factory_.GetWeakPtr(), chip));
+  }
+}
+
 void AppServiceAppResult::OnLoadIcon(bool chip,
                                      apps::mojom::IconValuePtr icon_value) {
   if (icon_value->icon_compression !=
       apps::mojom::IconCompression::kUncompressed) {
     return;
   }
+
   if (chip) {
     SetChipIcon(icon_value->uncompressed);
   } else {
@@ -128,7 +132,8 @@ void AppServiceAppResult::OnLoadIcon(bool chip,
   }
 
   if (icon_value->is_placeholder_icon) {
-    // TODO(crbug.com/826982): watch for new (non-placeholder) icons.
+    constexpr bool allow_placeholder_icon = false;
+    CallLoadIcon(chip, allow_placeholder_icon);
   }
 }
 
