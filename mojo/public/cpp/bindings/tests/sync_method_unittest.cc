@@ -450,8 +450,9 @@ void RunTestOnSequencedTaskRunner(
   base::RunLoop run_loop;
   test->Init(run_loop.QuitClosure());
   base::CreateSequencedTaskRunnerWithTraits({base::WithBaseSyncPrimitives()})
-      ->PostTask(FROM_HERE, base::Bind(&SequencedTaskRunnerTestBase::RunTest,
-                                       base::Unretained(test.release())));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&SequencedTaskRunnerTestBase::RunTest,
+                                base::Unretained(test.release())));
   run_loop.Run();
 }
 
@@ -555,8 +556,8 @@ TYPED_TEST(SyncMethodCommonTest, BasicSyncCalls) {
   TestSyncServiceSequence<Interface> service_sequence;
   service_sequence.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&TestSyncServiceSequence<Interface>::SetUp,
-                 base::Unretained(&service_sequence), base::Passed(&request)));
+      base::BindOnce(&TestSyncServiceSequence<Interface>::SetUp,
+                     base::Unretained(&service_sequence), std::move(request)));
   ASSERT_TRUE(ptr->Ping());
   ASSERT_TRUE(service_sequence.ping_called());
 

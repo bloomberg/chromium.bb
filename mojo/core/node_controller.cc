@@ -122,7 +122,7 @@ class ThreadDestructionObserver
       new ThreadDestructionObserver(callback);
     } else {
       task_runner->PostTask(FROM_HERE,
-                            base::Bind(&Create, task_runner, callback));
+                            base::BindOnce(&Create, task_runner, callback));
     }
   }
 
@@ -1216,8 +1216,8 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
   } else {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&NodeController::OnChannelError, base::Unretained(this),
-                   from_node, base::RetainedRef(channel)));
+        base::BindOnce(&NodeController::OnChannelError, base::Unretained(this),
+                       from_node, base::RetainedRef(channel)));
   }
 }
 

@@ -367,9 +367,7 @@ wait_set.AddHandle(b.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE);
 wait_set.AddEvent(&timeout_event);
 
 // Ensure the Wait() lasts no more than 5 seconds.
-bg_thread->task_runner()->PostDelayedTask(
-    FROM_HERE,
-    base::Bind([](base::WaitableEvent* e) { e->Signal(); }, &timeout_event);
+bg_thread->task_runner()->PostDelayedTask(FROM_HERE, base::BindOnce([](base::WaitableEvent* e) { e->Signal(); }, &timeout_event);
     base::TimeDelta::FromSeconds(5));
 
 base::WaitableEvent* ready_event = nullptr;

@@ -236,8 +236,8 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
     done_closure_ = run_loop.QuitClosure();
     done_runner_ = base::ThreadTaskRunnerHandle::Get();
     runner->PostTask(FROM_HERE,
-                     base::Bind(&EndToEndInterfacePtrTest::RunTestImpl,
-                                base::Unretained(this)));
+                     base::BindOnce(&EndToEndInterfacePtrTest::RunTestImpl,
+                                    base::Unretained(this)));
     run_loop.Run();
   }
 

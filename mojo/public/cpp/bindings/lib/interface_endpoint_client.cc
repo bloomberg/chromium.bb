@@ -61,8 +61,8 @@ class ResponderThunk : public MessageReceiverWithStatus {
         }
       } else {
         task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&InterfaceEndpointClient::RaiseError, endpoint_client_));
+            FROM_HERE, base::BindOnce(&InterfaceEndpointClient::RaiseError,
+                                      endpoint_client_));
       }
     }
   }
@@ -368,9 +368,9 @@ void InterfaceEndpointClient::OnAssociationEvent(
   } else if (event ==
              ScopedInterfaceEndpointHandle::PEER_CLOSED_BEFORE_ASSOCIATION) {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&InterfaceEndpointClient::NotifyError,
-                                      weak_ptr_factory_.GetWeakPtr(),
-                                      handle_.disconnect_reason()));
+                           base::BindOnce(&InterfaceEndpointClient::NotifyError,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          handle_.disconnect_reason()));
   }
 }
 
