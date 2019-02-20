@@ -311,3 +311,25 @@ message MigrateKeyReply {
   // Indicates an error if error is not empty.
   CryptohomeErrorCode error = 1;
 }
+
+// TODO(b/126307305): For the messages, below, we'll need to add the documentations
+// for them.
+
+message MigrateToDircryptoRequest {
+  cryptohome.AccountIdentifier account_id = 1;
+  // If true, only a few paths (specified in cryptohomed) that are necessary for
+  // a working profile will be migrated. Most user data will be wiped.
+  bool minimal_migration = 2;
+}
+
+message MigrateToDircryptoReply {
+  CryptohomeErrorCode error = 1;
+}
+
+message NeedsDircryptoMigrationRequest {
+  cryptohome.AccountIdentifier account_id = 1;
+}
+
+message NeedsDircryptoMigrationReply {
+  bool needs_dircrypto_migration = 1;
+}
