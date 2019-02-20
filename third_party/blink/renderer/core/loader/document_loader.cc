@@ -162,6 +162,7 @@ DocumentLoader::DocumentLoader(
   unreachable_url_ = params_->unreachable_url;
   previews_state_ = params_->previews_state;
 
+  // See WebNavigationParams for special case explanations.
   if (!params_->is_static_data && url_.IsAboutSrcdocURL()) {
     loading_srcdoc_ = true;
     // TODO(dgozman): instead of reaching to the owner here, we could instead:
@@ -184,6 +185,21 @@ DocumentLoader::DocumentLoader(
     WebNavigationParams::FillStaticResponse(
         params_.get(), "text/html", "UTF-8",
         base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
+  } else if (!params_->is_static_data && fetcher_->Archive()) {
+    // If we have an archive loaded in some ancestor frame, we should
+    // retrieve document content from that archive. This is different from
+    // loading an archive into this frame, which will be handled separately
+    // once we load the body and parse it as an archive.
+    params_->body_loader.reset();
+    ArchiveResource* archive_resource =
+        fetcher_->Archive()->SubresourceForURL(url_);
+    if (archive_resource) {
+      SharedBuffer* archive_data = archive_resource->Data();
+      WebNavigationParams::FillStaticResponse(
+          params_.get(), archive_resource->MimeType(),
+          archive_resource->TextEncoding(),
+          base::make_span(archive_data->Data(), archive_data->size()));
+    }
   }
 
   WebNavigationTimings& timings = params_->navigation_timings;
@@ -1024,26 +1040,8 @@ void DocumentLoader::StartLoadingInternal() {
     return;
   }
 
-  // See WebNavigationParams for special case explanations.
-  if (params_->is_static_data) {
+  if (params_->is_static_data)
     has_substitute_data_ = true;
-  } else if (fetcher_->Archive()) {
-    // If we have an archive loaded in some ancestor frame, we should
-    // retrieve document content from that archive. This is different from
-    // loading an archive into this frame, which will be handled separately
-    // once we load the body and parse it as an archive.
-    params_->body_loader.reset();
-    ArchiveResource* archive_resource =
-        fetcher_->Archive()->SubresourceForURL(url_);
-    if (archive_resource) {
-      SharedBuffer* archive_data = archive_resource->Data();
-      WebNavigationParams::FillStaticResponse(
-          params_.get(), archive_resource->MimeType(),
-          archive_resource->TextEncoding(),
-          base::make_span(archive_data->Data(), archive_data->size()));
-    }
-  }
-
   body_loader_ = std::move(params_->body_loader);
   if (!body_loader_) {
     // TODO(dgozman): we should try to get rid of this case.
