@@ -122,7 +122,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // eventually be called before the SessionStorageNamespaceRequest can be
   // bound.
   void Bind(blink::mojom::SessionStorageNamespaceRequest request,
-            int process_id);
+            int process_id,
+            base::OnceClosure bind_done);
 
   bool IsBound() const {
     return !bindings_.empty() || bind_waiting_on_clone_population_;
