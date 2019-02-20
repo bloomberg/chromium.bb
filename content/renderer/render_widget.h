@@ -93,6 +93,7 @@ class SwapPromise;
 
 namespace gfx {
 class ColorSpace;
+struct PresentationFeedback;
 class Range;
 }
 
@@ -597,6 +598,12 @@ class CONTENT_EXPORT RenderWidget
   // Update the WebView's device scale factor.
   // TODO(ajwong): This should be moved into RenderView.
   void UpdateWebViewWithDeviceScaleFactor();
+
+  // Forces a redraw and invokes the callback once the frame's been displayed
+  // to the user.
+  using PresentationTimeCallback =
+      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
+  void RequestPresentation(PresentationTimeCallback callback);
 
   // RenderWidget IPC message handler that can be overridden by subclasses.
   virtual void OnSynchronizeVisualProperties(const VisualProperties& params);

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_IMPL_H_
 #define CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_IMPL_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -60,6 +61,7 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
       mojom::SynchronousCompositorHostAssociatedPtrInfo host,
       mojom::SynchronousCompositorAssociatedRequest compositor_request)
       override;
+  void InputWasProcessed();
 
  private:
   bool ShouldProxyToMainThread() const;
@@ -71,8 +73,15 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
   base::WeakPtr<RenderWidget> render_widget_;
 
-  mojo::Binding<mojom::WidgetInputHandler> binding_;
-  mojo::AssociatedBinding<mojom::WidgetInputHandler> associated_binding_;
+  // This callback is used to respond to the WaitForInputProcessed Mojo
+  // message. We keep it around so that we can respond even if the renderer is
+  // killed before we actually fully process the input.
+  WaitForInputProcessedCallback input_processed_ack_;
+
+  mojo::Binding<mojom::WidgetInputHandler> binding_{this};
+  mojo::AssociatedBinding<mojom::WidgetInputHandler> associated_binding_{this};
+
+  base::WeakPtrFactory<WidgetInputHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WidgetInputHandlerImpl);
 };

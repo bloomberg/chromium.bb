@@ -47,9 +47,7 @@ WidgetInputHandlerImpl::WidgetInputHandlerImpl(
     : main_thread_task_runner_(main_thread_task_runner),
       input_handler_manager_(manager),
       input_event_queue_(input_event_queue),
-      render_widget_(render_widget),
-      binding_(this),
-      associated_binding_(this) {}
+      render_widget_(render_widget) {}
 
 WidgetInputHandlerImpl::~WidgetInputHandlerImpl() {}
 
@@ -162,8 +160,22 @@ void WidgetInputHandlerImpl::DispatchNonBlockingEvent(
 
 void WidgetInputHandlerImpl::WaitForInputProcessed(
     WaitForInputProcessedCallback callback) {
-  // TODO(bokan): Implement this to actually ensure input is processed.
-  std::move(callback).Run();
+  DCHECK(!input_processed_ack_);
+
+  // Store so that we can respond even if the renderer is destructed.
+  input_processed_ack_ = std::move(callback);
+
+  input_handler_manager_->WaitForInputProcessed(
+      base::BindOnce(&WidgetInputHandlerImpl::InputWasProcessed,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WidgetInputHandlerImpl::InputWasProcessed() {
+  // The callback can be be invoked when the renderer is hidden and then again
+  // when it's shown. We can also be called after Release is called so always
+  // check that the callback exists.
+  if (input_processed_ack_)
+    std::move(input_processed_ack_).Run();
 }
 
 void WidgetInputHandlerImpl::AttachSynchronousCompositor(
@@ -184,6 +196,15 @@ void WidgetInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
 }
 
 void WidgetInputHandlerImpl::Release() {
+  // If the renderer is closed, make sure we ack the outstanding Mojo callback
+  // so that we don't DCHECK and/or leave the browser-side blocked for an ACK
+  // that will never come if the renderer is destroyed before this callback is
+  // invoked. Note, this method will always be called on the Mojo-bound thread
+  // first and then again on the main thread, the callback will always be
+  // called on the Mojo-bound thread though.
+  if (input_processed_ack_)
+    std::move(input_processed_ack_).Run();
+
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     // Close the binding on the compositor thread first before telling the main
     // thread to delete this object.

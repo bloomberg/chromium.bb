@@ -369,6 +369,75 @@ void WidgetInputHandlerManager::DispatchEvent(
   }
 }
 
+void WidgetInputHandlerManager::InvokeInputProcessedCallback() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  // We can call this method even if we didn't request a callback (e.g. when
+  // the renderer becomes hidden).
+  if (!input_processed_callback_)
+    return;
+
+  // The handler's method needs to respond to the mojo message so it needs to
+  // run on the input handling thread. PostTask to the correct task runner.
+  // Even if we're already on the correct thread, we PostTask for symmetry.
+  base::SingleThreadTaskRunner* mojo_bound_task_runner =
+      compositor_task_runner_ ? compositor_task_runner_.get()
+                              : main_thread_task_runner_.get();
+
+  mojo_bound_task_runner->PostTask(FROM_HERE,
+                                   std::move(input_processed_callback_));
+}
+
+void WidgetInputHandlerManager::InputWasProcessed(
+    const gfx::PresentationFeedback&) {
+  InvokeInputProcessedCallback();
+}
+
+static void WaitForInputProcessedFromMain(
+    base::WeakPtr<RenderWidget> render_widget) {
+  // If the widget is destroyed while we're posting to the main thread, the
+  // Mojo message will be acked in WidgetInputHandlerImpl's destructor.
+  if (!render_widget)
+    return;
+
+  WidgetInputHandlerManager* manager =
+      render_widget->widget_input_handler_manager();
+
+  // If the RenderWidget is hidden, we won't produce compositor frames for it
+  // so just ACK the input to prevent blocking the browser indefinitely.
+  if (render_widget->is_hidden()) {
+    manager->InvokeInputProcessedCallback();
+    return;
+  }
+
+  auto redraw_complete_callback = base::BindOnce(
+      &WidgetInputHandlerManager::InputWasProcessed, manager->AsWeakPtr());
+
+  // We consider all observable effects of an input gesture to be processed
+  // when the CompositorFrame caused by that input has been produced, send, and
+  // displayed. RequestPresentation will force a a commit and redraw and
+  // callback when the CompositorFrame has been displayed in the display
+  // service. Some examples of non-trivial effects that require waiting that
+  // long: committing NonFastScrollRegions to the compositor, sending
+  // touch-action rects to the browser, and sending updated surface information
+  // to the display compositor for up-to-date OOPIF hit-testing.
+  render_widget->RequestPresentation(std::move(redraw_complete_callback));
+}
+
+void WidgetInputHandlerManager::WaitForInputProcessed(
+    base::OnceClosure callback) {
+  // Note, this will be called from the mojo-bound thread which could be either
+  // main or compositor.
+  DCHECK(!input_processed_callback_);
+  input_processed_callback_ = std::move(callback);
+
+  // We musn't touch render_widget_ from the impl thread so post all the setup
+  // to the main thread.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaitForInputProcessedFromMain, render_widget_));
+}
+
 void WidgetInputHandlerManager::InitOnCompositorThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
     bool smooth_scroll_enabled,
