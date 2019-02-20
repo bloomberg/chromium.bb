@@ -13,7 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 
 import java.util.HashSet;
 import java.util.List;
@@ -170,10 +170,13 @@ public class ProfileSyncService {
      * This method should only be used if you want to know the raw value. For checking whether
      * we should ask the user for a passphrase, use isPassphraseRequiredForDecryption().
      */
-    public PassphraseType getPassphraseType() {
+    public @Passphrase.Type int getPassphraseType() {
         assert isEngineInitialized();
         int passphraseType = nativeGetPassphraseType(mNativeProfileSyncServiceAndroid);
-        return PassphraseType.fromInternalValue(passphraseType);
+        if (passphraseType < 0 || passphraseType >= Passphrase.Type.NUM_ENTRIES) {
+            throw new IllegalArgumentException();
+        }
+        return passphraseType;
     }
 
     /**

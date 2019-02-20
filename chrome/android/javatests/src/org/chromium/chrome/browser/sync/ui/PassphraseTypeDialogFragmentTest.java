@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 
 /**
  * Tests to make sure that PassphraseTypeDialogFragment presents the correct options.
@@ -41,10 +41,10 @@ public class PassphraseTypeDialogFragmentTest {
     private static final boolean UNCHECKED = false;
 
     private static class TypeOptions {
-        public final PassphraseType type;
+        public final @Passphrase.Type int type;
         public final boolean isEnabled;
         public final boolean isChecked;
-        public TypeOptions(PassphraseType type, boolean isEnabled, boolean isChecked) {
+        public TypeOptions(@Passphrase.Type int type, boolean isEnabled, boolean isChecked) {
             this.type = type;
             this.isEnabled = isEnabled;
             this.isChecked = isChecked;
@@ -57,20 +57,20 @@ public class PassphraseTypeDialogFragmentTest {
     @SmallTest
     @Feature({"Sync"})
     public void testKeystoreEncryptionOptions() throws Exception {
-        createFragment(PassphraseType.KEYSTORE_PASSPHRASE, true);
+        createFragment(Passphrase.Type.KEYSTORE, true);
         assertPassphraseTypeOptions(false,
-                new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, ENABLED, UNCHECKED),
-                new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, ENABLED, CHECKED));
+                new TypeOptions(Passphrase.Type.CUSTOM, ENABLED, UNCHECKED),
+                new TypeOptions(Passphrase.Type.KEYSTORE, ENABLED, CHECKED));
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testCustomEncryptionOptions() throws Exception {
-        createFragment(PassphraseType.CUSTOM_PASSPHRASE, true);
+        createFragment(Passphrase.Type.CUSTOM, true);
         assertPassphraseTypeOptions(true,
-                new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, CHECKED),
-                new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, DISABLED, UNCHECKED));
+                new TypeOptions(Passphrase.Type.CUSTOM, DISABLED, CHECKED),
+                new TypeOptions(Passphrase.Type.KEYSTORE, DISABLED, UNCHECKED));
     }
 
     /*
@@ -80,43 +80,43 @@ public class PassphraseTypeDialogFragmentTest {
     @Test
     @FlakyTest(message = "crbug.com/588050")
     public void testFrozenImplicitEncryptionOptions() throws Exception {
-        createFragment(PassphraseType.FROZEN_IMPLICIT_PASSPHRASE, true);
+        createFragment(Passphrase.Type.FROZEN_IMPLICIT, true);
         assertPassphraseTypeOptions(true,
-                new TypeOptions(PassphraseType.FROZEN_IMPLICIT_PASSPHRASE, DISABLED, CHECKED),
-                new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, DISABLED, UNCHECKED));
+                new TypeOptions(Passphrase.Type.FROZEN_IMPLICIT, DISABLED, CHECKED),
+                new TypeOptions(Passphrase.Type.KEYSTORE, DISABLED, UNCHECKED));
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testImplicitEncryptionOptions() throws Exception {
-        createFragment(PassphraseType.IMPLICIT_PASSPHRASE, true);
+        createFragment(Passphrase.Type.IMPLICIT, true);
         assertPassphraseTypeOptions(false,
-                new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, ENABLED, UNCHECKED),
-                new TypeOptions(PassphraseType.IMPLICIT_PASSPHRASE, ENABLED, CHECKED));
+                new TypeOptions(Passphrase.Type.CUSTOM, ENABLED, UNCHECKED),
+                new TypeOptions(Passphrase.Type.IMPLICIT, ENABLED, CHECKED));
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testKeystoreEncryptionOptionsEncryptEverythingDisallowed() throws Exception {
-        createFragment(PassphraseType.KEYSTORE_PASSPHRASE, false);
+        createFragment(Passphrase.Type.KEYSTORE, false);
         assertPassphraseTypeOptions(false,
-                new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, UNCHECKED),
-                new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, ENABLED, CHECKED));
+                new TypeOptions(Passphrase.Type.CUSTOM, DISABLED, UNCHECKED),
+                new TypeOptions(Passphrase.Type.KEYSTORE, ENABLED, CHECKED));
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testImplicitEncryptionOptionsEncryptEverythingDisallowed() throws Exception {
-        createFragment(PassphraseType.IMPLICIT_PASSPHRASE, false);
+        createFragment(Passphrase.Type.IMPLICIT, false);
         assertPassphraseTypeOptions(false,
-                new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, UNCHECKED),
-                new TypeOptions(PassphraseType.IMPLICIT_PASSPHRASE, ENABLED, CHECKED));
+                new TypeOptions(Passphrase.Type.CUSTOM, DISABLED, UNCHECKED),
+                new TypeOptions(Passphrase.Type.IMPLICIT, ENABLED, CHECKED));
     }
 
-    public void createFragment(PassphraseType type, boolean isEncryptEverythingAllowed) {
+    public void createFragment(@Passphrase.Type int type, boolean isEncryptEverythingAllowed) {
         mTypeFragment = PassphraseTypeDialogFragment.create(type, 0, isEncryptEverythingAllowed);
         mTypeFragment.show(mSyncTestRule.getActivity().getFragmentManager(), TAG);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
