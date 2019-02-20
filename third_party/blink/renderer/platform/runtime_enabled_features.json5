@@ -1362,10 +1362,6 @@
       status: "experimental",
     },
     {
-      name: "TrustedEventsDefaultAction",
-      status: "stable",
-    },
-    {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
     },

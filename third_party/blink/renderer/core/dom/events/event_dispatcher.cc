@@ -339,9 +339,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
 
   // The DOM Events spec says that events dispatched by JS (other than "click")
   // should not have their default handlers invoked.
-  bool is_trusted_or_click =
-      !RuntimeEnabledFeatures::TrustedEventsDefaultActionEnabled() ||
-      event_->isTrusted() || is_click;
+  bool is_trusted_or_click = event_->isTrusted() || is_click;
 
   // For Android WebView (distinguished by wideViewportQuirkEnabled)
   // enable untrusted events for mouse down on select elements because
