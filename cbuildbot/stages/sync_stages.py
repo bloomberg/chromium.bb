@@ -417,7 +417,7 @@ class SyncStage(generic_stages.BuilderStage):
     """Returns the manifest to use."""
     return self._run.config.manifest
 
-  def ManifestCheckout(self, next_manifest):
+  def ManifestCheckout(self, next_manifest, fetch_all=False):
     """Checks out the repository to the given manifest."""
     self._Print('\n'.join([
         'BUILDROOT: %s' % self.repo.directory,
@@ -432,10 +432,11 @@ class SyncStage(generic_stages.BuilderStage):
         self.repo.ExportManifest(mark_revision=self.output_manifest_sha1),
         file=sys.stderr)
 
-    # Perform git fetch all on projects to resolve any git corruption
-    # that may occur due to flake.
-    # http://crbug/921407
-    self.repo.FetchAll()
+    if fetch_all:
+      # Perform git fetch all on projects to resolve any git corruption
+      # that may occur due to flake.
+      # http://crbug/921407
+      self.repo.FetchAll()
 
   def RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.
@@ -1103,12 +1104,12 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     return manifest
 
-  def ManifestCheckout(self, next_manifest):
+  def ManifestCheckout(self, next_manifest, fetch_all=False):
     """Checks out the repository to the given manifest."""
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and
     # this is a no-op.
-    super(CommitQueueSyncStage, self).ManifestCheckout(next_manifest)
+    super(CommitQueueSyncStage, self).ManifestCheckout(next_manifest, fetch_all)
 
     if self._run.config.build_before_patching:
       assert not self._run.config.master
@@ -1124,7 +1125,13 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       # print the list of applied changes.
       self.manifest_manager.GenerateBlameListSinceLKGM()
       self._SetPoolFromManifest(next_manifest)
-      self.pool.ApplyPoolIntoRepo()
+      try:
+        self.pool.ApplyPoolIntoRepo()
+      except cros_build_lib.RunCommandError:
+        logging.error('Possible git error on ApplyPoolIntoRepo. Retrying after'
+                      ' a `git fetch --all`.', exc_info=True)
+        self.repo.FetchAll()
+        self.pool.ApplyPoolIntoRepo()
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
