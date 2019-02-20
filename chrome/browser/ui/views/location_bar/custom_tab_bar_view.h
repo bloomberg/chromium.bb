@@ -48,6 +48,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // LocationIconView::Delegate:
   content::WebContents* GetWebContents() override;

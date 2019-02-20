@@ -273,6 +273,11 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
                                            kSeparatorOpacity));
 }
 
+void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
+  SchedulePaint();
+}
+
 content::WebContents* CustomTabBarView::GetWebContents() {
   return delegate_->GetWebContents();
 }
