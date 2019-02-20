@@ -69,8 +69,8 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
   auto* transformed_element = GetDocument().getElementById("transformed");
   const auto* transformed_properties =
       transformed_element->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(FloatSize(100, 100),
-            transformed_properties->Transform()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(100, 100),
+            transformed_properties->Transform()->Matrix());
 
   // Artifically change the transform node.
   const_cast<ObjectPaintProperties*>(transformed_properties)->ClearTransform();
@@ -81,19 +81,21 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
   UpdateAllLifecyclePhasesForTest();
 
   // Should have changed back.
-  EXPECT_EQ(FloatSize(100, 100),
-            transformed_properties->Transform()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(100, 100),
+            transformed_properties->Transform()->Matrix());
 }
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithFrameScroll) {
   SetBodyInnerHTML("<style> body { height: 10000px; } </style>");
-  EXPECT_TRUE(FrameScrollTranslation()->IsIdentity());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 0),
+            FrameScrollTranslation()->Matrix());
 
   // Cause a scroll invalidation and ensure the translation is updated.
   GetDocument().domWindow()->scrollTo(0, 100);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(FloatSize(0, -100), FrameScrollTranslation()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(0, -100),
+            FrameScrollTranslation()->Matrix());
 }
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
@@ -109,16 +111,16 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
   auto* transformed_element = GetDocument().getElementById("transformed");
   const auto* transformed_properties =
       transformed_element->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(FloatSize(100, 100),
-            transformed_properties->Transform()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(100, 100),
+            transformed_properties->Transform()->Matrix());
 
   // Invalidate the CSS transform property.
   transformed_element->setAttribute(html_names::kClassAttr, "transformB");
   UpdateAllLifecyclePhasesForTest();
 
   // The transform should have changed.
-  EXPECT_EQ(FloatSize(200, 200),
-            transformed_properties->Transform()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(200, 200),
+            transformed_properties->Transform()->Matrix());
 }
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {

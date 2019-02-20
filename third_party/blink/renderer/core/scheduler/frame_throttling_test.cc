@@ -1269,11 +1269,12 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
   CompositeFrame();
   CompositeFrame();
   EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
-  EXPECT_EQ(FloatSize(0, 20), inner_div->GetLayoutObject()
-                                  ->FirstFragment()
-                                  .PaintProperties()
-                                  ->Transform()
-                                  ->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
+            inner_div->GetLayoutObject()
+                ->FirstFragment()
+                .PaintProperties()
+                ->Transform()
+                ->Matrix());
 }
 
 TEST_P(FrameThrottlingTest, DisplayNoneNotThrottled) {

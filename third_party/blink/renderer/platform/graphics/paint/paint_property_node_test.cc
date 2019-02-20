@@ -152,8 +152,9 @@ TEST_F(PaintPropertyNodeTest, InitialStateAndReset) {
 TEST_F(PaintPropertyNodeTest, TransformChangeAncestor) {
   ResetAllChanged();
   ExpectUnchangedState();
-  transform.ancestor->Update(
-      *transform.root, TransformPaintPropertyNode::State{FloatSize(1, 2)});
+  transform.ancestor->Update(*transform.root,
+                             TransformPaintPropertyNode::State{
+                                 TransformationMatrix().Translate(1, 2)});
 
   // Test descendant->Changed(ancestor).
   EXPECT_TRUE(transform.ancestor->Changed(*transform.root));
@@ -225,7 +226,8 @@ TEST_F(PaintPropertyNodeTest, TransformChangeOneChild) {
   ResetAllChanged();
   ExpectUnchangedState();
   transform.child1->Update(*transform.ancestor,
-                           TransformPaintPropertyNode::State{FloatSize(1, 2)});
+                           TransformPaintPropertyNode::State{
+                               TransformationMatrix().Translate(1, 2)});
 
   // Test descendant->Changed(ancestor).
   EXPECT_FALSE(transform.ancestor->Changed(*transform.root));
@@ -321,7 +323,8 @@ TEST_F(PaintPropertyNodeTest, TransformReparent) {
   ResetAllChanged();
   ExpectUnchangedState();
   transform.child1->Update(*transform.child2,
-                           TransformPaintPropertyNode::State{FloatSize(1, 2)});
+                           TransformPaintPropertyNode::State{
+                               TransformationMatrix().Translate(1, 2)});
   EXPECT_FALSE(transform.ancestor->Changed(*transform.root));
   EXPECT_TRUE(transform.child1->Changed(*transform.ancestor));
   EXPECT_TRUE(transform.child1->Changed(*transform.child2));
@@ -338,7 +341,8 @@ TEST_F(PaintPropertyNodeTest, ClipLocalTransformSpaceChange) {
   ResetAllChanged();
   ExpectUnchangedState();
   transform.child1->Update(*transform.ancestor,
-                           TransformPaintPropertyNode::State{FloatSize(1, 2)});
+                           TransformPaintPropertyNode::State{
+                               TransformationMatrix().Translate(1, 2)});
 
   EXPECT_FALSE(clip.ancestor->Changed(STATE(root), nullptr));
   EXPECT_FALSE(clip.ancestor->Changed(STATE(ancestor), nullptr));
@@ -370,8 +374,9 @@ TEST_F(PaintPropertyNodeTest, EffectLocalTransformSpaceChange) {
 
   ResetAllChanged();
   ExpectUnchangedState();
-  transform.ancestor->Update(
-      *transform.root, TransformPaintPropertyNode::State{FloatSize(1, 2)});
+  transform.ancestor->Update(*transform.root,
+                             TransformPaintPropertyNode::State{
+                                 TransformationMatrix().Translate(1, 2)});
 
   EXPECT_FALSE(effect.ancestor->Changed(STATE(root), nullptr));
   EXPECT_FALSE(effect.ancestor->Changed(STATE(ancestor), nullptr));

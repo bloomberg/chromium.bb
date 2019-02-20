@@ -1020,10 +1020,11 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
     EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
   auto* sticky = ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
 
-  EXPECT_TRUE(sticky->FirstFragment()
-                  .LocalBorderBoxProperties()
-                  .Transform()
-                  .IsIdentity());
+  EXPECT_EQ(FloatSize(0, 0), sticky->FirstFragment()
+                                 .LocalBorderBoxProperties()
+                                 .Transform()
+                                 .Matrix()
+                                 .To2DTranslation());
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
   UpdateAllLifecyclePhasesForTest();
@@ -1031,7 +1032,8 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
                                   .LocalBorderBoxProperties()
                                   .Transform()
-                                  .Translation2D());
+                                  .Matrix()
+                                  .To2DTranslation());
 }
 
 // Delayed scroll offset clamping should not crash. https://crbug.com/842495

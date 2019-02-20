@@ -738,18 +738,20 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
 
   auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
-  EXPECT_EQ(FloatSize(50, 100), transform_object->FirstFragment()
-                                    .PaintProperties()
-                                    ->Transform()
-                                    ->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate3d(50, 100, 0),
+            transform_object->FirstFragment()
+                .PaintProperties()
+                ->Transform()
+                ->Matrix());
 
   transform->setAttribute(html_names::kStyleAttr,
                           "width: 200px; height: 300px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(FloatSize(100, 150), transform_object->FirstFragment()
-                                     .PaintProperties()
-                                     ->Transform()
-                                     ->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate3d(100, 150, 0),
+            transform_object->FirstFragment()
+                .PaintProperties()
+                ->Transform()
+                ->Matrix());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {

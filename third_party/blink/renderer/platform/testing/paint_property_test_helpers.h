@@ -127,7 +127,8 @@ inline scoped_refptr<TransformPaintPropertyNode> Create2DTranslation(
     float x,
     float y) {
   return TransformPaintPropertyNode::Create(
-      parent, TransformPaintPropertyNode::State{FloatSize(x, y)});
+      parent, TransformPaintPropertyNode::State{
+                  TransformationMatrix().Translate(x, y)});
 }
 
 inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
@@ -135,8 +136,9 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin = FloatPoint3D(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  TransformPaintPropertyNode::State state{
-      TransformPaintPropertyNode::TransformAndOrigin(matrix, origin)};
+  TransformPaintPropertyNode::State state;
+  state.matrix = matrix;
+  state.origin = origin;
   state.direct_compositing_reasons = compositing_reasons;
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
@@ -147,7 +149,8 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
     float offset_y,
     const ScrollPaintPropertyNode& scroll,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  TransformPaintPropertyNode::State state{FloatSize(offset_x, offset_y)};
+  TransformPaintPropertyNode::State state;
+  state.matrix.Translate(offset_x, offset_y);
   state.direct_compositing_reasons = compositing_reasons;
   state.scroll = &scroll;
   return TransformPaintPropertyNode::Create(parent, std::move(state));
