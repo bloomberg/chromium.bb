@@ -168,7 +168,7 @@ public class DownloadGlue implements DownloadObserver {
     /** @see OfflineContentProvider#getShareInfoForItem(ContentId, ShareCallback) */
     public void getShareInfoForItem(OfflineItem item, ShareCallback callback) {
         OfflineItemShareInfo info = new OfflineItemShareInfo();
-        info.uri = DownloadUtils.getUriForItem(new File(item.filePath));
+        info.uri = DownloadUtils.getUriForItem(item.filePath);
         new Handler().post(() -> callback.onShareInfoAvailable(item.id, info));
     }
 

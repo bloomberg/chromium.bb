@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -376,7 +377,7 @@ public class DownloadUtils {
                 }
             } else {
                 // If not sharing an offline page, generate the URI for the file being shared.
-                itemUris.add(getUriForItem(wrappedItem.getFile()));
+                itemUris.add(getUriForItem(wrappedItem.getFilePath()));
             }
 
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
@@ -479,13 +480,13 @@ public class DownloadUtils {
 
         if (newOfflineFilePathMap == null) {
             // If the file was already in the public directory, use the existing file path.
-            return getUriForItem(wrappedOfflineItem.getFile());
+            return getUriForItem(wrappedOfflineItem.getFilePath());
         }
 
         String publishedFilePath = newOfflineFilePathMap.get(wrappedOfflineItem.getId());
         if (!TextUtils.isEmpty(publishedFilePath)) {
             // If we moved the file to publish it, use the new path.
-            return getUriForItem(new File(publishedFilePath));
+            return getUriForItem(publishedFilePath);
         }
 
         // If publishing failed, return null, and we will share by original URL.
@@ -565,10 +566,12 @@ public class DownloadUtils {
 
     /**
      * Returns a URI that points at the file.
-     * @param file File to get a URI for.
+     * @param filePath File path to get a URI for.
      * @return URI that points at that file, either as a content:// URI or a file:// URI.
      */
-    public static Uri getUriForItem(File file) {
+    public static Uri getUriForItem(String filePath) {
+        if (isContentUri(filePath)) return Uri.parse(filePath);
+
         Uri uri = null;
 
         // FileUtils.getUriForFile() causes a disk read when it calls into
@@ -577,7 +580,7 @@ public class DownloadUtils {
         // method on a background thread we would have to wait. As it depends on user-selected
         // items, we cannot know/preload which URIs we need until the user presses share.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        uri = FileUtils.getUriForFile(file);
+        uri = FileUtils.getUriForFile(new File(filePath));
         StrictMode.setThreadPolicy(oldPolicy);
 
         return uri;
@@ -585,10 +588,8 @@ public class DownloadUtils {
 
     @CalledByNative
     private static String getUriStringForPath(String filePath) {
-        Uri uri = null;
-        File file = new File(filePath);
-        uri = getUriForItem(file);
-
+        if (isContentUri(filePath)) return filePath;
+        Uri uri = getUriForItem(filePath);
         return uri != null ? uri.toString() : new String();
     }
 
@@ -610,7 +611,7 @@ public class DownloadUtils {
 
     /**
      * Opens a file in Chrome or in another app if appropriate.
-     * @param file path to the file to open.
+     * @param filePath Path to the file to open, can be a content Uri.
      * @param mimeType mime type of the file.
      * @param downloadGuid The associated download GUID.
      * @param isOffTheRecord whether we are in an off the record context.
@@ -619,19 +620,23 @@ public class DownloadUtils {
      * @param source The source that tries to open the download file.
      * @return whether the file could successfully be opened.
      */
-    public static boolean openFile(File file, String mimeType, String downloadGuid,
+    public static boolean openFile(String filePath, String mimeType, String downloadGuid,
             boolean isOffTheRecord, String originalUrl, String referrer,
             @DownloadMetrics.DownloadOpenSource int source) {
         DownloadMetrics.recordDownloadOpen(source, mimeType);
         Context context = ContextUtils.getApplicationContext();
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
+        Uri contentUri = getUriForItem(filePath);
 
         // Check if Chrome should open the file itself.
         if (service.isDownloadOpenableInBrowser(isOffTheRecord, mimeType)) {
             // Share URIs use the content:// scheme when able, which looks bad when displayed
             // in the URL bar.
-            Uri fileUri = Uri.fromFile(file);
-            Uri contentUri = getUriForItem(file);
+            Uri fileUri = contentUri;
+            if (!isContentUri(filePath)) {
+                File file = new File(filePath);
+                fileUri = Uri.fromFile(file);
+            }
             String normalizedMimeType = Intent.normalizeMimeType(mimeType);
 
             Intent intent = MediaViewerUtils.getMediaViewerIntent(
@@ -645,7 +650,9 @@ public class DownloadUtils {
         try {
             // TODO(qinmin): Move this to an AsyncTask so we don't need to temper with strict mode.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            Uri uri = ApiCompatibilityUtils.getUriForDownloadedFile(file);
+            Uri uri = isContentUri(filePath)
+                    ? contentUri
+                    : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
             StrictMode.setThreadPolicy(oldPolicy);
             Intent viewIntent =
                     MediaViewerUtils.createViewIntentForUri(uri, mimeType, originalUrl, referrer);
@@ -1202,6 +1209,15 @@ public class DownloadUtils {
             }
         }
         return originalUri;
+    }
+
+    /**
+     * @return whether a Uri has content scheme.
+     */
+    public static boolean isContentUri(String uri) {
+        if (uri == null) return false;
+        Uri parsedUri = Uri.parse(uri);
+        return parsedUri != null && ContentResolver.SCHEME_CONTENT.equals(parsedUri.getScheme());
     }
 
     private static native String nativeGetFailStateMessage(@FailState int failState);

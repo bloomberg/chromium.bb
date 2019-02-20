@@ -28,13 +28,10 @@ import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
-import java.io.File;
-
 /** Wraps different classes that contain information about downloads. */
 public abstract class DownloadHistoryItemWrapper extends TimedItem {
     protected final BackendProvider mBackendProvider;
     protected final ComponentName mComponentName;
-    protected File mFile;
     private Long mStableId;
     private boolean mIsDeletionPending;
     private boolean mShouldShowRecentBadge;
@@ -104,12 +101,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
     /** @return String showing where the download resides. */
     public abstract String getFilePath();
-
-    /** @return The file where the download resides. */
-    public final File getFile() {
-        if (mFile == null) mFile = new File(getFilePath());
-        return mFile;
-    }
 
     /** @return String to display for the hostname. */
     public final String getDisplayHostname() {
@@ -236,7 +227,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
             boolean visuallyChanged = isNewItemVisiblyDifferent(downloadItem);
             mItem = downloadItem;
-            mFile = null;
             return visuallyChanged;
         }
 
@@ -305,7 +295,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public void open() {
-            if (DownloadUtils.openFile(getFile(), getMimeType(),
+            if (DownloadUtils.openFile(getFilePath(), getMimeType(),
                         mItem.getDownloadInfo().getDownloadGuid(), isOffTheRecord(),
                         mItem.getDownloadInfo().getOriginalUrl(),
                         mItem.getDownloadInfo().getReferrer(),
@@ -439,7 +429,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             assert mItem.id.equals(newItem.id);
 
             mItem = newItem;
-            mFile = null;
             return true;
         }
 

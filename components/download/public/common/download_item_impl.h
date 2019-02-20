@@ -120,12 +120,18 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
     // Target path of an in-progress download. We may be downloading to a
     // temporary or intermediate file (specified by |current_path|).  Once the
     // download completes, we will rename the file to |target_path|.
+    // |target_path| should be a valid file path on the system. However, if
+    // download is directly written to a content Uri, the |target_path| should
+    // be ignored and |full_path| should be used instead. For content Uris,
+    // |full_path| is used as both the intermediate and final download target.
     base::FilePath target_path;
 
     // Full path to the downloaded or downloading file. This is the path to the
     // physical file, if one exists. The final target path is specified by
     // |target_path|. |current_path| can be empty if the in-progress path
-    // hasn't been determined.
+    // hasn't been determined. For download that is directly written to a
+    // content Uri, use |current_path| instead of |target_path| as the latter
+    // is not a content Uri.
     base::FilePath current_path;
 
     // Current received bytes.

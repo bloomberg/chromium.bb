@@ -71,4 +71,41 @@ DownloadInterruptReason DownloadCollectionBridge::MoveFileToIntermediateUri(
                  : DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 }
 
+// static
+void DownloadCollectionBridge::DeleteIntermediateUri(
+    const base::FilePath& intermediate_uri) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> juri =
+      ConvertUTF8ToJavaString(env, intermediate_uri.value());
+  Java_DownloadCollectionBridge_deleteIntermediateUri(env, juri);
+}
+
+// static
+base::FilePath DownloadCollectionBridge::PublishDownload(
+    const base::FilePath& intermediate_uri) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jintermediate_uri =
+      ConvertUTF8ToJavaString(env, intermediate_uri.value());
+  ScopedJavaLocalRef<jstring> jfinal_uri =
+      Java_DownloadCollectionBridge_publishDownload(env, jintermediate_uri);
+  if (jfinal_uri) {
+    std::string final_uri = ConvertJavaStringToUTF8(env, jfinal_uri);
+    return base::FilePath(final_uri);
+  }
+  return base::FilePath();
+}
+
+// static
+base::File DownloadCollectionBridge::OpenIntermediateUri(
+    const base::FilePath& intermediate_uri) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jintermediate_uri =
+      ConvertUTF8ToJavaString(env, intermediate_uri.value());
+  int fd =
+      Java_DownloadCollectionBridge_openIntermediateUri(env, jintermediate_uri);
+  if (fd < 0)
+    return base::File();
+  return base::File(fd);
+}
+
 }  // namespace download
