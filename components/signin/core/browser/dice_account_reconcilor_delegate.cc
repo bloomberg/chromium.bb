@@ -85,7 +85,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   // out of their other accounts.
   // It's only possible when the reconcilor will not perform a logout, because
   // that account cannot be rebuilt.
-  if (!primary_account_has_token && !gaia_accounts[0].valid && !will_logout)
+  if (!first_gaia_account_has_token && !gaia_accounts[0].valid && !will_logout)
     return first_gaia_account;
 
   if (first_execution) {
