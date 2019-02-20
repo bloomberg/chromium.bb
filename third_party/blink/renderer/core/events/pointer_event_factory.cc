@@ -319,7 +319,7 @@ PointerEvent* PointerEventFactory::Create(
 
 void PointerEventFactory::SetLastPosition(int pointer_id,
                                           const WebPointerProperties& event) {
-  pointer_id_last_position_mapping_[pointer_id] = event.PositionInScreen();
+  pointer_id_last_position_mapping_.Set(pointer_id, event.PositionInScreen());
 }
 
 void PointerEventFactory::RemoveLastPosition(const int pointer_id) {
@@ -329,10 +329,8 @@ void PointerEventFactory::RemoveLastPosition(const int pointer_id) {
 FloatPoint PointerEventFactory::GetLastPointerPosition(
     int pointer_id,
     const WebPointerProperties& event) const {
-  const auto& last_position_iterator =
-      pointer_id_last_position_mapping_.find(pointer_id);
-  if (last_position_iterator != pointer_id_last_position_mapping_.end())
-    return last_position_iterator->second;
+  if (pointer_id_last_position_mapping_.Contains(pointer_id))
+    return pointer_id_last_position_mapping_.at(pointer_id);
   // If pointer_id is not in the map, returns the current position so the
   // movement will be zero.
   return event.PositionInScreen();
@@ -341,9 +339,11 @@ FloatPoint PointerEventFactory::GetLastPointerPosition(
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
     TimeTicks platfrom_time_stamp) {
-  DCHECK(pointer_id_mapping_.find(pointer_id) != pointer_id_mapping_.end());
-  pointer_id_mapping_[pointer_id] = PointerAttributes(
-      pointer_id_mapping_.at(pointer_id).incoming_id, false, true);
+  DCHECK(pointer_id_mapping_.Contains(pointer_id));
+  pointer_id_mapping_.Set(
+      pointer_id,
+      PointerAttributes(pointer_id_mapping_.at(pointer_id).incoming_id, false,
+                        true));
 
   PointerEventInit* pointer_event_init = PointerEventInit::Create();
 
@@ -452,8 +452,10 @@ void PointerEventFactory::Clear() {
   // No need to add it to |pointer_incoming_id_mapping_| as it is not going to
   // be used with the existing APIs
   primary_id_[ToInt(WebPointerProperties::PointerType::kMouse)] = kMouseId;
-  pointer_id_mapping_[kMouseId] = PointerAttributes(
-      IncomingId(WebPointerProperties::PointerType::kMouse, 0), false, true);
+  pointer_id_mapping_.insert(
+      kMouseId, PointerAttributes(
+                    IncomingId(WebPointerProperties::PointerType::kMouse, 0),
+                    false, true));
 
   current_id_ = PointerEventFactory::kMouseId + 1;
 }
@@ -463,15 +465,15 @@ PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
                                                      bool hovering) {
   // Do not add extra mouse pointer as it was added in initialization.
   if (p.GetPointerType() == WebPointerProperties::PointerType::kMouse) {
-    pointer_id_mapping_[kMouseId] =
-        PointerAttributes(p, is_active_buttons, true);
+    pointer_id_mapping_.Set(kMouseId,
+                            PointerAttributes(p, is_active_buttons, true));
     return kMouseId;
   }
 
   if (pointer_incoming_id_mapping_.Contains(p)) {
     PointerId mapped_id = pointer_incoming_id_mapping_.at(p);
-    pointer_id_mapping_[mapped_id] =
-        PointerAttributes(p, is_active_buttons, hovering);
+    pointer_id_mapping_.Set(mapped_id,
+                            PointerAttributes(p, is_active_buttons, hovering));
     return mapped_id;
   }
   int type_int = p.PointerTypeInt();
@@ -481,15 +483,14 @@ PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
     primary_id_[type_int] = mapped_id;
   id_count_[type_int]++;
   pointer_incoming_id_mapping_.insert(p, mapped_id);
-  pointer_id_mapping_[mapped_id] =
-      PointerAttributes(p, is_active_buttons, hovering);
+  pointer_id_mapping_.insert(mapped_id,
+                             PointerAttributes(p, is_active_buttons, hovering));
   return mapped_id;
 }
 
 bool PointerEventFactory::Remove(const PointerId mapped_id) {
   // Do not remove mouse pointer id as it should always be there.
-  if (mapped_id == kMouseId ||
-      pointer_id_mapping_.find(mapped_id) == pointer_id_mapping_.end())
+  if (mapped_id == kMouseId || !pointer_id_mapping_.Contains(mapped_id))
     return false;
 
   IncomingId p = pointer_id_mapping_.at(mapped_id).incoming_id;
@@ -509,8 +510,8 @@ Vector<PointerId> PointerEventFactory::GetPointerIdsOfNonHoveringPointers()
 
   for (auto iter = pointer_id_mapping_.begin();
        iter != pointer_id_mapping_.end(); ++iter) {
-    PointerId mapped_id = iter->first;
-    if (!iter->second.hovering)
+    PointerId mapped_id = static_cast<PointerId>(iter->key);
+    if (!iter->value.hovering)
       mapped_ids.push_back(mapped_id);
   }
 
@@ -520,16 +521,15 @@ Vector<PointerId> PointerEventFactory::GetPointerIdsOfNonHoveringPointers()
 }
 
 bool PointerEventFactory::IsPrimary(PointerId mapped_id) const {
-  const auto& pointer_iterator = pointer_id_mapping_.find(mapped_id);
-  if (pointer_iterator == pointer_id_mapping_.end())
+  if (!pointer_id_mapping_.Contains(mapped_id))
     return false;
 
-  IncomingId p = pointer_iterator->second.incoming_id;
+  IncomingId p = pointer_id_mapping_.at(mapped_id).incoming_id;
   return primary_id_[p.PointerTypeInt()] == mapped_id;
 }
 
 bool PointerEventFactory::IsActive(const PointerId pointer_id) const {
-  return pointer_id_mapping_.find(pointer_id) != pointer_id_mapping_.end();
+  return pointer_id_mapping_.Contains(pointer_id);
 }
 
 bool PointerEventFactory::IsPrimary(
@@ -550,9 +550,8 @@ bool PointerEventFactory::IsPrimary(
 
 bool PointerEventFactory::IsActiveButtonsState(
     const PointerId pointer_id) const {
-  const auto& pointer_iterator = pointer_id_mapping_.find(pointer_id);
-  return pointer_iterator != pointer_id_mapping_.end() &&
-         pointer_iterator->second.is_active_buttons;
+  return pointer_id_mapping_.Contains(pointer_id) &&
+         pointer_id_mapping_.at(pointer_id).is_active_buttons;
 }
 
 WebPointerProperties::PointerType PointerEventFactory::GetPointerType(

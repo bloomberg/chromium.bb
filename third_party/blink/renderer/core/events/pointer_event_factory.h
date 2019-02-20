@@ -91,6 +91,13 @@ class CORE_EXPORT PointerEventFactory {
                                     const WebPointerProperties& event) const;
 
  private:
+  // We use int64_t to cover the whole range for PointerId with no
+  // deleted hash value.
+  template <typename T>
+  using PointerIdKeyMap = HashMap<int64_t,
+                                  T,
+                                  WTF::IntHash<int64_t>,
+                                  WTF::UnsignedWithZeroKeyHashTraits<int64_t>>;
   typedef struct IncomingId : public std::pair<int, int> {
     IncomingId() = default;
     IncomingId(WebPointerProperties::PointerType pointer_type, int raw_id)
@@ -145,10 +152,7 @@ class CORE_EXPORT PointerEventFactory {
           WTF::PairHashTraits<WTF::UnsignedWithZeroKeyHashTraits<int>,
                               WTF::UnsignedWithZeroKeyHashTraits<int>>>
       pointer_incoming_id_mapping_;
-  // We are using unordered_map instead of WTF::HashMap to accommodate
-  // for all the possible keys in the given rage as WTF::HashTraits have at
-  // least one unsupported key like 0 or max value in their range.
-  std::unordered_map<PointerId, PointerAttributes> pointer_id_mapping_;
+  PointerIdKeyMap<PointerAttributes> pointer_id_mapping_;
   int primary_id_[static_cast<int>(
                       WebPointerProperties::PointerType::kLastEntry) +
                   1];
@@ -156,7 +160,7 @@ class CORE_EXPORT PointerEventFactory {
                     WebPointerProperties::PointerType::kLastEntry) +
                 1];
 
-  std::unordered_map<PointerId, FloatPoint> pointer_id_last_position_mapping_;
+  PointerIdKeyMap<FloatPoint> pointer_id_last_position_mapping_;
 };
 
 }  // namespace blink
