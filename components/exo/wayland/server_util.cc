@@ -18,11 +18,11 @@ namespace {
 
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr)
 
 // A property key containing the data offer resource that is associated with
 // data offer object.
-DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kDataOfferResourceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kDataOfferResourceKey, nullptr)
 
 // Scale the |child_bounds| in such a way that if it should fill the
 // |parent_size|'s width/height, it returns the |parent_size_in_pixel|'s

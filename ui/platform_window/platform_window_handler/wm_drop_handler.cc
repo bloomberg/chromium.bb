@@ -11,7 +11,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(ui::WmDropHandler*)
 
 namespace ui {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(WmDropHandler*, kWmDropHandlerKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(WmDropHandler*, kWmDropHandlerKey, nullptr)
 
 void SetWmDropHandler(PlatformWindow* platform_window,
                       WmDropHandler* drop_handler) {

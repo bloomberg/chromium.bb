@@ -13,7 +13,7 @@ namespace wm {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ActivationDelegate*,
                              kActivationDelegateKey,
-                             nullptr);
+                             nullptr)
 
 void SetActivationDelegate(aura::Window* window, ActivationDelegate* delegate) {
   window->SetProperty(kActivationDelegateKey, delegate);

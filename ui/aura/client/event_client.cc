@@ -13,7 +13,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(aura::client::EventClient*)
 namespace aura {
 namespace client {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(EventClient*, kRootWindowEventClientKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(EventClient*, kRootWindowEventClientKey, NULL)
 
 void SetEventClient(Window* root_window, EventClient* client) {
   DCHECK_EQ(root_window->GetRootWindow(), root_window);

@@ -81,8 +81,8 @@ namespace views {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(internal::NativeWidgetPrivate*,
-                           kNativeWidgetPrivateKey,
-                           nullptr);
+                             kNativeWidgetPrivateKey,
+                             nullptr)
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));

@@ -12,9 +12,9 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_PUBLIC_EXPORT, void**)
 
 namespace wm {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(TooltipClient*, kRootWindowTooltipClientKey, NULL);
-DEFINE_UI_CLASS_PROPERTY_KEY(base::string16*, kTooltipTextKey, NULL);
-DEFINE_UI_CLASS_PROPERTY_KEY(void*, kTooltipIdKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(TooltipClient*, kRootWindowTooltipClientKey, NULL)
+DEFINE_UI_CLASS_PROPERTY_KEY(base::string16*, kTooltipTextKey, NULL)
+DEFINE_UI_CLASS_PROPERTY_KEY(void*, kTooltipIdKey, NULL)
 
 void SetTooltipClient(aura::Window* root_window, TooltipClient* client) {
   DCHECK_EQ(root_window->GetRootWindow(), root_window);

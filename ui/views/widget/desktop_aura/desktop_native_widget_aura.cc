@@ -64,12 +64,13 @@
 #endif
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
-                                       views::DesktopNativeWidgetAura*);
+                                       views::DesktopNativeWidgetAura*)
 
 namespace views {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(DesktopNativeWidgetAura*,
-                           kDesktopNativeWidgetAuraKey, NULL);
+                             kDesktopNativeWidgetAuraKey,
+                             NULL)
 
 namespace {
 

@@ -134,7 +134,7 @@
 #include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(wl_resource*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(wl_resource*)
 
 namespace exo {
 namespace wayland {
@@ -156,15 +156,15 @@ const char kWaylandSocketGroup[] = "wayland";
 
 // A property key containing a boolean set to true if a viewport is associated
 // with with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false)
 
 // A property key containing a boolean set to true if a security object is
 // associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false)
 
 // A property key containing a boolean set to true if a blending object is
 // associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false)
 
 ////////////////////////////////////////////////////////////////////////////////
 // wp_viewport_interface:

@@ -45,7 +45,7 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*)
 
 namespace views {
 
@@ -67,13 +67,13 @@ void InsetBottomRight(gfx::Rect* rect, const gfx::Vector2d& vector) {
 
 }  // namespace
 
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL)
 
 // Identifies the DesktopWindowTreeHostWin associated with the
 // WindowEventDispatcher.
 DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostWin*,
                              kDesktopWindowTreeHostKey,
-                             NULL);
+                             NULL)
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, public:

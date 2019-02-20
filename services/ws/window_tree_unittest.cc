@@ -49,7 +49,7 @@
 namespace ws {
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kTestPropertyKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kTestPropertyKey, nullptr)
 const char kTestPropertyServerKey[] = "test-property-server";
 
 // Passed to Embed() to give the default behavior (see kEmbedFlag* in mojom for

@@ -44,14 +44,14 @@
 #include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*)
 
 namespace ash {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameController*,
                              kNonClientFrameControllerKey,
-                             nullptr);
+                             nullptr)
 
 bool DoesClientProvideFrame(
     std::map<std::string, std::vector<uint8_t>>* properties) {

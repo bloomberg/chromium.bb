@@ -35,11 +35,11 @@ class TestProperty {
 
 void* TestProperty::last_deleted_ = nullptr;
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TestProperty, kOwnedKey, NULL)
 
 }  // namespace
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(TestProperty*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(TestProperty*)
 
 namespace ui {
 namespace test {
@@ -50,8 +50,8 @@ const int kDefaultIntValue = -2;
 const char* kDefaultStringValue = "squeamish";
 const char* kTestStringValue = "ossifrage";
 
-DEFINE_UI_CLASS_PROPERTY_KEY(int, kIntKey, kDefaultIntValue);
-DEFINE_UI_CLASS_PROPERTY_KEY(const char*, kStringKey, kDefaultStringValue);
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kIntKey, kDefaultIntValue)
+DEFINE_UI_CLASS_PROPERTY_KEY(const char*, kStringKey, kDefaultStringValue)
 }
 
 TEST(PropertyTest, Property) {

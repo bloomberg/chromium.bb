@@ -15,11 +15,12 @@ namespace {
 
 // Property set on all windows whose child windows' visibility changes are
 // animated.
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    bool, kChildWindowVisibilityChangesAnimatedKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool,
+                             kChildWindowVisibilityChangesAnimatedKey,
+                             false)
 
 // A window with this property set will animate upon its visibility changes.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowVisibilityChangesAnimatedKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowVisibilityChangesAnimatedKey, false)
 
 bool ShouldAnimateWindow(aura::Window* window) {
   return (window->parent() &&

@@ -139,7 +139,7 @@ SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors,
       sk_opacity_value);
 }
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false)
 
 // This targeter prevents routing events to sub-windows, such as
 // RenderHostWindow in order to handle events in context of app list.

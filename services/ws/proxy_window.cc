@@ -23,11 +23,11 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ws::ProxyWindow*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ws::ProxyWindow*)
 
 namespace ws {
 namespace {
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ProxyWindow, kProxyWindowKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ProxyWindow, kProxyWindowKey, nullptr)
 
 bool IsPointerPressedEvent(const ui::Event& event) {
   return event.type() == ui::ET_MOUSE_PRESSED ||

@@ -24,7 +24,7 @@ namespace {
 using ui_controls::UIControlsAura;
 using ui_controls::MouseButton;
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(UIControlsAura, kUIControlsKey, NULL);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(UIControlsAura, kUIControlsKey, NULL)
 
 // Returns the UIControls object for RootWindow.
 // kUIControlsKey is owned property and UIControls object

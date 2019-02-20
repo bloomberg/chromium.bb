@@ -13,8 +13,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(aura::client::CaptureClient*)
 namespace aura {
 namespace client {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    CaptureClient*, kRootWindowCaptureClientKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(CaptureClient*, kRootWindowCaptureClientKey, NULL)
 
 void SetCaptureClient(Window* root_window, CaptureClient* client) {
   root_window->SetProperty(kRootWindowCaptureClientKey, client);

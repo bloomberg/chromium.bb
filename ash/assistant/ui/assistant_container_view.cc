@@ -38,7 +38,7 @@ namespace {
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 
 // Window properties.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false)
 
 // AssistantContainerClientView ------------------------------------------------
 

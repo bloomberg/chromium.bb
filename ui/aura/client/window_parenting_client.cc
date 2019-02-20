@@ -15,8 +15,8 @@ namespace aura {
 namespace client {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowParentingClient*,
-                          kRootWindowWindowParentingClientKey,
-                          NULL);
+                             kRootWindowWindowParentingClientKey,
+                             NULL)
 
 void SetWindowParentingClient(Window* window,
                               WindowParentingClient* window_tree_client) {

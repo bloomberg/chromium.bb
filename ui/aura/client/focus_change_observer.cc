@@ -14,7 +14,7 @@ namespace client {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusChangeObserver*,
                              kFocusChangeObserverKey,
-                             nullptr);
+                             nullptr)
 
 FocusChangeObserver* GetFocusChangeObserver(Window* window) {
   return window ? window->GetProperty(kFocusChangeObserverKey) : NULL;

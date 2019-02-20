@@ -14,7 +14,7 @@ namespace client {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ScreenPositionClient*,
                              kScreenPositionClientKey,
-                             nullptr);
+                             nullptr)
 
 void ScreenPositionClient::ConvertPointToScreen(const Window* window,
                                                 gfx::Point* point) {

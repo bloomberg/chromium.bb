@@ -14,7 +14,7 @@ namespace client {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(DragDropClient*,
                              kRootWindowDragDropClientKey,
-                             nullptr);
+                             nullptr)
 
 void SetDragDropClient(Window* root_window, DragDropClient* client) {
   DCHECK_EQ(root_window->GetRootWindow(), root_window);
