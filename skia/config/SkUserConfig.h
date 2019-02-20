@@ -170,10 +170,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_TEXTBLOBCACHEDIFFCANVAS_CONSTRUCTOR
-#define SK_SUPPORT_LEGACY_TEXTBLOBCACHEDIFFCANVAS_CONSTRUCTOR
-#endif
-
 // We're turning this off indefinitely,
 // until we can figure out some fundamental problems with its approach.
 //

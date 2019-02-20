@@ -84,9 +84,9 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
           context_supports_distance_field_text),
       text_blob_canvas_(kMaxExtent,
                         kMaxExtent,
-                        SkMatrix::I(),
                         ComputeSurfaceProps(can_use_lcd_text),
                         strike_server,
+                        nullptr,  // colorspace
                         MakeCanvasSettings(context_supports_distance_field_text,
                                            max_texture_size,
                                            max_texture_bytes)) {
