@@ -2279,11 +2279,6 @@ const char kContextualSearchUnityIntegrationName[] =
 const char kContextualSearchUnityIntegrationDescription[] =
     "Enables integration of Tap to Search with Unified Consent.";
 
-const char kDisplayCutoutAPIName[] =
-    "Enable support for the Display Cutout API";
-const char kDisplayCutoutAPIDescription[] =
-    "Enables developers to support devices that have a display cutout.";
-
 const char kDontPrefetchLibrariesName[] = "Don't Prefetch Libraries";
 const char kDontPrefetchLibrariesDescription[] =
     "Don't prefetch libraries after loading.";

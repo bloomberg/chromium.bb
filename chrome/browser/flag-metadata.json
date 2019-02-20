@@ -1077,11 +1077,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-display-cutout-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-downloads-location-change",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

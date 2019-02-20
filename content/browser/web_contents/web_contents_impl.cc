@@ -615,8 +615,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
-    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
+  display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
 
   registry_.AddInterface(base::BindRepeating(
