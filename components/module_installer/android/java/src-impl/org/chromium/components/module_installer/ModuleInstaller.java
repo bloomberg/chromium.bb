@@ -49,6 +49,17 @@ public class ModuleInstaller {
         updateCrashKeys();
     }
 
+    /**
+     * Needs to be called in attachBaseContext of the activities that want to have access to
+     * splits prior to application restart.
+     *
+     * For details, see:
+     * https://developer.android.com/reference/com/google/android/play/core/splitcompat/SplitCompat.html#install(android.content.Context)
+     */
+    public static void initActivity(Context context) {
+        SplitCompat.install(context);
+    }
+
     /** Writes fully installed and emulated modules to crash keys. */
     public static void updateCrashKeys() {
         Context context = ContextUtils.getApplicationContext();

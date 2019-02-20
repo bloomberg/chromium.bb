@@ -1486,8 +1486,10 @@ if (enable_java_templates) {
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _emma_instrument = invoker.emma_instrument
+    _enable_split_compat = defined(invoker.split_compat_class_names)
     _enable_bytecode_rewriter =
-        _enable_assert || _enable_custom_resources || _enable_thread_annotations
+        _enable_assert || _enable_custom_resources ||
+        _enable_thread_annotations || _enable_split_compat
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
     _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
                               invoker.enable_bytecode_checks
@@ -1569,6 +1571,10 @@ if (enable_java_templates) {
         }
         if (_enable_bytecode_checks) {
           args += [ "--enable-check-class-path" ]
+        }
+        if (_enable_split_compat) {
+          args += [ "--split-compat-class-names" ] +
+                  invoker.split_compat_class_names
         }
         args += [
           "--direct-classpath-jars",
@@ -3493,6 +3499,7 @@ if (enable_java_templates) {
                                    "enable_bytecode_rewriter",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
+                                   "split_compat_class_names",
                                  ])
           is_prebuilt = _is_prebuilt
           supports_android = _supports_android

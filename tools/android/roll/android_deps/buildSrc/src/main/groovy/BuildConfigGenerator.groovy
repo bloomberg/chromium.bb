@@ -170,6 +170,9 @@ class BuildConfigGenerator extends DefaultTask {
                 // Target .aar file contains .so libraries that need to be extracted,
                 // and android_aar_prebuilt template will fail if it's not set explictly.
                 sb.append('  extract_native_libraries = true\n')
+                // InstallActivity class is downloaded as a part of DFM & we need to inject
+                // a call to SplitCompat.install() into it.
+                sb.append('  split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]\n')
                 break
         }
     }
