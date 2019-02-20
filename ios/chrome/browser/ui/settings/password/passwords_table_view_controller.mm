@@ -159,6 +159,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
+  // The header for save passwords switch section.
+  TableViewLinkHeaderFooterItem* manageAccountLinkItem_;
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* savePasswordsItem_;
   // The item related to the button for exporting passwords.
@@ -207,6 +209,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // The scrim view that covers the table view when search bar is focused with
 // empty search term. Tapping on the scrim view will dismiss the search bar.
 @property(nonatomic, strong) UIControl* scrimView;
+// Example headers for calculating headers' heights.
+@property(nonatomic, strong)
+    NSMutableDictionary<Class, UITableViewHeaderFooterView*>* exampleHeaders;
 
 @end
 
@@ -228,6 +233,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     _passwordExporter = [[PasswordExporter alloc]
         initWithReauthenticationModule:reauthenticationModule_
                               delegate:self];
+    self.exampleHeaders = [[NSMutableDictionary alloc] init];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.shouldHideDoneButton = YES;
     self.searchTerm = @"";
@@ -341,9 +347,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   savePasswordsItem_ = [self savePasswordsItem];
   [model addItem:savePasswordsItem_
       toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-  TableViewLinkHeaderFooterItem* manageAccountLinkItem =
-      [self manageAccountLinkItem];
-  [model setHeader:manageAccountLinkItem
+  manageAccountLinkItem_ = [self manageAccountLinkItem];
+  [model setHeader:manageAccountLinkItem_
       forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
   // Saved passwords.
@@ -500,15 +505,79 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self reloadData];
 }
 
+#pragma mark - UITableViewDelegate
+
+// Uses a group of example headers to calculate the heights. Returning
+// UITableViewAutomaticDimension here will cause UITableView to cache the
+// heights and reuse them when sections are inserted or removed, which will
+// break the UI. For example:
+//   1. UITableView is inited with 4 headers;
+//   2. "tableView:heightForHeaderInSection" is called and
+//      UITableViewAutomaticDimension is returned;
+//   3. UITableView calculates headers' heights and get [10, 20, 10, 20];
+//   4. UITableView caches these heights;
+//   5. The first header is removed from UITableView;
+//   6. "tableView:heightForHeaderInSection" is called and
+//      UITableViewAutomaticDimension is returned;
+//   7. UITableView decides to use cached results as [10, 20, 10], while
+//      expected heights are [20, 10, 20].
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  if ([self.tableViewModel headerForSection:section]) {
+    TableViewHeaderFooterItem* item =
+        [self.tableViewModel headerForSection:section];
+    Class headerClass = item.cellClass;
+    if (!self.exampleHeaders[headerClass]) {
+      UITableViewHeaderFooterView* view =
+          [[headerClass alloc] initWithReuseIdentifier:@""];
+      [item configureHeaderFooterView:view withStyler:self.styler];
+      [self.exampleHeaders setObject:view forKey:headerClass];
+    }
+    UITableViewHeaderFooterView* view = self.exampleHeaders[headerClass];
+    CGSize size =
+        [view systemLayoutSizeFittingSize:self.tableView.safeAreaLayoutGuide
+                                              .layoutFrame.size
+            withHorizontalFittingPriority:UILayoutPriorityRequired
+                  verticalFittingPriority:1];
+    return size.height;
+  }
+  return [super tableView:tableView heightForHeaderInSection:section];
+}
+
 #pragma mark - UISearchControllerDelegate
 
 - (void)willPresentSearchController:(UISearchController*)searchController {
   [self showScrim];
+  // Remove save passwords switch section.
+  [self
+      performBatchTableViewUpdates:^{
+        [self clearSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
+                        withRowAnimation:UITableViewRowAnimationTop];
+      }
+                        completion:nil];
 }
 
 - (void)willDismissSearchController:(UISearchController*)searchController {
   [self hideScrim];
   [self searchForTerm:@""];
+  // Recover save passwords switch section.
+  TableViewModel* model = self.tableViewModel;
+  [self.tableView
+      performBatchUpdates:^{
+        [model insertSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
+                                   atIndex:0];
+        [model setHeader:manageAccountLinkItem_
+            forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:0]
+                      withRowAnimation:UITableViewRowAnimationTop];
+        [model addItem:savePasswordsItem_
+            toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        [self.tableView
+            insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
+                                                         inSection:0] ]
+                  withRowAnimation:UITableViewRowAnimationTop];
+      }
+               completion:nil];
 }
 
 #pragma mark - UISearchBarDelegate
@@ -708,13 +777,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 // Removes the given section if it exists and if isEmpty is true.
 - (void)clearSectionWithIdentifier:(NSInteger)sectionIdentifier
-                           ifEmpty:(bool)isEmpty {
+                  withRowAnimation:(UITableViewRowAnimation)animation {
   TableViewModel* model = self.tableViewModel;
-  if (isEmpty && [model hasSectionForSectionIdentifier:sectionIdentifier]) {
+  if ([model hasSectionForSectionIdentifier:sectionIdentifier]) {
     NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
     [model removeSectionWithIdentifier:sectionIdentifier];
     [[self tableView] deleteSections:[NSIndexSet indexSetWithIndex:section]
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
+                    withRowAnimation:animation];
   }
 }
 
@@ -795,11 +864,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         // Delete in reverse order of section indexes (bottom up of section
         // displayed), so that indexes in model matches those in the view.  if
         // we don't we'll cause a crash.
-        [strongSelf
-            clearSectionWithIdentifier:SectionIdentifierBlacklist
-                               ifEmpty:strongSelf->blacklistedForms_.empty()];
-        [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
-                                       ifEmpty:strongSelf->savedForms_.empty()];
+        if (strongSelf->blacklistedForms_.empty()) {
+          [self clearSectionWithIdentifier:SectionIdentifierBlacklist
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+        if (strongSelf->savedForms_.empty()) {
+          [strongSelf
+              clearSectionWithIdentifier:SectionIdentifierSavedPasswords
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
       }
       completion:^(BOOL finished) {
         PasswordsTableViewController* strongSelf = weakSelf;
