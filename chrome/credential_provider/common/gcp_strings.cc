@@ -46,6 +46,10 @@ const wchar_t kRegUpdaterClientStateAppPath[] =
 const wchar_t kRegUpdaterClientsAppPath[] =
     L"SOFTWARE\\Google\\Update\\Clients\\" GCPW_UPDATE_CLIENT_GUID;
 
+// Google MDM related registry paths.
+const wchar_t kRegMdmUrl[] = L"mdm";
+const wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
+
 // Chrome is being opened to show the credential provider logon page.  This
 // page is always shown in incognito mode.
 const char kGcpwSigninSwitch[] = "gcpw-signin";

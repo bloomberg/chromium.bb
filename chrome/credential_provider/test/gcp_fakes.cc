@@ -330,6 +330,10 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
       return hr;
   }
 
+  hr = SetUserProperty(OLE2CW(*sid), kUserTokenHandle, L"token_handle");
+  if (FAILED(hr))
+    return hr;
+
   return S_OK;
 }
 
