@@ -290,6 +290,16 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
           this, update.AppId(), update.ShortName(), update.LastLaunchTime(),
           update.InstallTime(),
           update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
+
+      // Until it's been installed, the Crostini Terminal is hidden and
+      // requires a few characters before being shown in search results.
+      if ((update.AppType() == apps::mojom::AppType::kCrostini) &&
+          (update.AppId() == crostini::kCrostiniTerminalId) &&
+          !crostini::IsCrostiniEnabled(profile())) {
+        apps_vector->back()->set_recommendable(false);
+        apps_vector->back()->set_relevance_threshold(
+            kCrostiniTerminalRelevanceThreshold);
+      }
     });
   }
 
