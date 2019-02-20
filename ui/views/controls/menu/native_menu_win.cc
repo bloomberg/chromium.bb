@@ -81,7 +81,6 @@ void NativeMenuWin::Rebuild(MenuInsertionDelegateWin* delegate) {
 void NativeMenuWin::UpdateStates() {
   // A depth-first walk of the menu items, updating states.
   int model_index = 0;
-  std::vector<ItemData*>::const_iterator it;
   for (auto it = items_.begin(); it != items_.end(); ++it, ++model_index) {
     int menu_index = model_index + first_item_index_;
     SetMenuItemState(menu_index, model_->IsEnabledAt(model_index),

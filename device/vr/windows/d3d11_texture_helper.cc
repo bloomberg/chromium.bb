@@ -274,7 +274,7 @@ bool D3D11TextureHelper::EnsureInputLayout() {
          D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
     HRESULT hr = render_state_.d3d11_device_->CreateInputLayout(
-        vertex_desc, std::size(vertex_desc), g_vertex, _countof(g_vertex),
+        vertex_desc, base::size(vertex_desc), g_vertex, _countof(g_vertex),
         &render_state_.input_layout_);
     if (FAILED(hr))
       return false;
