@@ -25,6 +25,7 @@ bool IsEmbeddedUiEntryPoint(AssistantEntryPoint entry_point) {
          entry_point == AssistantEntryPoint::kHotkey ||
          entry_point == AssistantEntryPoint::kHotword ||
          entry_point == AssistantEntryPoint::kLauncherSearchBox ||
+         entry_point == AssistantEntryPoint::kLauncherSearchBoxMic ||
          entry_point == AssistantEntryPoint::kLauncherSearchResult ||
          entry_point == AssistantEntryPoint::kLongPressLauncher ||
          entry_point == AssistantEntryPoint::kUnspecified;

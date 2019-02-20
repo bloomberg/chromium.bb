@@ -2049,6 +2049,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="kSetup"/>
   <int value="7" label="kStylus"/>
   <int value="8" label="kLauncherSearchResult"/>
+  <int value="9" label="kLauncherSearchBoxMic"/>
 </enum>
 
 <enum name="AssistantExitPoint">

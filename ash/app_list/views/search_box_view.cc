@@ -708,8 +708,10 @@ void SearchBoxView::SetupAssistantButton() {
   views::ImageButton* assistant = assistant_button();
   assistant->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(ash::kAssistantIcon, kAssistantIconSize,
-                            search_box_color()));
+      gfx::CreateVectorIcon(app_list_features::IsEmbeddedAssistantUIEnabled()
+                                ? ash::kAssistantMicIcon
+                                : ash::kAssistantIcon,
+                            kAssistantIconSize, search_box_color()));
   assistant->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
 }
