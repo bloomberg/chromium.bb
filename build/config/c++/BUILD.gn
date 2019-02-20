@@ -68,7 +68,8 @@ config("runtime_library") {
     # implements the Itanium C++ ABI, and not the Microsoft ABI which we use on
     # Windows (and we need to use in order to interoperate correctly with COM
     # among other things).
-    assert(!is_win, "Don't use libcxxabi on Windows.")
+    assert(!export_libcxxabi_from_executables,
+           "Don't use libcxxabi on Windows.")
 
     cflags_cc +=
         [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
