@@ -210,6 +210,8 @@ Polymer({
       this.unpairedDeviceList_,
       this.deviceList_.filter(d => !(d.paired || d.connecting)));
 
+    this.$.pairedDevices.fire('iron-resize');
+    this.$.unpairedDevices.fire('iron-resize');
     this.updateScrollableContents();
     this.restoreScroll(this.$.unpairedDevices);
     this.restoreScroll(this.$.pairedDevices);
