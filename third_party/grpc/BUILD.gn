@@ -221,7 +221,6 @@ static_library("grpc_core") {
     "src/src/core/lib/channel/channelz_registry.cc",
     "src/src/core/lib/channel/connected_channel.cc",
     "src/src/core/lib/channel/handshaker.cc",
-    "src/src/core/lib/channel/handshaker_factory.cc",
     "src/src/core/lib/channel/handshaker_registry.cc",
     "src/src/core/lib/channel/status_util.cc",
     "src/src/core/lib/compression/compression.cc",
