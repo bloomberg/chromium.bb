@@ -93,7 +93,7 @@ in user-mode (drmModeModeInfo) flag bits 19-22. For the non-CEA modes a value of
 Each CEA-mode is identified by a unique, Video Identification Code (VIC).
 For example, VIC=4 is 1280x720@60 aspect-ratio 16:9. This mode will be
 different than a non-CEA mode 1280x720@60 0:0. When the video mode
-1280x720@60 0:0 is applied, since its timing doesnt exactly match with the CEA
+1280x720@60 0:0 is applied, since its timing doesn't exactly match with the CEA
 information for VIC=4, it would be treated as a non-CEA mode. Also, while setting
 the HDMI-AVI-Inforframe, VIC parameter will be given as '0'. If video mode
 1280x720@60 16:9 is applied, its CEA timimgs matches with that of video mode with
@@ -192,7 +192,7 @@ status. For example, use
 Use graphics and input devices designated for seat
 .I seatid
 instead of the seat defined in the environment variable
-.BR XDG_SEAT ". If neither is specifed, seat0 will be assumed."
+.BR XDG_SEAT ". If neither is specified, seat0 will be assumed."
 .TP
 \fB\-\-tty\fR=\fIx\fR
 Launch Weston on tty

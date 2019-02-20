@@ -42,8 +42,8 @@
  *    per each frame. See ivi-layout-transition.c in details. Transition
  *    animation interpolates frames between previous properties of ivi_surface
  *    and new ones.
- *    For example, when a property of ivi_surface is changed from invisibile
- *    to visibile, it behaves like fade-in. When ivi_layout_commitChange is
+ *    For example, when a property of ivi_surface is changed from invisible
+ *    to visible, it behaves like fade-in. When ivi_layout_commitChange is
  *    called during transition animation, it cancels the transition and
  *    re-start transition to new properties from current properties of final
  *    frame just before the cancellation.

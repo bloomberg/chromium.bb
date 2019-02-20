@@ -31,7 +31,7 @@
       object advertized through wl_registry.
 
       WARNING: This interface by design allows a denial-of-service attack. It
-      should not be offered in production, or proper authorization mechnisms
+      should not be offered in production, or proper authorization mechanisms
       must be enforced.
 
       The idea is for a client to provide a file descriptor that the server
@@ -39,7 +39,7 @@
       descriptor in blocking writes mode, which exposes the denial-of-service
       risk. The blocking mode is necessary to ensure all debug messages can
       be easily printed in place. It also ensures message ordering if a
-      client subcribes to more than one debug stream.
+      client subscribes to more than one debug stream.
 
       The available debugging features depend on the server.
 

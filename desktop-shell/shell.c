@@ -1121,7 +1121,7 @@ animate_workspace_change_frame(struct weston_animation *animation,
 		else
 			timespec_add_msec(&shell->workspaces.anim_timestamp,
 				time,
-				/* Invers of movement function 'y' below. */
+				/* Inverse of movement function 'y' below. */
 				-(asin(1.0 - shell->workspaces.anim_current) *
 				  DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH *
 				  M_2_PI));
@@ -2223,7 +2223,7 @@ get_focused_output(struct weston_compositor *compositor)
 
 		/* Priority has touch focus, then pointer and
 		 * then keyboard focus. We should probably have
-		 * three for loops and check frist for touch,
+		 * three for loops and check first for touch,
 		 * then for pointer, etc. but unless somebody has some
 		 * objections, I think this is sufficient. */
 		if (touch && touch->focus)

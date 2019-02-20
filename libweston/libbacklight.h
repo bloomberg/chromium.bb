@@ -52,7 +52,7 @@ struct backlight {
 
 /*
  * Find and set up a backlight for a valid udev connector device, i.e. one
- * matching drm subsytem and with status of connected.
+ * matching drm subsystem and with status of connected.
  */
 struct backlight *backlight_init(struct udev_device *drm_device,
 				 uint32_t connector_type);

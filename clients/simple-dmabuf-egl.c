@@ -1160,7 +1160,7 @@ display_set_up_egl(struct display *display)
 
 	if (!weston_check_egl_extension(gl_extensions,
 					"GL_OES_EGL_image")) {
-		fprintf(stderr, "GL_OES_EGL_image not suported\n");
+		fprintf(stderr, "GL_OES_EGL_image not supported\n");
 		goto error;
 	}
 

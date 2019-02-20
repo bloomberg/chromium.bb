@@ -537,7 +537,7 @@ weston_wm_send_incr_chunk(struct weston_wm *wm)
 		} else if (length > 0) {
 			/* Transfer is all done, but queue a flush for
 			 * the delete of the last chunk so we can set
-			 * the 0 sized propert to signal the end of
+			 * the 0 sized property to signal the end of
 			 * the transfer. */
 			wm->flush_property_on_delete = 1;
 			wl_array_release(&wm->source_data);

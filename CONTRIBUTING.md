@@ -258,7 +258,7 @@ During review, the following matters should be checked:
 
 - Stable ABI or API additions must be justified by actual use cases, not only
 by speculation. They must also be documented, and it is strongly recommended to
-include tests excercising the additions in the test suite.
+include tests exercising the additions in the test suite.
 
 - The code fits the existing software architecture, e.g. no layering
 violations.

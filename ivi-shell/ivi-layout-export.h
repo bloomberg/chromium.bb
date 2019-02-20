@@ -28,7 +28,7 @@
  * surface and layer which groups surfaces. A unique ID whose type is integer is
  * required to create surface and layer. With the unique ID, surface and layer
  * are identified to control them. The API set consists of APIs to control
- * properties of surface and layers about followings,
+ * properties of surface and layers about the following:
  * - visibility.
  * - opacity.
  * - clipping (x,y,width,height).
@@ -554,7 +554,7 @@ struct ivi_layout_interface {
 					   const int32_t number);
 
 	/**
-	 * transision animation for layer
+	 * transition animation for layer
 	 */
 	void (*transition_move_layer_cancel)(struct ivi_layout_layer *layer);
 	int32_t (*layer_set_fade_info)(struct ivi_layout_layer* ivilayer,

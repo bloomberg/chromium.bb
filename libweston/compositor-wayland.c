@@ -1934,7 +1934,7 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 
 		input->keyboard_state_update = STATE_UPDATE_NONE;
 	} else if (format == WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP) {
-		weston_log("No keymap provided; falling back to defalt\n");
+		weston_log("No keymap provided; falling back to default\n");
 		keymap = NULL;
 		input->keyboard_state_update = STATE_UPDATE_AUTOMATIC;
 	} else {

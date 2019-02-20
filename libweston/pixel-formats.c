@@ -387,7 +387,7 @@ pixel_format_get_info_shm(uint32_t format)
 		return pixel_format_get_info(format);
 }
 
-/** Retrive a pixel format information structure from a DRM FOURCC format
+/** Retrieve a pixel format information structure from a DRM FOURCC format
  *
  * \param format a DRM FOURCC format
  */

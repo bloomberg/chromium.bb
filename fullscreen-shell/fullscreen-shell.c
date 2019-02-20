@@ -546,7 +546,7 @@ fs_output_configure_for_mode(struct fs_output *fsout,
 					&surf_width, &surf_height);
 
 	/* The actual output mode is in physical units.  We need to
-	 * transform the surface size to physical unit size by flipping ans
+	 * transform the surface size to physical unit size by flipping and
 	 * possibly scaling it.
 	 */
 	switch (fsout->output->transform) {

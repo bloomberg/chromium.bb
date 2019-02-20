@@ -354,7 +354,7 @@ remoting_gstpipe_handler(int fd, uint32_t mask, void *data)
 	struct gstpipe_msg_data msg;
 	struct remoted_output *output = data;
 
-	/* recieve message */
+	/* receive message */
 	ret = read(fd, &msg, sizeof(msg));
 	if (ret != sizeof(msg)) {
 		weston_log("ERROR: failed to read, ret=%zd, errno=%d\n",
@@ -371,7 +371,7 @@ remoting_gstpipe_handler(int fd, uint32_t mask, void *data)
 		remoting_output_buffer_release(output, msg.data);
 		break;
 	default:
-		weston_log("Recieved unknown message! msg=%d\n", msg.type);
+		weston_log("Received unknown message! msg=%d\n", msg.type);
 	}
 	return 1;
 }

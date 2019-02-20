@@ -13,7 +13,7 @@ debug messages from the compositor. The debug messages are categorized into diff
 debug streams by the compositor (example: logs, proto, list, etc.,) and the compositor
 requires a file descriptor to stream the messages.
 
-This tool accepts a file name or a file desciptor (not both) and any desired debug stream
+This tool accepts a file name or a file descriptor (not both) and any desired debug stream
 names from the user as command line arguments and subscribes the desired streams from the
 compositor by using the weston_debug_v1 interface. After the subscription, the
 compositor will start to write the debug messages to the shared file descriptor.

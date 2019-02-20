@@ -381,7 +381,7 @@ child_client_exec(int sockfd, const char *path)
 	sigfillset(&allsigs);
 	sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 
-	/* Launch clients as the user. Do not lauch clients with wrong euid.*/
+	/* Launch clients as the user. Do not launch clients with wrong euid. */
 	if (seteuid(getuid()) == -1) {
 		weston_log("compositor: failed seteuid\n");
 		return;

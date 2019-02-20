@@ -116,7 +116,7 @@ struct vaapi_recorder {
 static void *
 worker_thread_function(void *);
 
-/* bistream code used for writing the packed headers */
+/* bitstream code used for writing the packed headers */
 
 #define BITSTREAM_ALLOCATE_STEPPING	 4096
 

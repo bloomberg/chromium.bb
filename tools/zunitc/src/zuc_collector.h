@@ -38,7 +38,7 @@ struct zuc_test;
  * current test. Otherwise events will be passed back via IPC over this
  * pipe with the expectation that the payload will be handled in the parent
  * process via zuc_process_message().
- * @return a new collector intance.
+ * @return a new collector instance.
  * @see zuc_process_message()
  */
 struct zuc_event_listener *
@@ -47,7 +47,7 @@ zuc_collector_create(int *pipe_fd);
 /**
  * Reads events from the given pipe and processes them.
  *
- * @param test the currently active test to attache events for.
+ * @param test the currently active test to attach events for.
  * @param pipe_fd the file descriptor of the pipe to read from.
  * @return a positive value if a message was received, 0 if the end has
  * been reached and -1 if an error has occurred.

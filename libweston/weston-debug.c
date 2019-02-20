@@ -318,7 +318,7 @@ weston_debug_compositor_destroy(struct weston_compositor *compositor)
  * \param compositor The libweston compositor where to enable.
  *
  * This enables the weston_debug_v1 Wayland protocol extension which any client
- * can use to get debug messsages from the compositor.
+ * can use to get debug messages from the compositor.
  *
  * WARNING: This feature should not be used in production. If a client
  * provides a file descriptor that blocks writes, it will block the whole

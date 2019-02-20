@@ -392,7 +392,7 @@ udev_seat_output_changed(struct udev_seat *seat, struct weston_output *output)
 	wl_list_for_each(device, &seat->devices_list, link) {
 		/* If we find any input device without an associated output
 		 * or an output name to associate with, just tie it with the
-		 * output we got here - the default assingment.
+		 * output we got here - the default assignment.
 		 */
 		if (!device->output_name) {
 			if (!device->output)
