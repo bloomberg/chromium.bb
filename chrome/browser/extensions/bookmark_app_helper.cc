@@ -16,12 +16,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -36,11 +34,9 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -62,17 +58,6 @@
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
-#include "chrome/common/chrome_switches.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-// gn check complains on Linux Ozone.
-#include "ash/public/cpp/shelf_model.h"  // nogncheck
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#endif
 
 namespace extensions {
 
@@ -483,62 +468,19 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     return;
   }
 
-  // Record an app banner added to homescreen event to ensure banners are not
-  // shown for this app.
-  AppBannerSettingsHelper::RecordBannerEvent(
-      contents_, web_app_info_.app_url, web_app_info_.app_url.spec(),
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-      base::Time::Now());
+  BookmarkAppRecordAppBanner(contents_, web_app_info_);
 
-#if !defined(OS_CHROMEOS)
-  // Pin the app to the relevant launcher depending on the OS.
-  Profile* current_profile = profile_->GetOriginalProfile();
-#endif  // !defined(OS_CHROMEOS)
+  if (create_shortcuts_)
+    BookmarkAppCreateOsShortcuts(profile_, extension);
 
-  // If there is no browser, it means that the app is being installed in the
-  // background. We skip some steps in this case.
-  const bool silent_install =
-      (chrome::FindBrowserWithWebContents(contents_) == nullptr);
-
-  if (create_shortcuts_) {
-#if !defined(OS_CHROMEOS)
-    web_app::ShortcutLocations creation_locations;
-#if defined(OS_LINUX) || defined(OS_WIN)
-    creation_locations.on_desktop = true;
-#else
-    creation_locations.on_desktop = false;
-#endif
-    creation_locations.applications_menu_location =
-        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-    creation_locations.in_quick_launch_bar = false;
-
-    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                             creation_locations, current_profile, extension);
-#else
-    // ChromeLauncherController does not exist in unit tests.
-    if (ChromeLauncherController::instance()) {
-      ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
-          extension->id());
-    }
-#endif  // !defined(OS_CHROMEOS)
-  }
-
-  if (!silent_install) {
-#if defined(OS_MACOSX)
-    // TODO(https://crbug.com/915571): Reparent the tab on Mac just like the
-    // other platforms.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kDisableHostedAppShimCreation)) {
-      web_app::RevealAppShimInFinderForApp(current_profile, extension);
-    }
-#else
-    // Reparent the tab into an app window immediately when opening as a window.
-    if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-        launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
-      ReparentWebContentsIntoAppBrowser(contents_, extension);
-    }
-#endif  // !defined(OS_MACOSX)
-  }
+  // If there is a browser, it means that the app is being installed in the
+  // foreground: window reparenting needed.
+  const bool reparent_tab =
+      (chrome::FindBrowserWithWebContents(contents_) != nullptr);
+  // TODO(loyso): Reparenting must be implemented in
+  // chrome/browser/ui/web_applications/ UI layer as a post-install step.
+  if (reparent_tab)
+    BookmarkAppReparentTab(profile_, contents_, extension, launch_type);
 
   callback_.Run(extension, web_app_info_);
 }
