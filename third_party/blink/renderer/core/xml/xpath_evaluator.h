@@ -56,7 +56,7 @@ class XPathEvaluator final : public ScriptWrappable {
   XPathResult* evaluate(const String& expression,
                         Node* context_node,
                         XPathNSResolver*,
-                        unsigned short type,
+                        uint16_t type,
                         const ScriptValue&,
                         ExceptionState&);
 };

@@ -61,7 +61,7 @@ void XPathExpression::Trace(blink::Visitor* visitor) {
 }
 
 XPathResult* XPathExpression::evaluate(Node* context_node,
-                                       unsigned short type,
+                                       uint16_t type,
                                        const ScriptValue&,
                                        ExceptionState& exception_state) {
   if (!IsValidContextNode(context_node)) {
