@@ -63,6 +63,14 @@ const NSInteger kCollectionShortcutSection = 1;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
+  // Promote the latest most visited items to the displayed ones and reload the
+  // collection view data.
+  self.displayedMostVisitedItems = self.latestMostVisitedItems;
+  [self.collectionView reloadData];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
   // Calculate insets to center the items in the view.
   CGFloat widthInsets = (self.view.bounds.size.width -
                          kMostVisitedCellSize.width * kNumberOfItemsPerRow -
@@ -70,10 +78,6 @@ const NSInteger kCollectionShortcutSection = 1;
                         2;
   self.layout.sectionInset =
       UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
-  // Promote the latest most visited items to the displayed ones and reload the
-  // collection view data.
-  self.displayedMostVisitedItems = self.latestMostVisitedItems;
-  [self.collectionView reloadData];
 }
 
 #pragma mark - properties
