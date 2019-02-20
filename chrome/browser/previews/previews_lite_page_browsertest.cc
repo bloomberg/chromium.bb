@@ -74,6 +74,12 @@
 namespace {
 const int kTimeoutMs = 250;
 const int kRedirectLoopCount = 3;
+
+const std::string kOriginHost = "origin.com";
+
+// This should match the value in //components/google/core/common/google_util.cc
+// so that the X-Client-Data header is sent for subresources.
+const std::string kPreviewsHost = "litepages.googlezip.net";
 }
 
 class PreviewsLitePageServerBrowserTest
@@ -127,12 +133,7 @@ class PreviewsLitePageServerBrowserTest
                            data_reduction_proxy::DummyBase64Config());
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("force-variation-ids", "42");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII("host-rules",
-                           "MAP *.localhost 127.0.0.1,"
-                           "MAP *.127.0.0.1 127.0.0.1,"
-                           "MAP *.litepages.googlezip.net 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 
   void SetUp() override {
@@ -150,22 +151,24 @@ class PreviewsLitePageServerBrowserTest
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
-    https_url_ = https_server_->GetURL("/previews/noscript_test.html");
+    https_url_ =
+        https_server_->GetURL(kOriginHost, "/previews/noscript_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
     https_to_https_redirect_url_ =
-        https_server_->GetURL("/previews/to_https_redirect.html");
+        https_server_->GetURL(kOriginHost, "/previews/to_https_redirect.html");
     ASSERT_TRUE(https_to_https_redirect_url_.SchemeIs(url::kHttpsScheme));
 
     https_redirect_loop_url_ =
-        https_server_->GetURL("/previews/redirect_loop.html");
+        https_server_->GetURL(kOriginHost, "/previews/redirect_loop.html");
     ASSERT_TRUE(https_redirect_loop_url_.SchemeIs(url::kHttpsScheme));
 
     base_https_lite_page_url_ =
-        https_server_->GetURL("/previews/lite_page_test.html");
+        https_server_->GetURL(kOriginHost, "/previews/lite_page_test.html");
     ASSERT_TRUE(base_https_lite_page_url_.SchemeIs(url::kHttpsScheme));
 
-    https_media_url_ = https_server_->GetURL("/image_decoding/droids.jpg");
+    https_media_url_ =
+        https_server_->GetURL(kOriginHost, "/image_decoding/droids.jpg");
     ASSERT_TRUE(https_media_url_.SchemeIs(url::kHttpsScheme));
 
     // Set up http server with resource monitor and redirect handler.
@@ -177,26 +180,28 @@ class PreviewsLitePageServerBrowserTest
         base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
-    http_url_ = http_server_->GetURL("/previews/noscript_test.html");
+    http_url_ =
+        http_server_->GetURL(kOriginHost, "/previews/noscript_test.html");
     ASSERT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
 
     base_http_lite_page_url_ =
-        http_server_->GetURL("/previews/lite_page_test.html");
+        http_server_->GetURL(kOriginHost, "/previews/lite_page_test.html");
     ASSERT_TRUE(base_http_lite_page_url_.SchemeIs(url::kHttpScheme));
 
-    subframe_url_ = http_server_->GetURL("/previews/iframe_blank.html");
+    subframe_url_ =
+        http_server_->GetURL(kOriginHost, "/previews/iframe_blank.html");
     ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
 
     http_to_https_redirect_url_ =
-        http_server_->GetURL("/previews/to_https_redirect.html");
+        http_server_->GetURL(kOriginHost, "/previews/to_https_redirect.html");
     ASSERT_TRUE(http_to_https_redirect_url_.SchemeIs(url::kHttpScheme));
 
     http_redirect_loop_url_ =
-        http_server_->GetURL("/previews/redirect_loop.html");
+        http_server_->GetURL(kOriginHost, "/previews/redirect_loop.html");
     ASSERT_TRUE(http_redirect_loop_url_.SchemeIs(url::kHttpScheme));
 
     client_redirect_url_ =
-        http_server_->GetURL("/previews/client_redirect.html");
+        http_server_->GetURL(kOriginHost, "/previews/client_redirect.html");
     ASSERT_TRUE(client_redirect_url_.SchemeIs(url::kHttpScheme));
 
     // Set up previews server with resource handler.
@@ -207,6 +212,9 @@ class PreviewsLitePageServerBrowserTest
         base::Unretained(this)));
     ASSERT_TRUE(previews_server_->Start());
 
+    previews_server_url_ = previews_server_->GetURL(kPreviewsHost, "/");
+    ASSERT_TRUE(previews_server_url_.SchemeIs(url::kHttpsScheme));
+
     // Set up the slow HTTP server with delayed resource handler.
     slow_http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
@@ -215,8 +223,11 @@ class PreviewsLitePageServerBrowserTest
         base::Unretained(this)));
     ASSERT_TRUE(slow_http_server_->Start());
 
+    slow_http_url_ = slow_http_server_->GetURL(kOriginHost, "/");
+    ASSERT_TRUE(slow_http_url_.SchemeIs(url::kHttpScheme));
+
     std::map<std::string, std::string> feature_parameters = {
-        {"previews_host", previews_server().spec()},
+        {"previews_host", previews_server_url().spec()},
         {"blacklisted_path_suffixes", ".mp4,.jpg"},
         {"trigger_on_localhost", "true"},
         {"max_navigation_restart", base::NumberToString(kRedirectLoopCount)},
@@ -320,9 +331,9 @@ class PreviewsLitePageServerBrowserTest
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_TRUE(loaded_url.DomainIs(previews_host.host()));
-    EXPECT_EQ(loaded_url.EffectiveIntPort(), previews_host.EffectiveIntPort());
+    EXPECT_TRUE(loaded_url.DomainIs(previews_server_url().host()));
+    EXPECT_EQ(loaded_url.EffectiveIntPort(),
+              previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
@@ -350,11 +361,10 @@ class PreviewsLitePageServerBrowserTest
     }
 
     // The Virtual URL should not be on the previews server.
-    // TODO(crbug.com/894854): Use a different hostname and check that here.
     if (!GetParam()) {
-      EXPECT_FALSE(virtual_url.DomainIs(previews_host.host()) &&
+      EXPECT_FALSE(virtual_url.DomainIs(previews_server_url().host()) &&
                    virtual_url.EffectiveIntPort() ==
-                       previews_host.EffectiveIntPort());
+                       previews_server_url().EffectiveIntPort());
     }
   }
 
@@ -378,10 +388,9 @@ class PreviewsLitePageServerBrowserTest
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+    EXPECT_FALSE(loaded_url.DomainIs(previews_server_url().host()) &&
                  loaded_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+                     previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
@@ -393,10 +402,9 @@ class PreviewsLitePageServerBrowserTest
 
   void VerifyErrorPageLoaded() const {
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+    EXPECT_FALSE(loaded_url.DomainIs(previews_server_url().host()) &&
                  loaded_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+                     previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
@@ -419,8 +427,7 @@ class PreviewsLitePageServerBrowserTest
             ->data_reduction_proxy_service()
             ->compression_stats()
             ->DataUsageMapForTesting();
-    const auto& it =
-        data_usage_map.find(https_server_->host_port_pair().host());
+    const auto& it = data_usage_map.find(kOriginHost);
     if (it != data_usage_map.end())
       return it->second->data_used();
     return 0;
@@ -488,7 +495,7 @@ class PreviewsLitePageServerBrowserTest
     decider->ClearStateForTesting();
   }
 
-  virtual GURL previews_server() const { return previews_server_->base_url(); }
+  virtual GURL previews_server_url() const { return previews_server_url_; }
 
   const GURL& https_url() const { return https_url_; }
   const GURL& base_https_lite_page_url() const {
@@ -496,7 +503,7 @@ class PreviewsLitePageServerBrowserTest
   }
   const GURL& https_media_url() const { return https_media_url_; }
   const GURL& http_url() const { return http_url_; }
-  const GURL& slow_http_url() const { return slow_http_server_->base_url(); }
+  const GURL& slow_http_url() const { return slow_http_url_; }
   const GURL& base_http_lite_page_url() const {
     return base_http_lite_page_url_;
   }
@@ -521,7 +528,7 @@ class PreviewsLitePageServerBrowserTest
         std::string::npos) {
       std::unique_ptr<net::test_server::BasicHttpResponse> response =
           std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_FOUND);
+      response->set_code(net::HTTP_TEMPORARY_REDIRECT);
       response->AddCustomHeader("Location", https_url().spec());
       return std::move(response);
     }
@@ -588,9 +595,17 @@ class PreviewsLitePageServerBrowserTest
 
     std::string original_url_str;
 
+    // EmbeddedTestServer's request URL is 127.0.0.1 which causes
+    // |ExtractOriginalURLFromLitePageRedirectURL| to fail. So, if the ports
+    // match, fix up the url to have the preview hostname for the call to
+    // |ExtractOriginalURLFromLitePageRedirectURL|.
+    GURL url = request.GetURL();
+    if (url.EffectiveIntPort() == previews_server_url().EffectiveIntPort()) {
+      url = GURL(previews_server_url().spec() + url.path() + "?" + url.query());
+    }
     // Ignore anything that's not a previews request with an unused status.
     if (!previews::ExtractOriginalURLFromLitePageRedirectURL(
-            request.GetURL(), &original_url_str)) {
+            url, &original_url_str)) {
       response->set_code(net::HttpStatusCode::HTTP_BAD_REQUEST);
       return response;
     }
@@ -643,10 +658,8 @@ class PreviewsLitePageServerBrowserTest
     if (net::GetValueForKeyInQuery(original_url, "resp", &code_query_param))
       base::StringToInt(code_query_param, &return_code);
 
-    GURL subresource_url(
-        "https://foo.litepages.googlezip.net:" +
-        base::NumberToString(previews_server().EffectiveIntPort()) +
-        "/subresource.png");
+    GURL subresource_url("https://foo." + kPreviewsHost + ":" +
+                         previews_server_url().port() + "/subresource.png");
     std::string subresource_body = "<html><body><img src=\"" +
                                    subresource_url.spec() +
                                    "\"/></body></html>";
@@ -730,6 +743,8 @@ class PreviewsLitePageServerBrowserTest
   GURL https_to_https_redirect_url_;
   GURL client_redirect_url_;
   GURL subframe_url_;
+  GURL previews_server_url_;
+  GURL slow_http_url_;
   int subresources_requested_ = 0;
 };
 
@@ -818,8 +833,8 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     // Verify the preview is not triggered when navigating to the previews
     // server.
     base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), previews_server());
-    EXPECT_EQ(GetLoadedURL(), previews_server());
+    ui_test_utils::NavigateToURL(browser(), previews_server_url());
+    EXPECT_EQ(GetLoadedURL(), previews_server_url());
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
         PreviewsLitePageNavigationThrottle::BlacklistReason::
@@ -1389,7 +1404,7 @@ class PreviewsLitePageServerBadServerBrowserTest
   ~PreviewsLitePageServerBadServerBrowserTest() override = default;
 
   // Override the previews_server URL so that a bad value will be configured.
-  GURL previews_server() const override {
+  GURL previews_server_url() const override {
     return GURL("https://bad-server.com");
   }
 };
@@ -1441,10 +1456,7 @@ class PreviewsLitePageServerDataSaverBrowserTest
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 };
 
@@ -1479,10 +1491,7 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 };
 
@@ -1589,10 +1598,7 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 };
 
