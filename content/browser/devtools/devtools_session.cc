@@ -134,6 +134,12 @@ void DevToolsSession::MojoConnectionDestroyed() {
 }
 
 bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
+  if (proxy_delegate_) {
+    // Note: we assume that child sessions are not forwarding.
+    proxy_delegate_->SendMessageToBackend(this, message);
+    return true;
+  }
+
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
           message, client_->UsesBinaryProtocol()));
@@ -146,6 +152,7 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   if (it == child_sessions_.end())
     return false;
   DevToolsSession* session = it->second;
+  DCHECK(!session->proxy_delegate_);
   return session->DispatchProtocolMessageInternal(message, std::move(value));
 }
 
@@ -156,11 +163,6 @@ bool DevToolsSession::DispatchProtocolMessageInternal(
   bool has_method = value && value->getString(kMethod, &method);
   if (!runtime_resume_.is_null() && has_method && method == kResumeMethod)
     std::move(runtime_resume_).Run();
-
-  if (proxy_delegate_) {
-    proxy_delegate_->SendMessageToBackend(this, message);
-    return true;
-  }
 
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
