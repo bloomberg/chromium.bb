@@ -4,9 +4,6 @@
 
 #include "components/translate/content/browser/content_translate_driver.h"
 
-#include <string>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -16,7 +13,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "components/translate/core/common/translate_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -24,14 +20,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
-
-namespace translate {
 
 namespace {
 
@@ -40,6 +32,8 @@ namespace {
 const int kMaxTranslateLoadCheckAttempts = 20;
 
 }  // namespace
+
+namespace translate {
 
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller,
@@ -113,23 +107,6 @@ void ContentTranslateDriver::OnIsPageTranslatedChanged() {
     observer.OnIsPageTranslatedChanged(web_contents);
 }
 
-network::mojom::URLLoaderFactoryPtr
-ContentTranslateDriver::CreateURLLoaderFactory() {
-  // Find the renderer process that will need to use the URLLoaderFactory.
-  // Currently translate requests are only sent to the main frame process.
-  content::RenderProcessHost* process =
-      web_contents()->GetMainFrame()->GetProcess();
-
-  // Create a new URLLoaderFactory, locking the initiator origin to the one
-  // returned by GetTranslateSecurityOrigin.
-  network::mojom::URLLoaderFactoryPtr factory;
-  url::Origin origin = url::Origin::Create(GetTranslateSecurityOrigin());
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo null_header_client;
-  process->CreateURLLoaderFactory(origin, std::move(null_header_client),
-                                  mojo::MakeRequest(&factory));
-  return factory;
-}
-
 void ContentTranslateDriver::TranslatePage(int page_seq_no,
                                            const std::string& translate_script,
                                            const std::string& source_lang,
@@ -139,7 +116,7 @@ void ContentTranslateDriver::TranslatePage(int page_seq_no,
     return;  // This page has navigated away.
 
   it->second->Translate(
-      translate_script, CreateURLLoaderFactory(), source_lang, target_lang,
+      translate_script, source_lang, target_lang,
       base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
                      base::Unretained(this)));
 }
