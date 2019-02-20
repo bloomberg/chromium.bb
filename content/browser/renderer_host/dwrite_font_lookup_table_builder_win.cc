@@ -331,7 +331,8 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
       hang_event_for_testing->Wait();
     }
 
-    DCHECK(extracted_names.size());
+    if (!extracted_names.size())
+      continue;
 
     family_result.push_back(
         DWriteFontLookupTableBuilder::FontFileWithUniqueNames(
