@@ -19,12 +19,12 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("usb_internals.css", IDR_USB_INTERNALS_CSS);
   source->AddResourcePath("usb_internals.js", IDR_USB_INTERNALS_JS);
   source->AddResourcePath(
-      "device/usb/public/mojom/device_manager_test.mojom.js",
+      "device/usb/public/mojom/device_manager_test.mojom-lite.js",
       IDR_USB_DEVICE_MANAGER_TEST_MOJO_JS);
   source->AddResourcePath(
-      "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.js",
+      "chrome/browser/ui/webui/usb_internals/usb_internals.mojom-lite.js",
       IDR_USB_INTERNALS_MOJO_JS);
-  source->AddResourcePath("url/mojom/url.mojom.js", IDR_URL_MOJO_JS);
+  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJO_LITE_JS);
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
   source->UseGzip();
 
