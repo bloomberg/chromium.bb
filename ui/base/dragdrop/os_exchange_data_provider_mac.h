@@ -5,6 +5,9 @@
 #ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 
+#include <memory>
+
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
@@ -14,21 +17,27 @@
 
 @class NSArray;
 @class NSData;
+@class NSDraggingItem;
 @class NSPasteboard;
 @class NSString;
 
 namespace ui {
-class UniquePasteboard;
 
 // OSExchangeData::Provider implementation for Mac.
 class UI_BASE_EXPORT OSExchangeDataProviderMac
     : public OSExchangeData::Provider {
  public:
-  OSExchangeDataProviderMac();
   ~OSExchangeDataProviderMac() override;
 
+  // Creates a stand-alone OSExchangeDataProviderMac.
+  static std::unique_ptr<OSExchangeDataProviderMac> CreateProvider();
+
+  // Creates an OSExchangeDataProviderMac object wrapping the given NSPasteboard
+  // object.
+  static std::unique_ptr<OSExchangeDataProviderMac>
+  CreateProviderWrappingPasteboard(NSPasteboard* pasteboard);
+
   // Overridden from OSExchangeData::Provider:
-  std::unique_ptr<Provider> Clone() const override;
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
   void SetString(const base::string16& data) override;
@@ -54,33 +63,26 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   gfx::ImageSkia GetDragImage() const override;
   gfx::Vector2d GetDragImageOffset() const override;
 
-  // Returns the data for the specified type in the pasteboard.
-  NSData* GetNSDataForType(NSString* type) const;
-
   // Gets the underlying pasteboard.
-  NSPasteboard* GetPasteboard() const;
+  virtual NSPasteboard* GetPasteboard() const = 0;
 
-  // Returns the union of SupportedPasteboardTypes() and the types in the
-  // current pasteboard.
-  NSArray* GetAvailableTypes() const;
-
-  // Creates an OSExchangeData object from the given NSPasteboard object.
-  static std::unique_ptr<OSExchangeData> CreateDataFromPasteboard(
-      NSPasteboard* pasteboard);
+  // Returns an NSDraggingItem useful for initiating a drag. (Currently
+  // OSExchangeDataProviderMac can only have one item.)
+  NSDraggingItem* GetDraggingItem() const;
 
   // Returns an array of pasteboard types that can be supported by
   // OSExchangeData.
   static NSArray* SupportedPasteboardTypes();
 
- private:
-  explicit OSExchangeDataProviderMac(scoped_refptr<ui::UniquePasteboard>);
-  scoped_refptr<ui::UniquePasteboard> pasteboard_;
+ protected:
+  OSExchangeDataProviderMac();
+  OSExchangeDataProviderMac(const OSExchangeDataProviderMac&);
+  OSExchangeDataProviderMac& operator=(const OSExchangeDataProviderMac&);
 
+ private:
   // Drag image and offset data.
   gfx::ImageSkia drag_image_;
   gfx::Vector2d cursor_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderMac);
 };
 
 }  // namespace ui
