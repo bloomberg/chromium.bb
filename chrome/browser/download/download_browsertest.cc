@@ -1963,13 +1963,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // slow download job.
   history::DownloadRow& row(downloads_in_database->at(0));
   EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
-  EXPECT_EQ(DownloadTargetDeterminer::GetCrDownloadPath(
-                DestinationFile(browser(), file)),
-            row.current_path);
+  EXPECT_EQ(FILE_PATH_LITERAL("Unconfirmed"),
+            row.current_path.BaseName().value().substr(0, 11));
+  EXPECT_EQ(FILE_PATH_LITERAL(".crdownload"), row.current_path.Extension());
   ASSERT_EQ(2u, row.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
-  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::MAYBE_DANGEROUS_CONTENT,
+            row.danger_type);
   EXPECT_LE(start, row.start_time);
   EXPECT_EQ(content::SlowDownloadHttpResponse::kFirstDownloadSize,
             row.received_bytes);
@@ -2010,7 +2011,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   ASSERT_EQ(2u, row1.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row1.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row1.url_chain[1].spec());
-  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::MAYBE_DANGEROUS_CONTENT,
+            row1.danger_type);
   EXPECT_LE(start, row1.start_time);
   EXPECT_GE(end, row1.end_time);
   EXPECT_EQ(0, row1.received_bytes);  // There's no ETag. So the intermediate
