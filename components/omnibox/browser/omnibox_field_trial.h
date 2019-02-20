@@ -55,6 +55,7 @@ extern const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery;
 extern const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions;
 extern const base::Feature kUIExperimentBlueTitlesOnPageSuggestions;
 extern const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions;
+extern const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions;
 extern const base::Feature kUIExperimentWhiteBackgroundOnBlur;
 extern const base::Feature kUIExperimentUseGenericSearchEngineIcon;
 extern const base::Feature kUIExperimentUnboldSuggestionText;

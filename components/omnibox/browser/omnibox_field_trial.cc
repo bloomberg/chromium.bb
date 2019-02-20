@@ -261,8 +261,16 @@ const base::Feature kUIExperimentWhiteBackgroundOnBlur{
 
 // Feature used to show a generic vector icon for omnibox search instead of the
 // search engine favicon.
-extern const base::Feature kUIExperimentUseGenericSearchEngineIcon{
+const base::Feature kUIExperimentUseGenericSearchEngineIcon{
     "OminboxUIExperimentUseGenericSearchEngineIcon",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to bold the "user text" part of search suggestions instead
+// of the "autocomplete" part. For example, if the user typed "point reyes",
+// and the search suggestion was "point reyes weather", this feature makes
+// the "point reyes" part of the suggestion bold, instead of "weather".
+const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions{
+    "OmniboxUIExperimentBoldUserTextOnSearchSuggestions",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to unbold suggestion text.
