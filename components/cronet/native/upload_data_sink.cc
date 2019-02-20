@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/cronet_upload_data_stream.h"
 #include "components/cronet/native/engine.h"
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"

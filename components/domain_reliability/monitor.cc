@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/google_configs.h"
 #include "components/domain_reliability/header.h"
@@ -187,8 +188,8 @@ void DomainReliabilityMonitor::OnNetworkChanged(
 }
 
 void DomainReliabilityMonitor::ClearBrowsingData(
-   DomainReliabilityClearMode mode,
-   const base::Callback<bool(const GURL&)>& origin_filter) {
+    DomainReliabilityClearMode mode,
+    const base::Callback<bool(const GURL&)>& origin_filter) {
   switch (mode) {
     case CLEAR_BEACONS:
       context_manager_.ClearBeacons(origin_filter);

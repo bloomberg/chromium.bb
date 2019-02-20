@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/prefs/json_pref_store.h"

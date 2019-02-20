@@ -36,6 +36,7 @@
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
