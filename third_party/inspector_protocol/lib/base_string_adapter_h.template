@@ -64,8 +64,12 @@ class {{config.lib.export_macro}} StringUtil {
   static String fromInteger(int number) { return base::NumberToString(number); }
   static String fromDouble(double number) {
     String s = base::NumberToString(number);
-    if (!s.empty() && s[0] == '.')
-      s = "0" + s;
+    if (!s.empty()) {  // .123 -> 0.123; -.123 -> -0.123 for valid JSON.
+      if (s[0] == '.')
+        s.insert(/*index=*/ 0, /*count=*/ 1, /*ch=*/ '0');
+      else if (s[0] == '-' && s.size() >= 2 && s[1] == '.')
+        s.insert(/*index=*/ 1, /*count=*/ 1, /*ch=*/ '0');
+    }
     return s;
   }
   static double toDouble(const char* s, size_t len, bool* ok) {
