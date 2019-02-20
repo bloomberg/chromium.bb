@@ -17,7 +17,6 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "net/base/net_errors.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
@@ -30,6 +29,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_client_stats.h"
+#include "net/third_party/quic/platform/api/quic_error_code_wrappers.h"
 #include "net/third_party/quic/platform/api/quic_exported_stats.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -62,10 +62,6 @@ const QuicPacketCount kMaxRetransmittablePacketsBeforeAck = 10;
 const float kAckDecimationDelay = 0.25;
 // One eighth RTT delay when doing ack decimation.
 const float kShortAckDecimationDelay = 0.125;
-
-// Error code used in WriteResult to indicate that the packet writer rejected
-// the message as being too big.
-const int kMessageTooBigErrorCode = net::ERR_MSG_TOO_BIG;
 
 // The minimum release time into future in ms.
 const int kMinReleaseTimeIntoFutureMs = 1;
@@ -2386,8 +2382,7 @@ void QuicConnection::FlushPackets() {
 
 bool QuicConnection::IsMsgTooBig(const WriteResult& result) {
   return (result.status == WRITE_STATUS_MSG_TOO_BIG) ||
-         (IsWriteError(result.status) &&
-          result.error_code == kMessageTooBigErrorCode);
+         (IsWriteError(result.status) && result.error_code == QUIC_EMSGSIZE);
 }
 
 bool QuicConnection::ShouldDiscardPacket(const SerializedPacket& packet) {
@@ -2422,7 +2417,7 @@ void QuicConnection::OnWriteError(int error_code) {
       "Write failed with error: ", error_code, " (", strerror(error_code), ")");
   QUIC_LOG_FIRST_N(ERROR, 2) << ENDPOINT << error_details;
   switch (error_code) {
-    case kMessageTooBigErrorCode:
+    case QUIC_EMSGSIZE:
       CloseConnection(
           QUIC_PACKET_WRITE_ERROR, error_details,
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
