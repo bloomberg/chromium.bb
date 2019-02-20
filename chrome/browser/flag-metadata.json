@@ -282,6 +282,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "autofill-show-full-disclosure-label",
+    "owners": [ "ftirelo", "tmartino" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "automatic-password-generation",
     "owners": [ "ioanap", "fhorschig" ],
     "expiry_milestone": 76

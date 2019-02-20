@@ -254,6 +254,11 @@ const base::Feature kAutofillShowAutocompleteConsoleWarnings{
     "AutofillShowAutocompleteConsoleWarnings",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether suggestions' labels use the full disclosure format to
+// display disambiguation information.
+const base::Feature kAutofillShowFullDisclosureLabel{
+    "AutofillShowFullDisclosureLabel", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.
 const base::Feature kAutofillShowTypePredictions{
