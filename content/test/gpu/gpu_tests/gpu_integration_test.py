@@ -25,6 +25,7 @@ class GpuIntegrationTest(
 
   _cached_expectations = None
   _also_run_disabled_tests = False
+  _disable_log_uploads = False
 
   # Several of the tests in this directory need to be able to relaunch
   # the browser on demand with a new set of command line arguments
@@ -58,6 +59,11 @@ class GpuIntegrationTest(
       dest='also_run_disabled_tests',
       action='store_true', default=False,
       help='Run disabled tests, ignoring Skip and Fail expectations')
+    parser.add_option(
+      '--disable-log-uploads',
+      dest='disable_log_uploads',
+      action='store_true', default=False,
+      help='Disables uploads of logs to cloud storage')
 
   @classmethod
   def CustomizeBrowserArgs(cls, browser_args):
@@ -70,6 +76,10 @@ class GpuIntegrationTest(
       browser_args = []
     cls._finder_options = cls._original_finder_options.Copy()
     browser_options = cls._finder_options.browser_options
+
+    # If requested, disable uploading of failure logs to cloud storage.
+    if cls._disable_log_uploads:
+      browser_options.logs_cloud_bucket = None
 
     # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
     # the browser to collect gpu info. A command line switch is added here to
@@ -109,6 +119,7 @@ class GpuIntegrationTest(
   @classmethod
   def GenerateTestCases__RunGpuTest(cls, options):
     cls._also_run_disabled_tests = options.also_run_disabled_tests
+    cls._disable_log_uploads = options.disable_log_uploads
     for test_name, url, args in cls.GenerateGpuTests(options):
       yield test_name, (url, test_name, args)
 
