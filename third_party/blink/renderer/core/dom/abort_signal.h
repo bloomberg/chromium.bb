@@ -62,8 +62,11 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
   void Trace(Visitor*) override;
 
  private:
+  void AddSignalAbortAlgorithm(AbortSignal*);
+
   bool aborted_flag_ = false;
   Vector<base::OnceClosure> abort_algorithms_;
+  HeapVector<Member<AbortSignal>> dependent_signals_;
   Member<ExecutionContext> execution_context_;
 };
 

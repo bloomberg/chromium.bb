@@ -36,6 +36,24 @@ void AbortSignal::AddAlgorithm(base::OnceClosure algorithm) {
   abort_algorithms_.push_back(std::move(algorithm));
 }
 
+void AbortSignal::AddSignalAbortAlgorithm(AbortSignal* dependent_signal) {
+  if (aborted_flag_)
+    return;
+
+  // The signal should be kept alive as long as parentSignal is allow chained
+  // requests like the following:
+  // controller -owns-> signal1 -owns-> signal2 -owns-> signal3 <-owns- request
+  //
+  // Due to lack to traced closures we pass a weak persistent but also add
+  // |dependent_signal| as a dependency that is traced. We do not use
+  // WrapPersistent here as this would create a root for Oilpan and unified heap
+  // that leaks the |execution_context_| as there is no explicit event removing
+  // the root anymore.
+  abort_algorithms_.emplace_back(WTF::Bind(
+      &AbortSignal::SignalAbort, WrapWeakPersistent(dependent_signal)));
+  dependent_signals_.push_back(dependent_signal);
+}
+
 void AbortSignal::SignalAbort() {
   if (aborted_flag_)
     return;
@@ -44,6 +62,7 @@ void AbortSignal::SignalAbort() {
     std::move(closure).Run();
   }
   abort_algorithms_.clear();
+  dependent_signals_.clear();
   DispatchEvent(*Event::Create(event_type_names::kAbort));
 }
 
@@ -53,24 +72,12 @@ void AbortSignal::Follow(AbortSignal* parentSignal) {
   if (parentSignal->aborted_flag_)
     SignalAbort();
 
-  // Unlike the usual practice for AddAlgorithm(), we don't use a weak pointer
-  // here. To see why, consider the following object graph:
-  //
-  // controller --owns--> signal1 -?-> signal2 -?-> signal3 <--owns-- request
-  //
-  // It's easy to create chained signals like this using the Request
-  // constructor. If the -?-> pointers were weak, then |signal2| could be
-  // collected even though |controller| and |request| were still
-  // referenced. This would prevent controller.abort() from working. So the
-  // pointers need to be strong. This won't artificially extend the lifetime of
-  // |request|, because the pointer to it in the closure held by |signal3| is
-  // still weak.
-  parentSignal->AddAlgorithm(
-      WTF::Bind(&AbortSignal::SignalAbort, WrapPersistent(this)));
+  parentSignal->AddSignalAbortAlgorithm(this);
 }
 
 void AbortSignal::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
+  visitor->Trace(dependent_signals_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
