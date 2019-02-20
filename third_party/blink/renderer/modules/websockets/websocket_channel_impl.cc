@@ -275,7 +275,8 @@ bool WebSocketChannelImpl::Connect(
 
 bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   network::mojom::blink::WebSocketPtr socket_ptr;
-  auto socket_request = mojo::MakeRequest(&socket_ptr);
+  auto socket_request = mojo::MakeRequest(
+      &socket_ptr, execution_context_->GetTaskRunner(TaskType::kWebSocket));
   service_manager::InterfaceProvider* interface_provider =
       execution_context_->GetInterfaceProvider();
   if (interface_provider)
