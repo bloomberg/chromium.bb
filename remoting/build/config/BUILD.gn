@@ -9,7 +9,12 @@ import("//remoting/remoting_options.gni")
 # TODO(nicholss): Move this and other defines to version.h.in.
 # Various remoting targets need this version definition.
 config("version") {
-  defines = [ "VERSION=$chrome_version_full" ]
+  defines = [
+    "VERSION=$chrome_version_full",
+    "VERSION_MAJOR=$chrome_version_major",
+    "VERSION_BUILD=$chrome_version_build",
+    "VERSION_PATCH=$chrome_version_patch",
+  ]
 }
 
 config("enable_webrtc_remoting_client") {

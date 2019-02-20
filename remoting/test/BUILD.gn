@@ -177,6 +177,16 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
   }
 }
 
+# A binary for testing and fiddling the FTL signaling process.
+executable("ftl_signaling_playground") {
+  sources = [
+    "ftl_signaling_playground.cc",
+  ]
+  deps = [
+    "//remoting/signaling",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
