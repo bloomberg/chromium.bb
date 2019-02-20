@@ -24,7 +24,6 @@ struct MinMaxSizeInput;
 class NGConstraintSpace;
 class NGBlockNode;
 class NGLayoutInputNode;
-class NGLayoutResult;
 
 // LengthResolvePhase indicates what type of layout pass we are currently in.
 // This changes how lengths are resolved. kIntrinsic must be used during the
@@ -158,14 +157,6 @@ CORE_EXPORT NGLogicalSize
 ComputeReplacedSize(const NGLayoutInputNode&,
                     const NGConstraintSpace&,
                     const base::Optional<MinMaxSize>&);
-
-// Return true if it's possible (but not necessarily guaranteed) that the new
-// constraint space will give a different size compared to the old one, when
-// computed style and child content remain unchanged.
-bool SizeMayChange(const ComputedStyle&,
-                   const NGConstraintSpace& new_space,
-                   const NGConstraintSpace& old_space,
-                   const NGLayoutResult& layout_result);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.

@@ -282,11 +282,6 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (!cached_layout_result)
     return nullptr;
 
-  const NGConstraintSpace& old_space =
-      cached_layout_result->GetConstraintSpaceForCaching();
-  if (!new_space.MaySkipLayout(old_space))
-    return nullptr;
-
   // If we have an orthogonal flow root descendant, we don't attempt to cache
   // our layout result. This is because the initial containing block size may
   // have changed, having a high likelihood of changing the size of the
@@ -294,18 +289,11 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (cached_layout_result->HasOrthogonalFlowRoots())
     return nullptr;
 
-  if (!new_space.AreSizesEqual(old_space)) {
-    // We need to descend all the way down into BODY if we're in quirks mode,
-    // since it magically follows the viewport size.
-    if (NGBlockNode(this).IsQuirkyAndFillsViewport())
-      return nullptr;
+  if (!MaySkipLayout(NGBlockNode(this), *cached_layout_result, new_space))
+    return nullptr;
 
-    // If the available / percentage sizes have changed in a way that may affect
-    // layout, we cannot re-use the previous result.
-    if (SizeMayChange(Base::StyleRef(), new_space, old_space,
-                      *cached_layout_result))
-      return nullptr;
-  }
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
 
   // Check BFC block offset. Even if they don't match, there're some cases we
   // can still reuse the fragment.
