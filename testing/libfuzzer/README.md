@@ -40,6 +40,7 @@ libFuzzer.
   and reported by ClusterFuzz.
 * [Fuzzing on Chrome OS] describes how to write fuzzers for the non-browser
   parts of Chrome OS.
+* [AFL Integration] describes AFL's integration with Chromium and ClusterFuzz.
 * [Reference] contains detailed references for different integration parts.
 
 ## Trophies
@@ -63,6 +64,7 @@ libFuzzer.
 [ClusterFuzz Integration]: clusterfuzz.md
 [Reproducing Bugs]: reproducing.md
 [Reference]: reference.md
+[AFL Integration]: AFL.md
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label:Stability-LibFuzzer%20label:ClusterFuzz&sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
 [ClusterFuzz Stats]: https://clusterfuzz.com/fuzzer-stats/by-fuzzer/fuzzer/libFuzzer/job/libfuzzer_chrome_asan
 [Pdfium Bugs]: https://bugs.chromium.org/p/pdfium/issues/list?can=1&q=libfuzzer&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
