@@ -26,7 +26,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                         const NGConstraintSpace&,
                         const NGBreakToken*);
 
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;

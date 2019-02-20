@@ -65,9 +65,10 @@ class CORE_EXPORT NGUnpositionedListMarker final {
  private:
   bool IsImage() const;
 
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace& parent_space,
-                                       const ComputedStyle& parent_style,
-                                       FontBaseline) const;
+  scoped_refptr<const NGLayoutResult> Layout(
+      const NGConstraintSpace& parent_space,
+      const ComputedStyle& parent_style,
+      FontBaseline) const;
   LayoutUnit ComputeIntrudedFloatOffset(const NGConstraintSpace&,
                                         const NGBoxFragmentBuilder*,
                                         const NGBoxStrut&,

@@ -87,7 +87,8 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   }
 }
 
-scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
+scoped_refptr<const NGLayoutResult>
+NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   writing_mode_ = ToLineWritingMode(writing_mode_);
 
   if (!break_token_)

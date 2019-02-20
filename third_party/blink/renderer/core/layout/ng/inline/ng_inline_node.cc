@@ -954,7 +954,7 @@ void NGInlineNode::ClearAssociatedFragments(
   }
 }
 
-scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
+scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
     NGInlineChildLayoutContext* context) {

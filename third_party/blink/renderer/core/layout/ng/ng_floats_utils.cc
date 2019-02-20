@@ -239,7 +239,7 @@ NGPositionedFloat PositionFloat(
   bool is_fragmentable =
       is_same_writing_mode && parent_space.HasBlockFragmentation();
 
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
   NGBoxStrut fragment_margins;
 
   // We may be able to re-use the fragment from when we calculated the

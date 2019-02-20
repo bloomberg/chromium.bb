@@ -24,7 +24,7 @@ class NGLayoutAlgorithmOperations {
   // constraints given by the NGConstraintSpace. Returns a layout result with
   // the resulting layout information.
   // TODO(layout-dev): attempt to make this function const.
-  virtual scoped_refptr<NGLayoutResult> Layout() = 0;
+  virtual scoped_refptr<const NGLayoutResult> Layout() = 0;
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into

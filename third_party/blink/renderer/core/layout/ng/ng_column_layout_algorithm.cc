@@ -76,7 +76,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
-scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   // TODO(layout-dev): Store some combination of border, scrollbar, padding on
   // this class.
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
@@ -122,7 +122,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
-      scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
+      scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
       const NGPhysicalBoxFragment* column =
           ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
@@ -265,7 +265,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // an ideal column block size.
   NGConstraintSpace space = CreateConstaintSpaceForBalancing(column_size);
   NGBlockLayoutAlgorithm balancing_algorithm(Node(), space);
-  scoped_refptr<NGLayoutResult> result = balancing_algorithm.Layout();
+  scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire
   // fragment tree, not just the root.

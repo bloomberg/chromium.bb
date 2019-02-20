@@ -23,7 +23,7 @@ NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
-scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
@@ -53,7 +53,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     // Lay out one page. Each page will become a fragment.
     NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                            break_token.get());
-    scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
+    scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
     const NGPhysicalBoxFragment* page =
         ToNGPhysicalBoxFragment(result->PhysicalFragment());
 

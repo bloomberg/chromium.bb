@@ -33,7 +33,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   NGBlockNode(std::nullptr_t) : NGLayoutInputNode(nullptr) {}
 
-  scoped_refptr<NGLayoutResult> Layout(
+  scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
       const NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
@@ -77,7 +77,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
   // Layout an atomic inline; e.g., inline block.
-  scoped_refptr<NGLayoutResult> LayoutAtomicInline(
+  scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
       const NGConstraintSpace& parent_constraint_space,
       const ComputedStyle& parent_style,
       FontBaseline,
@@ -85,7 +85,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.
-  scoped_refptr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
+  scoped_refptr<const NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
@@ -111,7 +111,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void FinishLayout(LayoutBlockFlow*,
                     const NGConstraintSpace&,
                     const NGBreakToken*,
-                    scoped_refptr<NGLayoutResult>);
+                    scoped_refptr<const NGLayoutResult>);
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.

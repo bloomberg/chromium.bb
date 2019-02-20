@@ -101,7 +101,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
         child_style.GetWritingMode(), input, &child_space);
     // TODO(dgrogan): Don't layout every time, just when you need to.
-    scoped_refptr<NGLayoutResult> layout_result =
+    scoped_refptr<const NGLayoutResult> layout_result =
         child.Layout(child_space, nullptr /*break token*/);
     NGFragment fragment_in_child_writing_mode(
         child_style.GetWritingMode(), *layout_result->PhysicalFragment());
@@ -192,7 +192,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
   }
 }
 
-scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   border_box_size_ =
       CalculateBorderBoxSize(ConstraintSpace(), Node(), border_padding_);
   content_box_size_ =

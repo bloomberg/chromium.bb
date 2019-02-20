@@ -62,7 +62,7 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-scoped_refptr<NGLayoutResult> NGLayoutInputNode::Layout(
+scoped_refptr<const NGLayoutResult> NGLayoutInputNode::Layout(
     const NGConstraintSpace& space,
     const NGBreakToken* break_token,
     NGInlineChildLayoutContext* context) {

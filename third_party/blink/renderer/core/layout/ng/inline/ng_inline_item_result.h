@@ -48,7 +48,7 @@ struct CORE_EXPORT NGInlineItemResult {
   scoped_refptr<const ShapeResultView> shape_result;
 
   // NGLayoutResult for atomic inline items.
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
 
   // NGPositionedFloat for floating inline items. Should only be present for
   // positioned floats (not unpositioned). It indicates where it was placed

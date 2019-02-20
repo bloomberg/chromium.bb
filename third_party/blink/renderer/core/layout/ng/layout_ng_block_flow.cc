@@ -42,7 +42,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
   for (const NGOutOfFlowPositionedDescendant& descendant :
@@ -138,7 +138,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       css_container->CanContainFixedPositionObjects(), borders_and_scrollbars,
       constraint_space, *container_style, initial_containing_block_fixed_size)
       .Run(/* only_layout */ this);
-  scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
+  scoped_refptr<const NGLayoutResult> result =
+      container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())

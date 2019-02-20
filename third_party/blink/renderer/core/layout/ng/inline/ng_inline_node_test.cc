@@ -129,7 +129,7 @@ class NGInlineNodeTest : public NGLayoutTest {
             .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
             .ToConstraintSpace();
     NGInlineChildLayoutContext context;
-    scoped_refptr<NGLayoutResult> result =
+    scoped_refptr<const NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, constraint_space,
                                 nullptr /* break_token */, &context)
             .Layout();

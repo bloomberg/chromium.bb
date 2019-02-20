@@ -25,7 +25,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
                             const NGConstraintSpace& space,
                             const NGBreakToken* break_token = nullptr);
 
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
