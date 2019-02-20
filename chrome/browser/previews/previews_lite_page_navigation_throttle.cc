@@ -234,7 +234,8 @@ class PreviewsWebContentsLifetimeHelper
     // synchronous.
     restarted_navigation_url_ = url_params.url;
     info_ = std::move(info);
-    info_->restart_count++;
+    if (info_)
+      info_->restart_count++;
 
     web_contents_->OpenURL(url_params);
   }
