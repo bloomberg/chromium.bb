@@ -748,6 +748,8 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
             .downstream_throughput_kbps());
   }
 
+  ClampKbpsBasedOnEct();
+
   UMA_HISTOGRAM_ENUMERATION("NQE.EffectiveConnectionType.OnECTComputation",
                             effective_connection_type_,
                             EFFECTIVE_CONNECTION_TYPE_LAST);
@@ -790,6 +792,38 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
       http_downstream_throughput_kbps_observations_.Size();
   new_rtt_observations_since_last_ect_computation_ = 0;
   new_throughput_observations_since_last_ect_computation_ = 0;
+}
+
+void NetworkQualityEstimator::ClampKbpsBasedOnEct() {
+  // No need to clamp when ECT is unknown or if the connection speed is fast.
+  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_OFFLINE ||
+      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_4G) {
+    return;
+  }
+
+  if (params_->upper_bound_typical_kbps_multiplier() <= 0.0)
+    return;
+
+  DCHECK_LT(0, params_->TypicalNetworkQuality(effective_connection_type_)
+                   .downstream_throughput_kbps());
+  // For a given ECT, upper bound on Kbps can't be less than the typical Kbps
+  // for that ECT.
+  DCHECK_LE(1.0, params_->upper_bound_typical_kbps_multiplier());
+
+  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_2G ||
+      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_3G) {
+    // Put an upper bound on Kbps.
+    network_quality_.set_downstream_throughput_kbps(
+        std::min(network_quality_.downstream_throughput_kbps(),
+                 static_cast<int>(
+                     params_->TypicalNetworkQuality(effective_connection_type_)
+                         .downstream_throughput_kbps() *
+                     params_->upper_bound_typical_kbps_multiplier())));
+    return;
+  }
+  NOTREACHED();
 }
 
 EffectiveConnectionType

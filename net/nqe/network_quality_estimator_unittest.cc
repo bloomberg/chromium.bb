@@ -811,7 +811,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   std::map<std::string, std::string> variation_params;
   variation_params["Unknown.DefaultMedianKbps"] = "100";
   variation_params["WiFi.DefaultMedianKbps"] = "200";
-  variation_params["2G.DefaultMedianKbps"] = "300";
+  variation_params["2G.DefaultMedianKbps"] = "250";
 
   variation_params["Unknown.DefaultMedianRTTMsec"] = "1000";
   variation_params["WiFi.DefaultMedianRTTMsec"] = "2000";
@@ -878,7 +878,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
-  EXPECT_EQ(300, kbps);
+  EXPECT_EQ(250, kbps);
   EXPECT_EQ(kbps, estimator.GetDownstreamThroughputKbps().value());
 
   // Simulate network change to 3G. Default estimates should be available.
@@ -967,6 +967,78 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
     estimator.SetStartTimeNullHttpRtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
     EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
+  }
+}
+
+TEST_F(NetworkQualityEstimatorTest, ClampKbpsBasedOnEct) {
+  const int32_t kTypicalDownlinkKbpsEffectiveConnectionType
+      [net::EFFECTIVE_CONNECTION_TYPE_LAST] = {0, 0, 40, 75, 400, 1600};
+
+  const struct {
+    std::string upper_bound_typical_kbps_multiplier;
+    int32_t set_rtt_msec;
+    int32_t set_downstream_kbps;
+    EffectiveConnectionType expected_ect;
+    int32_t expected_downstream_throughput;
+  } tests[] = {
+      // Clamping multiplier set to 3.5 by default.
+      {"", 3000, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       kTypicalDownlinkKbpsEffectiveConnectionType
+               [EFFECTIVE_CONNECTION_TYPE_SLOW_2G] *
+           3.5},
+      // Clamping disabled.
+      {"-1", 3000, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_SLOW_2G, INT32_MAX},
+      // Clamping multiplier overridden to 1000.
+      {"1000.0", 3000, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+       kTypicalDownlinkKbpsEffectiveConnectionType
+               [EFFECTIVE_CONNECTION_TYPE_SLOW_2G] *
+           1000},
+      // Clamping multiplier overridden to 1000.
+      {"1000.0", 1500, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_2G,
+       kTypicalDownlinkKbpsEffectiveConnectionType
+               [EFFECTIVE_CONNECTION_TYPE_2G] *
+           1000},
+      // Clamping multiplier overridden to 1000.
+      {"1000.0", 700, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_3G,
+       kTypicalDownlinkKbpsEffectiveConnectionType
+               [EFFECTIVE_CONNECTION_TYPE_3G] *
+           1000},
+      // Clamping multiplier set to 3.5 by default.
+      {"", 500, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_3G,
+       kTypicalDownlinkKbpsEffectiveConnectionType
+               [EFFECTIVE_CONNECTION_TYPE_3G] *
+           3.5},
+      // Clamping ineffective when the observed throughput is lower than the
+      // clamped throughput.
+      {"", 500, 100, EFFECTIVE_CONNECTION_TYPE_3G, 100},
+      // Clamping disabled on 4G ECT.
+      {"1.0", 40, INT32_MAX, EFFECTIVE_CONNECTION_TYPE_4G, INT32_MAX},
+      // Clamping disabled on 4G ECT.
+      {"1.0", 40, 100, EFFECTIVE_CONNECTION_TYPE_4G, 100},
+  };
+
+  for (const auto& test : tests) {
+    std::map<std::string, std::string> variation_params;
+    variation_params["upper_bound_typical_kbps_multiplier"] =
+        test.upper_bound_typical_kbps_multiplier;
+    TestNetworkQualityEstimator estimator(variation_params);
+
+    // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
+    // does not return Offline if the device is offline.
+    estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_WIFI,
+                                    "test");
+
+    estimator.set_recent_http_rtt(
+        base::TimeDelta::FromMilliseconds(test.set_rtt_msec));
+    estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
+    estimator.set_recent_downlink_throughput_kbps(test.set_downstream_kbps);
+    estimator.set_start_time_null_downlink_throughput_kbps(
+        test.set_downstream_kbps);
+    estimator.SetStartTimeNullHttpRtt(
+        base::TimeDelta::FromMilliseconds(test.set_rtt_msec));
+    EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
+    EXPECT_EQ(test.expected_downstream_throughput,
+              estimator.GetDownstreamThroughputKbps().value());
   }
 }
 
@@ -1356,7 +1428,7 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   EXPECT_EQ(0U, observer.effective_connection_types().size());
 
   estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1500));
-  estimator.set_start_time_null_downlink_throughput_kbps(100000);
+  estimator.set_start_time_null_downlink_throughput_kbps(164);
 
   tick_clock.Advance(base::TimeDelta::FromMinutes(60));
 
@@ -1380,9 +1452,9 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   EXPECT_EQ(-1,
             estimator.GetNetLogLastIntegerValue(
                 NetLogEventType::NETWORK_QUALITY_CHANGED, "transport_rtt_ms"));
-  EXPECT_EQ(100000, estimator.GetNetLogLastIntegerValue(
-                        NetLogEventType::NETWORK_QUALITY_CHANGED,
-                        "downstream_throughput_kbps"));
+  EXPECT_EQ(164, estimator.GetNetLogLastIntegerValue(
+                     NetLogEventType::NETWORK_QUALITY_CHANGED,
+                     "downstream_throughput_kbps"));
 
   histogram_tester.ExpectUniqueSample("NQE.MainFrame.EffectiveConnectionType",
                                       EFFECTIVE_CONNECTION_TYPE_2G, 1);

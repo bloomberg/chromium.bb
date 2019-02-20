@@ -521,6 +521,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // value lower than |effective_connection_type_| may be returned.
   EffectiveConnectionType GetCappedECTBasedOnSignalStrength() const;
 
+  // Clamps the throughput estimate based on the current effective connection
+  // type.
+  void ClampKbpsBasedOnEct();
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;

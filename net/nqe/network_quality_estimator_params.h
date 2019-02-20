@@ -246,6 +246,15 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return cap_ect_based_on_signal_strength_;
   }
 
+  // Returns a multiplier which is used to clamp Kbps on slow connections. For
+  // a given ECT, the upper bound on Kbps is computed based on this returned
+  // multiplier and the typical Kbps for the given ECT. If
+  // upper_bound_typical_kbps_multiplier() is -1, then clamping should be
+  // disabled.
+  double upper_bound_typical_kbps_multiplier() const {
+    return upper_bound_typical_kbps_multiplier_;
+  }
+
   // Sets the forced effective connection type as |type|.
   void SetForcedEffectiveConnectionTypeForTesting(EffectiveConnectionType type);
 
@@ -278,6 +287,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const base::TimeDelta socket_watchers_min_notification_interval_;
   const bool use_end_to_end_rtt_;
   const bool cap_ect_based_on_signal_strength_;
+  const double upper_bound_typical_kbps_multiplier_;
 
   bool use_small_responses_;
 
