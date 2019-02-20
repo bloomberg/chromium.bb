@@ -422,9 +422,9 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
                           local_domain_buffer, &domain_length, &use)) {
     hr = HRESULT_FROM_WIN32(::GetLastError());
     if (hr != HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
-      if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
-        if ((username_size > 0 && name_length >= username_size))
-          hr = S_OK;
+      if (username_size == 0 &&
+          hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
+        hr = S_OK;
       }
     }
   }
