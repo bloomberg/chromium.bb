@@ -87,6 +87,12 @@ bool ScrollbarLayerImplBase::CanScrollOrientation() const {
   const auto* scroll_node =
       property_trees->scroll_tree.FindNodeFromElementId(scroll_element_id_);
   DCHECK(scroll_node);
+  // TODO(bokan): Looks like we sometimes get here without a ScrollNode. It
+  // should be safe to just return false here (we don't use scroll_element_id_
+  // anywhere else) so we can merge the fix. Once merged, will investigate the
+  // underlying cause. https://crbug.com/924068.
+  if (!scroll_node)
+    return false;
 
   if (orientation() == ScrollbarOrientation::HORIZONTAL) {
     if (!scroll_node->user_scrollable_horizontal)
