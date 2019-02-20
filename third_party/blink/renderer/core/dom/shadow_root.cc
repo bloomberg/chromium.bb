@@ -167,6 +167,9 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
   if (!insertion_point.isConnected())
     return kInsertionDone;
 
+  if (HasAdoptedStyleSheets())
+    GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(*this);
+
   GetDocument().GetSlotAssignmentEngine().Connected(*this);
 
   // FIXME: When parsing <video controls>, InsertedInto() is called many times
