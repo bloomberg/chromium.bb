@@ -138,10 +138,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     int pending_nav_entry_id,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     net::HttpRequestHeaders request_headers,
-    const Referrer& sanitized_referrer,
-    bool is_external_protocol)
+    const Referrer& sanitized_referrer)
     : navigation_request_(navigation_request),
-      is_external_protocol_(is_external_protocol),
       net_error_code_(net::OK),
       render_frame_host_(nullptr),
       is_same_document_(is_same_document),
@@ -348,7 +346,7 @@ const NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
 }
 
 bool NavigationHandleImpl::IsExternalProtocol() {
-  return is_external_protocol_;
+  return !GetContentClient()->browser()->IsHandledURL(GetURL());
 }
 
 net::Error NavigationHandleImpl::GetNetErrorCode() {
@@ -602,7 +600,6 @@ void NavigationHandleImpl::WillStartRequest(
 
 void NavigationHandleImpl::UpdateStateFollowingRedirect(
     const GURL& new_referrer_url,
-    bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     ThrottleChecksFinishedCallback callback) {
@@ -620,7 +617,6 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
         Referrer::SanitizeForRequest(GetURL(), sanitized_referrer_);
   }
 
-  is_external_protocol_ = new_is_external_protocol;
   response_headers_ = response_headers;
   connection_info_ = connection_info;
   was_redirected_ = true;
@@ -632,7 +628,6 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
 
 void NavigationHandleImpl::WillRedirectRequest(
     const GURL& new_referrer_url,
-    bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     RenderProcessHost* post_redirect_process,
@@ -640,9 +635,8 @@ void NavigationHandleImpl::WillRedirectRequest(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "WillRedirectRequest", "url",
                                GetURL().possibly_invalid_spec());
-  UpdateStateFollowingRedirect(new_referrer_url, new_is_external_protocol,
-                               response_headers, connection_info,
-                               std::move(callback));
+  UpdateStateFollowingRedirect(new_referrer_url, response_headers,
+                               connection_info, std::move(callback));
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
