@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -190,21 +190,22 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     private SpannableString getPromptText() {
         ProfileSyncService pss = ProfileSyncService.get();
         String accountName = pss.getCurrentSignedInAccountText() + "\n\n";
-        PassphraseType passphraseType = pss.getPassphraseType();
+        @Passphrase.Type
+        int passphraseType = pss.getPassphraseType();
         if (pss.hasExplicitPassphraseTime()) {
             String syncPassphraseHelpContext =
                     getString(R.string.help_context_change_sync_passphrase);
             switch (passphraseType) {
-                case FROZEN_IMPLICIT_PASSPHRASE:
+                case Passphrase.Type.FROZEN_IMPLICIT:
                     return applyInProductHelpSpan(
                             accountName + pss.getSyncEnterGooglePassphraseBodyWithDateText(),
                             syncPassphraseHelpContext);
-                case CUSTOM_PASSPHRASE:
+                case Passphrase.Type.CUSTOM:
                     return applyInProductHelpSpan(
                             accountName + pss.getSyncEnterCustomPassphraseBodyWithDateText(),
                             syncPassphraseHelpContext);
-                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                case KEYSTORE_PASSPHRASE: // Falling through intentionally.
+                case Passphrase.Type.IMPLICIT: // Falling through intentionally.
+                case Passphrase.Type.KEYSTORE: // Falling through intentionally.
                 default:
                     Log.w(TAG, "Found incorrect passphrase type " + passphraseType
                                     + ". Falling back to default string.");

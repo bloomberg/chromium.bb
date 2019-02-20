@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -216,7 +216,7 @@ public class ContextReporter {
             reportStatus(STATUS_SYNC_NOT_INITIALIZED);
         } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)) {
             reportStatus(STATUS_SYNC_NOT_SYNCING_URLS);
-        } else if (!syncService.getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE)) {
+        } else if (syncService.getPassphraseType() != Passphrase.Type.KEYSTORE) {
             reportStatus(STATUS_SYNC_NOT_KEYSTORE_PASSPHRASE);
         } else {
             reportStatus(STATUS_SYNC_OTHER);

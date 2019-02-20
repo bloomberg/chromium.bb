@@ -20,7 +20,7 @@ android_library("sync_java") {
   java_files = [
     "java/src/org/chromium/components/sync/AndroidSyncSettings.java",
     "java/src/org/chromium/components/sync/ModelTypeHelper.java",
-    "java/src/org/chromium/components/sync/PassphraseType.java",
+    "java/src/org/chromium/components/sync/Passphrase.java",
     "java/src/org/chromium/components/sync/SyncConstants.java",
     "java/src/org/chromium/components/sync/SyncContentResolverDelegate.java",
     "java/src/org/chromium/components/sync/SystemSyncContentResolverDelegate.java",

@@ -50,7 +50,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -470,7 +470,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
      * Callback for PassphraseTypeDialogFragment.Listener
      */
     @Override
-    public void onPassphraseTypeSelected(PassphraseType type) {
+    public void onPassphraseTypeSelected(@Passphrase.Type int type) {
         if (!mProfileSyncService.isEngineInitialized()) {
             // If the engine was shut down since the dialog was opened, do nothing.
             return;

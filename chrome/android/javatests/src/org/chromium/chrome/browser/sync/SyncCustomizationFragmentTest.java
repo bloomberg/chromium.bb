@@ -45,7 +45,7 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
@@ -521,10 +521,8 @@ public class SyncCustomizationFragmentTest {
 
         final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
         mSyncTestRule.stopSync();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            typeFragment.onItemClick(
-                    null, null, 0, PassphraseType.CUSTOM_PASSPHRASE.internalValue());
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { typeFragment.onItemClick(null, null, 0, Passphrase.Type.CUSTOM); });
         // No crash means we passed.
     }
 
@@ -588,7 +586,7 @@ public class SyncCustomizationFragmentTest {
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(
-                () -> fragment.onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE));
+                () -> fragment.onPassphraseTypeSelected(Passphrase.Type.CUSTOM));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
         AlertDialog dialog = (AlertDialog) pcdf.getDialog();
