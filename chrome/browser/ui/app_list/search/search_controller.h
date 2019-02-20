@@ -22,6 +22,7 @@ class ChromeSearchResult;
 namespace app_list {
 
 class SearchProvider;
+enum class RankingItemType;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
@@ -49,7 +50,7 @@ class SearchController {
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
   // Sends training signal to each |providers_|
-  void Train(const std::string& id);
+  void Train(const std::string& id, RankingItemType type);
 
  private:
   // Invoked when the search results are changed.

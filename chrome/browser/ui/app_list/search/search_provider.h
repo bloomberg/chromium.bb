@@ -16,6 +16,8 @@ class ChromeSearchResult;
 
 namespace app_list {
 
+enum class RankingItemType;
+
 class SearchProvider {
  public:
   using Results = std::vector<std::unique_ptr<ChromeSearchResult>>;
@@ -26,8 +28,10 @@ class SearchProvider {
 
   // Invoked to start a query.
   virtual void Start(const base::string16& query) = 0;
-  // Handles training signals if necessary.
-  virtual void Train(const std::string& id) {}
+  // Handles training signals if necessary. A given |SearchProvider| may receive
+  // training signals for results of any |RankingItemType|, so it is the
+  // |SearchProvider|'s responsibility to check |type| and ignore if necessary.
+  virtual void Train(const std::string& id, RankingItemType type) {}
 
   void set_result_changed_callback(const ResultChangedCallback& callback) {
     result_changed_callback_ = callback;

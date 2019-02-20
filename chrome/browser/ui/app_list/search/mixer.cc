@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 
 namespace app_list {
 
@@ -153,6 +154,11 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 void Mixer::FetchResults() {
   for (const auto& group : groups_)
     group->FetchResults();
+}
+
+void Mixer::Train(const std::string& id, RankingItemType type) {
+  // TODO(https://crbug.com/931149)) train a ranking model using this training
+  // signal.
 }
 
 }  // namespace app_list

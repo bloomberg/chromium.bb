@@ -3189,6 +3189,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/search_result_ranker/app_search_result_ranker.h",
       "app_list/search/search_result_ranker/frecency_store.cc",
       "app_list/search/search_result_ranker/frecency_store.h",
+      "app_list/search/search_result_ranker/ranking_item_util.cc",
+      "app_list/search/search_result_ranker/ranking_item_util.h",
       "app_list/search/search_result_ranker/recurrence_predictor.cc",
       "app_list/search/search_result_ranker/recurrence_predictor.h",
       "app_list/search/search_result_ranker/recurrence_ranker.cc",
