@@ -59,7 +59,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   Element* rel = GetDocument().getElementById("rel");
   LayoutBlockFlow* block_flow = ToLayoutBlockFlow(rel->GetLayoutObject());
   scoped_refptr<const NGLayoutResult> result =
-      block_flow->CachedLayoutResultForTesting();
+      block_flow->GetCachedLayoutResult();
   EXPECT_TRUE(result);
   EXPECT_EQ(result->OutOfFlowPositionedDescendants().size(), (size_t)2);
 

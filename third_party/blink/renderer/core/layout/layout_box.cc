@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -97,7 +98,7 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[4];
+  void* pointers[5];
 };
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
@@ -758,6 +759,17 @@ void LayoutBox::UpdateAfterLayout() {
     Layer()->UpdateTransformationMatrix();
     Layer()->UpdateSizeAndScrollingAfterLayout();
   }
+
+  // When we've finished layout, if we aren't a LayoutNG object, we need to
+  // reset our cached layout result. LayoutNG inside of
+  // |NGBlockNode::RunOldLayout| will call |LayoutBox::SetCachedLayoutResult|
+  // with a new synthesized layout result.
+  //
+  // We also want to make sure that if our entrance point into layout changes,
+  // e.g. an OOF-positioned object is laid out by an NG containing block, then
+  // Legacy, then NG again, NG won't use a stale layout result.
+  if (!IsLayoutNGObject())
+    cached_layout_result_.reset();
 }
 
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
@@ -2292,6 +2304,20 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
   // Because |first_paint_fragment_| and |inline_box_wrapper_| are union, when
   // one is deleted, the other should be initialized to nullptr.
   DCHECK(new_value ? !first_paint_fragment_ : !inline_box_wrapper_);
+}
+
+void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
+                                      const NGBreakToken* break_token) {
+  if (break_token)
+    return;
+  if (layout_result.Status() != NGLayoutResult::kSuccess)
+    return;
+  if (!layout_result.HasValidConstraintSpaceForCaching())
+    return;
+  if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
+    return;
+
+  cached_layout_result_ = &layout_result;
 }
 
 void LayoutBox::PositionLineBox(InlineBox* box) {

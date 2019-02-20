@@ -776,29 +776,31 @@ void LayoutFlexibleBox::ClearCachedMainSizeForChild(const LayoutBox& child) {
   intrinsic_size_along_main_axis_.erase(&child);
 }
 
-bool LayoutFlexibleBox::CanAvoidLayoutForNGChild(
-    const LayoutBox& child_box) const {
-  if (!child_box.IsLayoutNGMixin())
+bool LayoutFlexibleBox::CanAvoidLayoutForNGChild(const LayoutBox& child) const {
+  if (!child.IsLayoutNGMixin())
     return false;
-  const LayoutBlockFlow& child(ToLayoutBlockFlow(child_box));
-  // If the last layout was done with a different override size,
-  // or different definite-ness, we need to force-relayout so
-  // that percentage sizes are resolved correctly.
-  const NGConstraintSpace* old_space = child.CachedConstraintSpace();
-  if (!old_space)
+
+  // If the last layout was done with a different override size, or different
+  // definite-ness, we need to force-relayout so that percentage sizes are
+  // resolved correctly.
+  const NGLayoutResult* cached_layout_result = child.GetCachedLayoutResult();
+  if (!cached_layout_result)
     return false;
-  if (old_space->IsFixedSizeInline() != child.HasOverrideLogicalWidth())
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+  if (old_space.IsFixedSizeInline() != child.HasOverrideLogicalWidth())
     return false;
-  if (old_space->IsFixedSizeBlock() != child.HasOverrideLogicalHeight())
+  if (old_space.IsFixedSizeBlock() != child.HasOverrideLogicalHeight())
     return false;
-  if (old_space->FixedSizeBlockIsDefinite() !=
+  if (old_space.FixedSizeBlockIsDefinite() !=
       UseOverrideLogicalHeightForPerentageResolution(child))
     return false;
   if (child.HasOverrideLogicalWidth() &&
-      old_space->AvailableSize().inline_size != child.OverrideLogicalWidth())
+      old_space.AvailableSize().inline_size != child.OverrideLogicalWidth())
     return false;
   if (child.HasOverrideLogicalHeight() &&
-      old_space->AvailableSize().block_size != child.OverrideLogicalHeight())
+      old_space.AvailableSize().block_size != child.OverrideLogicalHeight())
     return false;
   return true;
 }

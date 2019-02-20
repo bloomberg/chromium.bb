@@ -74,7 +74,6 @@ namespace blink {
 
 struct SameSizeAsLayoutBlock : public LayoutBox {
   LayoutObjectChildList children;
-  std::unique_ptr<NGConstraintSpace> cached_constraint_space_;
   uint32_t bitfields;
 };
 
@@ -471,7 +470,6 @@ void LayoutBlock::UpdateLayout() {
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
-  cached_constraint_space_.reset();
   NotifyDisplayLockDidLayout();
 }
 
@@ -2112,14 +2110,6 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
   layout_block->SetDocumentForAnonymous(&parent->GetDocument());
   layout_block->SetStyle(std::move(new_style));
   return layout_block;
-}
-
-const NGConstraintSpace* LayoutBlock::CachedConstraintSpace() const {
-  return cached_constraint_space_.get();
-}
-
-void LayoutBlock::SetCachedConstraintSpace(const NGConstraintSpace& space) {
-  cached_constraint_space_.reset(new NGConstraintSpace(space));
 }
 
 bool LayoutBlock::RecalcNormalFlowChildLayoutOverflowIfNeeded(

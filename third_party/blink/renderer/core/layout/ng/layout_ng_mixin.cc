@@ -68,9 +68,11 @@ void LayoutNGMixin<Base>::ClearNGInlineNodeData() {
 // cache evolves.
 template <typename Base>
 const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
-  if (cached_result_)
-    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment());
-  return nullptr;
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  return ToNGPhysicalBoxFragment(cached_layout_result->PhysicalFragment());
 }
 
 template <typename Base>
@@ -276,11 +278,12 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly())
     return nullptr;
 
-  if (!cached_result_)
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
     return nullptr;
 
   const NGConstraintSpace& old_space =
-      cached_result_->GetConstraintSpaceForCaching();
+      cached_layout_result->GetConstraintSpaceForCaching();
   if (!new_space.MaySkipLayout(old_space))
     return nullptr;
 
@@ -288,7 +291,7 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // our layout result. This is because the initial containing block size may
   // have changed, having a high likelihood of changing the size of the
   // orthogonal flow root.
-  if (cached_result_->HasOrthogonalFlowRoots())
+  if (cached_layout_result->HasOrthogonalFlowRoots())
     return nullptr;
 
   if (!new_space.AreSizesEqual(old_space)) {
@@ -299,14 +302,15 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 
     // If the available / percentage sizes have changed in a way that may affect
     // layout, we cannot re-use the previous result.
-    if (SizeMayChange(Base::StyleRef(), new_space, old_space, *cached_result_))
+    if (SizeMayChange(Base::StyleRef(), new_space, old_space,
+                      *cached_layout_result))
       return nullptr;
   }
 
   // Check BFC block offset. Even if they don't match, there're some cases we
   // can still reuse the fragment.
   base::Optional<LayoutUnit> bfc_block_offset =
-      cached_result_->BfcBlockOffset();
+      cached_layout_result->BfcBlockOffset();
   if (new_space.BfcOffset().block_offset !=
       old_space.BfcOffset().block_offset) {
     // Earlier floats may affect this box if block offset changes.
@@ -336,45 +340,20 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
-  DCHECK(IsBlockLayoutComplete(old_space, *cached_result_));
-  return base::AdoptRef(new NGLayoutResult(*cached_result_, bfc_block_offset));
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::SetCachedLayoutResult(
-    const NGLayoutResult& layout_result,
-    const NGBreakToken* break_token) {
-  if (break_token)
-    return;
-  if (layout_result.Status() != NGLayoutResult::kSuccess)
-    return;
-  if (!layout_result.HasValidConstraintSpaceForCaching())
-    return;
-  if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
-    return;
-
-  cached_result_ = &layout_result;
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::ClearCachedLayoutResult() {
-  cached_result_.reset();
-}
-
-template <typename Base>
-scoped_refptr<const NGLayoutResult>
-LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
-  return cached_result_;
+  DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
+  return base::AdoptRef(
+      new NGLayoutResult(*cached_layout_result, bfc_block_offset));
 }
 
 template <typename Base>
 bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
     const NGConstraintSpace& new_space) const {
-  if (!cached_result_)
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
     return false;
 
   const NGConstraintSpace& old_space =
-      cached_result_->GetConstraintSpaceForCaching();
+      cached_layout_result->GetConstraintSpaceForCaching();
 
   if (new_space.AvailableSize().inline_size !=
       old_space.AvailableSize().inline_size)
@@ -387,11 +366,11 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
 
   // Any floats might need to move, causing lines to wrap differently, needing
   // re-layout.
-  if (!cached_result_->ExclusionSpace().IsEmpty())
+  if (!cached_layout_result->ExclusionSpace().IsEmpty())
     return false;
 
   // Propagating OOF needs re-layout.
-  if (!cached_result_->OutOfFlowPositionedDescendants().IsEmpty())
+  if (!cached_layout_result->OutOfFlowPositionedDescendants().IsEmpty())
     return false;
 
   return true;

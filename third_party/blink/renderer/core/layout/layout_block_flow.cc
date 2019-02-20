@@ -2545,16 +2545,6 @@ scoped_refptr<const NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
   return nullptr;
 }
 
-scoped_refptr<const NGLayoutResult>
-LayoutBlockFlow::CachedLayoutResultForTesting() {
-  return nullptr;
-}
-
-void LayoutBlockFlow::SetCachedLayoutResult(const NGLayoutResult&,
-                                            const NGBreakToken*) {}
-
-void LayoutBlockFlow::ClearCachedLayoutResult() {}
-
 bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
   return false;
 }
