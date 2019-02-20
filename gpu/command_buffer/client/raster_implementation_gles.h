@@ -78,6 +78,8 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void EndRasterCHROMIUM() override;
 
   // Image decode acceleration.
+  bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) override;
   SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
                                 const gfx::Size& output_size,
                                 uint32_t transfer_cache_entry_id,
