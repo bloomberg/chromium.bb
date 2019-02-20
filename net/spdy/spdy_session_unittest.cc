@@ -3611,14 +3611,10 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
-  HostResolver::RequestInfo info(key2.host_port_pair());
-  AddressList addresses;
-  std::unique_ptr<HostResolver::Request> request;
   // Pre-populate the DNS cache, since a cached entry is required in order to
   // create the alias.
-  int rv = session_deps_.host_resolver->Resolve(
-      info, DEFAULT_PRIORITY, &addresses, CompletionOnceCallback(), &request,
-      NetLogWithSource());
+  int rv = session_deps_.host_resolver->LoadIntoCache(key2.host_port_pair(),
+                                                      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   // Get a session for |key2|, which should return the session created earlier.

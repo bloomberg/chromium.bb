@@ -15,7 +15,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "net/base/completion_once_callback.h"
 #include "net/dns/host_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_with_source.h"
@@ -345,7 +344,6 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     std::string name;
     std::string iplist;
     SpdySessionKey key;
-    AddressList addresses;
   } test_hosts[] = {
       {"http://www.example.org", "www.example.org",
        "192.0.2.33,192.168.0.1,192.168.0.5"},
@@ -362,11 +360,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    std::unique_ptr<HostResolver::Request> request;
-    int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
-        CompletionOnceCallback(), &request, NetLogWithSource());
+    int rv = session_deps_.host_resolver->LoadIntoCache(
+        HostPortPair(test_hosts[i].name, kTestPort), base::nullopt);
     EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey.
@@ -527,7 +522,6 @@ void SpdySessionPoolTest::RunIPPoolingDisabledTest(SSLSocketDataProvider* ssl) {
     std::string name;
     std::string iplist;
     SpdySessionKey key;
-    AddressList addresses;
   } test_hosts[] = {
       {"www.webkit.org", "192.0.2.33,192.168.0.1,192.168.0.5"},
       {"js.webkit.com", "192.168.0.4,192.168.0.1,192.0.2.33"},
@@ -540,11 +534,8 @@ void SpdySessionPoolTest::RunIPPoolingDisabledTest(SSLSocketDataProvider* ssl) {
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    std::unique_ptr<HostResolver::Request> request;
-    int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
-        CompletionOnceCallback(), &request, NetLogWithSource());
+    int rv = session_deps_.host_resolver->LoadIntoCache(
+        HostPortPair(test_hosts[i].name, kTestPort), base::nullopt);
     EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey
@@ -593,7 +584,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
     std::string name;
     std::string iplist;
     SpdySessionKey key;
-    AddressList addresses;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -604,11 +594,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    std::unique_ptr<HostResolver::Request> request;
-    int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
-        CompletionOnceCallback(), &request, NetLogWithSource());
+    int rv = session_deps_.host_resolver->LoadIntoCache(
+        HostPortPair(test_hosts[i].name, kTestPort), base::nullopt);
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key =
@@ -675,7 +662,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
     std::string name;
     std::string iplist;
     SpdySessionKey key;
-    AddressList addresses;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -686,11 +672,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    std::unique_ptr<HostResolver::Request> request;
-    int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
-        CompletionOnceCallback(), &request, NetLogWithSource());
+    int rv = session_deps_.host_resolver->LoadIntoCache(
+        HostPortPair(test_hosts[i].name, kTestPort), base::nullopt);
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key =
@@ -1064,7 +1047,6 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
     std::string name;
     std::string iplist;
     SpdySessionKey key;
-    AddressList addresses;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -1075,11 +1057,8 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    std::unique_ptr<HostResolver::Request> request;
-    int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
-        CompletionOnceCallback(), &request, NetLogWithSource());
+    int rv = session_deps_.host_resolver->LoadIntoCache(
+        HostPortPair(test_hosts[i].name, kTestPort), base::nullopt);
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key =
