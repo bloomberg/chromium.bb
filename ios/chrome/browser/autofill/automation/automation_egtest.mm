@@ -81,20 +81,19 @@ static const int kRecipeRetryLimit = 5;
 }
 
 // Loads the recipe file, parse it into Values.
-+ (std::unique_ptr<base::DictionaryValue>)parseRecipeAtPath:
-    (const base::FilePath&)path {
++ (base::Value)parseRecipeAtPath:(const base::FilePath&)path {
   std::string json_text;
 
   bool readSuccess(base::ReadFileToString(path, &json_text));
   GREYAssert(readSuccess, @"Unable to read json file.");
 
-  std::unique_ptr<base::Value> value(
-      base::JSONReader::ReadDeprecated(json_text));
+  base::Optional<base::Value> value = base::JSONReader::Read(json_text);
 
-  GREYAssert(value, @"Unable to parse json file.");
-  GREYAssert(value->is_dict(), @"Expecting a dictionary in the JSON file.");
+  GREYAssert(value.has_value(), @"Unable to parse json file.");
+  GREYAssert(value.value().is_dict(),
+             @"Expecting a dictionary in the JSON file.");
 
-  return base::DictionaryValue::From(std::move(value));
+  return std::move(value).value();
 }
 
 // Converts a string (from the test recipe) to the autofill ServerFieldType it
@@ -203,18 +202,17 @@ static const int kRecipeRetryLimit = 5;
   [super setUp];
 
   const base::FilePath recipePath = [[self class] recipePath];
-  std::unique_ptr<base::DictionaryValue> recipeRoot =
-      [[self class] parseRecipeAtPath:recipePath];
+  base::Value recipeRoot = [[self class] parseRecipeAtPath:recipePath];
 
   const base::Value* autofillProfile =
-      recipeRoot->FindKeyOfType("autofillProfile", base::Value::Type::LIST);
+      recipeRoot.FindKeyOfType("autofillProfile", base::Value::Type::LIST);
   if (autofillProfile) {
     [self prepareAutofillProfileWithValues:autofillProfile];
   }
 
   // Extract the starting URL.
   base::Value* startUrlValue =
-      recipeRoot->FindKeyOfType("startingURL", base::Value::Type::STRING);
+      recipeRoot.FindKeyOfType("startingURL", base::Value::Type::STRING);
   GREYAssert(startUrlValue, @"Test file is missing startingURL.");
 
   const std::string startUrlString(startUrlValue->GetString());
@@ -224,7 +222,7 @@ static const int kRecipeRetryLimit = 5;
 
   // Extract the actions.
   base::Value* actionValue =
-      recipeRoot->FindKeyOfType("actions", base::Value::Type::LIST);
+      recipeRoot.FindKeyOfType("actions", base::Value::Type::LIST);
   GREYAssert(actionValue, @"Test file is missing actions.");
 
   const base::Value::ListStorage& actionsValues(actionValue->GetList());
