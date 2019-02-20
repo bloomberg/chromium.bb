@@ -66,9 +66,9 @@ class XPathResult final : public ScriptWrappable {
 
   XPathResult(xpath::EvaluationContext&, const xpath::Value&);
 
-  void ConvertTo(unsigned short type, ExceptionState&);
+  void ConvertTo(uint16_t type, ExceptionState&);
 
-  unsigned short resultType() const;
+  uint16_t resultType() const;
 
   double numberValue(ExceptionState&) const;
   String stringValue(ExceptionState&) const;
@@ -91,7 +91,7 @@ class XPathResult final : public ScriptWrappable {
   unsigned node_set_position_;
   // FIXME: why duplicate the node set stored in value_?
   Member<xpath::NodeSet> node_set_;
-  unsigned short result_type_;
+  uint16_t result_type_;
   Member<Document> document_;
   uint64_t dom_tree_version_;
 };

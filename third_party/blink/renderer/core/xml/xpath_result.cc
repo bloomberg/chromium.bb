@@ -65,8 +65,7 @@ void XPathResult::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void XPathResult::ConvertTo(unsigned short type,
-                            ExceptionState& exception_state) {
+void XPathResult::ConvertTo(uint16_t type, ExceptionState& exception_state) {
   switch (type) {
     case kAnyType:
       break;
@@ -118,7 +117,7 @@ void XPathResult::ConvertTo(unsigned short type,
   }
 }
 
-unsigned short XPathResult::resultType() const {
+uint16_t XPathResult::resultType() const {
   return result_type_;
 }
 

@@ -57,7 +57,7 @@ class XPathExpression : public ScriptWrappable {
   XPathExpression();
 
   XPathResult* evaluate(Node* context_node,
-                        unsigned short type,
+                        uint16_t type,
                         const ScriptValue&,
                         ExceptionState&);
 
