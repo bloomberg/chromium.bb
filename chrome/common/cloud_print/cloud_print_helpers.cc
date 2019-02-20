@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -184,23 +185,15 @@ GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-std::unique_ptr<base::DictionaryValue> ParseResponseJSON(
-    const std::string& response_data,
-    bool* succeeded) {
-  std::unique_ptr<base::Value> message_value(
-      base::JSONReader::ReadDeprecated(response_data));
-  if (!message_value.get())
-    return std::unique_ptr<base::DictionaryValue>();
+base::Value ParseResponseJSON(const std::string& response_data,
+                              bool* succeeded) {
+  base::Optional<base::Value> message_value =
+      base::JSONReader::Read(response_data);
+  if (!message_value || !message_value->is_dict())
+    return base::Value();
 
-  if (!message_value->is_dict())
-    return std::unique_ptr<base::DictionaryValue>();
-
-  std::unique_ptr<base::DictionaryValue> response_dict(
-      static_cast<base::DictionaryValue*>(message_value.release()));
-  if (succeeded &&
-      !response_dict->GetBoolean(kSuccessValue, succeeded))
-    *succeeded = false;
-  return response_dict;
+  *succeeded = message_value->FindBoolKey(kSuccessValue).value_or(false);
+  return std::move(*message_value);
 }
 
 std::string GetMultipartMimeType(const std::string& mime_boundary) {

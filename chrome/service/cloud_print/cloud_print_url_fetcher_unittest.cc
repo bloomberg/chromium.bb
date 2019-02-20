@@ -164,7 +164,7 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded) override;
 
   void SetHandleRawResponse(bool handle_raw_response) {
@@ -280,11 +280,10 @@ CloudPrintURLFetcherBasicTest::HandleRawData(
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintURLFetcherBasicTest::HandleJSONData(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+CloudPrintURLFetcherBasicTest::HandleJSONData(const net::URLFetcher* source,
+                                              const GURL& url,
+                                              const base::Value& json_data,
+                                              bool succeeded) {
   // We should never get here if we returned true in one of the above methods.
   EXPECT_FALSE(handle_raw_response_);
   EXPECT_FALSE(handle_raw_data_);

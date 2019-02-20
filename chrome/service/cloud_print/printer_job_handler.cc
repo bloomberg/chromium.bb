@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/printer_job_handler.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -173,7 +174,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   DCHECK(next_json_data_handler_);
   return (this->*next_json_data_handler_)(source, url, json_data, succeeded);
@@ -287,11 +288,10 @@ PrinterJobHandler::~PrinterJobHandler() {
 
 // Begin Response handlers
 CloudPrintURLFetcher::ResponseAction
-PrinterJobHandler::HandlePrinterUpdateResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+PrinterJobHandler::HandlePrinterUpdateResponse(const net::URLFetcher* source,
+                                               const GURL& url,
+                                               const base::Value& json_data,
+                                               bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling printer update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
   // We are done here. Go to the Stop state
@@ -303,16 +303,15 @@ PrinterJobHandler::HandlePrinterUpdateResponse(
 }
 
 CloudPrintURLFetcher::ResponseAction
-PrinterJobHandler::HandleJobMetadataResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+PrinterJobHandler::HandleJobMetadataResponse(const net::URLFetcher* source,
+                                             const GURL& url,
+                                             const base::Value& json_data,
+                                             bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling job metadata response"
           << ", printer id: " << printer_info_cloud_.printer_id;
   if (succeeded) {
     std::vector<JobDetails> jobs =
-        job_queue_handler_.GetJobsFromQueue(*json_data);
+        job_queue_handler_.GetJobsFromQueue(json_data);
     if (!jobs.empty()) {
       if (jobs[0].time_remaining_.is_zero()) {
         job_details_ = jobs[0];
@@ -414,7 +413,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleInProgressStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling success status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -427,7 +426,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleFailureStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling failure status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;

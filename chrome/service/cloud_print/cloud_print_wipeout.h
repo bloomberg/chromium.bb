@@ -38,7 +38,7 @@ class CloudPrintWipeout : public CloudPrintURLFetcher::Delegate {
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded) override;
   void OnRequestGiveUp() override;
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;

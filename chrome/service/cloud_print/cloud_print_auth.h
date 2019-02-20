@@ -79,7 +79,7 @@ class CloudPrintAuth : public base::RefCountedThreadSafe<CloudPrintAuth>,
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded) override;
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
   std::string GetAuthHeader() override;
