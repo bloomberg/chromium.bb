@@ -1,6 +1,8 @@
 # Adding a new feature flag in chrome://flags
 
-This document describes how to add your new feature behind a flag.
+This document describes how to add your new feature behind a flag.  See also
+[Configuration](configuration.md), which gives more explanation about flags and
+other options for configuring Chrome.
 
 ## Step 1: Adding a new `base::Feature`
 This step would be different between where you want to use the flag.
