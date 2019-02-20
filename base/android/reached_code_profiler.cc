@@ -13,6 +13,7 @@
 
 #include "base/android/library_loader/anchor_functions.h"
 #include "base/android/orderfile/orderfile_buildflags.h"
+#include "base/android/reached_addresses_bitset.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -57,10 +58,6 @@ constexpr const bool kConfigurationSupported = true;
 
 constexpr const char kDumpToFileFlag[] = "reached-code-profiler-dump-to-file";
 
-// Enough for 1 << 29 bytes of code, 512MB.
-constexpr size_t kBitfieldSize = 1 << 20;
-constexpr size_t kBitsPerElement = 4 * 32;
-
 constexpr uint64_t kIterationsBeforeSkipping = 50;
 constexpr uint64_t kIterationsBetweenUpdates = 100;
 constexpr int kProfilerSignal = SIGURG;
@@ -69,45 +66,13 @@ constexpr base::TimeDelta kSamplingInterval =
     base::TimeDelta::FromMilliseconds(10);
 constexpr base::TimeDelta kDumpInterval = base::TimeDelta::FromSeconds(30);
 
-std::atomic<uint32_t> g_reached[kBitfieldSize];
-std::atomic<std::atomic<uint32_t>*> g_enabled_and_reached(g_reached);
-
-size_t NumberOfReachableElements() {
-  return (kEndOfText - kStartOfText) / kBitsPerElement + 1;
-}
-
-void RecordAddress(uint32_t address) {
-  auto* reached = g_enabled_and_reached.load(std::memory_order_relaxed);
-  if (!reached)
-    return;
-
-  // Stopped in libc, third-party, or Java code.
-  if (address < kStartOfText || address > kEndOfText)
-    return;
-
-  size_t offset = address - kStartOfText;
-  static_assert(sizeof(int) == 4,
-                "Collection and processing code assumes that sizeof(int) == 4");
-  size_t offset_index = offset / 4;
-
-  // Atomically set the corresponding bit in the array.
-  std::atomic<uint32_t>* element = reached + (offset_index / 32);
-  // First, a racy check. This saves a CAS if the bit is already set, and
-  // allows the cache line to remain shared acoss CPUs in this case.
-  uint32_t value = element->load(std::memory_order_relaxed);
-  uint32_t mask = 1 << (offset_index % 32);
-  if (value & mask)
-    return;
-  element->fetch_or(mask, std::memory_order_relaxed);
-}
-
 void HandleSignal(int signal, siginfo_t* info, void* context) {
   if (signal != kProfilerSignal)
     return;
 
   ucontext_t* ucontext = reinterpret_cast<ucontext_t*>(context);
   uint32_t address = ucontext->uc_mcontext.arm_pc;
-  RecordAddress(address);
+  ReachedAddressesBitset::GetTextBitset()->RecordAddress(address);
 }
 
 struct ScopedTimerCloseTraits {
@@ -120,30 +85,9 @@ struct ScopedTimerCloseTraits {
 using ScopedTimer =
     base::ScopedGeneric<base::Optional<timer_t>, ScopedTimerCloseTraits>;
 
-std::vector<uint8_t> SnapshotReachedCodeBitset() {
-  std::vector<uint8_t> buf;
-  size_t elements = NumberOfReachableElements();
-  buf.resize(elements * sizeof(uint32_t));
-  // Copy the reached array into a buffer with atomic loads with the explicit
-  // memory ordering flag. In practice this is likely not necessary because:
-  // a) integrity of the data across individual elements of |g_reached| is not
-  //    maintained anyway
-  // b) write(2) will not take the data in smaller chunks than 4 bytes
-  // c) it would be bizarre for mojo initialization code to cause the compiler
-  //    to spill stuff into the array..
-  // Anyway .. come to the Safe Side, we have CPUs to spin.
-  for (size_t i = 0; i < elements; i++) {
-    uint32_t word = g_reached[i].load(std::memory_order_relaxed);
-    for (int j = 0; j < 4; j++) {
-      buf[4 * i + j] = static_cast<uint8_t>((word >> (j * 8)) & 0xFF);
-    }
-  }
-  return buf;
-}
-
 void DumpToFile(const base::FilePath& path,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  CHECK(task_runner->BelongsToCurrentThread());
+  DCHECK(task_runner->BelongsToCurrentThread());
 
   auto dir_path = path.DirName();
   if (!base::DirectoryExists(dir_path) && !base::CreateDirectory(dir_path)) {
@@ -151,9 +95,11 @@ void DumpToFile(const base::FilePath& path,
     return;
   }
 
-  std::vector<uint8_t> buf = SnapshotReachedCodeBitset();
-  base::StringPiece contents(reinterpret_cast<const char*>(buf.data()),
-                             buf.size());
+  std::vector<uint32_t> reached_offsets =
+      ReachedAddressesBitset::GetTextBitset()->GetReachedOffsets();
+  base::StringPiece contents(
+      reinterpret_cast<const char*>(reached_offsets.data()),
+      reached_offsets.size());
   if (!base::ImportantFileWriter::WriteFileAtomically(path, contents,
                                                       "ReachedDump")) {
     LOG(ERROR) << "Could not write reached dump into " << path;
