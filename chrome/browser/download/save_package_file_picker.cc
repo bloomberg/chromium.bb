@@ -19,11 +19,13 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/save_page_type.h"
@@ -116,7 +118,40 @@ void AddCompleteFileTypeInfo(
 }
 #endif
 
+// Checks whether this is a blocked page (e.g., when a child user is accessing
+// a mature site).
+// Recall that the blocked page is an interstitial. In the past, old
+// (non-committed) interstitials couldn't be easily identified, while the
+// committed ones can only be matched by page title. To prevent future bugs due
+// to changing the page title, we make a conservative choice here and only
+// check for PAGE_TYPE_ERROR. The result is that we may include a few other
+// error pages (failed DNS lookups, SSL errors, etc), which shouldn't affect
+// functionality.
+bool IsErrorPage(content::WebContents* web_contents) {
+  if (base::FeatureList::IsEnabled(
+          features::kSupervisedUserCommittedInterstitials)) {
+    if (web_contents->GetController().GetActiveEntry() == NULL)
+      return false;
+    return web_contents->GetController()
+               .GetLastCommittedEntry()
+               ->GetPageType() == content::PAGE_TYPE_ERROR;
+  }
+  // Fallback if someone ever disables committed interstitials.
+  return web_contents->ShowingInterstitialPage();
+}
+
 }  // anonymous namespace
+
+// TODO(crbug/928323): REMOVE DIRTY HACK
+// To prevent access to blocked websites, we are temporarily disabling the
+// HTML-only download of error pages for supervised users only.
+// Note that MHTML is still available, so the save functionality is preserved.
+bool SavePackageFilePicker::ShouldSaveAsOnlyHTML(
+    content::WebContents* web_contents) const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return !profile->IsSupervised() || !IsErrorPage(web_contents);
+}
 
 bool SavePackageFilePicker::ShouldSaveAsMHTML() const {
 #if !defined(OS_CHROMEOS)
@@ -163,8 +198,10 @@ SavePackageFilePicker::SavePackageFilePicker(
       }
     }
 
-    AddHtmlOnlyFileTypeInfo(&file_type_info, extra_extension);
-    save_types_.push_back(content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
+    if (ShouldSaveAsOnlyHTML(web_contents)) {
+      AddHtmlOnlyFileTypeInfo(&file_type_info, extra_extension);
+      save_types_.push_back(content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
+    }
 
     if (ShouldSaveAsMHTML()) {
       AddSingleFileFileTypeInfo(&file_type_info);
