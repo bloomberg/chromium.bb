@@ -2338,6 +2338,8 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       boards=[],
       master=True,
+      binhost_test=True,
+      push_overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
       slave_configs=[],
       schedule='triggered',
