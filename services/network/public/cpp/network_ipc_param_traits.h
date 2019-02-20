@@ -12,7 +12,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
 #include "net/base/auth.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
@@ -158,7 +158,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(was_alternate_protocol_available)
   IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(alpn_negotiated_protocol)
-  IPC_STRUCT_TRAITS_MEMBER(socket_address)
+  IPC_STRUCT_TRAITS_MEMBER(remote_endpoint)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_cache)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_service_worker)

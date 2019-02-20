@@ -19,6 +19,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
@@ -730,7 +731,7 @@ class QuicNetworkTransactionTest
   void CheckResponsePort(HttpNetworkTransaction* trans, uint16_t port) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
-    EXPECT_EQ(port, response->socket_address.port());
+    EXPECT_EQ(port, response->remote_endpoint.port());
   }
 
   void CheckWasHttpResponse(HttpNetworkTransaction* trans) {
@@ -6944,7 +6945,7 @@ class QuicNetworkTransactionWithDestinationTest
     EXPECT_TRUE(response->was_alpn_negotiated);
     EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
               response->connection_info);
-    EXPECT_EQ(443, response->socket_address.port());
+    EXPECT_EQ(443, response->remote_endpoint.port());
   }
 
   quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {

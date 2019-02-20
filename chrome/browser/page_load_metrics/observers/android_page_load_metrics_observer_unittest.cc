@@ -10,6 +10,7 @@
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -194,7 +195,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
   const base::TimeTicks kNow = base::TimeTicks::Now();
   load_timing_info->connect_timing.dns_start = kNow;
   page_load_metrics::ExtraRequestCompleteInfo info(
-      GURL("https://ignored.com"), net::HostPortPair(), frame_tree_node_id,
+      GURL("https://ignored.com"), net::IPEndPoint(), frame_tree_node_id,
       false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       nullptr

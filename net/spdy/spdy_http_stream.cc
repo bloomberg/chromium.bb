@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -322,7 +322,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   int result = stream_->GetPeerAddress(&address);
   if (result != OK)
     return result;
-  response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  response_info_->remote_endpoint = address;
 
   if (stream_->type() == SPDY_PUSH_STREAM) {
     // Pushed streams do not send any data, and should always be

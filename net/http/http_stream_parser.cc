@@ -245,7 +245,7 @@ int HttpStreamParser::SendRequest(
   int result = stream_socket_->GetPeerAddress(&ip_endpoint);
   if (result != OK)
     return result;
-  response_->socket_address = HostPortPair::FromIPEndPoint(ip_endpoint);
+  response_->remote_endpoint = ip_endpoint;
 
   std::string request = request_line + headers.ToString();
   request_headers_length_ = request.size();

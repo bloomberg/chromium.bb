@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -145,7 +146,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
   http_response_info_->alpn_negotiated_protocol =
       response_head.alpn_negotiated_protocol;
   http_response_info_->connection_info = response_head.connection_info;
-  http_response_info_->socket_address = response_head.socket_address;
+  http_response_info_->remote_endpoint = response_head.remote_endpoint;
   fetcher_->OnResponseStarted(net::OK);
 }
 

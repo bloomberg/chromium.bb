@@ -63,7 +63,7 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     int frame_tree_node_id,
     bool was_cached,
     int64_t raw_body_bytes,
@@ -74,7 +74,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     int net_error,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info)
     : url(url),
-      host_port_pair(host_port_pair),
+      remote_endpoint(remote_endpoint),
       frame_tree_node_id(frame_tree_node_id),
       was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
@@ -87,7 +87,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const ExtraRequestCompleteInfo& other)
     : url(other.url),
-      host_port_pair(other.host_port_pair),
+      remote_endpoint(other.remote_endpoint),
       frame_tree_node_id(other.frame_tree_node_id),
       was_cached(other.was_cached),
       raw_body_bytes(other.raw_body_bytes),

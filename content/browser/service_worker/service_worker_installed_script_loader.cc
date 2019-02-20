@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "net/base/ip_endpoint.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -98,7 +99,7 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
   head.was_alpn_negotiated = info->was_alpn_negotiated;
   head.connection_info = info->connection_info;
   head.alpn_negotiated_protocol = info->alpn_negotiated_protocol;
-  head.socket_address = info->socket_address;
+  head.remote_endpoint = info->remote_endpoint;
   head.cert_status = info->ssl_info.cert_status;
 
   if (options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)

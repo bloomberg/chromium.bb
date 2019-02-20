@@ -26,6 +26,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1467,7 +1468,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   const auto request_id = navigation_simulator->GetGlobalRequestID();
 
   observer()->OnRequestComplete(
-      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
       web_contents()->GetMainFrame(),
       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
@@ -1479,7 +1480,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   // Deliver a second main frame resource. This one should be ignored, since the
   // specified |request_id| is no longer associated with any tracked page loads.
   observer()->OnRequestComplete(
-      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
       web_contents()->GetMainFrame(),
       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
@@ -1493,7 +1494,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   GURL loaded_resource_url("http://www.other.com/");
   observer()->OnRequestComplete(
-      loaded_resource_url, net::HostPortPair(),
+      loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
@@ -1519,7 +1520,7 @@ TEST_F(MetricsWebContentsObserverTest,
       content::WebContentsTester::CreateTestWebContents(browser_context(),
                                                         nullptr));
   observer()->OnRequestComplete(
-      GURL("http://www.other.com/"), net::HostPortPair(),
+      GURL("http://www.other.com/"), net::IPEndPoint(),
       other_web_contents->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), other_web_contents->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
@@ -1535,7 +1536,7 @@ TEST_F(MetricsWebContentsObserverTest,
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   GURL loaded_resource_url("data:text/html,Hello world");
   observer()->OnRequestComplete(
-      loaded_resource_url, net::HostPortPair(),
+      loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,

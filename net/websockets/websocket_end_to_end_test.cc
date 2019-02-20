@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -127,7 +128,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override;
 
@@ -210,7 +211,7 @@ void ConnectTestingEventInterface::OnSSLCertificateError(
 int ConnectTestingEventInterface::OnAuthRequired(
     scoped_refptr<AuthChallengeInfo> auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
-    const HostPortPair& host_port_pair,
+    const IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const AuthCredentials*)> callback,
     base::Optional<AuthCredentials>* credentials) {
   *credentials = base::nullopt;

@@ -1034,7 +1034,8 @@ void URLRequestHttpJob::GetLoadTimingInfo(
     load_timing_info->receive_headers_end = receive_headers_end_;
 }
 
-bool URLRequestHttpJob::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+bool URLRequestHttpJob::GetTransactionRemoteEndpoint(
+    IPEndPoint* endpoint) const {
   if (!transaction_)
     return false;
 
@@ -1380,8 +1381,8 @@ void URLRequestHttpJob::DoneReadingRedirectResponse() {
   DoneWithRequest(FINISHED);
 }
 
-HostPortPair URLRequestHttpJob::GetSocketAddress() const {
-  return response_info_ ? response_info_->socket_address : HostPortPair();
+IPEndPoint URLRequestHttpJob::GetResponseRemoteEndpoint() const {
+  return response_info_ ? response_info_->remote_endpoint : IPEndPoint();
 }
 
 void URLRequestHttpJob::RecordTimer() {

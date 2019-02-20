@@ -27,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_request_headers.h"
@@ -203,11 +204,11 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
   }
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     return OnAuthRequiredCalled(std::move(auth_info),
-                                std::move(response_headers), host_port_pair,
+                                std::move(response_headers), remote_endpoint,
                                 credentials);
   }
 
@@ -219,7 +220,7 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
   MOCK_METHOD4(OnAuthRequiredCalled,
                int(scoped_refptr<AuthChallengeInfo>,
                    scoped_refptr<HttpResponseHeaders>,
-                   const HostPortPair&,
+                   const IPEndPoint&,
                    base::Optional<AuthCredentials>*));
 };
 
@@ -250,7 +251,7 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
       bool fatal) override {}
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     *credentials = base::nullopt;
@@ -1620,7 +1621,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FinishHandshakeRequest) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      GURL("ws://www.example.com/"), response_headers, HostPortPair(),
+      GURL("ws://www.example.com/"), response_headers, IPEndPoint(),
       base::Time());
   connect_data_.argument_saver.connect_delegate->OnFinishOpeningHandshake(
       std::move(response_info));
@@ -1645,7 +1646,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailJustAfterHandshake) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      url, response_headers, HostPortPair(), base::Time());
+      url, response_headers, IPEndPoint(), base::Time());
   connect_delegate->OnStartOpeningHandshake(std::move(request_info));
   connect_delegate->OnFinishOpeningHandshake(std::move(response_info));
 
@@ -2969,7 +2970,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
   base::Optional<AuthCredentials> credentials;
   scoped_refptr<HttpResponseHeaders> response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
-  HostPortPair socket_address("127.0.0.1", 80);
+  IPEndPoint remote_endpoint(net::IPAddress(127, 0, 0, 1), 80);
 
   EXPECT_CALL(
       *event_interface_,
@@ -2978,7 +2979,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
 
   CreateChannelAndConnect();
   connect_data_.argument_saver.connect_delegate->OnAuthRequired(
-      auth_info, response_headers, socket_address, {}, &credentials);
+      auth_info, response_headers, remote_endpoint, {}, &credentials);
 }
 
 // If we receive another frame after Close, it is not valid. It is not

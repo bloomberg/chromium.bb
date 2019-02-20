@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/auth.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/ftp/ftp_request_info.h"
 #include "net/ftp/ftp_transaction.h"
@@ -42,7 +43,7 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   bool IsSafeRedirect(const GURL& location) override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
-  HostPortPair GetSocketAddress() const override;
+  IPEndPoint GetResponseRemoteEndpoint() const override;
   void SetPriority(RequestPriority priority) override;
   void Start() override;
   void Kill() override;

@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/proxy_server.h"
 #include "net/cert/ct_policy_status.h"
@@ -103,7 +103,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   std::string alpn_negotiated_protocol;
 
   // Remote address of the socket which fetched this resource.
-  net::HostPortPair socket_address;
+  net::IPEndPoint remote_endpoint;
 
   // True if the response came from cache.
   bool was_fetched_via_cache = false;

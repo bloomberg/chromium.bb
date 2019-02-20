@@ -31,6 +31,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/gurl.h"
@@ -114,7 +115,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   bool DidReplaceEntry() override;
   bool ShouldUpdateHistory() override;
   const GURL& GetPreviousURL() override;
-  net::HostPortPair GetSocketAddress() override;
+  net::IPEndPoint GetSocketAddress() override;
   const net::HttpRequestHeaders& GetRequestHeaders() override;
   void RemoveRequestHeader(const std::string& header_name) override;
   void SetRequestHeader(const std::string& header_name,
@@ -270,7 +271,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       RenderFrameHostImpl* render_frame_host,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
-      const net::HostPortPair& socket_address,
+      const net::IPEndPoint& remote_endpoint,
       const net::SSLInfo& ssl_info,
       const GlobalRequestID& request_id,
       bool is_download,
@@ -531,7 +532,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   GURL previous_url_;
   GURL base_url_;
-  net::HostPortPair socket_address_;
+  net::IPEndPoint remote_endpoint_;
   NavigationType navigation_type_;
 
   // Used to inform a RenderProcessHost that we expect this navigation to commit

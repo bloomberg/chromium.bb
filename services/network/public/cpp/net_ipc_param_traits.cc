@@ -164,6 +164,50 @@ void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
   l->append(p.ToString());
 }
 
+void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.address());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<net::IPEndPoint>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
+  net::IPAddress address;
+  uint16_t port;
+  if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
+    return false;
+
+  *p = net::IPEndPoint(address, port);
+  return true;
+}
+
+void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
+  LogParam("IPEndPoint:" + p.ToString(), l);
+}
+
+void ParamTraits<net::IPAddress>::Write(base::Pickle* m, const param_type& p) {
+  base::StackVector<uint8_t, 16> bytes;
+  for (uint8_t byte : p.bytes())
+    bytes->push_back(byte);
+  WriteParam(m, bytes);
+}
+
+bool ParamTraits<net::IPAddress>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  base::StackVector<uint8_t, 16> bytes;
+  if (!ReadParam(m, iter, &bytes))
+    return false;
+  if (bytes->size() > 16)
+    return false;
+  *p = net::IPAddress(bytes->data(), bytes->size());
+  return true;
+}
+
+void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
+  LogParam("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()), l);
+}
+
 void ParamTraits<net::HttpRequestHeaders>::Write(base::Pickle* m,
                                                  const param_type& p) {
   WriteParam(m, static_cast<int>(p.GetHeaderVector().size()));

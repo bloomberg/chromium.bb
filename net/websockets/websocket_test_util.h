@@ -35,6 +35,7 @@ class MockClientSocketFactory;
 class WebSocketBasicHandshakeStream;
 class ProxyResolutionService;
 class SequencedSocketData;
+class IPEndPoint;
 struct SSLSocketDataProvider;
 
 class LinearCongruentialGenerator {
@@ -196,7 +197,7 @@ class DummyConnectDelegate : public WebSocketStream::ConnectDelegate {
       bool fatal) override {}
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override;
 };

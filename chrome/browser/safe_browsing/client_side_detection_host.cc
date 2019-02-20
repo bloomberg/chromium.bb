@@ -38,6 +38,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/gurl.h"
@@ -87,7 +88,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     url_ = navigation_handle->GetURL();
     if (navigation_handle->GetResponseHeaders())
       navigation_handle->GetResponseHeaders()->GetMimeType(&mime_type_);
-    socket_address_ = navigation_handle->GetSocketAddress();
+    remote_endpoint_ = navigation_handle->GetSocketAddress();
   }
 
   void Start() {
@@ -105,10 +106,11 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       DontClassifyForPhishing(NO_CLASSIFY_UNSUPPORTED_MIME_TYPE);
     }
 
-    if (csd_service_->IsPrivateIPAddress(socket_address_.host())) {
+    if (csd_service_->IsPrivateIPAddress(
+            remote_endpoint_.ToStringWithoutPort())) {
       DVLOG(1) << "Skipping phishing classification for URL: " << url_
                << " because of hosting on private IP: "
-               << socket_address_.host();
+               << remote_endpoint_.ToStringWithoutPort();
       DontClassifyForPhishing(NO_CLASSIFY_PRIVATE_IP);
       DontClassifyForMalware(NO_CLASSIFY_PRIVATE_IP);
     }
@@ -117,7 +119,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     if (!url_.SchemeIsHTTPOrHTTPS()) {
       DVLOG(1) << "Skipping phishing classification for URL: " << url_
                << " because it is not HTTP or HTTPS: "
-               << socket_address_.host();
+               << remote_endpoint_.ToStringWithoutPort();
       DontClassifyForPhishing(NO_CLASSIFY_SCHEME_NOT_SUPPORTED);
     }
 
@@ -323,7 +325,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   GURL url_;
   std::string mime_type_;
-  net::HostPortPair socket_address_;
+  net::IPEndPoint remote_endpoint_;
   WebContents* web_contents_;
   ClientSideDetectionService* csd_service_;
   // We keep a ref pointer here just to make sure the safe browsing
@@ -394,10 +396,11 @@ void ClientSideDetectionHost::DidFinishNavigation(
     content::ResourceType resource_type =
         navigation_handle->IsInMainFrame() ? content::RESOURCE_TYPE_MAIN_FRAME
                                            : content::RESOURCE_TYPE_SUB_FRAME;
-    UpdateIPUrlMap(navigation_handle->GetSocketAddress().host() /* ip */,
-                   navigation_handle->GetURL().spec() /* url */,
-                   navigation_handle->IsPost() ? "POST" : "GET",
-                   navigation_handle->GetReferrer().url.spec(), resource_type);
+    UpdateIPUrlMap(
+        navigation_handle->GetSocketAddress().ToStringWithoutPort() /* ip */,
+        navigation_handle->GetURL().spec() /* url */,
+        navigation_handle->IsPost() ? "POST" : "GET",
+        navigation_handle->GetReferrer().url.spec(), resource_type);
   }
 
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -464,11 +467,11 @@ void ClientSideDetectionHost::ResourceLoadComplete(
   if (!content::IsResourceTypeFrame(resource_load_info.resource_type) &&
       browse_info_.get() && should_extract_malware_features_ &&
       resource_load_info.url.is_valid() &&
-      resource_load_info.network_info->ip_port_pair.has_value()) {
-    UpdateIPUrlMap(resource_load_info.network_info->ip_port_pair->host(),
-                   resource_load_info.url.spec(), resource_load_info.method,
-                   resource_load_info.referrer.spec(),
-                   resource_load_info.resource_type);
+      resource_load_info.network_info->remote_endpoint.has_value()) {
+    UpdateIPUrlMap(
+        resource_load_info.network_info->remote_endpoint->ToStringWithoutPort(),
+        resource_load_info.url.spec(), resource_load_info.method,
+        resource_load_info.referrer.spec(), resource_load_info.resource_type);
   }
 }
 

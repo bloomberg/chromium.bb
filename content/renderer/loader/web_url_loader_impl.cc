@@ -42,6 +42,8 @@
 #include "content/renderer/loader/web_url_request_util.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -1182,9 +1184,9 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
                          info.response_time <
                              info.load_timing.request_start_time);
-  response->SetRemoteIPAddress(
-      WebString::FromUTF8(info.socket_address.HostForURL()));
-  response->SetRemotePort(info.socket_address.port());
+  response->SetRemoteIPAddress(WebString::FromUTF8(
+      net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL()));
+  response->SetRemotePort(info.remote_endpoint.port());
   response->SetConnectionID(info.load_timing.socket_log_id);
   response->SetConnectionReused(info.load_timing.socket_reused);
   response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);

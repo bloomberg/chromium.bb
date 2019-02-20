@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
@@ -73,7 +74,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.alpn_negotiated_protocol =
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
-  response->head.socket_address = response_info.socket_address;
+  response->head.remote_endpoint = response_info.remote_endpoint;
   response->head.was_fetched_via_cache = request->was_cached();
   response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;

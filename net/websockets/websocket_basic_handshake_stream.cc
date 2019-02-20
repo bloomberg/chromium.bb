@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "crypto/random.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_body_drainer.h"
@@ -426,7 +427,7 @@ void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
   DCHECK(http_response_info_);
   WebSocketDispatchOnFinishOpeningHandshake(
       connect_delegate_, url_, http_response_info_->headers,
-      http_response_info_->socket_address, http_response_info_->response_time);
+      http_response_info_->remote_endpoint, http_response_info_->response_time);
 }
 
 int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {

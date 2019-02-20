@@ -51,6 +51,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/ct_policy_status.h"
@@ -1552,8 +1554,9 @@ std::unique_ptr<Network::Response> BuildResponse(
       response->SetHeadersText(raw_info->response_headers_text);
   }
   response->SetProtocol(GetProtocol(url, info));
-  response->SetRemoteIPAddress(info.socket_address.HostForURL());
-  response->SetRemotePort(info.socket_address.port());
+  response->SetRemoteIPAddress(
+      net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL());
+  response->SetRemotePort(info.remote_endpoint.port());
   if (info.ssl_info.has_value())
     response->SetSecurityDetails(BuildSecurityDetails(*info.ssl_info));
 

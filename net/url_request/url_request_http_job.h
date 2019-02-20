@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_info.h"
@@ -107,7 +108,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
+  bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const override;
   int GetResponseCode() const override;
   void PopulateNetErrorDetails(NetErrorDetails* details) const override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
@@ -128,7 +129,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void DoneReading() override;
   void DoneReadingRedirectResponse() override;
 
-  HostPortPair GetSocketAddress() const override;
+  IPEndPoint GetResponseRemoteEndpoint() const override;
   void NotifyURLRequestDestroyed() override;
 
   void RecordTimer();

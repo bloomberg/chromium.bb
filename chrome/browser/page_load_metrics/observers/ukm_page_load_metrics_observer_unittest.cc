@@ -16,6 +16,7 @@
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "net/base/ip_endpoint.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -822,7 +823,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {GURL(kResourceUrl),
-       net::HostPortPair(),
+       net::IPEndPoint(),
        -1 /* frame_tree_node_id */,
        true /* was_cached */,
        1024 * 20 /* raw_body_bytes */,
@@ -833,7 +834,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
        {} /* load_timing_info */},
       // Uncached non-proxied request.
       {GURL(kResourceUrl),
-       net::HostPortPair(),
+       net::IPEndPoint(),
        -1 /* frame_tree_node_id */,
        false /* was_cached */,
        1024 * 40 /* raw_body_bytes */,

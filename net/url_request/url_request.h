@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
@@ -53,7 +54,6 @@ class Value;
 namespace net {
 
 class CookieOptions;
-class HostPortPair;
 class IOBuffer;
 struct LoadTimingInfo;
 struct RedirectInfo;
@@ -512,7 +512,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Returns the host and port that the content was fetched from.  See
   // http_response_info.h for caveats relating to cached content.
-  HostPortPair GetSocketAddress() const;
+  IPEndPoint GetResponseRemoteEndpoint() const;
 
   // Get all response headers, as a HttpResponseHeaders object.  See comments
   // in HttpResponseHeaders class as to the format of the data.
@@ -536,14 +536,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Gets the remote endpoint of the most recent socket that the network stack
   // used to make this request.
   //
-  // Note that GetSocketAddress returns the |socket_address| field from
+  // Note that GetResponseRemoteEndpoint returns the |socket_address| field from
   // HttpResponseInfo, which is only populated once the response headers are
   // received, and can return cached values for cache revalidation requests.
-  // GetRemoteEndpoint will only return addresses from the current request.
+  // GetTransactionRemoteEndpoint will only return addresses from the current
+  // request.
   //
   // Returns true and fills in |endpoint| if the endpoint is available; returns
   // false and leaves |endpoint| unchanged if it is unavailable.
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
+  bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const;
 
   // Get the mime type.  This method may only be called once the delegate's
   // OnResponseStarted method has been called.

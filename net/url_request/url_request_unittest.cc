@@ -937,8 +937,8 @@ TEST_F(URLRequestTest, AboutBlankTest) {
     EXPECT_TRUE(!r->is_pending());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(d.bytes_received(), 0);
-    EXPECT_EQ("", r->GetSocketAddress().host());
-    EXPECT_EQ(0, r->GetSocketAddress().port());
+    EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
+    EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
 
     HttpRequestHeaders headers;
     EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
@@ -980,8 +980,8 @@ TEST_F(URLRequestTest, DataURLImageTest) {
     EXPECT_TRUE(!r->is_pending());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(d.bytes_received(), 911);
-    EXPECT_EQ("", r->GetSocketAddress().host());
-    EXPECT_EQ(0, r->GetSocketAddress().port());
+    EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
+    EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
 
     HttpRequestHeaders headers;
     EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
@@ -1011,8 +1011,8 @@ TEST_F(URLRequestTest, FileTest) {
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(d.bytes_received(), static_cast<int>(sizeof(kTestFileContent)));
-    EXPECT_EQ("", r->GetSocketAddress().host());
-    EXPECT_EQ(0, r->GetSocketAddress().port());
+    EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
+    EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
 
     HttpRequestHeaders headers;
     EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
@@ -5106,9 +5106,9 @@ TEST_F(URLRequestTestHTTP, GetTest_NoCache) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_NE(0, d.bytes_received());
     EXPECT_EQ(http_test_server()->host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(http_test_server()->host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
 
     // TODO(eroman): Add back the NetLog tests...
   }
@@ -5174,9 +5174,9 @@ TEST_F(URLRequestTestHTTP, GetTest) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_NE(0, d.bytes_received());
     EXPECT_EQ(http_test_server()->host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(http_test_server()->host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
   }
 }
 
@@ -5201,9 +5201,9 @@ TEST_F(URLRequestTestHTTP, GetTest_GetFullRequestHeaders) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_NE(0, d.bytes_received());
     EXPECT_EQ(http_test_server()->host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(http_test_server()->host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
 
     EXPECT_TRUE(d.have_full_request_headers());
     CheckFullRequestHeaders(d.full_request_headers(), test_url);
@@ -5232,9 +5232,9 @@ TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_NE(0, d.bytes_received());
     EXPECT_EQ(http_test_server()->host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(http_test_server()->host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
   }
 }
 
@@ -9321,9 +9321,9 @@ TEST_F(HTTPSRequestTest, HTTPSGetTest) {
     EXPECT_NE(0, d.bytes_received());
     CheckSSLInfo(r->ssl_info());
     EXPECT_EQ(test_server.host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(test_server.host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
   }
 }
 
@@ -11509,9 +11509,9 @@ TEST_F(URLRequestTestFTP, FTPDirectoryListing) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_LT(0, d.bytes_received());
     EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
   }
 }
 
@@ -11533,9 +11533,9 @@ TEST_F(URLRequestTestFTP, FTPGetTestAnonymous) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(GetTestFileContents(), d.data_received());
     EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
   }
 }
 
@@ -11586,9 +11586,9 @@ TEST_F(URLRequestTestFTP, FTPGetTest) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(GetTestFileContents(), d.data_received());
     EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetSocketAddress().host());
+              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetSocketAddress().port());
+              r->GetResponseRemoteEndpoint().port());
 
     LoadTimingInfo load_timing_info;
     r->GetLoadTimingInfo(&load_timing_info);

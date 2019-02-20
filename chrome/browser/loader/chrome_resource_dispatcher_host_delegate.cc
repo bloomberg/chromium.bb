@@ -231,7 +231,7 @@ void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::FrameTreeNodeIdGetter&
         frame_tree_node_id_getter,
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     const content::GlobalRequestID& request_id,
     int render_process_id,
     int render_frame_id,
@@ -279,7 +279,7 @@ void NotifyUIThreadOfRequestComplete(
       content::RenderFrameHost* render_frame_host_or_null =
           content::RenderFrameHost::FromID(render_process_id, render_frame_id);
       metrics_observer->OnRequestComplete(
-          url, host_port_pair, frame_tree_node_id_getter.Run(), request_id,
+          url, remote_endpoint, frame_tree_node_id_getter.Run(), request_id,
           render_frame_host_or_null, resource_type, was_cached,
           std::move(data_reduction_proxy_data), raw_body_bytes,
           original_content_length, request_creation_time, net_error,
@@ -547,19 +547,14 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
                                                                  lofi_decider)
           : url_request->GetRawBodyBytes();
 
-  net::HostPortPair request_host_port;
+  net::IPEndPoint remote_endpoint;
   // We want to get the IP address of the response if it was returned, and the
   // last endpoint that was checked if it failed.
-  if (url_request->response_headers()) {
-    request_host_port = url_request->GetSocketAddress();
-  }
-  if (request_host_port.IsEmpty()) {
-    net::IPEndPoint request_ip_endpoint;
-    bool was_successful = url_request->GetRemoteEndpoint(&request_ip_endpoint);
-    if (was_successful) {
-      request_host_port =
-          net::HostPortPair::FromIPEndPoint(request_ip_endpoint);
-    }
+  if (url_request->response_headers())
+    remote_endpoint = url_request->GetResponseRemoteEndpoint();
+  if (!remote_endpoint.address().IsValid() &&
+      !url_request->GetTransactionRemoteEndpoint(&remote_endpoint)) {
+    remote_endpoint = net::IPEndPoint();
   }
 
   auto load_timing_info = std::make_unique<net::LoadTimingInfo>();
@@ -571,7 +566,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           &NotifyUIThreadOfRequestComplete,
           info->GetWebContentsGetterForRequest(),
           info->GetFrameTreeNodeIdGetterForRequest(), url_request->url(),
-          request_host_port, info->GetGlobalRequestID(), info->GetChildID(),
+          remote_endpoint, info->GetGlobalRequestID(), info->GetChildID(),
           info->GetRenderFrameID(), info->GetResourceType(), info->IsDownload(),
           url_request->was_cached(), std::move(data_reduction_proxy_data),
           net_error, url_request->GetTotalReceivedBytes(),

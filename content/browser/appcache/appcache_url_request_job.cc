@@ -288,10 +288,10 @@ int AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   return net::ERR_IO_PENDING;
 }
 
-net::HostPortPair AppCacheURLRequestJob::GetSocketAddress() const {
+net::IPEndPoint AppCacheURLRequestJob::GetResponseRemoteEndpoint() const {
   if (!http_info())
-    return net::HostPortPair();
-  return http_info()->socket_address;
+    return net::IPEndPoint();
+  return http_info()->remote_endpoint;
 }
 
 void AppCacheURLRequestJob::SetExtraRequestHeaders(

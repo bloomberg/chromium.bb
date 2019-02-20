@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"
@@ -319,7 +320,7 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     const content::mojom::CommonNetworkInfoPtr& network_info =
         resource_load_info.network_info;
     ExtraRequestCompleteInfo extra_request_complete_info(
-        resource_load_info.url, network_info->ip_port_pair.value(),
+        resource_load_info.url, network_info->remote_endpoint.value(),
         render_frame_host->GetFrameTreeNodeId(), resource_load_info.was_cached,
         resource_load_info.raw_body_bytes, original_content_length,
         std::move(data_reduction_proxy_data), resource_load_info.resource_type,
@@ -353,7 +354,7 @@ void MetricsWebContentsObserver::FrameSizeChanged(
 
 void MetricsWebContentsObserver::OnRequestComplete(
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     int frame_tree_node_id,
     const content::GlobalRequestID& request_id,
     content::RenderFrameHost* render_frame_host_or_null,
@@ -376,7 +377,7 @@ void MetricsWebContentsObserver::OnRequestComplete(
       request_id, render_frame_host_or_null, resource_type, creation_time);
   if (tracker) {
     ExtraRequestCompleteInfo extra_request_complete_info(
-        url, host_port_pair, frame_tree_node_id, was_cached, raw_body_bytes,
+        url, remote_endpoint, frame_tree_node_id, was_cached, raw_body_bytes,
         was_cached ? 0 : original_content_length,
         std::move(data_reduction_proxy_data), resource_type, net_error,
         std::move(load_timing_info));

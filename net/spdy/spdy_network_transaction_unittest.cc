@@ -21,6 +21,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -178,8 +179,8 @@ class SpdyNetworkTransactionTest : public TestWithScopedTaskEnvironment {
       EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_TRUE(response->was_fetched_via_spdy);
       EXPECT_TRUE(response->was_alpn_negotiated);
-      EXPECT_EQ("127.0.0.1", response->socket_address.host());
-      EXPECT_EQ(443, response->socket_address.port());
+      EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+      EXPECT_EQ(443, response->remote_endpoint.port());
       output_.status_line = response->headers->GetStatusLine();
       output_.response_info = *response;  // Make a copy so we can verify.
       output_.rv = ReadTransaction(trans_.get(), &output_.response_data);
@@ -4865,8 +4866,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(443, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(443, response->remote_endpoint.port());
   std::string response_data;
   rv = ReadTransaction(&trans2, &response_data);
   EXPECT_THAT(rv, IsOk());
@@ -4998,8 +4999,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
             response->connection_info);
   EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_TRUE(request_.url.SchemeIs("https"));
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(443, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(443, response->remote_endpoint.port());
   std::string response_data;
   ASSERT_THAT(ReadTransaction(helper.trans(), &response_data), IsOk());
   EXPECT_EQ("hello", response_data);
@@ -5088,8 +5089,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
             response->connection_info);
   EXPECT_FALSE(response->was_alpn_negotiated);
   EXPECT_TRUE(request_.url.SchemeIs("https"));
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(70, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(70, response->remote_endpoint.port());
   std::string response_data;
   ASSERT_THAT(ReadTransaction(helper.trans(), &response_data), IsOk());
   EXPECT_EQ("hello", response_data);
@@ -8126,7 +8127,7 @@ TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
             response->connection_info);
   EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_EQ(70, response->socket_address.port());
+  EXPECT_EQ(70, response->remote_endpoint.port());
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 101 Switching Protocols",
             response->headers->GetStatusLine());

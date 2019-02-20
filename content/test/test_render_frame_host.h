@@ -26,7 +26,7 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace net {
-class HostPortPair;
+class IPEndPoint;
 }
 
 namespace content {
@@ -146,7 +146,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // TODO(clamy): Have NavigationSimulator make the relevant calls directly and
   // remove this function.
   void PrepareForCommitDeprecatedForNavigationSimulator(
-      const net::HostPortPair& socket_address,
+      const net::IPEndPoint& remote_endpoint,
       bool is_signed_exchange_inner_response);
 
   // This method does the same as PrepareForCommit.
@@ -247,7 +247,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   const ModificationCallback& callback);
 
   void PrepareForCommitInternal(const GURL& redirect_url,
-                                const net::HostPortPair& socket_address,
+                                const net::IPEndPoint& remote_endpoint,
                                 bool is_signed_exchange_inner_response);
 
   // Computes the page ID for a pending navigation in this RenderFrameHost;

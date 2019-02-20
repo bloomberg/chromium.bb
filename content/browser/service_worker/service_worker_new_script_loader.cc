@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -189,7 +190,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   response_info->alpn_negotiated_protocol =
       response_head.alpn_negotiated_protocol;
   response_info->connection_info = response_head.connection_info;
-  response_info->socket_address = response_head.socket_address;
+  response_info->remote_endpoint = response_head.remote_endpoint;
   response_info->response_time = response_head.response_time;
 
   // The following sequence is equivalent to

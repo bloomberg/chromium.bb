@@ -24,7 +24,7 @@ namespace net {
 
 class AuthChallengeInfo;
 class AuthCredentials;
-class HostPortPair;
+class IPEndPoint;
 class HttpResponseHeaders;
 class IOBuffer;
 class SSLInfo;
@@ -138,7 +138,7 @@ class NET_EXPORT WebSocketEventInterface {
   virtual int OnAuthRequired(
       scoped_refptr<AuthChallengeInfo> auth_info,
       scoped_refptr<HttpResponseHeaders> response_headers,
-      const HostPortPair& host_port_pair,
+      const IPEndPoint& socket_address,
       base::OnceCallback<void(const AuthCredentials*)> callback,
       base::Optional<AuthCredentials>* credentials) = 0;
 

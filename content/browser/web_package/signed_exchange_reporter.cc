@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/common/content_features.h"
+#include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 
@@ -38,15 +39,15 @@ SignedExchangeReporter::SignedExchangeReporter(
     base::OnceCallback<int(void)> frame_tree_node_id_getter)
     : outer_url_(outer_url),
       referrer_(referrer),
-      server_ip_(response.socket_address.host()),
+      server_ip_address_(response.remote_endpoint.address()),
       status_code_(response.headers ? response.headers->response_code() : 0),
       frame_tree_node_id_getter_(std::move(frame_tree_node_id_getter)) {}
 
 SignedExchangeReporter::~SignedExchangeReporter() = default;
 
-void SignedExchangeReporter::set_cert_server_ip(
-    const std::string& cert_server_ip) {
-  cert_server_ip_ = cert_server_ip;
+void SignedExchangeReporter::set_cert_server_ip_address(
+    const net::IPAddress& cert_server_ip_address) {
+  cert_server_ip_address_ = cert_server_ip_address;
 }
 
 void SignedExchangeReporter::set_inner_url(const GURL& inner_url) {

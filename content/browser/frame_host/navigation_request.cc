@@ -63,6 +63,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1236,7 +1237,7 @@ void NavigationRequest::OnResponseStarted(
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(),
-      response->head.connection_info, response->head.socket_address, ssl_info_,
+      response->head.connection_info, response->head.remote_endpoint, ssl_info_,
       request_id, is_download_, is_stream,
       response->head.is_signed_exchange_inner_response,
       response->head.was_fetched_via_cache,

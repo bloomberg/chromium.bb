@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -123,7 +124,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   response_info->alpn_negotiated_protocol =
       response_head.alpn_negotiated_protocol;
   response_info->connection_info = response_head.connection_info;
-  response_info->socket_address = response_head.socket_address;
+  response_info->remote_endpoint = response_head.remote_endpoint;
 
   // TODO(momohatt): Check for header errors.
 

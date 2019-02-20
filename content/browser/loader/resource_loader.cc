@@ -32,6 +32,7 @@
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/cert/symantec_certs.h"
 #include "net/http/http_response_headers.h"
@@ -85,7 +86,7 @@ void PopulateResourceResponse(
   response->head.alpn_negotiated_protocol =
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
-  response->head.socket_address = response_info.socket_address;
+  response->head.remote_endpoint = response_info.remote_endpoint;
   response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =

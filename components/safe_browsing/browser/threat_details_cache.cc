@@ -17,7 +17,7 @@
 #include "components/safe_browsing/browser/threat_details_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -203,7 +203,7 @@ void ThreatDetailsCacheCollector::ReadResponse(
       !current_load_->ResponseInfo()->proxy_server.is_direct();
   if (!was_fetched_via_proxy) {
     pb_response->set_remote_ip(
-        current_load_->ResponseInfo()->socket_address.ToString());
+        current_load_->ResponseInfo()->remote_endpoint.ToString());
   }
 }
 

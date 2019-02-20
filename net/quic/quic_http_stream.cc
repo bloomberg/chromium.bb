@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -680,7 +681,7 @@ int QuicHttpStream::ProcessResponseHeaders(
   if (rv != OK)
     return rv;
 
-  response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  response_info_->remote_endpoint = address;
   response_info_->connection_info =
       ConnectionInfoFromQuicVersion(quic_session()->GetQuicVersion());
   response_info_->vary_data.Init(*request_info_,

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
+#include "net/base/ip_address.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -30,7 +31,7 @@ class CONTENT_EXPORT SignedExchangeReporter {
 
   ~SignedExchangeReporter();
 
-  void set_cert_server_ip(const std::string& cert_server_ip);
+  void set_cert_server_ip_address(const net::IPAddress& cert_server_ip_address);
   void set_inner_url(const GURL& inner_url);
   void set_cert_url(const GURL& cert_url);
 
@@ -45,10 +46,10 @@ class CONTENT_EXPORT SignedExchangeReporter {
 
   const GURL outer_url_;
   const std::string referrer_;
-  const std::string server_ip_;
+  const net::IPAddress server_ip_address_;
   const int status_code_;
   base::OnceCallback<int(void)> frame_tree_node_id_getter_;
-  std::string cert_server_ip_;
+  net::IPAddress cert_server_ip_address_;
   GURL inner_url_;
   GURL cert_url_;
 

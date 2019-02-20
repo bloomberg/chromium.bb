@@ -129,7 +129,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->total_bytes = head.content_length > 0 ? head.content_length : 0;
   create_info->result = result;
   if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
-    create_info->remote_address = head.socket_address.host();
+    create_info->remote_address = head.remote_endpoint.ToStringWithoutPort();
   create_info->method = method_;
   create_info->connection_info = head.connection_info;
   create_info->url_chain = url_chain_;

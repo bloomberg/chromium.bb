@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -206,11 +207,11 @@ class WebSocketChannel::ConnectDelegate
 
   int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
                      scoped_refptr<HttpResponseHeaders> headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     return creator_->OnAuthRequired(std::move(auth_info), std::move(headers),
-                                    host_port_pair, std::move(callback),
+                                    remote_endpoint, std::move(callback),
                                     credentials);
   }
 
@@ -603,11 +604,11 @@ void WebSocketChannel::OnSSLCertificateError(
 int WebSocketChannel::OnAuthRequired(
     scoped_refptr<AuthChallengeInfo> auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
-    const HostPortPair& host_port_pair,
+    const IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const AuthCredentials*)> callback,
     base::Optional<AuthCredentials>* credentials) {
   return event_interface_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), host_port_pair,
+      std::move(auth_info), std::move(response_headers), remote_endpoint,
       std::move(callback), credentials);
 }
 

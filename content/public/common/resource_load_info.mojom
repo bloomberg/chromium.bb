@@ -7,6 +7,7 @@ module content.mojom;
 import "content/public/common/load_timing_info.mojom";
 import "content/public/common/resource_type.mojom";
 import "services/network/public/mojom/ip_address.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "url/mojom/url.mojom";
 
@@ -20,7 +21,7 @@ struct CommonNetworkInfo {
   bool always_access_network;
 
   // The host IP and port of the response.
-  network.mojom.HostPortPair? ip_port_pair;
+  network.mojom.IPEndPoint? remote_endpoint;
 };
 
 // Information for a redirect.

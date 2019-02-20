@@ -24,6 +24,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
 namespace extensions {
 
 // A WebRequestProxyingWebSocket proxies a WebSocket connection and dispatches
@@ -81,7 +85,7 @@ class WebRequestProxyingWebSocket
   // mojom::AuthenticationHandler method:
   void OnAuthRequired(const scoped_refptr<net::AuthChallengeInfo>& auth_info,
                       const scoped_refptr<net::HttpResponseHeaders>& headers,
-                      const net::HostPortPair& socket_address,
+                      const net::IPEndPoint& remote_endpoint,
                       OnAuthRequiredCallback callback) override;
 
   static void StartProxying(
