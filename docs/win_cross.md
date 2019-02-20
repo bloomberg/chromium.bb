@@ -6,8 +6,6 @@ restrictions.
 
 What does *not* work:
 
-* goma. Sorry. ([internal bug](http://b/64390790)) You can use the
-  [jumbo build](jumbo.md) for faster build times.
 * 64-bit renderer processes don't use V8 snapshots, slowing down their startup
   ([bug](https://crbug.com/803591))
 * on Mac hosts, building a 32-bit chrome ([bug](https://crbug.com/794838))
@@ -76,6 +74,13 @@ setting `DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL` and running `gclient sync`:
 Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 
     ninja -C out/gnwin base_unittests.exe
+
+## Goma
+
+For now, one needs to use the rbe backend, not the (default) borg backend:
+
+    goma_auth.py login
+    GOMA_STUBBY_PROXY_IP_ADDRESS=rbe-staging1.endpoints.cxx-compiler-service.cloud.goog GOMA_USE_CASE=rbe-staging goma_ctl.py ensure_start
 
 ## Copying and running chrome
 

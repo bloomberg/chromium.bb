@@ -27,6 +27,3 @@ declare_args() {
     }
   }
 }
-
-assert(!(is_win && host_os != "win") || !use_goma,
-       "goma does not yet work in win cross builds, b/64390790")
