@@ -1106,6 +1106,7 @@ jumbo_component("platform") {
     "graphics/replaying_canvas.cc",
     "graphics/replaying_canvas.h",
     "graphics/scoped_interpolation_quality.h",
+    "graphics/scroll_types.h",
     "graphics/skia/image_pixel_locker.cc",
     "graphics/skia/image_pixel_locker.h",
     "graphics/skia/sk_size_hash.h",

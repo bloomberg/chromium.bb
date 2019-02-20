@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/paint/clip_rects.h"
 
 #if DCHECK_IS_ON()
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"  // For OverlayScrollbarClipBehavior.
+#include "third_party/blink/renderer/platform/graphics/scroll_types.h"  // For OverlayScrollbarClipBehavior.
 #endif
 
 namespace blink {
