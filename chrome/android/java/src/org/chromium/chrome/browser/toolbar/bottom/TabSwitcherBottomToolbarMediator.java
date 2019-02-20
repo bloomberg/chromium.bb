@@ -43,6 +43,13 @@ class TabSwitcherBottomToolbarMediator implements OverviewModeObserver, ThemeCol
     }
 
     /**
+     * @param showOnTop Whether to show the tab switcher bottom toolbar on the top of the screen.
+     */
+    void showToolbarOnTop(boolean showOnTop) {
+        mModel.set(TabSwitcherBottomToolbarModel.SHOW_ON_TOP, showOnTop);
+    }
+
+    /**
      * Clean up anything that needs to be when the tab switcher bottom toolbar is destroyed.
      */
     void destroy() {

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
@@ -38,6 +39,7 @@ public class TabSwitcherBottomToolbarCoordinator {
     /**
      * Build the coordinator that manages the tab switcher bottom toolbar.
      * @param stub The tab switcher bottom toolbar {@link ViewStub} to inflate.
+     * @param topToolbarRoot The root {@link ViewGroup} of the top toolbar.
      * @param incognitoStateProvider Notifies components when incognito mode is entered or exited.
      * @param themeColorProvider Notifies components when the theme color changes.
      * @param newTabClickListener An {@link OnClickListener} that is triggered when the
@@ -52,7 +54,7 @@ public class TabSwitcherBottomToolbarCoordinator {
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
      */
-    public TabSwitcherBottomToolbarCoordinator(ViewStub stub,
+    public TabSwitcherBottomToolbarCoordinator(ViewStub stub, ViewGroup topToolbarRoot,
             IncognitoStateProvider incognitoStateProvider, ThemeColorProvider themeColorProvider,
             OnClickListener newTabClickListener, OnClickListener closeTabsClickListener,
             AppMenuButtonHelper menuButtonHelper, TabModelSelector tabModelSelector,
@@ -61,7 +63,9 @@ public class TabSwitcherBottomToolbarCoordinator {
 
         TabSwitcherBottomToolbarModel model = new TabSwitcherBottomToolbarModel();
 
-        PropertyModelChangeProcessor.create(model, root, new TabSwitcherBottomToolbarViewBinder());
+        PropertyModelChangeProcessor.create(model, root,
+                new TabSwitcherBottomToolbarViewBinder(
+                        topToolbarRoot, (ViewGroup) root.getParent()));
 
         mMediator = new TabSwitcherBottomToolbarMediator(
                 model, themeColorProvider, overviewModeBehavior);
@@ -81,6 +85,13 @@ public class TabSwitcherBottomToolbarCoordinator {
         mMenuButton = root.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setThemeColorProvider(themeColorProvider);
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
+    }
+
+    /**
+     * @param showOnTop Whether to show the tab switcher bottom toolbar on the top of the screen.
+     */
+    public void showToolbarOnTop(boolean showOnTop) {
+        mMediator.showToolbarOnTop(showOnTop);
     }
 
     /**
