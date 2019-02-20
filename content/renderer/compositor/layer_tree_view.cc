@@ -571,9 +571,7 @@ void LayerTreeView::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }
 
-void LayerTreeView::DidBeginMainFrame() {
-  delegate_->DidBeginMainFrame();
-}
+void LayerTreeView::DidBeginMainFrame() {}
 
 void LayerTreeView::DidUpdateLayers() {
   // Dump property trees and layers if run with:

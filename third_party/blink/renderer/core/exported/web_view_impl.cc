@@ -1521,13 +1521,6 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
   PageWidgetDelegate::Animate(*AsView().page, last_frame_time);
 }
 
-void WebViewImpl::DidBeginFrame() {
-  DCHECK(MainFrameImpl()->GetFrame());
-  DocumentLifecycle::AllowThrottlingScope throttling_scope(
-      MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::DidBeginFrame(*MainFrameImpl()->GetFrame());
-}
-
 void WebViewImpl::BeginRafAlignedInput() {
   raf_aligned_input_start_time_ = CurrentTimeTicks();
 }

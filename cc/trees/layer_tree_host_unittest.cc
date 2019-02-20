@@ -147,8 +147,8 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   enum MainOrder : int {
     MAIN_START = 1,
     MAIN_LAYOUT,
-    MAIN_DID_BEGIN_FRAME,
     MAIN_COMMIT_COMPLETE,
+    MAIN_DID_BEGIN_FRAME,
     MAIN_END,
   };
 
