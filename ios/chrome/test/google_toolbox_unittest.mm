@@ -15,6 +15,7 @@
 
 using GoogleToolboxForMacTest = PlatformTest;
 
+// TODO(crbug.com/933827): Remove this pragma.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
