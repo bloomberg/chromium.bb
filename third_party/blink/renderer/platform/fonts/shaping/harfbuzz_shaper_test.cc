@@ -626,8 +626,11 @@ TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
-#if defined(OS_LINUX)
-  // Linux doesn't have glyphs. We can't test RunInfo without all glyphs.
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+  // Linux and Fuchsia use Lohit Devanagari. When using that font the shaper
+  // returns 32767 glyphs instead of 32769.
+  // TODO(crbug.com/933551): Add Noto Sans Devanagari to
+  // //third_party/test_fonts and use it here.
   if (result->NumGlyphs() != length)
     return;
 #endif
@@ -1476,8 +1479,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
 }
 
 // TODO(crbug.com/870712): This test fails due to font fallback differences on
-// Android.
-#if defined(OS_ANDROID)
+// Android and Fuchsia.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #define MAYBE_SafeToBreakArabicCommonLigatures \
   DISABLED_SafeToBreakArabicCommonLigatures
 #else
