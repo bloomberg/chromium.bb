@@ -54,7 +54,7 @@ class MessagePipe {
   // after this function returns.
   // TODO(zijiehe): the |message| should be const-ref.
   virtual void Send(google::protobuf::MessageLite* message,
-                    const base::Closure& done) = 0;
+                    base::OnceClosure done) = 0;
 };
 
 }  // namespace protocol

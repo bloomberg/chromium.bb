@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/fake_message_pipe.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,17 +33,20 @@ void FakeMessagePipe::Start(EventHandler* event_handler) {
 }
 
 void FakeMessagePipe::Send(google::protobuf::MessageLite* message,
-                           const base::Closure& done) {
+                           base::OnceClosure done) {
   if (asynchronous_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](FakeMessagePipe* me, google::protobuf::MessageLite* message,
-               const base::Closure& done) { me->SendImpl(message, done); },
-            base::Unretained(this), base::Unretained(message), done));
+               base::OnceClosure done) {
+              me->SendImpl(message, std::move(done));
+            },
+            base::Unretained(this), base::Unretained(message),
+            std::move(done)));
     return;
   }
-  SendImpl(message, done);
+  SendImpl(message, std::move(done));
 }
 
 void FakeMessagePipe::Receive(std::unique_ptr<CompoundBuffer> message) {
@@ -83,9 +88,8 @@ void FakeMessagePipe::ClosePipe() {
   ClosePipeImpl();
 }
 
-void FakeMessagePipe::SendImpl(
-    google::protobuf::MessageLite* message,
-    const base::Closure& done) {
+void FakeMessagePipe::SendImpl(google::protobuf::MessageLite* message,
+                               base::OnceClosure done) {
   ASSERT_TRUE(pipe_opened_);
 
   std::string message_string;
@@ -93,7 +97,7 @@ void FakeMessagePipe::SendImpl(
   sent_messages_.push(message_string);
 
   if (done) {
-    done.Run();
+    std::move(done).Run();
   }
 }
 

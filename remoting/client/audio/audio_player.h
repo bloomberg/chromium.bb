@@ -28,7 +28,7 @@ class AudioPlayer : public protocol::AudioStub {
 
   // protocol::AudioStub implementation.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  protected:
   AudioPlayer();

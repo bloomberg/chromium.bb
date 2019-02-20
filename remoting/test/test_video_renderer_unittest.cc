@@ -203,12 +203,12 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
   // will always be posted back to main thread, however, whether it will be
   // called depends on whether the expected pattern is matched or not.
   bool second_packet_done_is_called = false;
-  base::Closure second_packet_done_callback =
-      base::Bind(&ProcessPacketDoneHandler, run_loop_->QuitClosure(),
-                 &second_packet_done_is_called);
+  base::OnceClosure second_packet_done_callback =
+      base::BindOnce(&ProcessPacketDoneHandler, run_loop_->QuitClosure(),
+                     &second_packet_done_is_called);
 
-  test_video_renderer_->ProcessVideoPacket(std::move(packet_copy),
-                                           second_packet_done_callback);
+  test_video_renderer_->ProcessVideoPacket(
+      std::move(packet_copy), std::move(second_packet_done_callback));
 
   run_loop_->Run();
   EXPECT_TRUE(timer_.IsRunning());

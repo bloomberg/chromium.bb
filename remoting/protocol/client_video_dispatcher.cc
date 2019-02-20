@@ -95,8 +95,8 @@ void ClientVideoDispatcher::OnIncomingMessage(
 
   video_stub_->ProcessVideoPacket(
       std::move(video_packet),
-      base::Bind(&ClientVideoDispatcher::OnPacketDone,
-                 weak_factory_.GetWeakPtr(), pending_frame));
+      base::BindOnce(&ClientVideoDispatcher::OnPacketDone,
+                     weak_factory_.GetWeakPtr(), pending_frame));
 }
 
 void ClientVideoDispatcher::OnPacketDone(

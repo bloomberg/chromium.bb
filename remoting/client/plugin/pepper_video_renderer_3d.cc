@@ -36,10 +36,10 @@ class PepperVideoRenderer3D::FrameTracker {
  public:
   FrameTracker(std::unique_ptr<VideoPacket> packet,
                protocol::FrameStatsConsumer* stats_consumer,
-               const base::Closure& done)
+               base::OnceClosure done)
       : packet_(std::move(packet)),
         stats_consumer_(stats_consumer),
-        done_(done) {
+        done_(std::move(done)) {
     stats_.host_stats = protocol::HostFrameStats::GetForVideoPacket(*packet_);
     stats_.client_stats.time_received = base::TimeTicks::Now();
   }
@@ -48,7 +48,7 @@ class PepperVideoRenderer3D::FrameTracker {
     if (stats_consumer_)
       stats_consumer_->OnVideoFrameStats(stats_);
     if (!done_.is_null())
-      done_.Run();
+      std::move(done_).Run();
   }
 
   void OnDecoded() {
@@ -64,7 +64,7 @@ class PepperVideoRenderer3D::FrameTracker {
   std::unique_ptr<VideoPacket> packet_;
   protocol::FrameStatsConsumer* stats_consumer_;
   protocol::FrameStats stats_;
-  base::Closure done_;
+  base::OnceClosure done_;
 };
 
 class PepperVideoRenderer3D::Picture {
@@ -233,7 +233,7 @@ protocol::FrameStatsConsumer* PepperVideoRenderer3D::GetFrameStatsConsumer() {
 
 void PepperVideoRenderer3D::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   if (!use_fallback_renderer_ &&
       packet->format().has_screen_width() &&
       packet->format().has_screen_height() &&
@@ -252,14 +252,14 @@ void PepperVideoRenderer3D::ProcessVideoPacket(
   }
 
   if (use_fallback_renderer_) {
-    fallback_renderer_.GetVideoStub()->ProcessVideoPacket(
-        std::move(packet), done);
+    fallback_renderer_.GetVideoStub()->ProcessVideoPacket(std::move(packet),
+                                                          std::move(done));
     return;
   }
 
   VideoPacket* packet_ptr = packet.get();
   std::unique_ptr<FrameTracker> frame_tracker(
-      new FrameTracker(std::move(packet), stats_consumer_, done));
+      new FrameTracker(std::move(packet), stats_consumer_, std::move(done)));
 
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.

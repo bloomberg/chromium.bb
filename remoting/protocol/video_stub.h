@@ -19,7 +19,7 @@ namespace protocol {
 class VideoStub {
  public:
   virtual void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
-                                  const base::Closure& done) = 0;
+                                  base::OnceClosure done) = 0;
 
  protected:
   VideoStub() {}
