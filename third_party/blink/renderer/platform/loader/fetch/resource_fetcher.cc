@@ -35,6 +35,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -2037,6 +2038,14 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   RawResource::Fetch(
       params, this,
       MakeGarbageCollected<StaleRevalidationResourceClient>(stale_resource));
+}
+
+mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
+  if (!blob_registry_ptr_) {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        MakeRequest(&blob_registry_ptr_, task_runner_));
+  }
+  return blob_registry_ptr_.get();
 }
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {
