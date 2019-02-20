@@ -1785,7 +1785,6 @@ jumbo_split_static_library("ui") {
       "//services/ws/public/cpp",
       "//services/ws/public/mojom",
       "//ui/base/ime",
-      "//ui/base/user_activity",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/compositor_extra",
