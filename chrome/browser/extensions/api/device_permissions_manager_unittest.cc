@@ -55,16 +55,15 @@ class DevicePermissionsManagerTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     env_.reset(new extensions::TestExtensionEnvironment());
-    extension_ =
-        env_->MakeExtension(*base::test::ParseJson(
-                                "{"
-                                "  \"app\": {"
-                                "    \"background\": {"
-                                "      \"scripts\": [\"background.js\"]"
-                                "    }"
-                                "  },"
-                                "  \"permissions\": [ \"hid\", \"usb\" ]"
-                                "}"));
+    extension_ = env_->MakeExtension(*base::test::ParseJsonDeprecated(
+        "{"
+        "  \"app\": {"
+        "    \"background\": {"
+        "      \"scripts\": [\"background.js\"]"
+        "    }"
+        "  },"
+        "  \"permissions\": [ \"hid\", \"usb\" ]"
+        "}"));
 
     HidDeviceManager::GetFactoryInstance()->SetTestingFactory(
         env_->profile(), base::BindRepeating(&CreateHidDeviceManager));
@@ -337,7 +336,7 @@ TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
 }
 
 TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
-  std::unique_ptr<base::Value> prefs_value = base::test::ParseJson(
+  std::unique_ptr<base::Value> prefs_value = base::test::ParseJsonDeprecated(
       "["
       "  {"
       "    \"manufacturer_string\": \"Test Manufacturer\","

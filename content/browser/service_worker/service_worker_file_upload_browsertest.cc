@@ -184,7 +184,8 @@ class ServiceWorkerFileUploadTest
     std::string result;
     RunTest(BuildTargetUrl("/service_worker/upload", target_query),
             TargetOrigin::kSameOrigin, out_filename, &result);
-    *out_result = base::DictionaryValue::From(base::test::ParseJson(result));
+    *out_result =
+        base::DictionaryValue::From(base::test::ParseJsonDeprecated(result));
     ASSERT_TRUE(*out_result);
   }
 
@@ -250,7 +251,8 @@ class ServiceWorkerFileUploadTest
     base::ReplaceFirstSubstringAfterOffset(&expectation, 0, "@SIZE@",
                                            base::NumberToString(kFileSize));
 
-    return base::DictionaryValue::From(base::test::ParseJson(expectation));
+    return base::DictionaryValue::From(
+        base::test::ParseJsonDeprecated(expectation));
   }
 
  private:

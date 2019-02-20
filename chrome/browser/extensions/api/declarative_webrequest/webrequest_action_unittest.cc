@@ -51,7 +51,8 @@ namespace {
 const char kUnknownActionType[] = "unknownType";
 
 std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
-  std::unique_ptr<base::Value> parsed_value(base::test::ParseJson(json));
+  std::unique_ptr<base::Value> parsed_value(
+      base::test::ParseJsonDeprecated(json));
   const base::ListValue* parsed_list;
   CHECK(parsed_value->GetAsList(&parsed_list));
 

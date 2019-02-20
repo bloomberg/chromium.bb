@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::IsJson;
-using base::test::ParseJson;
+using base::test::ParseJsonDeprecated;
 using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
@@ -140,7 +140,7 @@ class CastMessageHandlerTest : public testing::Test {
           Result::kOk,
           handler_.SendSetVolumeRequest(
               channel_id_,
-              *ParseJson(
+              *ParseJsonDeprecated(
                   R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
               "theSourceId", set_volume_callback_.Get()));
     }
@@ -376,8 +376,9 @@ TEST_F(CastMessageHandlerTest, SendMediaRequest) {
             "requestId": 1,
             "type": "PLAY",
           })";
-          auto expected = CreateMediaRequest(*ParseJson(expected_body), 1,
-                                             "theSourceId", "theDestinationId");
+          auto expected =
+              CreateMediaRequest(*ParseJsonDeprecated(expected_body), 1,
+                                 "theSourceId", "theDestinationId");
           EXPECT_EQ(expected.namespace_(), message.namespace_());
           EXPECT_EQ(expected.source_id(), message.source_id());
           EXPECT_EQ(expected.destination_id(), message.destination_id());
@@ -392,8 +393,9 @@ TEST_F(CastMessageHandlerTest, SendMediaRequest) {
   std::string message_str = R"({
     "type": "PLAY",
   })";
-  base::Optional<int> request_id = handler_.SendMediaRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId", "theDestinationId");
+  base::Optional<int> request_id =
+      handler_.SendMediaRequest(channel_id_, *ParseJsonDeprecated(message_str),
+                                "theSourceId", "theDestinationId");
   EXPECT_EQ(1, request_id);
 }
 
@@ -409,8 +411,8 @@ TEST_F(CastMessageHandlerTest, SendVolumeCommand) {
             "requestId": 1,
             "type": "SET_VOLUME",
           })";
-          auto expected = CreateSetVolumeRequest(*ParseJson(expected_body), 1,
-                                                 "theSourceId");
+          auto expected = CreateSetVolumeRequest(
+              *ParseJsonDeprecated(expected_body), 1, "theSourceId");
           EXPECT_EQ(expected.namespace_(), message.namespace_());
           EXPECT_EQ(expected.source_id(), message.source_id());
           EXPECT_EQ(expected.destination_id(), message.destination_id());
@@ -427,7 +429,7 @@ TEST_F(CastMessageHandlerTest, SendVolumeCommand) {
     "type": "SET_VOLUME",
   })";
   EXPECT_EQ(Result::kOk, handler_.SendSetVolumeRequest(
-                             channel_id_, *ParseJson(message_str),
+                             channel_id_, *ParseJsonDeprecated(message_str),
                              "theSourceId", base::DoNothing::Once<Result>()));
 }
 
@@ -472,7 +474,7 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle pending launch session request.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
+                                     "theDestinationId", ParseJsonDeprecated(R"(
       {
         "requestId": 1,
         "type": "RECEIVER_STATUS",
@@ -481,29 +483,29 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle both pending get app availability requests.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
+                                     "theDestinationId", ParseJsonDeprecated(R"(
       {
         "requestId": 2,
         "availability": {"theAppId": "APP_AVAILABLE"},
       })"));
 
   // Handle pending set volume request (1 of 2).
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 3})"));
+  handler_.HandleCastInternalMessage(
+      channel_id_, "theSourceId", "theDestinationId",
+      ParseJsonDeprecated(R"({"requestId": 3})"));
 
   // Skip request_id == 4, since it was used by the second get app availability
   // request.
 
   // Handle pending set volume request (2 of 2).
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 5})"));
+  handler_.HandleCastInternalMessage(
+      channel_id_, "theSourceId", "theDestinationId",
+      ParseJsonDeprecated(R"({"requestId": 5})"));
 
   // Handle pending stop session request.
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 6})"));
+  handler_.HandleCastInternalMessage(
+      channel_id_, "theSourceId", "theDestinationId",
+      ParseJsonDeprecated(R"({"requestId": 6})"));
 }
 
 // Check that set volume requests time out correctly.
@@ -515,9 +517,9 @@ TEST_F(CastMessageHandlerTest, SetVolumeTimedOut) {
     "type": "SET_VOLUME",
   })";
   base::MockCallback<ResultCallback> callback;
-  EXPECT_EQ(Result::kOk,
-            handler_.SendSetVolumeRequest(channel_id_, *ParseJson(message_str),
-                                          "theSourceId", callback.Get()));
+  EXPECT_EQ(Result::kOk, handler_.SendSetVolumeRequest(
+                             channel_id_, *ParseJsonDeprecated(message_str),
+                             "theSourceId", callback.Get()));
   EXPECT_CALL(callback, Run(Result::kFailed));
   thread_bundle_.FastForwardBy(kRequestTimeout);
 }

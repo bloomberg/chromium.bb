@@ -768,7 +768,7 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
       })";
   test_dir.WriteManifest(kManifest);
   std::unique_ptr<base::DictionaryValue> manifest =
-      base::DictionaryValue::From(base::test::ParseJson(kManifest));
+      base::DictionaryValue::From(base::test::ParseJsonDeprecated(kManifest));
   ASSERT_TRUE(manifest);
 
   test_dir.WriteFile(FILE_PATH_LITERAL("json_file.json"), "{}");

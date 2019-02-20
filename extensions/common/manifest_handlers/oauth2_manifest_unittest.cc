@@ -49,7 +49,7 @@ class OAuth2ManifestTest : public ManifestTest {
   std::unique_ptr<base::Value> CreateManifest(AutoApproveValue auto_approve,
                                               bool extension_id_whitelisted,
                                               ClientIdValue client_id) {
-    std::unique_ptr<base::Value> manifest = base::test::ParseJson(
+    std::unique_ptr<base::Value> manifest = base::test::ParseJsonDeprecated(
         "{ \n"
         "  \"name\": \"test\", \n"
         "  \"version\": \"0.1\", \n"

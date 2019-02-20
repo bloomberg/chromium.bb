@@ -116,7 +116,7 @@ void ReportingBrowserTest::SetUpOnMainThread() {
 }
 
 std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
-  auto parsed_payload = base::test::ParseJson(payload);
+  auto parsed_payload = base::test::ParseJsonDeprecated(payload);
   // Clear out any non-reproducible fields.
   for (auto& report : parsed_payload->GetList()) {
     report.RemoveKey("age");
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
 
   // Verify the contents of the report that we received.
   EXPECT_TRUE(actual != nullptr);
-  auto expected = base::test::ParseJson(base::StringPrintf(
+  auto expected = base::test::ParseJsonDeprecated(base::StringPrintf(
       R"json(
         [
           {

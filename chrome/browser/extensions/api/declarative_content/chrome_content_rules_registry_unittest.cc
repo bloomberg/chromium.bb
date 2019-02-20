@@ -162,7 +162,7 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   // Add a rule.
   api::events::Rule rule;
   api::events::Rule::Populate(
-      *base::test::ParseJson(
+      *base::test::ParseJsonDeprecated(
           "{\n"
           "  \"id\": \"rule1\",\n"
           "  \"priority\": 100,\n"
@@ -178,8 +178,8 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
       &rule);
   std::vector<const api::events::Rule*> rules({&rule});
 
-  const Extension* extension = env()->MakeExtension(*base::test::ParseJson(
-      "{\"page_action\": {}}"));
+  const Extension* extension = env()->MakeExtension(
+      *base::test::ParseJsonDeprecated("{\"page_action\": {}}"));
   registry->AddRulesImpl(extension->id(), rules);
 
   registry->DidFinishNavigation(tab.get(), &navigation_handle);

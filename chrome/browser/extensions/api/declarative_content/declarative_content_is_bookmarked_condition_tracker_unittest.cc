@@ -55,7 +55,8 @@ std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> CreatePredicate(
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
           evaluator, extension,
-          *base::test::ParseJson(is_bookmarked ? "true" : "false"), &error);
+          *base::test::ParseJsonDeprecated(is_bookmarked ? "true" : "false"),
+          &error);
   EXPECT_EQ("", error);
   EXPECT_TRUE(predicate);
   EXPECT_EQ(is_bookmarked, predicate->is_bookmarked());
@@ -168,7 +169,8 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
-          nullptr, extension.get(), *base::test::ParseJson("true"), &error);
+          nullptr, extension.get(), *base::test::ParseJsonDeprecated("true"),
+          &error);
   EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
   EXPECT_FALSE(predicate);
 }
@@ -181,7 +183,8 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
-          nullptr, extension.get(), *base::test::ParseJson("[]"), &error);
+          nullptr, extension.get(), *base::test::ParseJsonDeprecated("[]"),
+          &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 }
