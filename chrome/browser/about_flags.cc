@@ -1688,9 +1688,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"input-view", flag_descriptions::kInputViewName,
      flag_descriptions::kInputViewDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableInputView)},
-    {"disable-new-korean-ime", flag_descriptions::kNewKoreanImeName,
-     flag_descriptions::kNewKoreanImeDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableNewKoreanIme)},
     {"enable-physical-keyboard-autocorrect",
      flag_descriptions::kPhysicalKeyboardAutocorrectName,
      flag_descriptions::kPhysicalKeyboardAutocorrectDescription, kOsCrOS,
@@ -2477,9 +2474,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
 #if defined(OS_CHROMEOS)
-    {"opt-in-ime-menu", flag_descriptions::kEnableImeMenuName,
-     flag_descriptions::kEnableImeMenuDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
     {"disable-system-timezone-automatic-detection",
      flag_descriptions::kDisableSystemTimezoneAutomaticDetectionName,
      flag_descriptions::kDisableSystemTimezoneAutomaticDetectionDescription,
@@ -2587,12 +2581,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
 #endif  // OS_ANDROID
-#if defined(OS_CHROMEOS)
-    {"enable-emoji-handwriting-voice-on-ime-menu",
-     flag_descriptions::kEnableEhvInputName,
-     flag_descriptions::kEnableEhvInputDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEHVInputOnImeMenu)},
-#endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"arc-available-for-child", flag_descriptions::kArcAvailableForChildName,
      flag_descriptions::kArcAvailableForChildDescription, kOsCrOS,

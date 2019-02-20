@@ -421,8 +421,6 @@ extern const base::Feature kUseSameCacheForMedia;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOptInImeMenu;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kQuickUnlockPin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -430,8 +428,6 @@ extern const base::Feature kQuickUnlockPinSignin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockFingerprint;
-
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kEHVInputOnImeMenu;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBulkPrinters;
 

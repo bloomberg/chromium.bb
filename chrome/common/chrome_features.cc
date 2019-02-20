@@ -622,10 +622,6 @@ const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
 const base::Feature kArcCupsApi{"ArcCupsApi",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the opt-in IME menu in the language settings page.
-const base::Feature kOptInImeMenu{"OptInImeMenu",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables pin quick unlock.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -637,10 +633,6 @@ const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables emoji, handwriting and voice input on opt-in IME menu.
-const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the bulk printer policies on Chrome OS.
 const base::Feature kBulkPrinters{"BulkPrinters",

@@ -393,10 +393,9 @@ void ImeMenuTray::ShowKeyboardWithKeyset(
 
 bool ImeMenuTray::ShouldShowBottomButtons() {
   // Emoji, handwriting and voice input is not supported for these cases:
-  // 1) features::kEHVInputOnImeMenu is not enabled.
-  // 2) third party IME extensions.
-  // 3) login/lock screen.
-  // 4) password input client.
+  // 1) third party IME extensions.
+  // 2) login/lock screen.
+  // 3) password input client.
 
   bool should_show_buttom_buttoms =
       ime_controller_->is_extra_input_options_enabled() &&

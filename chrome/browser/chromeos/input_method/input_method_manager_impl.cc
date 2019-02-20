@@ -967,8 +967,8 @@ void InputMethodManagerImpl::AddObserver(
     InputMethodManager::Observer* observer) {
   observers_.AddObserver(observer);
   observer->OnExtraInputEnabledStateChange(
-      base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu),
-      features_enabled_state_ & InputMethodManager::FEATURE_EMOJI,
+      // TODO(shuchen): Remove this parameter - ex features::kEHVInputOnImeMenu
+      true, features_enabled_state_ & InputMethodManager::FEATURE_EMOJI,
       features_enabled_state_ & InputMethodManager::FEATURE_HANDWRITING,
       features_enabled_state_ & InputMethodManager::FEATURE_VOICE);
 }
@@ -1366,17 +1366,14 @@ bool InputMethodManagerImpl::GetImeMenuFeatureEnabled(
 
 void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
   for (auto& observer : observers_) {
-    const bool is_ehv_enabled =
-        base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
     const bool is_emoji_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_EMOJI);
     const bool is_handwriting_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_HANDWRITING);
     const bool is_voice_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_VOICE);
-    observer.OnExtraInputEnabledStateChange(is_ehv_enabled, is_emoji_enabled,
-                                            is_handwriting_enabled,
-                                            is_voice_enabled);
+    observer.OnExtraInputEnabledStateChange(
+        true, is_emoji_enabled, is_handwriting_enabled, is_voice_enabled);
   }
 }
 
