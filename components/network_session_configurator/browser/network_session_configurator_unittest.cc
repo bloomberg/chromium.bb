@@ -121,7 +121,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params_.quic_migrate_sessions_early_v2);
-  EXPECT_FALSE(params_.quic_race_stale_dns_on_connection);
   EXPECT_FALSE(params_.quic_retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(params_.quic_go_away_on_path_degrading);
   EXPECT_FALSE(params_.quic_allow_server_migration);
@@ -373,18 +372,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_retry_on_alternate_network_before_handshake);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicRaceStaleDNSOnCOnnectionFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["race_stale_dns_on_connection"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_race_stale_dns_on_connection);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
