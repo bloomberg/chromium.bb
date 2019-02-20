@@ -1063,17 +1063,8 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
             nqe::internal::InvalidRTT() &&
         *http_rtt >= params_->ConnectionThreshold(type).http_rtt();
 
-    const bool estimated_throughput_is_lower_than_threshold =
-        *downstream_throughput_kbps != nqe::internal::INVALID_RTT_THROUGHPUT &&
-        params_->ConnectionThreshold(type).downstream_throughput_kbps() !=
-            nqe::internal::INVALID_RTT_THROUGHPUT &&
-        *downstream_throughput_kbps <=
-            params_->ConnectionThreshold(type).downstream_throughput_kbps();
-
-    if (estimated_http_rtt_is_higher_than_threshold ||
-        estimated_throughput_is_lower_than_threshold) {
+    if (estimated_http_rtt_is_higher_than_threshold)
       return type;
-    }
   }
   // Return the fastest connection type.
   return static_cast<EffectiveConnectionType>(EFFECTIVE_CONNECTION_TYPE_LAST -

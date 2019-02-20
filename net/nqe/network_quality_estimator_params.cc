@@ -381,14 +381,11 @@ void ObtainConnectionThresholds(
                 .http_rtt()
                 .InMilliseconds())));
 
-    connection_thresholds[i].set_transport_rtt(
-        default_effective_connection_type_thresholds[i].transport_rtt());
-
-    connection_thresholds[i].set_downstream_throughput_kbps(
-        GetValueForVariationParam(
-            params, connection_type_name + ".ThresholdMedianKbps",
-            default_effective_connection_type_thresholds[i]
-                .downstream_throughput_kbps()));
+    DCHECK_EQ(nqe::internal::InvalidRTT(),
+              default_effective_connection_type_thresholds[i].transport_rtt());
+    DCHECK_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
+              default_effective_connection_type_thresholds[i]
+                  .downstream_throughput_kbps());
     DCHECK(i == 0 ||
            connection_thresholds[i].IsFaster(connection_thresholds[i - 1]));
   }
