@@ -5514,6 +5514,7 @@ test("net_unittests") {
       "third_party/quic/core/quic_epoll_connection_helper_test.cc",
       "third_party/quic/core/stateless_rejector_test.cc",
       "third_party/quic/platform/impl/batch_writer/quic_batch_writer_buffer_test.cc",
+      "third_party/quic/platform/impl/batch_writer/quic_batch_writer_test.cc",
       "third_party/quic/platform/impl/batch_writer/quic_batch_writer_test.h",
       "third_party/quic/platform/impl/batch_writer/quic_gso_batch_writer_test.cc",
       "third_party/quic/platform/impl/batch_writer/quic_sendmmsg_batch_writer_test.cc",
