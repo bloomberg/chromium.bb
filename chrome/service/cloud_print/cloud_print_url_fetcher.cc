@@ -121,11 +121,10 @@ CloudPrintURLFetcher::Delegate::HandleRawData(
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintURLFetcher::Delegate::HandleJSONData(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+CloudPrintURLFetcher::Delegate::HandleJSONData(const net::URLFetcher* source,
+                                               const GURL& url,
+                                               const base::Value& json_data,
+                                               bool succeeded) {
   return CONTINUE_PROCESSING;
 }
 
@@ -198,14 +197,11 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // response, we will retry (to handle the case where we got redirected
       // to a non-cloudprint-server URL eg. for authentication).
       bool succeeded = false;
-      std::unique_ptr<base::DictionaryValue> response_dict =
-          ParseResponseJSON(data, &succeeded);
+      base::Value response_dict = ParseResponseJSON(data, &succeeded);
 
-      if (response_dict) {
-        action = delegate_->HandleJSONData(source,
-                                           source->GetURL(),
-                                           response_dict.get(),
-                                           succeeded);
+      if (response_dict.is_dict()) {
+        action = delegate_->HandleJSONData(source, source->GetURL(),
+                                           response_dict, succeeded);
       } else {
         action = RETRY_REQUEST;
       }

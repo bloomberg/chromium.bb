@@ -127,7 +127,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded) override;
   void OnRequestGiveUp() override;
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
@@ -160,11 +160,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // Prototype for a JSON data handler.
   typedef CloudPrintURLFetcher::ResponseAction (
-      PrinterJobHandler::*JSONDataHandler)(
-      const net::URLFetcher* source,
-      const GURL& url,
-      const base::DictionaryValue* json_data,
-      bool succeeded);
+      PrinterJobHandler::*JSONDataHandler)(const net::URLFetcher* source,
+                                           const GURL& url,
+                                           const base::Value& json_data,
+                                           bool succeeded);
   // Prototype for a data handler.
   typedef CloudPrintURLFetcher::ResponseAction (
       PrinterJobHandler::*DataHandler)(const net::URLFetcher* source,
@@ -177,13 +176,13 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   CloudPrintURLFetcher::ResponseAction HandlePrinterUpdateResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleJobMetadataResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrintTicketResponse(
@@ -199,13 +198,13 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   CloudPrintURLFetcher::ResponseAction HandleInProgressStatusUpdateResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleFailureStatusUpdateResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const base::DictionaryValue* json_data,
+      const base::Value& json_data,
       bool succeeded);
   // End request handlers for each state in the state machine
 

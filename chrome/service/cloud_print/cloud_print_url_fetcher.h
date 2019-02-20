@@ -16,7 +16,7 @@
 class GURL;
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace net {
@@ -89,11 +89,10 @@ class CloudPrintURLFetcher
     // This will be invoked only if HandleRawResponse and HandleRawData return
     // CONTINUE_PROCESSING AND if the response contains a valid JSON dictionary.
     // |succeeded| is the value of the "success" field in the response JSON.
-    virtual ResponseAction HandleJSONData(
-        const net::URLFetcher* source,
-        const GURL& url,
-        const base::DictionaryValue* json_data,
-        bool succeeded);
+    virtual ResponseAction HandleJSONData(const net::URLFetcher* source,
+                                          const GURL& url,
+                                          const base::Value& json_data,
+                                          bool succeeded);
 
     // Invoked when the retry limit for this request has been reached (if there
     // was a retry limit - a limit of -1 implies no limit).

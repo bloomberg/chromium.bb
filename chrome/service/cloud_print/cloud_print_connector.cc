@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <limits>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -187,7 +191,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
 CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   if (!IsRunning())  // Orphan response. Connector has been stopped already.
     return CloudPrintURLFetcher::STOP_PROCESSING;
@@ -208,11 +212,10 @@ std::string CloudPrintConnector::GetAuthHeader() {
 CloudPrintConnector::~CloudPrintConnector() {}
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintConnector::HandlePrinterListResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+CloudPrintConnector::HandlePrinterListResponse(const net::URLFetcher* source,
+                                               const GURL& url,
+                                               const base::Value& json_data,
+                                               bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
     return CloudPrintURLFetcher::RETRY_REQUEST;
@@ -240,25 +243,29 @@ CloudPrintConnector::HandlePrinterListResponse(
   }
 
   // Go through the list of the cloud printers and init print job handlers.
-  const base::ListValue* printer_list = nullptr;
   // There may be no "printers" value in the JSON
-  if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
-    for (size_t i = 0; i < printer_list->GetSize(); ++i) {
-      const base::DictionaryValue* printer_data = nullptr;
-      if (!printer_list->GetDictionary(i, &printer_data))
+  const base::Value* printer_list =
+      json_data.FindKeyOfType(kPrinterListValue, base::Value::Type::LIST);
+  if (printer_list) {
+    for (const auto& printer : printer_list->GetList()) {
+      if (!printer.is_dict())
         continue;
 
       std::string printer_name;
-      printer_data->GetString(kNameValue, &printer_name);
       std::string printer_id;
-      printer_data->GetString(kIdValue, &printer_id);
+      const std::string* str = printer.FindStringKey(kNameValue);
+      if (str)
+        printer_name = *str;
+      str = printer.FindStringKey(kIdValue);
+      if (str)
+        printer_id = *str;
 
       if (!settings_.ShouldConnect(printer_name)) {
         VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name
                 << " id: " << printer_id << " as blacklisted";
         AddPendingDeleteTask(printer_id);
       } else if (RemovePrinterFromList(printer_name, &local_printers)) {
-        InitJobHandlerForPrinter(printer_data);
+        InitJobHandlerForPrinter(printer);
       } else {
         // Cloud printer is not found on the local system.
         if (full_list || settings_.delete_on_enum_fail()) {
@@ -291,7 +298,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponseSettingsUpdate(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
@@ -302,11 +309,10 @@ CloudPrintConnector::HandlePrinterListResponseSettingsUpdate(
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintConnector::HandlePrinterDeleteResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const base::DictionaryValue* json_data,
-    bool succeeded) {
+CloudPrintConnector::HandlePrinterDeleteResponse(const net::URLFetcher* source,
+                                                 const GURL& url,
+                                                 const base::Value& json_data,
+                                                 bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer delete response"
           << ", succeeded: " << succeeded
           << ", url: " << url;
@@ -318,24 +324,24 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandleRegisterPrinterResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer register response"
           << ", succeeded: " << succeeded
           << ", url: " << url;
   if (succeeded) {
-    const base::ListValue* printer_list = nullptr;
+    const base::Value* printer_list =
+        json_data.FindKeyOfType(kPrinterListValue, base::Value::Type::LIST);
     // There should be a "printers" value in the JSON
-    if (json_data->GetList(kPrinterListValue, &printer_list)) {
-      const base::DictionaryValue* printer_data = nullptr;
-      if (printer_list->GetDictionary(0, &printer_data))
+    if (printer_list && !printer_list->GetList().empty()) {
+      const base::Value& printer_data = printer_list->GetList()[0];
+      if (printer_data.is_dict())
         InitJobHandlerForPrinter(printer_data);
     }
   }
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
-
 
 void CloudPrintConnector::StartGetRequest(const GURL& url,
                                           int max_retries,
@@ -391,10 +397,13 @@ bool CloudPrintConnector::RemovePrinterFromList(
 }
 
 void CloudPrintConnector::InitJobHandlerForPrinter(
-    const base::DictionaryValue* printer_data) {
-  DCHECK(printer_data);
+    const base::Value& printer_data) {
+  DCHECK(printer_data.is_dict());
+
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
-  printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
+  const std::string* str = printer_data.FindStringKey(kIdValue);
+  if (str)
+    printer_info_cloud.printer_id = *str;
   DCHECK(!printer_info_cloud.printer_id.empty());
   VLOG(1) << "CP_CONNECTOR: Init job handler"
           << ", printer id: " << printer_info_cloud.printer_id;
@@ -402,34 +411,38 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
     return;  // Nothing to do if we already have a job handler for this printer.
 
   printing::PrinterBasicInfo printer_info;
-  printer_data->GetString(kNameValue, &printer_info.printer_name);
+  str = printer_data.FindStringKey(kNameValue);
+  if (str)
+    printer_info.printer_name = *str;
   DCHECK(!printer_info.printer_name.empty());
-  printer_data->GetString(kPrinterDescValue,
-                          &printer_info.printer_description);
+  str = printer_data.FindStringKey(kPrinterDescValue);
+  if (str)
+    printer_info.printer_description = *str;
   // Printer status is a string value which actually contains an integer.
-  std::string printer_status;
-  if (printer_data->GetString(kPrinterStatusValue, &printer_status)) {
-    base::StringToInt(printer_status, &printer_info.printer_status);
-  }
-  printer_data->GetString(kPrinterCapsHashValue,
-      &printer_info_cloud.caps_hash);
-  const base::ListValue* tags_list = nullptr;
-  if (printer_data->GetList(kTagsValue, &tags_list) && tags_list) {
-    for (size_t i = 0; i < tags_list->GetSize(); ++i) {
-      std::string tag;
-      if (tags_list->GetString(i, &tag) &&
-          base::StartsWith(tag, kCloudPrintServiceTagsHashTagName,
+  str = printer_data.FindStringKey(kPrinterStatusValue);
+  if (str)
+    base::StringToInt(*str, &printer_info.printer_status);
+  str = printer_data.FindStringKey(kPrinterCapsHashValue);
+  if (str)
+    printer_info_cloud.caps_hash = *str;
+
+  const base::Value* tags_list =
+      printer_data.FindKeyOfType(kTagsValue, base::Value::Type::LIST);
+  if (tags_list) {
+    for (const auto& tag : tags_list->GetList()) {
+      if (tag.is_string() &&
+          base::StartsWith(tag.GetString(), kCloudPrintServiceTagsHashTagName,
                            base::CompareCase::INSENSITIVE_ASCII)) {
         std::vector<std::string> tag_parts = base::SplitString(
-            tag, "=", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+            tag.GetString(), "=", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
         if (tag_parts.size() == 2)
           printer_info_cloud.tags_hash = tag_parts[1];
       }
     }
   }
 
-  int xmpp_timeout = 0;
-  printer_data->GetInteger(kLocalSettingsPendingXmppValue, &xmpp_timeout);
+  int xmpp_timeout =
+      printer_data.FindIntKey(kLocalSettingsPendingXmppValue).value_or(0);
   printer_info_cloud.current_xmpp_timeout = settings_.xmpp_ping_timeout_sec();
   printer_info_cloud.pending_xmpp_timeout = xmpp_timeout;
 
@@ -444,17 +457,19 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
 }
 
 void CloudPrintConnector::UpdateSettingsFromPrintersList(
-    const base::DictionaryValue* json_data) {
-  const base::ListValue* printer_list = nullptr;
+    const base::Value& json_data) {
   int min_xmpp_timeout = std::numeric_limits<int>::max();
   // There may be no "printers" value in the JSON
-  if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
-    for (size_t i = 0; i < printer_list->GetSize(); ++i) {
-      const base::DictionaryValue* printer_data = nullptr;
-      if (printer_list->GetDictionary(i, &printer_data)) {
+  const base::Value* printer_list =
+      json_data.FindKeyOfType(kPrinterListValue, base::Value::Type::LIST);
+  if (printer_list) {
+    for (const auto& printer : printer_list->GetList()) {
+      if (printer.is_dict()) {
         int xmpp_timeout = 0;
-        if (printer_data->GetInteger(kLocalSettingsPendingXmppValue,
-                                     &xmpp_timeout)) {
+        base::Optional<int> timeout =
+            printer.FindIntKey(kLocalSettingsPendingXmppValue);
+        if (timeout) {
+          xmpp_timeout = *timeout;
           min_xmpp_timeout = std::min(xmpp_timeout, min_xmpp_timeout);
         }
       }
