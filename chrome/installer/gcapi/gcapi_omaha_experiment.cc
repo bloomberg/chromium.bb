@@ -4,17 +4,26 @@
 
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/gcapi/google_update_util.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "components/variations/variations_experiment_util.h"
 
 namespace {
+
+constexpr const base::char16* kDays[] = {
+    STRING16_LITERAL("Sun"), STRING16_LITERAL("Mon"), STRING16_LITERAL("Tue"),
+    STRING16_LITERAL("Wed"), STRING16_LITERAL("Thu"), STRING16_LITERAL("Fri"),
+    STRING16_LITERAL("Sat")};
+
+constexpr const base::char16* kMonths[] = {
+    STRING16_LITERAL("Jan"), STRING16_LITERAL("Feb"), STRING16_LITERAL("Mar"),
+    STRING16_LITERAL("Apr"), STRING16_LITERAL("May"), STRING16_LITERAL("Jun"),
+    STRING16_LITERAL("Jul"), STRING16_LITERAL("Aug"), STRING16_LITERAL("Sep"),
+    STRING16_LITERAL("Oct"), STRING16_LITERAL("Nov"), STRING16_LITERAL("Dec")};
 
 // Returns the number of weeks since 2/3/2003.
 int GetCurrentRlzWeek(const base::Time& current_time) {
@@ -43,8 +52,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
 
   // Split the original labels by the label separator.
   std::vector<base::string16> entries = base::SplitString(
-      original_labels,
-      base::string16(1, variations::kExperimentLabelSeparator),
+      original_labels, base::string16(1, kExperimentLabelSeparator),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Keep all labels, but the one we want to add/replace.
@@ -56,7 +64,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
         !base::StartsWith(entry, label_and_separator,
                           base::CompareCase::SENSITIVE)) {
       new_labels += entry;
-      new_labels += variations::kExperimentLabelSeparator;
+      new_labels += kExperimentLabelSeparator;
     }
   }
 
@@ -86,16 +94,15 @@ base::string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
 
   base::string16 gcapi_experiment_label;
   base::SStringPrintf(&gcapi_experiment_label,
-                      L"%ls=%ls_%d|%ls",
-                      label.c_str(),
-                      brand_code,
-                      GetCurrentRlzWeek(instance_time),
-                      variations::BuildExperimentDateString(
-                          instance_time).c_str());
+                      STRING16_LITERAL("%ls=%ls_%d|%ls"), label.c_str(),
+                      brand_code, GetCurrentRlzWeek(instance_time),
+                      BuildExperimentDateString(instance_time).c_str());
   return gcapi_experiment_label;
 }
 
 }  // namespace gcapi_internals
+
+const base::char16 kExperimentLabelSeparator = ';';
 
 bool SetReactivationExperimentLabels(const wchar_t* brand_code,
                                      int shell_mode) {
@@ -106,4 +113,26 @@ bool SetReactivationExperimentLabels(const wchar_t* brand_code,
 bool SetRelaunchExperimentLabels(const wchar_t* brand_code, int shell_mode) {
   return SetExperimentLabel(brand_code, gcapi_internals::kRelaunchLabel,
                             shell_mode);
+}
+
+base::string16 BuildExperimentDateString(base::Time current_time) {
+  // The Google Update experiment_labels timestamp format is:
+  // "DAY, DD0 MON YYYY HH0:MI0:SE0 TZ"
+  //  DAY = 3 character day of week,
+  //  DD0 = 2 digit day of month,
+  //  MON = 3 character month of year,
+  //  YYYY = 4 digit year,
+  //  HH0 = 2 digit hour,
+  //  MI0 = 2 digit minute,
+  //  SE0 = 2 digit second,
+  //  TZ = 3 character timezone
+  base::Time::Exploded then = {};
+  current_time.UTCExplode(&then);
+  then.year += 1;
+  DCHECK(then.HasValidValues());
+
+  return base::StringPrintf(
+      STRING16_LITERAL("%s, %02d %s %d %02d:%02d:%02d GMT"),
+      kDays[then.day_of_week], then.day_of_month, kMonths[then.month - 1],
+      then.year, then.hour, then.minute, then.second);
 }

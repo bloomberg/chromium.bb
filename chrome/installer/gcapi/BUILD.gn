@@ -54,7 +54,6 @@ source_set("lib") {
     "//base",
     "//chrome/installer/launcher_support",
     "//chrome/installer/util:with_no_strings",
-    "//components/variations",
     "//google_update",
   ]
 }
@@ -75,7 +74,6 @@ test("gcapi_test") {
     "//chrome/install_static:install_static_util",
     "//chrome/install_static/test:test_support",
     "//chrome/installer/util:with_no_strings",
-    "//components/variations",
     "//testing/gtest",
   ]
 
