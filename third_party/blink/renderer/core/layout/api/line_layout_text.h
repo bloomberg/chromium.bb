@@ -33,7 +33,7 @@ class LineLayoutText : public LineLayoutItem {
 
   InlineTextBox* LastTextBox() const { return ToText()->LastTextBox(); }
 
-  InlineTextBox* CreateInlineTextBox(int start, unsigned short length) {
+  InlineTextBox* CreateInlineTextBox(int start, uint16_t length) {
     return ToText()->CreateInlineTextBox(start, length);
   }
 

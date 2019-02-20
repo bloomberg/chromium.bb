@@ -41,7 +41,7 @@ static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize),
 
 SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item,
                                    int start,
-                                   unsigned short length)
+                                   uint16_t length)
     : InlineTextBox(item, start, length), starts_new_text_chunk_(false) {}
 
 void SVGInlineTextBox::DirtyLineBoxes() {

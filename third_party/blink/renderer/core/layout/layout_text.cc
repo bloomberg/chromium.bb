@@ -439,7 +439,7 @@ static IntRect EllipsisRectForBox(InlineTextBox* box,
   if (!box)
     return IntRect();
 
-  unsigned short truncation = box->Truncation();
+  uint16_t truncation = box->Truncation();
   if (truncation == kCNoTruncation)
     return IntRect();
 
@@ -1909,12 +1909,11 @@ void LayoutText::DirtyLineBoxes() {
   valid_ng_items_ = false;
 }
 
-InlineTextBox* LayoutText::CreateTextBox(int start, unsigned short length) {
+InlineTextBox* LayoutText::CreateTextBox(int start, uint16_t length) {
   return new InlineTextBox(LineLayoutItem(this), start, length);
 }
 
-InlineTextBox* LayoutText::CreateInlineTextBox(int start,
-                                               unsigned short length) {
+InlineTextBox* LayoutText::CreateInlineTextBox(int start, uint16_t length) {
   InlineTextBox* text_box = CreateTextBox(start, length);
   MutableTextBoxes().AppendLineBox(text_box);
   return text_box;
