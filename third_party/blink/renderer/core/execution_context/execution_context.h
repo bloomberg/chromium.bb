@@ -61,6 +61,12 @@ enum class ReferrerPolicy : int32_t;
 
 namespace blink {
 
+namespace mojom {
+namespace blink {
+class DocumentInterfaceBroker;
+}  // namespace blink
+}  // namespace mojom
+
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
 class CoreProbeSink;
@@ -258,6 +264,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
 
   virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
+
+  virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
     return nullptr;
   }
 
