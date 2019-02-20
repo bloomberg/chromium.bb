@@ -79,9 +79,6 @@ const int kFallbackSizeDip = 32;
 const char kServerFaviconURL[] =
     "https://s2.googleusercontent.com/s2/favicons?domain_url=%s&alt=404&sz=32";
 
-// URL for the site's icon source.
-const char kSiteFaviconURL[] = "%sfavicon.ico";
-
 // Used to parse the specification from the path.
 struct ParsedNtpIconPath {
   // The URL for which the icon is being requested.
@@ -256,17 +253,6 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
   return bitmap_data;
 }
 
-SkBitmap GetBitmapAndResize(const gfx::Image& fetched_image, int desired_size) {
-  SkBitmap fetched_bitmap = fetched_image.AsBitmap();
-  if (!fetched_bitmap.empty()) {
-    // The resize the icon bitmap as necessary.
-    fetched_bitmap = skia::ImageOperations::Resize(
-        fetched_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, desired_size,
-        desired_size);
-  }
-  return fetched_bitmap;
-}
-
 }  // namespace
 
 struct NtpIconSource::NtpIconRequest {
@@ -416,13 +402,12 @@ bool NtpIconSource::IsRequestedUrlInServerSuggestions(const GURL& url) {
 
 void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
   // Only fetch a server icon if the page url is known to the server. This check
-  // is important to avoid leaking private history to the server. If the server
-  // icon is not valid or known, request the site's favicon.ico directly.
+  // is important to avoid leaking private history to the server.
   const GURL server_favicon_url =
       GURL(base::StringPrintf(kServerFaviconURL, request.path.spec().c_str()));
   if (!server_favicon_url.is_valid() ||
       !IsRequestedUrlInServerSuggestions(request.path)) {
-    RequestSiteFavicon(request);
+    ReturnRenderedIconForRequest(request, SkBitmap());
     return;
   }
 
@@ -447,88 +432,32 @@ void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
           "default."
         policy_exception_justification: "Not implemented."
       })");
-  StartFaviconRequest(request, server_favicon_url, traffic_annotation,
-                      base::BindOnce(&NtpIconSource::OnServerFaviconAvailable,
-                                     weak_ptr_factory_.GetWeakPtr(), request));
-}
-
-void NtpIconSource::RequestSiteFavicon(const NtpIconRequest& request) {
-  // Only use the site's origin when requesting the favicon image.
-  // e.g. www.foo.com/foo -> www.foo.com/favicon.ico
-  const GURL favicon_url = GURL(base::StringPrintf(
-      kSiteFaviconURL, request.path.GetOrigin().spec().c_str()));
-  if (!favicon_url.is_valid()) {
-    ReturnRenderedIconForRequest(request, SkBitmap());
-    return;
-  }
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("ntp_icon_source_site_favicon", R"(
-      semantics {
-        sender: "NTP Icon Source Site Favicon"
-        description:
-          "Retrieves icons for shortcuts on the New Tab Page directly from the "
-          "site's favicon.ico image. These shortcuts can either be user "
-          "created or taken from the user's browsing history."
-        trigger:
-          "Triggered when an icon for a shortcut on the New Tab Page is "
-          "required, no local icon is available, and the favicon URL provided "
-          "by the server suggestion (if available) does not resolve."
-        data: "The URL for which to retrieve an icon."
-        destination: WEBSITE
-      }
-      policy {
-        cookies_allowed: NO
-        setting:
-          "Users cannot disable this feature. The feature is enabled by "
-          "default."
-        policy_exception_justification: "Not implemented."
-      })");
-  StartFaviconRequest(request, favicon_url, traffic_annotation,
-                      base::BindOnce(&NtpIconSource::OnSiteFaviconAvailable,
-                                     weak_ptr_factory_.GetWeakPtr(), request));
-}
-
-void NtpIconSource::StartFaviconRequest(
-    const NtpIconRequest& request,
-    const GURL request_url,
-    net::NetworkTrafficAnnotationTag traffic_annotation,
-    image_fetcher::ImageFetcherCallback callback) {
-  if (!request_url.is_valid()) {
-    ReturnRenderedIconForRequest(request, SkBitmap());
-    return;
-  }
-
   image_fetcher::ImageFetcherParams params(traffic_annotation,
                                            kImageFetcherUmaClientName);
   params.set_frame_size(
       gfx::Size(request.icon_size_in_pixels, request.icon_size_in_pixels));
-  image_fetcher_->FetchImage(request_url, std::move(callback),
-                             std::move(params));
+  image_fetcher_->FetchImage(
+      server_favicon_url,
+      base::Bind(&NtpIconSource::OnServerFaviconAvailable,
+                 weak_ptr_factory_.GetWeakPtr(), request),
+      std::move(params));
 }
 
 void NtpIconSource::OnServerFaviconAvailable(
     const NtpIconRequest& request,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
-  // If a server icon was not found, |fetched_bitmap| will be empty and another
-  // request will be made for the site's favicon.ico image.
-  SkBitmap fetched_bitmap =
-      GetBitmapAndResize(fetched_image, request.icon_size_in_pixels);
-  if (!fetched_bitmap.empty())
-    ReturnRenderedIconForRequest(request, fetched_bitmap);
-  else
-    RequestSiteFavicon(request);
-}
+  // If a server icon was not found, |fetched_bitmap| will be empty and a
+  // fallback icon will be eventually drawn.
+  SkBitmap fetched_bitmap = fetched_image.AsBitmap();
+  if (!fetched_bitmap.empty()) {
+    // The received server icon bitmap may still be bigger than our desired
+    // size, so resize it.
+    fetched_bitmap = skia::ImageOperations::Resize(
+        fetched_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+        request.icon_size_in_pixels, request.icon_size_in_pixels);
+  }
 
-void NtpIconSource::OnSiteFaviconAvailable(
-    const NtpIconRequest& request,
-    const gfx::Image& fetched_image,
-    const image_fetcher::RequestMetadata& metadata) {
-  // If the icon was not found, |fetched_bitmap| will be empty and a fallback
-  // icon will be eventually drawn.
-  SkBitmap fetched_bitmap =
-      GetBitmapAndResize(fetched_image, request.icon_size_in_pixels);
   ReturnRenderedIconForRequest(request, fetched_bitmap);
 }
 
