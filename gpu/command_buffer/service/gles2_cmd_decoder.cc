@@ -1515,7 +1515,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum gl_error,
       const char* func_name);
 
-  bool CheckBoundDrawFramebufferValid(const char* func_name);
+  bool CheckBoundDrawFramebufferValid(const char* func_name,
+                                      bool check_float_blending = false);
   // Generates |gl_error| if the bound read fbo is incomplete.
   bool CheckBoundReadFramebufferValid(const char* func_name, GLenum gl_error);
   // This is only used by DoBlitFramebufferCHROMIUM which operates read/draw
@@ -4944,13 +4945,28 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
   return true;
 }
 
-bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
+bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
+    const char* func_name,
+    bool check_float_blending) {
   Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   bool valid = CheckFramebufferValid(
       framebuffer, GetDrawFramebufferTarget(),
       GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
   if (!valid)
     return false;
+
+  if (check_float_blending) {
+    // only is true when called by DoMultiDrawArrays or DoMultiDrawElements
+    if (framebuffer && state_.GetEnabled(GL_BLEND) &&
+        !features().ext_float_blend) {
+      if (framebuffer->HasFloatColorAttachment()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                           "GL_BLEND with floating-point color attachments "
+                           "requires the EXT_float_blend extension");
+        return false;
+      }
+    }
+  }
 
   if (!SupportsSeparateFramebufferBinds())
     OnUseFramebuffer();
@@ -11263,7 +11279,7 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawArrays(
     return error::kNoError;
   }
 
-  if (!CheckBoundDrawFramebufferValid(function_name)) {
+  if (!CheckBoundDrawFramebufferValid(function_name, true)) {
     return error::kNoError;
   }
 
@@ -11470,7 +11486,7 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
     return error::kNoError;
   }
 
-  if (!CheckBoundDrawFramebufferValid(function_name)) {
+  if (!CheckBoundDrawFramebufferValid(function_name, true)) {
     return error::kNoError;
   }
 

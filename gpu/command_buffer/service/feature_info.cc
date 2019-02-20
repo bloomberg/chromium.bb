@@ -1783,6 +1783,15 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
       EnableEXTColorBufferHalfFloat();
   }
 
+  // assume all desktop (!gl_version_info_->is_es) supports float blend
+  if (gfx::HasExtension(extensions, "GL_EXT_float_blend") &&
+      !gl_version_info_->is_es) {
+    if (!disallowed_features_.ext_float_blend) {
+      AddExtensionString("GL_EXT_float_blend");
+      feature_flags_.ext_float_blend = true;
+    }
+  }
+
   if (enable_texture_float) {
     validators_.texture_internal_format_storage.AddValue(GL_RGBA32F_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RGB32F_EXT);

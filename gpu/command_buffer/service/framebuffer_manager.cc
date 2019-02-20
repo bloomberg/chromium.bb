@@ -639,6 +639,18 @@ bool Framebuffer::HasStencilAttachment() const {
   return attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
 }
 
+bool Framebuffer::HasFloatColorAttachment() const {
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    if (it->first != GL_DEPTH_ATTACHMENT &&
+        it->first != GL_STENCIL_ATTACHMENT &&
+        it->second->texture_type() == GL_FLOAT) {
+      return true;
+    }
+  }
+  return false;
+}
+
 GLenum Framebuffer::GetReadBufferInternalFormat() const {
   if (read_buffer_ == GL_NONE)
     return 0;
