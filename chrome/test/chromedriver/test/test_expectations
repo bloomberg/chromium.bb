@@ -10,8 +10,7 @@ It is evaluated through Python.
 import fnmatch
 
 
-_REVISION_NEGATIVE_FILTER = {}
-_REVISION_NEGATIVE_FILTER['HEAD'] = [
+_NEGATIVE_FILTER = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
@@ -26,8 +25,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
 ]
 
-_REVISION_READY_TO_RUN_FILTER = {}
-_REVISION_READY_TO_RUN_FILTER['HEAD'] = [
+_READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
 ]
 
@@ -46,8 +44,6 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
     'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
-
-_SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.*',
@@ -221,58 +217,41 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
 )
 
 
-def _GetRevisionNegativeFilter(chrome_version):
-  if chrome_version in _REVISION_NEGATIVE_FILTER:
-    return _REVISION_NEGATIVE_FILTER[chrome_version]
-  return _REVISION_NEGATIVE_FILTER['HEAD']
+def _GetNegativeFilter():
+  return _NEGATIVE_FILTER
 
-def _GetRevisionReadyToRunFilter(chrome_version):
-  if chrome_version in _REVISION_READY_TO_RUN_FILTER:
-    return _REVISION_READY_TO_RUN_FILTER[chrome_version]
-  return _REVISION_READY_TO_RUN_FILTER['HEAD']
+def _GetReadyToRunFilter():
+  return _READY_TO_RUN_FILTER
 
-def _GetSpecificOsRevisionNegativeFilter(operating_system, chrome_version):
-  os_version = operating_system + "_" + chrome_version
-  if os_version in _SPECIFIC_OS_REVISION_NEGATIVE_FILTER:
-    return _SPECIFIC_OS_REVISION_NEGATIVE_FILTER[os_version]
-  return []
-
-
-def GetDisabledTestMatchers(operating_system, chrome_version):
+def GetDisabledTestMatchers(operating_system):
   """Returns the list of disabled test matchers for the specific configuration.
 
   Args:
     operating_system: The operating system, one of 'linux', 'mac', 'win', or
         'android'.
-    chrome_version: Chrome version to test against, e.g., 'HEAD' or '26'.
 
   Returns:
     List of disabled test matchers, which may contain '*' wildcards.
   """
   return (_OS_NEGATIVE_FILTER[operating_system] +
-          _GetRevisionNegativeFilter(chrome_version) +
-          _GetSpecificOsRevisionNegativeFilter(operating_system,
-                                               chrome_version))[:]
+          _GetNegativeFilter())[:]
 
-def GetReadyToRunTestMatchers(chrome_version):
-  return (_GetRevisionReadyToRunFilter(chrome_version))[:]
+def GetReadyToRunTestMatchers():
+  return (_GetReadyToRunFilter())[:]
 
-def ApplyJavaTestFilter(operating_system, chrome_version, tests):
+def ApplyJavaTestFilter(operating_system, tests):
   """Applies the test filter to the given list of tests.
 
   Args:
     operating_system: The operating system, one of 'linux', 'mac', 'win', or
         'android'.
-    chrome_version: Chrome version to test against, e.g., 'HEAD' or '26'.
     test: list of test names to filter.
 
   Returns:
     Set of passed test names.
   """
   filters = (_OS_NEGATIVE_FILTER[operating_system] +
-             _GetRevisionNegativeFilter(chrome_version) +
-             _GetSpecificOsRevisionNegativeFilter(operating_system,
-                                                  chrome_version))
+             _GetNegativeFilter())
   passed = set(tests)
   for f in filters:
     passed.difference_update(set(t for t in tests if fnmatch.fnmatch(t, f)))
