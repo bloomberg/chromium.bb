@@ -74,6 +74,10 @@ extern const wchar_t kDesktopFullName[];
 extern const wchar_t kRegUpdaterClientStateAppPath[];
 extern const wchar_t kRegUpdaterClientsAppPath[];
 
+// Google MDM related registry paths.
+extern const wchar_t kRegMdmUrl[];
+extern const wchar_t kRegMdmSupportsMultiUser[];
+
 // These are command line switches passed to chrome to start it as a process
 // used as a logon stub.
 extern const char kGcpwSigninSwitch[];
@@ -82,6 +86,8 @@ extern const char kEmailDomainsSwitch[];
 extern const char kGaiaIdSwitch[];
 extern const char kGcpwEndpointPathSwitch[];
 
+// Parameter appended to sign in URL to pass valid signin domains to the inline
+// login handler. These domains are separated by ','.
 extern const char kEmailDomainsSigninPromoParameter[];
 extern const char kEmailDomainsSeparator[];
 extern const char kValidateGaiaIdSigninPromoParameter[];

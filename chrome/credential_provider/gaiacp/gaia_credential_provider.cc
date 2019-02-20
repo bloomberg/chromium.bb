@@ -64,8 +64,25 @@ HRESULT CGaiaCredentialProvider::CreateGaiaCredential() {
     return E_UNEXPECTED;
   }
 
+  // If MDM enrollment is required and multiple users is not supported, only
+  // create the Gaia credential if there does not yet exist an OS user created
+  // from a Google account.  Otherwise we always create the Gaia credential.
+  wchar_t mdm_url[256];
+  ULONG mdm_url_length = base::size(mdm_url);
+  HRESULT hr = GetGlobalFlag(kRegMdmUrl, mdm_url, &mdm_url_length);
+  if (SUCCEEDED(hr) && mdm_url_length > 0) {
+    DWORD multi_user_supported = 0;
+    hr = GetGlobalFlag(kRegMdmSupportsMultiUser, &multi_user_supported);
+    if (FAILED(hr) || multi_user_supported == 0) {
+      DWORD user_count;
+      hr = GetUserCount(&user_count);
+      if (SUCCEEDED(hr) && user_count > 0)
+        return S_OK;
+    }
+  }
+
   CComPtr<IGaiaCredential> cred;
-  HRESULT hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
+  hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
       nullptr, IID_IGaiaCredential, (void**)&cred);
   if (FAILED(hr)) {
     LOG(ERROR) << "Could not create credential hr=" << putHR(hr);

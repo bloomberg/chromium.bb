@@ -179,7 +179,8 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
 
   wchar_t mdm_url[256];
   ULONG length = base::size(mdm_url);
-  hr = credential_provider::GetGlobalFlag(L"mdm", mdm_url, &length);
+  hr = credential_provider::GetGlobalFlag(credential_provider::kRegMdmUrl,
+                                          mdm_url, &length);
   if (SUCCEEDED(hr)) {
     dict->SetString(credential_provider::kKeyMdmUrl, mdm_url);
 

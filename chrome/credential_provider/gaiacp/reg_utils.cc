@@ -78,13 +78,18 @@ HRESULT GetMachineRegString(const base::string16& key_name,
   DWORD type;
   ULONG local_length = *length - 1;
   sts = key.ReadValue(name.c_str(), value, &local_length, &type);
+  if (type != REG_SZ)
+    return HRESULT_FROM_WIN32(ERROR_CANTREAD);
+
+  // When using this overload of the ReadValue() method, the returned length
+  // is in bytes.  The caller expects the length in characters.
+  local_length /= sizeof(wchar_t);
+
   if (sts != ERROR_SUCCESS) {
     if (sts == ERROR_MORE_DATA)
       *length = local_length;
     return HRESULT_FROM_WIN32(sts);
   }
-  if (type != REG_SZ)
-    return HRESULT_FROM_WIN32(ERROR_CANTREAD);
 
   value[local_length] = 0;
   *length = local_length;
@@ -111,6 +116,21 @@ HRESULT SetMachineRegString(const base::string16& key_name,
   return S_OK;
 }
 
+HRESULT SetMachineRegDWORD(const base::string16& key_name,
+                           const base::string16& name,
+                           DWORD value) {
+  base::win::RegKey key;
+  LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_WRITE);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  sts = key.WriteValue(name.c_str(), value);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
 base::string16 GetImageRegKeyForSpecificSize(int image_size) {
   return base::StringPrintf(L"%ls%i", kImageRegKey, image_size);
 }
@@ -124,19 +144,18 @@ base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
 }  // namespace
 
 HRESULT GetAccountPictureRegString(const base::string16& user_sid,
-  int image_size,
-  wchar_t* value,
-  ULONG* length) {
+                                   int image_size,
+                                   wchar_t* value,
+                                   ULONG* length) {
   return GetMachineRegString(GetAccountPictureRegPathForUSer(user_sid),
                              GetImageRegKeyForSpecificSize(image_size), value,
-      length);
+                             length);
 }
 
 // Sets a specific account picture registry key in HKEY_LOCAL_MACHINE
 HRESULT SetAccountPictureRegString(const base::string16& user_sid,
                                    int image_size,
-  const base::string16& value) {
-
+                                   const base::string16& value) {
   return SetMachineRegString(GetAccountPictureRegPathForUSer(user_sid),
                              GetImageRegKeyForSpecificSize(image_size), value);
 }
@@ -154,6 +173,21 @@ HRESULT GetGlobalFlag(const base::string16& name,
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value) {
   return SetMachineRegString(kGcpRootKeyName, name, value);
+}
+
+HRESULT SetGlobalFlagForTesting(const base::string16& name, DWORD value) {
+  return SetMachineRegDWORD(kGcpRootKeyName, name, value);
+}
+
+HRESULT GetUserCount(DWORD* count) {
+  DCHECK(count);
+
+  wchar_t key_name[128];
+  swprintf_s(key_name, base::size(key_name), L"%s\\Users", kGcpRootKeyName);
+
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  *count = iter.SubkeyCount();
+  return S_OK;
 }
 
 HRESULT GetUserProperty(const base::string16& sid,

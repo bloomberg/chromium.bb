@@ -7,9 +7,12 @@
 #include <atlcomcli.h>
 #include <credentialprovider.h>
 
+#include <tuple>
+
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -40,9 +43,12 @@ class GcpCredentialProviderTest : public ::testing::Test {
     ASSERT_TRUE(ConvertSidToStringSid(sid_deleted, &user_sid_string));
     *sid = SysAllocString(W2COLE(user_sid_string));
 
-    ASSERT_EQ(S_OK, SetUserProperty(user_sid_string, L"th", L"th_value"));
+    ASSERT_EQ(S_OK,
+              SetUserProperty(user_sid_string, kUserTokenHandle, L"th_value"));
     LocalFree(user_sid_string);
   }
+
+  FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
 
  private:
   void SetUp() override;
@@ -236,5 +242,112 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
   // Deactivate the CP.
   ASSERT_EQ(S_OK, provider->UnAdvise());
 }
+
+TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
+  // Set up such that MDM is enabled, mulit-users is not, and a user already
+  // exists.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+
+  const wchar_t kDummyUsername[] = L"username";
+  const wchar_t kDummyPassword[] = L"password";
+  CComBSTR sid;
+  CreateGCPWUser(kDummyUsername, L"foo@gmail.com", kDummyPassword, L"Full Name",
+                 L"Comment", L"gaia-id", &sid);
+
+  {
+    CComPtr<ICredentialProvider> provider;
+    ASSERT_EQ(S_OK,
+              CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                  nullptr, IID_ICredentialProvider, (void**)&provider));
+    ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+    // In this case no credential should be returned.
+    DWORD count;
+    DWORD default_index;
+    BOOL autologon;
+    ASSERT_EQ(S_OK,
+              provider->GetCredentialCount(&count, &default_index, &autologon));
+    ASSERT_EQ(0u, count);
+  }
+
+  // Delete the OS user.  At this point, info in the HKLM registry about this
+  // user will still exist.  However it get properly cleaned up on contruction
+  // of the provider and so GetCredentialCount() will now return a valid
+  // credential.
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->RemoveUser(kDummyUsername, kDummyPassword));
+
+  {
+    CComPtr<ICredentialProvider> provider;
+    ASSERT_EQ(S_OK,
+              CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                  nullptr, IID_ICredentialProvider, (void**)&provider));
+    ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+    // This time a credential should be returned.
+    DWORD count;
+    DWORD default_index;
+    BOOL autologon;
+    ASSERT_EQ(S_OK,
+              provider->GetCredentialCount(&count, &default_index, &autologon));
+    ASSERT_EQ(1u, count);
+  }
+}
+
+// Tests the effect of the MDM settings on the credential provider.
+// Parameters:
+//    bool: whether the MDM URL is configured.
+//    int: whether multi-users is supported:
+//        0: set registry to 0
+//        1: set registry to 1
+//        2: don't set at all
+//    bool: whether an existing user exists.
+class GcpCredentialProviderMdmTest
+    : public GcpCredentialProviderTest,
+      public testing::WithParamInterface<std::tuple<bool, int, bool>> {};
+
+TEST_P(GcpCredentialProviderMdmTest, Basic) {
+  const bool config_mdm_url = std::get<0>(GetParam());
+  const int supports_multi_users = std::get<1>(GetParam());
+  const bool user_exists = std::get<2>(GetParam());
+  const DWORD expected_credential_count =
+      config_mdm_url && supports_multi_users != 1 && user_exists ? 0 : 1;
+
+  if (config_mdm_url)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  if (supports_multi_users != 2) {
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser,
+                                            supports_multi_users));
+  }
+
+  if (user_exists) {
+    CComBSTR sid;
+    CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
+                   L"Comment", L"gaia-id", &sid);
+  }
+
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK,
+            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                nullptr, IID_ICredentialProvider, (void**)&provider));
+
+  // Start process for logon screen.
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(expected_credential_count, count);
+}
+
+INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
+                         GcpCredentialProviderMdmTest,
+                         ::testing::Combine(testing::Bool(),
+                                            testing::Range(0, 3),
+                                            testing::Bool()));
 
 }  // namespace credential_provider
