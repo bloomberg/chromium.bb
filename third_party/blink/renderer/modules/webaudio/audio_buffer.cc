@@ -346,4 +346,24 @@ void AudioBuffer::Zero() {
   }
 }
 
+std::unique_ptr<SharedAudioBuffer> AudioBuffer::CreateSharedAudioBuffer() {
+  return std::unique_ptr<SharedAudioBuffer>(new SharedAudioBuffer(this));
+}
+
+SharedAudioBuffer::SharedAudioBuffer(AudioBuffer* buffer)
+    : sample_rate_(buffer->sampleRate()), length_(buffer->length()) {
+  channels_.resize(buffer->numberOfChannels());
+  for (unsigned int i = 0; i < buffer->numberOfChannels(); ++i) {
+    buffer->getChannelData(i).View()->buffer()->ShareNonSharedForInternalUse(
+        channels_[i]);
+  }
+}
+
+void SharedAudioBuffer::Zero() {
+  for (unsigned i = 0; i < channels_.size(); ++i) {
+    float* data = static_cast<float*>(channels_[i].Data());
+    memset(data, 0, length() * sizeof(*data));
+  }
+}
+
 }  // namespace blink

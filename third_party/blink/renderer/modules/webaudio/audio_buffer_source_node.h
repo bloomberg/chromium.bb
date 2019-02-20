@@ -61,7 +61,7 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // setBuffer() is called on the main thread. This is the buffer we use for
   // playback.
   void SetBuffer(AudioBuffer*, ExceptionState&);
-  AudioBuffer* Buffer() { return buffer_.Get(); }
+  SharedAudioBuffer* Buffer() { return shared_buffer_.get(); }
 
   // numberOfChannels() returns the number of output channels.  This value
   // equals the number of channels from the buffer.  If a new buffer is set with
@@ -134,13 +134,11 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
                                                  uint32_t frames_to_process);
 
   // Clamps grain parameters to the duration of the given AudioBuffer.
-  void ClampGrainParameters(const AudioBuffer*);
+  void ClampGrainParameters(const SharedAudioBuffer*);
 
-  // m_buffer holds the sample data which this node outputs.
-  // This Persistent doesn't make a reference cycle including
-  // AudioBufferSourceNode.
-  // It is cross-thread, as it will be accessed by the audio and main threads.
-  CrossThreadPersistent<AudioBuffer> buffer_;
+  // Sample data for the outputs of this node. The shared buffer can safely be
+  // accessed from the audio thread.
+  std::unique_ptr<SharedAudioBuffer> shared_buffer_;
 
   // Pointers for the buffer and destination.
   std::unique_ptr<const float* []> source_channels_;
@@ -229,6 +227,7 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
  private:
   Member<AudioParam> playback_rate_;
   Member<AudioParam> detune_;
+  Member<AudioBuffer> buffer_;
 };
 
 }  // namespace blink

@@ -40,6 +40,7 @@ class AudioBuffer;
 class ConvolverOptions;
 class ExceptionState;
 class Reverb;
+class SharedAudioBuffer;
 
 class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
  public:
@@ -54,7 +55,6 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 
   // Impulse responses
   void SetBuffer(AudioBuffer*, ExceptionState&);
-  AudioBuffer* Buffer();
 
   bool Normalize() const { return normalize_; }
   void SetNormalize(bool normalize) { normalize_ = normalize; }
@@ -74,10 +74,7 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
                                          unsigned response_channels) const;
 
   std::unique_ptr<Reverb> reverb_;
-  // This Persistent doesn't make a reference cycle including the owner
-  // ConvolverNode.
-  // It is cross-thread, as it will be accessed by the audio and main threads.
-  CrossThreadPersistent<AudioBuffer> buffer_;
+  std::unique_ptr<SharedAudioBuffer> shared_buffer_;
 
   // This synchronizes dynamic changes to the convolution impulse response with
   // process().
@@ -105,8 +102,12 @@ class MODULES_EXPORT ConvolverNode final : public AudioNode {
   bool normalize() const;
   void setNormalize(bool);
 
+  void Trace(Visitor*) override;
+
  private:
   ConvolverHandler& GetConvolverHandler() const;
+
+  Member<AudioBuffer> buffer_;
 
   FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };

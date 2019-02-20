@@ -79,7 +79,6 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // allows creation of the AudioBuffer when startRendering is called
   // instead of when the OfflineAudioContext is created.
   void InitializeOfflineRenderThread(AudioBuffer* render_target);
-  AudioBuffer* RenderTarget() const { return render_target_.Get(); }
 
   unsigned NumberOfChannels() const { return number_of_channels_; }
 
@@ -125,10 +124,8 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // from AudioWorkletThread will be used until the rendering is finished.
   void PrepareTaskRunnerForRendering();
 
-  // This AudioHandler renders into this AudioBuffer.
-  // This Persistent doesn't make a reference cycle including the owner
-  // OfflineAudioDestinationNode. It is accessed by both audio and main thread.
-  CrossThreadPersistent<AudioBuffer> render_target_;
+  // This AudioHandler renders into this SharedAudioBuffer.
+  std::unique_ptr<SharedAudioBuffer> shared_render_target_;
   // Temporary AudioBus for each render quantum.
   scoped_refptr<AudioBus> render_bus_;
 
@@ -164,6 +161,17 @@ class OfflineAudioDestinationNode final : public AudioDestinationNode {
                               unsigned number_of_channels,
                               uint32_t frames_to_process,
                               float sample_rate);
+
+  AudioBuffer* DestinationBuffer() const { return destination_buffer_; }
+
+  void SetDestinationBuffer(AudioBuffer* buffer) {
+    destination_buffer_ = buffer;
+  }
+
+  void Trace(Visitor* visitor) override;
+
+ private:
+  Member<AudioBuffer> destination_buffer_;
 };
 
 }  // namespace blink
