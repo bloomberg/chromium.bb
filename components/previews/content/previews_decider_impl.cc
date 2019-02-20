@@ -274,6 +274,10 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // eligibility so that it will be available at commit time.
   previews_data->set_navigation_ect(effective_connection_type_);
 
+  // Do not allow previews on any authenticated pages.
+  if (url.has_username() || url.has_password())
+    return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
+
   // In the case that the user has chosen to ignore the normal blacklist rules
   // (flags or interventions-internals), a preview should still not be served
   // for 5 seconds after the last opt out. This allows "show original" to

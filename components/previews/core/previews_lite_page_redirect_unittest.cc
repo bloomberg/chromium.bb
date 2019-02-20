@@ -44,7 +44,7 @@ TEST(PreviewsLitePageURLHandlerTest,
           "https://6p7dar4ju6r4ynz7x3pucmlcltuqsf7z5auhvckzln7voglkt56q."
           "previews.host.com/p?u="
           "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
-          "%23fragment#fragment",
+          "#fragment",
           true,
       },
   };

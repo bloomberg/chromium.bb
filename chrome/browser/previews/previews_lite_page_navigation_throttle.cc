@@ -423,6 +423,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     fragment = "#" + original_url.ref();
   }
 
+  // Strip out the fragment so that it is not sent to the server.
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
           original_url.scheme() + "://" + original_url.host() + ":" +
@@ -433,7 +434,8 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
       previews_host.scheme() + "://" + origin_hash + "." +
       previews_host.host() +
       (previews_host.has_port() ? (":" + previews_host.port()) : "") + "/p?u=" +
-      net::EscapeQueryParamValue(original_url.spec(), true /* use_plus */) +
+      net::EscapeQueryParamValue(original_url.GetAsReferrer().spec(),
+                                 true /* use_plus */) +
       experiment_query + fragment);
   DCHECK(previews_url.is_valid());
   DCHECK_EQ(previews_host.scheme(), previews_url.scheme());

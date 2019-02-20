@@ -437,6 +437,26 @@ TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {
       PreviewsType::NOSCRIPT));
 }
 
+TEST_F(PreviewsDeciderImplTest, TestDisallowBasicAuthentication) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kClientLoFi}, {});
+  InitializeUIService();
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://user:pass@www.google.com"), false,
+      PreviewsType::LOFI));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason",
+      static_cast<int>(PreviewsEligibilityReason::URL_HAS_BASIC_AUTH), 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.LoFi",
+      static_cast<int>(PreviewsEligibilityReason::URL_HAS_BASIC_AUTH), 1);
+}
+
 // Tests most of the reasons that a preview could be disallowed because of the
 // state of the blacklist. Excluded values are USER_RECENTLY_OPTED_OUT,
 // USER_BLACKLISTED, HOST_BLACKLISTED. These are internal to the blacklist.
