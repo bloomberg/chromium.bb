@@ -147,8 +147,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void ShouldBlockRequest(const KURL&, bool* result);
   void ShouldBypassServiceWorker(bool* result);
 
-  void WillLoadXHR(XMLHttpRequest*,
-                   ThreadableLoaderClient*,
+  void WillLoadXHR(ExecutionContext*,
                    const AtomicString& method,
                    const KURL&,
                    bool async,

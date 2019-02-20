@@ -104,7 +104,7 @@ interface CoreProbes {
   void didFailLoading(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceError&);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willDispatchEventSourceEvent(ExecutionContext*, unsigned long identifier, const AtomicString& eventName, const AtomicString& eventId, const String& data);
-  void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, EncodedFormData* form_data, const HTTPHeaderMap& headers, bool includeCredentials);
+  void willLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, EncodedFormData* form_data, const HTTPHeaderMap& headers, bool includeCredentials);
   void didFinishXHR(ExecutionContext*, XMLHttpRequest* xhr);
   void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
   void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);

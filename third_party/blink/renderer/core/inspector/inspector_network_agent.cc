@@ -762,8 +762,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   else if (request.HttpBody())
     post_data = request.HttpBody()->DeepCopy();
 
-  resources_data_->ResourceCreated(execution_context, request_id, loader_id,
-                                   request.Url(), post_data);
+  resources_data_->ResourceCreated(request_id, loader_id, request.Url(),
+                                   post_data);
   if (initiator_info.name == fetch_initiator_type_names::kXmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
   else if (initiator_info.name == fetch_initiator_type_names::kFetch)
@@ -839,8 +839,7 @@ void InspectorNetworkAgent::WillSendNavigationRequest(
     post_data = data->PostData();
   else if (http_body)
     post_data = http_body->DeepCopy();
-  resources_data_->ResourceCreated(execution_context, request_id, loader_id,
-                                   url, post_data);
+  resources_data_->ResourceCreated(request_id, loader_id, url, post_data);
   resources_data_->SetResourceType(request_id,
                                    InspectorPageAgent::kDocumentResource);
 }
@@ -1111,18 +1110,16 @@ bool InspectorNetworkAgent::IsNavigation(DocumentLoader* loader,
   return loader && loader->MainResourceIdentifier() == identifier;
 }
 
-void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
-                                        ThreadableLoaderClient* client,
+void InspectorNetworkAgent::WillLoadXHR(ExecutionContext* execution_context,
                                         const AtomicString& method,
                                         const KURL& url,
                                         bool async,
                                         EncodedFormData* form_data,
                                         const HTTPHeaderMap& headers,
                                         bool include_credentials) {
-  DCHECK(xhr);
   DCHECK(!pending_request_);
   pending_xhr_replay_data_ = XHRReplayData::Create(
-      method, UrlWithoutFragment(url), async,
+      execution_context, method, UrlWithoutFragment(url), async,
       form_data ? form_data->DeepCopy() : nullptr, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
@@ -1431,8 +1428,8 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
   if (!xhr_replay_data || !data)
     return Response::Error("Given id does not correspond to XHR");
 
-  ExecutionContext* execution_context = data->GetExecutionContext();
-  if (execution_context->IsContextDestroyed()) {
+  ExecutionContext* execution_context = xhr_replay_data->GetExecutionContext();
+  if (!execution_context || execution_context->IsContextDestroyed()) {
     resources_data_->SetXHRReplayData(request_id, nullptr);
     return Response::Error("Document is already detached");
   }
