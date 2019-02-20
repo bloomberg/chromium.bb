@@ -1086,8 +1086,10 @@ WebContents* PrintPreviewHandler::GetInitiator() const {
   return dialog_controller->GetInitiator(preview_web_contents());
 }
 
-void PrintPreviewHandler::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
+// TODO(crbug.com/932692): Investigate the replacement or removal of
+// this override altogether.
+void PrintPreviewHandler::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   FireWebUIListener("reload-printer-list");
 }
