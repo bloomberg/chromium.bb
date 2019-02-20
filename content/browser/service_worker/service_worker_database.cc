@@ -1245,8 +1245,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetPurgeableResourceIds(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
     const std::set<int64_t>& ids) {
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+
   leveldb::WriteBatch batch;
-  Status status = DeleteResourceIdsInBatch(
+  status = DeleteResourceIdsInBatch(
       service_worker_internals::kPurgeableResIdKeyPrefix, ids, &batch);
   if (status != STATUS_OK)
     return status;
@@ -1256,8 +1260,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::PurgeUncommittedResourceIds(
     const std::set<int64_t>& ids) {
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+
   leveldb::WriteBatch batch;
-  Status status = DeleteResourceIdsInBatch(
+  status = DeleteResourceIdsInBatch(
       service_worker_internals::kUncommittedResIdKeyPrefix, ids, &batch);
   if (status != STATUS_OK)
     return status;
