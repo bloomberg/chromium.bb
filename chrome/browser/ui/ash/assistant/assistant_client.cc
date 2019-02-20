@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
@@ -39,7 +39,7 @@ AssistantClient::~AssistantClient() {
 }
 
 void AssistantClient::MaybeInit(Profile* profile) {
-  if (arc::IsAssistantAllowedForProfile(profile) !=
+  if (assistant::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
   }

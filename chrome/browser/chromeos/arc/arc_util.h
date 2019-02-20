@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "components/arc/arc_supervision_transition.h"
@@ -159,10 +158,6 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const AccountId& account_id,
     const base::FilePath& profile_path,
     base::OnceClosure callback);
-
-// Returns whether Google Assistant feature is allowed for given |profile|.
-ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
-    const Profile* profile);
 
 // Returns the supervision transition status as stored in profile prefs.
 ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);

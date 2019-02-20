@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -176,7 +177,7 @@ std::string SetWhitelistedPref(Profile* profile,
   if (pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
     DCHECK(value.is_bool());
 
-    if (arc::IsAssistantAllowedForProfile(profile) !=
+    if (assistant::IsAssistantAllowedForProfile(profile) !=
         ash::mojom::AssistantAllowedState::ALLOWED) {
       return "Assistant is not available for the current user";
     }
@@ -1212,7 +1213,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (arc::IsAssistantAllowedForProfile(profile) !=
+  if (assistant::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return RespondNow(Error("Assistant is not available for the current user"));
   }
@@ -1278,7 +1279,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!profile || arc::IsAssistantAllowedForProfile(profile) !=
+  if (!profile || assistant::IsAssistantAllowedForProfile(profile) !=
                       ash::mojom::AssistantAllowedState::ALLOWED) {
     return RespondNow(Error("Assistant is not available for the current user"));
   }

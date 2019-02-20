@@ -11,7 +11,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
@@ -127,7 +127,7 @@ void VoiceInteractionControllerClient::NotifyConsentStatus() {
 void VoiceInteractionControllerClient::NotifyFeatureAllowed() {
   DCHECK(profile_);
   ash::mojom::AssistantAllowedState state =
-      IsAssistantAllowedForProfile(profile_);
+      assistant::IsAssistantAllowedForProfile(profile_);
   voice_interaction_controller_->NotifyFeatureAllowed(state);
 }
 
