@@ -883,8 +883,12 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (accessibility_mode_.has_mode(ui::AXMode::kLabelImages) &&
       dst->role == ax::mojom::Role::kImage) {
     DCHECK(image_annotator_);
-    dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
-                            image_annotator_->GetImageAnnotation(src));
+    if (image_annotator_->HasAnnotationInCache(src)) {
+      dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                              image_annotator_->GetImageAnnotation(src));
+    } else if (!image_annotator_->HasImageInCache(src)) {
+      image_annotator_->OnImageAdded(src);
+    }
   }
 
   // The majority of the rest of this code computes attributes needed for
