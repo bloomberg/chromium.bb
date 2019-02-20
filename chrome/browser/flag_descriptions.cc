@@ -2699,6 +2699,13 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
+const char kInlineUpdateFlowName[] = "Enable Google Play inline update flow";
+const char kInlineUpdateFlowDescription[] =
+    "When this flag is set, instead of taking the user to the Google Play "
+    "Store when an update is available, the user is presented with an inline "
+    "flow where they do not have to leave Chrome until the update is ready "
+    "to install.";
+
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";
 const char kThirdPartyDoodlesDescription[] =
