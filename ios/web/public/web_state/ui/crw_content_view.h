@@ -27,10 +27,6 @@
 // bug, where UIScrollView.content inset does not work (rdar://23584409).
 @property(nonatomic, assign) UIEdgeInsets contentInset;
 
-// Returns YES if content is being displayed in the scroll view.
-// TODO(stuartmorgan): See if this can be removed from the public interface.
-- (BOOL)isViewAlive;
-
 @optional
 
 // Whether or not the content view should use the content inset when setting
