@@ -34,10 +34,9 @@
 #include "base/base_export.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 
 namespace base {
-
-class Value;
 
 namespace internal {
 class JSONParser;
@@ -76,6 +75,24 @@ class BASE_EXPORT JSONReader {
     JSON_PARSE_ERROR_COUNT
   };
 
+  struct BASE_EXPORT ValueWithError {
+    ValueWithError();
+    ValueWithError(ValueWithError&& other);
+    ValueWithError& operator=(ValueWithError&& other);
+    ~ValueWithError();
+
+    Optional<Value> value;
+
+    // Contains default values if |value| exists, or the error status if |value|
+    // is base::nullopt.
+    JsonParseError error_code = JSON_NO_ERROR;
+    std::string error_message;
+    int error_line = 0;
+    int error_column = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(ValueWithError);
+  };
+
   // String versions of parse error codes.
   static const char kInvalidEscape[];
   static const char kSyntaxError[];
@@ -108,18 +125,13 @@ class BASE_EXPORT JSONReader {
                                                int options = JSON_PARSE_RFC,
                                                int max_depth = kStackMaxDepth);
 
-  // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|
-  // are optional. If specified and nullptr is returned, they will be populated
-  // an error code and a formatted error message (including error location if
-  // appropriate). Otherwise, they will be unmodified.
-  static Optional<Value> ReadAndReturnError(StringPiece json,
-                                            int options,  // JSONParserOptions
-                                            int* error_code_out,
-                                            std::string* error_msg_out,
-                                            int* error_line_out = nullptr,
-                                            int* error_column_out = nullptr);
+  // Reads and parses |json| like Read(). Returns a ValueWithError, which on
+  // error, will be populated with a formatted error message, an error code, and
+  // the error location if appropriate.
+  static ValueWithError ReadAndReturnValueWithError(StringPiece json,
+                                                    int options);
 
-  // Deprecated. Use the ReadAndReturnError() method above.
+  // Deprecated. Use the ReadAndReturnValueWithError() method above.
   // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|
   // are optional. If specified and nullptr is returned, they will be populated
   // an error code and a formatted error message (including error location if
