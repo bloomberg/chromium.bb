@@ -82,11 +82,6 @@ void CastRunner::GetConfigCallback(
     chromium::cast::ApplicationConfigPtr app_config) {
   if (!app_config) {
     DLOG(WARNING) << "No ApplicationConfig was found.";
-
-    // For test purposes, we need to call RegisterComponent even if there is no
-    // URL to launch.
-    // TODO: Replace this hack, e.g. with an test-specific callback.
-    RegisterComponent(std::unique_ptr<WebComponent>(nullptr));
     return;
   }
 

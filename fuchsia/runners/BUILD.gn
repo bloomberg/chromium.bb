@@ -89,14 +89,11 @@ source_set("cast_runner_test_core") {
   sources = [
     "cast/fake_application_config_manager.cc",
     "cast/fake_application_config_manager.h",
-    "cast/test_common.cc",
-    "cast/test_common.h",
   ]
   public_deps = [
     "//base",
     "//fuchsia:cast_fidl",
-    "//net:test_support",
-    "//third_party/fuchsia-sdk/sdk:sys",
+    "//url",
   ]
   visibility = [ ":*" ]
 }
