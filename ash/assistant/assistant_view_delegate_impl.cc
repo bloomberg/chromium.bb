@@ -125,6 +125,13 @@ void AssistantViewDelegateImpl::DownloadImage(
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 
+mojom::ConsentStatus AssistantViewDelegateImpl::GetConsentStatus() const {
+  return Shell::Get()
+      ->voice_interaction_controller()
+      ->consent_status()
+      .value_or(mojom::ConsentStatus::kUnknown);
+}
+
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
   return Shell::Get()->cursor_manager();
 }
@@ -166,14 +173,6 @@ void AssistantViewDelegateImpl::NotifyDeepLinkReceived(
     const std::map<std::string, std::string>& params) {
   for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
     observer.OnDeepLinkReceived(type, params);
-}
-
-bool AssistantViewDelegateImpl::VoiceInteractionControllerSetupCompleted()
-    const {
-  return Shell::Get()
-      ->voice_interaction_controller()
-      ->setup_completed()
-      .value_or(false);
 }
 
 }  // namespace ash

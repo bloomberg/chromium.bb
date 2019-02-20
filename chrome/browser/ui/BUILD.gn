@@ -3371,6 +3371,8 @@ jumbo_split_static_library("ui") {
       "ash/assistant/assistant_context_util.h",
       "ash/assistant/assistant_image_downloader.cc",
       "ash/assistant/assistant_image_downloader.h",
+      "ash/assistant/assistant_pref_util.cc",
+      "ash/assistant/assistant_pref_util.h",
       "ash/assistant/assistant_setup.cc",
       "ash/assistant/assistant_setup.h",
       "ash/assistant/device_actions.cc",

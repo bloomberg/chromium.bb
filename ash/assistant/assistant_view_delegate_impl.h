@@ -54,6 +54,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void DownloadImage(
       const GURL& url,
       mojom::AssistantImageDownloader::DownloadCallback callback) override;
+  mojom::ConsentStatus GetConsentStatus() const override;
   ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(
       content::mojom::NavigableContentsFactoryRequest request) override;
@@ -63,7 +64,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
                                    int notification_button_index) override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
   void OpenUrlFromView(const GURL& url) override;
-  bool VoiceInteractionControllerSetupCompleted() const override;
 
  private:
   AssistantController* const assistant_controller_;

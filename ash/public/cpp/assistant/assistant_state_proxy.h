@@ -40,20 +40,21 @@ class ASH_PUBLIC_EXPORT AssistantStateProxy
  private:
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
-      ash::mojom::VoiceInteractionState state) override;
+      mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnVoiceInteractionConsentStatusUpdated(
+      mojom::ConsentStatus consent_status) override;
   void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState state) override;
+      mojom::AssistantAllowedState state) override;
   void OnLocaleChanged(const std::string& locale) override;
 
   base::ObserverList<DefaultVoiceInteractionObserver> observers_;
 
-  ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
-  mojo::Binding<ash::mojom::VoiceInteractionObserver>
+  mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
+  mojo::Binding<mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantStateProxy);

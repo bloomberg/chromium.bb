@@ -302,7 +302,8 @@ void AppListButton::OnVoiceInteractionSettingsEnabled(bool enabled) {
   SchedulePaint();
 }
 
-void AppListButton::OnVoiceInteractionSetupCompleted(bool completed) {
+void AppListButton::OnVoiceInteractionConsentStatusUpdated(
+    mojom::ConsentStatus consent_status) {
   SchedulePaint();
 }
 
@@ -328,11 +329,14 @@ bool AppListButton::UseVoiceInteractionStyle() {
   VoiceInteractionController* controller =
       Shell::Get()->voice_interaction_controller();
   bool settings_enabled = controller->settings_enabled().value_or(false);
-  bool setup_completed = controller->setup_completed().value_or(false);
+
+  const bool consent_given = controller->consent_status() ==
+                             mojom::ConsentStatus::kActivityControlAccepted;
+
   bool is_feature_allowed =
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
   if (assistant_overlay_ && is_feature_allowed &&
-      (settings_enabled || !setup_completed)) {
+      (settings_enabled || !consent_given)) {
     return true;
   }
   return false;

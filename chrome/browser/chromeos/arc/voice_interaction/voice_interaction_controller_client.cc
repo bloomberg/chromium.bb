@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -116,12 +117,11 @@ void VoiceInteractionControllerClient::NotifyHotwordAlwaysOn() {
   voice_interaction_controller_->NotifyHotwordAlwaysOn(always_on);
 }
 
-void VoiceInteractionControllerClient::NotifySetupCompleted() {
+void VoiceInteractionControllerClient::NotifyConsentStatus() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
-  bool completed =
-      prefs->GetBoolean(prefs::kVoiceInteractionActivityControlAccepted);
-  voice_interaction_controller_->NotifySetupCompleted(completed);
+  voice_interaction_controller_->NotifyConsentStatus(
+      assistant::prefs::GetConsentStatus(prefs));
 }
 
 void VoiceInteractionControllerClient::NotifyFeatureAllowed() {
@@ -182,9 +182,9 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   pref_change_registrar_->Init(prefs);
 
   pref_change_registrar_->Add(
-      prefs::kVoiceInteractionActivityControlAccepted,
+      assistant::prefs::kAssistantConsentStatus,
       base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifySetupCompleted,
+          &VoiceInteractionControllerClient::NotifyConsentStatus,
           base::Unretained(this)));
   pref_change_registrar_->Add(
       language::prefs::kApplicationLocale,
@@ -222,7 +222,7 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
           &VoiceInteractionControllerClient::NotifyLaunchWithMicOpen,
           base::Unretained(this)));
 
-  NotifySetupCompleted();
+  NotifyConsentStatus();
   NotifySettingsEnabled();
   NotifyContextEnabled();
   NotifyLocaleChanged();

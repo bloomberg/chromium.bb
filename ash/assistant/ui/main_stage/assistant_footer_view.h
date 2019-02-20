@@ -37,7 +37,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantFooterView
   int GetHeightForWidth(int width) const override;
 
   // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnVoiceInteractionConsentStatusUpdated(
+      mojom::ConsentStatus consent_status) override;
 
  private:
   void InitLayout();

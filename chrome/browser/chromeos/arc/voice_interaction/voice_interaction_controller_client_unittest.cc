@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/fake_voice_interaction_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
@@ -138,15 +139,17 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
       false,
       voice_interaction_controller()->voice_interaction_notification_enabled());
 
-  ASSERT_EQ(false,
-            prefs->GetBoolean(prefs::kVoiceInteractionActivityControlAccepted));
-  prefs->SetBoolean(prefs::kVoiceInteractionActivityControlAccepted, true);
-  ASSERT_EQ(true,
-            prefs->GetBoolean(prefs::kVoiceInteractionActivityControlAccepted));
+  ASSERT_EQ(static_cast<int>(ash::mojom::ConsentStatus::kUnknown),
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  prefs->SetInteger(
+      assistant::prefs::kAssistantConsentStatus,
+      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted));
+  ASSERT_EQ(
+      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted),
+      prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      true,
-      voice_interaction_controller()->voice_interaction_setup_completed());
+  EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
+            voice_interaction_controller()->voice_interaction_consent_status());
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");
