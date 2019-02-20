@@ -49,7 +49,7 @@ class CloseEvent final : public Event {
   static CloseEvent* Create() { return MakeGarbageCollected<CloseEvent>(); }
 
   static CloseEvent* Create(bool was_clean,
-                            unsigned short code,
+                            uint16_t code,
                             const String& reason) {
     return MakeGarbageCollected<CloseEvent>(was_clean, code, reason);
   }
@@ -68,7 +68,7 @@ class CloseEvent final : public Event {
   CloseEvent(const AtomicString& type, const CloseEventInit* initializer);
 
   bool wasClean() const { return was_clean_; }
-  unsigned short code() const { return code_; }
+  uint16_t code() const { return code_; }
   String reason() const { return reason_; }
 
   // Event function.
@@ -80,7 +80,7 @@ class CloseEvent final : public Event {
 
  private:
   bool was_clean_;
-  unsigned short code_;
+  uint16_t code_;
   String reason_;
 };
 

@@ -934,8 +934,7 @@ TEST(DOMWebSocketTest, binaryType) {
 
 // FIXME: We should add tests for suspend / resume.
 
-class DOMWebSocketValidClosingTest
-    : public testing::TestWithParam<unsigned short> {};
+class DOMWebSocketValidClosingTest : public testing::TestWithParam<uint16_t> {};
 
 TEST_P(DOMWebSocketValidClosingTest, test) {
   V8TestingScope scope;
@@ -964,7 +963,7 @@ INSTANTIATE_TEST_SUITE_P(DOMWebSocketValidClosing,
                          testing::Values(1000, 3000, 3001, 4998, 4999));
 
 class DOMWebSocketInvalidClosingCodeTest
-    : public testing::TestWithParam<unsigned short> {};
+    : public testing::TestWithParam<uint16_t> {};
 
 TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   V8TestingScope scope;

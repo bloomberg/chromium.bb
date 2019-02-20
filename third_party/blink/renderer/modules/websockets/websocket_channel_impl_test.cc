@@ -64,9 +64,7 @@ class MockWebSocketChannelClient
   MOCK_METHOD1(DidConsumeBufferedAmount, void(uint64_t));
   MOCK_METHOD0(DidStartClosingHandshake, void());
   MOCK_METHOD3(DidClose,
-               void(ClosingHandshakeCompletionStatus,
-                    unsigned short,
-                    const String&));
+               void(ClosingHandshakeCompletionStatus, uint16_t, const String&));
 
   void Trace(blink::Visitor* visitor) override {
     WebSocketChannelClient::Trace(visitor);
@@ -102,7 +100,7 @@ class MockWebSocketHandle : public WebSocketHandle {
       Send,
       void(bool, WebSocketHandle::MessageType, const char*, wtf_size_t));
   MOCK_METHOD1(FlowControl, void(int64_t));
-  MOCK_METHOD2(Close, void(unsigned short, const String&));
+  MOCK_METHOD2(Close, void(uint16_t, const String&));
 };
 
 class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {

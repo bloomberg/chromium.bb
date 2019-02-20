@@ -99,9 +99,9 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
   // it's bound to a value of 0 which is indistinguishable from the case 0
   // is passed as code parameter.
-  void close(unsigned short code, const String& reason, ExceptionState&);
+  void close(uint16_t code, const String& reason, ExceptionState&);
   void close(ExceptionState&);
-  void close(unsigned short code, ExceptionState&);
+  void close(uint16_t code, ExceptionState&);
 
   const KURL& url() const;
   State readyState() const;
@@ -139,7 +139,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   void DidConsumeBufferedAmount(uint64_t) override;
   void DidStartClosingHandshake() override;
   void DidClose(ClosingHandshakeCompletionStatus,
-                unsigned short code,
+                uint16_t code,
                 const String& reason) override;
 
   void Trace(blink::Visitor*) override;

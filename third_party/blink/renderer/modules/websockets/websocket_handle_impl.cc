@@ -105,7 +105,7 @@ void WebSocketHandleImpl::FlowControl(int64_t quota) {
   websocket_->SendFlowControl(quota);
 }
 
-void WebSocketHandleImpl::Close(unsigned short code, const String& reason) {
+void WebSocketHandleImpl::Close(uint16_t code, const String& reason) {
   DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " close(" << code << ", " << reason << ")";

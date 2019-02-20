@@ -70,7 +70,7 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   void DidConsumeBufferedAmount(uint64_t consumed);
   void DidStartClosingHandshake();
   void DidClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus,
-                unsigned short code,
+                uint16_t code,
                 const String& reason);
 
  private:

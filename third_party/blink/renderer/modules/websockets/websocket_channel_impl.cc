@@ -109,7 +109,7 @@ class WebSocketChannelImpl::Message
   // For WorkerWebSocketChannel
   explicit Message(std::unique_ptr<Vector<char>>, MessageType);
   // Close message
-  Message(unsigned short code, const String& reason);
+  Message(uint16_t code, const String& reason);
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(array_buffer); }
 
@@ -119,7 +119,7 @@ class WebSocketChannelImpl::Message
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Member<DOMArrayBuffer> array_buffer;
   std::unique_ptr<Vector<char>> vector_data;
-  unsigned short code;
+  uint16_t code;
   String reason;
 };
 
@@ -354,7 +354,7 @@ void WebSocketChannelImpl::SendBinaryAsCharVector(
 void WebSocketChannelImpl::Close(int code, const String& reason) {
   NETWORK_DVLOG(1) << this << " Close(" << code << ", " << reason << ")";
   DCHECK(handle_);
-  unsigned short code_to_send = static_cast<unsigned short>(
+  uint16_t code_to_send = static_cast<uint16_t>(
       code == kCloseEventCodeNotSpecified ? kCloseEventCodeNoStatusRcvd : code);
   messages_.push_back(MakeGarbageCollected<Message>(code_to_send, reason));
   ProcessSendQueue();
@@ -421,8 +421,7 @@ WebSocketChannelImpl::Message::Message(
          type == kMessageTypeBinaryAsCharVector);
 }
 
-WebSocketChannelImpl::Message::Message(unsigned short code,
-                                       const String& reason)
+WebSocketChannelImpl::Message::Message(uint16_t code, const String& reason)
     : type(kMessageTypeClose), code(code), reason(reason) {}
 
 void WebSocketChannelImpl::SendInternal(
@@ -531,7 +530,7 @@ void WebSocketChannelImpl::AbortAsyncOperations() {
 }
 
 void WebSocketChannelImpl::HandleDidClose(bool was_clean,
-                                          unsigned short code,
+                                          uint16_t code,
                                           const String& reason) {
   handshake_throttle_.reset();
   handle_.reset();
@@ -684,7 +683,7 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
 
 void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,
                                     bool was_clean,
-                                    unsigned short code,
+                                    uint16_t code,
                                     const String& reason) {
   NETWORK_DVLOG(1) << this << " DidClose(" << handle << ", " << was_clean
                    << ", " << code << ", " << String(reason) << ")";

@@ -55,7 +55,7 @@ class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
     kClosingHandshakeComplete
   };
   virtual void DidClose(ClosingHandshakeCompletionStatus,
-                        unsigned short /* code */,
+                        uint16_t /* code */,
                         const String& /* reason */) {}
   void Trace(blink::Visitor* visitor) override {}
 
