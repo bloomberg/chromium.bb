@@ -137,7 +137,7 @@ void WaylandKeyboard::Modifiers(void* data,
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   DCHECK(keyboard);
 
-  keyboard->modifiers_ = keyboard->layout_engine_->GetModifierFlags(
+  keyboard->modifiers_ = keyboard->layout_engine_->UpdateModifiers(
       depressed, latched, locked, group);
 #endif
 }

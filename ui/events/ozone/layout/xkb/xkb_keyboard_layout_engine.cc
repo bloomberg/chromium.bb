@@ -841,6 +841,7 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
         num_lock_mask = flag;
     }
   }
+  layout_index_ = 0;
 #if defined(OS_CHROMEOS)
   // Update num lock mask.
   num_lock_mod_mask_ = num_lock_mask;
@@ -861,10 +862,10 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
   return xkb_flags;
 }
 
-int XkbKeyboardLayoutEngine::GetModifierFlags(uint32_t depressed,
-                                              uint32_t latched,
-                                              uint32_t locked,
-                                              uint32_t group) const {
+int XkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed,
+                                             uint32_t latched,
+                                             uint32_t locked,
+                                             uint32_t group) {
   auto* state = xkb_state_.get();
   xkb_state_update_mask(state, depressed, latched, locked, 0, 0, group);
   auto component = static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
@@ -875,6 +876,7 @@ int XkbKeyboardLayoutEngine::GetModifierFlags(uint32_t depressed,
     if (xkb_state_mod_index_is_active(state, entry.xkb_index, component))
       ui_flags |= entry.ui_flag;
   }
+  layout_index_ = group;
   return ui_flags;
 }
 
@@ -886,11 +888,14 @@ bool XkbKeyboardLayoutEngine::XkbLookup(xkb_keycode_t xkb_keycode,
     LOG(ERROR) << "No current XKB state";
     return false;
   }
-  xkb_state_update_mask(xkb_state_.get(), xkb_flags, 0, 0, 0, 0, 0);
-  *xkb_keysym = xkb_state_key_get_one_sym(xkb_state_.get(), xkb_keycode);
+
+  auto* state = xkb_state_.get();
+  xkb_state_update_mask(state, xkb_flags, 0, 0, 0, 0, layout_index_);
+  *xkb_keysym = xkb_state_key_get_one_sym(state, xkb_keycode);
+
   if (*xkb_keysym == XKB_KEY_NoSymbol)
     return false;
-  *character = xkb_state_key_get_utf32(xkb_state_.get(), xkb_keycode);
+  *character = xkb_state_key_get_utf32(state, xkb_keycode);
   return true;
 }
 
