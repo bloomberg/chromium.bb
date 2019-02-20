@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -2307,6 +2308,29 @@ TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
   button2->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(5, data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
   EXPECT_EQ(5, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+}
+
+// Tests that a menu opened asynchronously, will notify its
+// MenuControllerDelegate when accessibility performs a do default action.
+TEST_F(MenuControllerTest, AccessibilityDoDefaultCallsAccept) {
+  views::test::DisableMenuClosureAnimations();
+
+  MenuController* controller = menu_controller();
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+
+  MenuItemView* accepted = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kDoDefault;
+  accepted->HandleAccessibleAction(data);
+  views::test::WaitForMenuClosureAnimation();
+
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_EQ(accepted, delegate->on_menu_closed_menu());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            delegate->on_menu_closed_notify_type());
 }
 
 }  // namespace test
