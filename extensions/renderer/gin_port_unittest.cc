@@ -306,6 +306,65 @@ TEST_F(GinPortTest, TestJSDisconnect) {
   EXPECT_TRUE(port->is_closed_for_testing());
 }
 
+// Tests that a call of disconnect() from the listener of the onDisconnect event
+// is rejected. Regression test for crbug.com/932347.
+TEST_F(GinPortTest, JSDisconnectFromOnDisconnect) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  const char kTestFunction[] =
+      R"((function(port) {
+           port.onDisconnect.addListener(() => {
+             port.disconnect();
+           });
+      }))";
+  v8::Local<v8::Function> test_function =
+      FunctionFromString(context, kTestFunction);
+  v8::Local<v8::Value> args[] = {port_obj};
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
+
+  port->DispatchOnDisconnect(context);
+  EXPECT_TRUE(port->is_closed_for_testing());
+}
+
+// Tests that a call of postMessage() from the listener of the onDisconnect
+// event is rejected. Regression test for crbug.com/932347.
+TEST_F(GinPortTest, JSPostMessageFromOnDisconnect) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  const char kTestFunction[] =
+      R"((function(port) {
+           port.onDisconnect.addListener(() => {
+             try {
+               port.postMessage({data: [42]});
+             } catch (e) {
+               this.lastError = e.message;
+             }
+           });
+      }))";
+  v8::Local<v8::Function> test_function =
+      FunctionFromString(context, kTestFunction);
+  v8::Local<v8::Value> args[] = {port_obj};
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
+
+  port->DispatchOnDisconnect(context);
+  EXPECT_EQ(
+      "\"Attempting to use a disconnected port object\"",
+      GetStringPropertyFromObject(context->Global(), context, "lastError"));
+  EXPECT_TRUE(port->is_closed_for_testing());
+}
+
 // Tests setting and getting the 'sender' property.
 TEST_F(GinPortTest, TestSenderProperty) {
   v8::HandleScope handle_scope(isolate());

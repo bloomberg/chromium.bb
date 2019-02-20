@@ -87,6 +87,11 @@ void GinPort::DispatchOnMessage(v8::Local<v8::Context> context,
 void GinPort::DispatchOnDisconnect(v8::Local<v8::Context> context) {
   DCHECK_EQ(kActive, state_);
 
+  // Update |state_| before dispatching the onDisconnect event, so that we are
+  // able to reject attempts to disconnect the port again or to send a message
+  // from the event handler.
+  state_ = kDisconnected;
+
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context);
@@ -96,7 +101,8 @@ void GinPort::DispatchOnDisconnect(v8::Local<v8::Context> context) {
   DispatchEvent(context, &args, kOnDisconnectEvent);
 
   InvalidateEvents(context);
-  state_ = kDisconnected;
+
+  DCHECK_NE(state_, kActive);
 }
 
 void GinPort::SetSender(v8::Local<v8::Context> context,
