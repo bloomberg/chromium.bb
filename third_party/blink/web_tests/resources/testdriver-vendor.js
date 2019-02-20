@@ -84,6 +84,7 @@
     for (let i = 0; i < actions.length; i++) {
       var last_x_position = 0;
       var last_y_position = 0;
+      var first_pointer_down = false;
       for (let j = 0; j < actions[i].actions.length; j++) {
         if ('origin' in actions[i].actions[j]) {
           if (actions[i].actions[j].origin == "viewport") {
@@ -125,6 +126,16 @@
         if (actions[i].actions[j].type == "pointerDown" || actions[i].actions[j].type == "pointerMove") {
           actions[i].actions[j].x = last_x_position;
           actions[i].actions[j].y = last_y_position;
+        }
+
+        if ('parameters' in actions[i] && actions[i].parameters.pointerType == "touch") {
+          if (actions[i].actions[j].type == "pointerMove" && !first_pointer_down) {
+            actions[i].actions[j].type = "pause";
+          } else if (actions[i].actions[j].type == "pointerDown") {
+            first_pointer_down = true;
+          } else if (actions[i].actions[j].type == "pointerUp") {
+            first_pointer_down = false;
+          }
         }
       }
     }
