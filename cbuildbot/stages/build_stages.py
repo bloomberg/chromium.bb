@@ -705,9 +705,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       osutils.WriteFile(failures_filename, failure_json)
       self.UploadArtifact(os.path.basename(failures_filename),
                           archive=False)
-      url = self.PrintDownloadLink(os.path.basename(failures_filename),
-                                   text_to_display='BuildCompileFailureOutput')
-      logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', url)
+      self.PrintDownloadLink(os.path.basename(failures_filename),
+                             text_to_display='BuildCompileFailureOutput')
+      gs_url = os.path.join(self.upload_url, 'BuildCompileFailureOutput.json')
+      logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', gs_url)
       raise
 
 
