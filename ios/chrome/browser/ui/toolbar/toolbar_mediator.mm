@@ -267,8 +267,11 @@
   DCHECK(self.consumer);
   [self updateConsumerForWebState:self.webState];
 
-  [self.consumer setIsNTP:IsVisibleURLNewTabPage(self.webState)];
-  [self.consumer setLoadingState:self.webState->IsLoading()];
+  BOOL isNTP = IsVisibleURLNewTabPage(self.webState);
+  [self.consumer setIsNTP:isNTP];
+  // Never show the loading UI for an NTP.
+  BOOL isLoading = self.webState->IsLoading() && !isNTP;
+  [self.consumer setLoadingState:isLoading];
   [self updateBookmarksForWebState:self.webState];
   [self updateShareMenuForWebState:self.webState];
 }

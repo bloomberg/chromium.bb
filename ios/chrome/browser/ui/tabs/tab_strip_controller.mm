@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -1050,7 +1051,7 @@ UIColor* BackgroundColor() {
       [view setFavicon:favicon.ToUIImage()];
   }
 
-  if (tab.webState->IsLoading())
+  if (tab.webState->IsLoading() && !IsVisibleURLNewTabPage(tab.webState))
     [view startProgressSpinner];
   else
     [view stopProgressSpinner];

@@ -53,6 +53,7 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/favicon/resources:default_favicon_incognito",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/popup_menu/public",
     "//ios/chrome/browser/ui/tab_grid/grid/resources:grid_cell_close_button",
     "//ios/chrome/browser/ui/tabs/requirements",
