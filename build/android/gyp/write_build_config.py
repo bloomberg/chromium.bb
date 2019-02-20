@@ -288,6 +288,9 @@ A list of paths to ProGuard configuration files related to this library.
 For some Java related types, a list of extra `.jar` files to use at build time
 but not at runtime.
 
+* `deps_info['extra_classpath_interface_jars']:
+The interface jars corresponding to extra_classpath_jars.
+
 ## <a name="target_java_binary">Target type `java_binary`</a>:
 
 This type corresponds to a Java binary, which is nothing more than a
@@ -1219,6 +1222,7 @@ def main(argv):
       # These are .jars to add to javac classpath but not to runtime classpath.
       extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
       deps_info['extra_classpath_jars'] = extra_jars
+      deps_info['extra_classpath_interface_jars'] = extra_jars
 
   if is_java_target:
     # The classpath used to compile this target when annotation processors are
@@ -1240,8 +1244,10 @@ def main(argv):
     for dep in group_deps:
       javac_classpath.extend(dep.get('extra_classpath_jars', []))
       javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
-      javac_interface_classpath.extend(dep.get('extra_classpath_jars', []))
-      javac_full_interface_classpath.extend(dep.get('extra_classpath_jars', []))
+      javac_interface_classpath.extend(
+          dep.get('extra_classpath_interface_jars', []))
+      javac_full_interface_classpath.extend(
+          dep.get('extra_classpath_interface_jars', []))
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
@@ -1249,23 +1255,38 @@ def main(argv):
                   for c in classpath_deps.Direct('java_library')]
     extra_jars = [c['jar_path']
                   for c in classpath_deps.Direct('java_library')]
+    interface_extra_jars = [
+        c['interface_jar_path'] for c in classpath_deps.Direct('java_library')
+    ]
 
+    # These are jars specified by input_jars_paths that almost never change.
+    # Just add them directly to all the *extra_jars.
     if options.extra_classpath_jars:
       # These are .jars to add to javac classpath but not to runtime classpath.
       javac_extra_jars.extend(
           build_utils.ParseGnList(options.extra_classpath_jars))
       extra_jars.extend(build_utils.ParseGnList(options.extra_classpath_jars))
+      interface_extra_jars.extend(
+          build_utils.ParseGnList(options.extra_classpath_jars))
 
     if extra_jars:
       deps_info['extra_classpath_jars'] = extra_jars
 
+    if interface_extra_jars:
+      deps_info['extra_classpath_interface_jars'] = interface_extra_jars
+
     javac_extra_jars = [p for p in javac_extra_jars if p not in javac_classpath]
     javac_classpath.extend(javac_extra_jars)
-    javac_interface_classpath.extend(javac_extra_jars)
-    javac_full_interface_classpath.extend(
-        p for p in javac_extra_jars if p not in javac_full_classpath)
     javac_full_classpath.extend(
         p for p in javac_extra_jars if p not in javac_full_classpath)
+
+    interface_extra_jars = [
+        p for p in interface_extra_jars if p not in javac_interface_classpath
+    ]
+    javac_interface_classpath.extend(interface_extra_jars)
+    javac_full_interface_classpath.extend(
+        p for p in interface_extra_jars
+        if p not in javac_full_interface_classpath)
 
   if is_java_target or options.type == 'android_app_bundle':
     # The classpath to use to run this target (or as an input to ProGuard).
