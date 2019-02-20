@@ -60,22 +60,6 @@ using FakeSigninManagerForTesting = FakeSigninManagerBase;
 using FakeSigninManagerForTesting = FakeSigninManager;
 #endif
 
-// TestSigninClient keeping track of the dice migration.
-class DiceTestSigninClient : public TestSigninClient {
- public:
-  explicit DiceTestSigninClient(PrefService* prefs) : TestSigninClient(prefs) {}
-
-  void SetReadyForDiceMigration(bool ready) override {
-    is_ready_for_dice_migration_ = ready;
-  }
-
-  bool is_ready_for_dice_migration() { return is_ready_for_dice_migration_; }
-
- private:
-  bool is_ready_for_dice_migration_ = false;
-  DISALLOW_COPY_AND_ASSIGN(DiceTestSigninClient);
-};
-
 // An AccountReconcilorDelegate that records all calls (Spy pattern).
 class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
  public:
@@ -251,7 +235,7 @@ class AccountReconcilorTest : public ::testing::Test {
   identity::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
-  DiceTestSigninClient* test_signin_client() { return &test_signin_client_; }
+  TestSigninClient* test_signin_client() { return &test_signin_client_; }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
@@ -290,7 +274,7 @@ class AccountReconcilorTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   signin::AccountConsistencyMethod account_consistency_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  DiceTestSigninClient test_signin_client_;
+  TestSigninClient test_signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   FakeAccountFetcherService account_fetcher_;
