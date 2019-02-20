@@ -23,12 +23,18 @@ class TabletModeWindowState : public wm::WindowState::State {
   static void UpdateWindowPosition(wm::WindowState* window_state, bool animate);
 
   // The |window|'s state object will be modified to use this new window mode
-  // state handler. Upon destruction it will restore the previous state handler
-  // and call |creator::WindowStateDestroyed()| to inform that the window mode
-  // was reverted to the old window manager.
+  // state handler. |snap| is for carrying over a snapped state from clamshell
+  // mode to tablet mode. If |snap| is false, then the window will be maximized,
+  // unless the original state was MAXIMIZED, MINIMIZED, FULLSCREEN, PINNED, or
+  // TRUSTED_PINNED. Use |animate_bounds_on_attach| to specify whether to
+  // animate the corresponding bounds update. Call LeaveTabletMode() to restore
+  // the previous state handler, whereupon ~TabletModeWindowState() will call
+  // |creator::WindowStateDestroyed()| to inform that the window mode was
+  // reverted to the old window manager.
   TabletModeWindowState(aura::Window* window,
                         TabletModeWindowManager* creator,
-                        bool defer_bounds_updates);
+                        bool snap,
+                        bool animate_bounds_on_attach);
   ~TabletModeWindowState() override;
 
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
@@ -89,6 +95,15 @@ class TabletModeWindowState : public wm::WindowState::State {
 
   // The creator which needs to be informed when this state goes away.
   TabletModeWindowManager* creator_;
+
+  // The state type to be established in AttachState(), unless
+  // previous_state->GetType() is MAXIMIZED, MINIMIZED, FULLSCREEN, PINNED, or
+  // TRUSTED_PINNED.
+  mojom::WindowStateType state_type_on_attach_;
+
+  // Whether to animate in case of a bounds update when switching to
+  // |state_type_on_attach_|.
+  bool animate_bounds_on_attach_;
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.

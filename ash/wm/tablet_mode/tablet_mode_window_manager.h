@@ -113,13 +113,13 @@ class ASH_EXPORT TabletModeWindowManager
   // will be updated as they may be stale.
   void SetDeferBoundsUpdates(aura::Window* window, bool defer_bounds_updates);
 
-  // If the given window should be handled by us, this function will maximize it
-  // and add it to the list of known windows (remembering the initial show
-  // state).
+  // If the given window should be handled by us, this function will add it to
+  // the list of known windows (remembering the initial show state).
   // Note: If the given window cannot be handled by us the function will return
   // immediately.
-  void MaximizeAndTrackWindow(aura::Window* window,
-                              bool defer_bounds_updates = false);
+  void TrackWindow(aura::Window* window,
+                   bool snap = false,
+                   bool animate_bounds_on_attach = true);
 
   // Remove a window from our tracking list. If the window is going to be
   // destroyed, do not restore its old previous window state object as it will
