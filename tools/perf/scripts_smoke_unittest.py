@@ -150,7 +150,9 @@ class ScriptsSmokeTest(unittest.TestCase):
       shutil.rmtree(tempdir)
 
 
-  @decorators.Disabled('win')  # ".exe" is auto-added which breaks Windows.
+  # Windows: ".exe" is auto-added which breaks Windows.
+  # ChromeOS: crbug.com/754913.
+  @decorators.Disabled('win', 'chromeos')
   def testRunPerformanceTestsGtest_end2end(self):
     tempdir = tempfile.mkdtemp()
     benchmark = 'dummy_gtest'
