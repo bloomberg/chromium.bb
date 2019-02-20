@@ -1173,11 +1173,6 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
   variation_params["2G.ThresholdMedianHttpRTTMsec"] = "1000";
   variation_params["3G.ThresholdMedianHttpRTTMsec"] = "500";
 
-  variation_params["Offline.ThresholdMedianKbps"] = "10";
-  variation_params["Slow2G.ThresholdMedianKbps"] = "100";
-  variation_params["2G.ThresholdMedianKbps"] = "300";
-  variation_params["3G.ThresholdMedianKbps"] = "500";
-
   TestNetworkQualityEstimator estimator(variation_params);
 
   // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
@@ -1190,20 +1185,6 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
     int32_t downlink_throughput_kbps;
     EffectiveConnectionType expected_ect;
   } tests[] = {
-      // Set RTT to a very low value to observe the effect of throughput.
-      // Throughput is the bottleneck.
-      {1, 5, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {1, 10, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {1, 50, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {1, 100, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {1, 150, EFFECTIVE_CONNECTION_TYPE_2G},
-      {1, 300, EFFECTIVE_CONNECTION_TYPE_2G},
-      {1, 400, EFFECTIVE_CONNECTION_TYPE_3G},
-      {1, 500, EFFECTIVE_CONNECTION_TYPE_3G},
-      {1, 700, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 1000, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 1500, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 2500, EFFECTIVE_CONNECTION_TYPE_4G},
       // Set both RTT and throughput. RTT is the bottleneck.
       {3000, 25000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
       {700, 25000, EFFECTIVE_CONNECTION_TYPE_3G},
