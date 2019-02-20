@@ -1250,9 +1250,15 @@ void OmniboxViewViews::OnBlur() {
   // Because merely Alt-Tabbing to another window and back should not change the
   // Omnibox state, we only revert the text only if the Omnibox is blurred in
   // favor of some other View in the same Widget.
+  //
+  // Also revert if the text has been edited but currently exactly matches
+  // the permanent text. An example of this scenario is someone typing on the
+  // new tab page and then deleting everything using backspace/delete.
   if (GetWidget() && GetWidget()->IsActive() &&
-      !model()->user_input_in_progress() &&
-      text() != model()->GetPermanentDisplayText()) {
+      ((!model()->user_input_in_progress() &&
+        text() != model()->GetPermanentDisplayText()) ||
+       (model()->user_input_in_progress() &&
+        text() == model()->GetPermanentDisplayText()))) {
     RevertAll();
   }
 
