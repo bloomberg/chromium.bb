@@ -176,10 +176,6 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame[2];
 } MODE_DEFINITION;
 
-typedef struct {
-  MV_REFERENCE_FRAME ref_frame[2];
-} REF_DEFINITION;
-
 enum {
   FTXS_NONE = 0,
   FTXS_DCT_AND_1D_DCT_ONLY = 1 << 0,
@@ -6567,35 +6563,6 @@ static int get_interinter_compound_mask_rate(const MACROBLOCK *const x,
     default: assert(0); return 0;
   }
 }
-
-typedef struct {
-  int eobs;
-  int brate;
-  int byrate;
-  int64_t bdist;
-  int64_t bsse;
-  int64_t brdcost;
-  int_mv mvs[2];
-  int_mv pred_mv[2];
-  int_mv ref_mv[2];
-
-  ENTROPY_CONTEXT ta[2];
-  ENTROPY_CONTEXT tl[2];
-} SEG_RDSTAT;
-
-typedef struct {
-  int_mv *ref_mv[2];
-  int_mv mvp;
-
-  int64_t segment_rd;
-  int r;
-  int64_t d;
-  int64_t sse;
-  int segment_yrate;
-  PREDICTION_MODE modes[4];
-  SEG_RDSTAT rdstat[4][INTER_MODES + INTER_COMPOUND_MODES];
-  int mvthresh;
-} BEST_SEG_INFO;
 
 static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
   return (mv->row >> 3) < mv_limits->row_min ||
