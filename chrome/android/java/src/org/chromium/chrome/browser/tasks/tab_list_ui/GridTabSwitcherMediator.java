@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProp
 
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -99,7 +100,11 @@ class GridTabSwitcherMediator
      *         button.
      */
     View.OnClickListener getTabSwitcherButtonClickListener() {
-        return view -> setVisibility(!mContainerViewModel.get(IS_VISIBLE));
+        return view -> {
+            boolean setVisible = !mContainerViewModel.get(IS_VISIBLE);
+            setVisibility(setVisible);
+            if (setVisible) RecordUserAction.record("MobileToolbarShowStackView");
+        };
     }
 
     private void setVisibility(boolean isVisible) {
