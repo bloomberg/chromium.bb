@@ -10,8 +10,10 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -398,6 +400,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return request_interceptor_->client_hints_count_seen();
   }
 
+  const std::string& main_frame_ua_observed() const {
+    return main_frame_ua_observed_;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::string intercept_iframe_resource_;
@@ -477,6 +483,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     }
 
     if (is_main_frame_navigation) {
+      if (request.headers.find("sec-ch-ua") != request.headers.end())
+        main_frame_ua_observed_ = request.headers.find("sec-ch-ua")->second;
+
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
         double value = 0.0;
@@ -503,6 +512,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         EXPECT_EQ(980, value);
 #endif
         main_frame_viewport_width_observed_ = value;
+
         VerifyNetworkQualityClientHints(request);
       }
     }
@@ -669,6 +679,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   GURL http_equiv_accept_ch_with_lifetime_;
   GURL redirect_url_;
 
+  std::string main_frame_ua_observed_;
+
   double main_frame_dpr_observed_ = -1;
   double main_frame_viewport_width_observed_ = -1;
   double main_frame_device_memory_observed_ = -1;
@@ -821,6 +833,30 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // (`Sec-CH-UA`).
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(1u, third_party_client_hints_count_seen());
+}
+
+// Verify that we send only major version information in the `Sec-CH-UA` header
+// by default, and full version information after an opt-in.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
+
+  // Navigate to a page that opts-into the header: the value should end with
+  // the major version, and not contain the full version.
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+                             base::CompareCase::SENSITIVE));
+  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+
+  // Navigate again, after the opt-in: the value should end with the full
+  // version.
+  SetClientHintExpectationsOnMainFrame(true);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version,
+                             base::CompareCase::SENSITIVE));
 }
 
 // Test that client hints are attached to third party subresources if

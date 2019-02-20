@@ -395,14 +395,16 @@ void ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
     // (intentionally) different than other client hints.
     //
     // https://tools.ietf.org/html/draft-west-ua-client-hints-00#section-2.4
+    std::string version =
+        web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kUA)
+            ? ua.full_version
+            : ua.major_version;
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kUA)],
-        // TODO(mkwst): This should include only the major version if the
-        // recipient hasn't opted into the hint.
-        ua.version.empty() ? ua.brand.c_str()
-                           : base::StringPrintf("%s %s", ua.brand.c_str(),
-                                                ua.version.c_str()));
+        version.empty()
+            ? ua.brand.c_str()
+            : base::StringPrintf("%s %s", ua.brand.c_str(), version.c_str()));
 
     if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kUAArch)) {
       additional_headers->SetHeader(

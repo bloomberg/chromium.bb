@@ -1063,7 +1063,8 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
   metadata.brand = version_info::GetProductName();
-  metadata.version = version_info::GetVersionNumber();
+  metadata.full_version = version_info::GetVersionNumber();
+  metadata.major_version = version_info::GetMajorVersionNumber();
   metadata.platform = version_info::GetOSType();
 
   // TODO(mkwst): Poke at BuildUserAgentFromProduct to split out these pieces.

@@ -17,9 +17,13 @@ bool StructTraits<blink::mojom::UserAgentMetadataDataView,
     return false;
   out->brand = string;
 
-  if (!data.ReadVersion(&string))
+  if (!data.ReadFullVersion(&string))
     return false;
-  out->version = string;
+  out->full_version = string;
+
+  if (!data.ReadMajorVersion(&string))
+    return false;
+  out->major_version = string;
 
   if (!data.ReadPlatform(&string))
     return false;

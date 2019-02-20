@@ -26,6 +26,7 @@ if (is_android) {
 declare_args() {
   content_shell_product_name = "Content Shell"
   content_shell_version = "99.77.34.5"
+  content_shell_major_version = "99"
 }
 
 config("content_shell_lib_warnings") {
@@ -238,7 +239,10 @@ jumbo_static_library("content_shell_lib") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
+  defines = [
+    "CONTENT_SHELL_VERSION=\"$content_shell_version\"",
+    "CONTENT_SHELL_MAJOR_VERSION=\"$content_shell_major_version\"",
+  ]
 
   public_deps = [
     ":android_shell_descriptors",

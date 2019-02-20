@@ -737,16 +737,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     StringBuilder result;
     result.Append(ua.brand.data());
-    if (!ua.version.empty()) {
+    const std::string& version =
+        ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
+                             enabled_hints)
+            ? ua.full_version
+            : ua.major_version;
+    if (!version.empty()) {
       result.Append(' ');
-      if (ShouldSendClientHint(mojom::WebClientHintsType::kUA,
-                               hints_preferences, enabled_hints)) {
-        result.Append(ua.version.data());
-      } else {
-        // TODO(mkwst): This should only send the major version, but we haven't
-        // piped that through yet.
-        result.Append(ua.version.data());
-      }
+      result.Append(version.data());
     }
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(

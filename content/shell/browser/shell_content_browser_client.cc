@@ -240,7 +240,8 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
   metadata.brand = "content_shell";
-  metadata.version = CONTENT_SHELL_VERSION;
+  metadata.full_version = CONTENT_SHELL_VERSION;
+  metadata.major_version = CONTENT_SHELL_MAJOR_VERSION;
   metadata.platform = BuildOSCpuInfo(false);
 
   // TODO(mkwst): Split these out from BuildOSCpuInfo().
