@@ -2192,4 +2192,112 @@ TEST(AXTreeTest, TestSetSizePosInSetRadioButtonsInList) {
   EXPECT_EQ(list->GetSetSize(), 2);
 }
 
+// Tests GetPosInSet and GetSetSize on a flat tree representation. According
+// to the tree representation, the three elements are siblings. However,
+// due to the presence of the kHierarchicalLevel attribute, they all belong
+// to different sets.
+TEST(AXTreeTest, TestSetSizePosInSetFlatTree) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kTree;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kTreeItem;  // 1 of 1
+  tree_update.nodes[1].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kTreeItem;  // 1 of 1
+  tree_update.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kTreeItem;  // 1 of 1
+  tree_update.nodes[3].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 3);
+  AXTree tree(tree_update);
+
+  AXNode* item1_level1 = tree.GetFromId(2);
+  EXPECT_EQ(item1_level1->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level1->GetSetSize(), 1);
+  AXNode* item1_level2 = tree.GetFromId(3);
+  EXPECT_EQ(item1_level2->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level2->GetSetSize(), 1);
+  AXNode* item1_level3 = tree.GetFromId(4);
+  EXPECT_EQ(item1_level3->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level3->GetSetSize(), 1);
+}
+
+// Tests GetPosInSet and GetSetSize on a flat tree representation, where only
+// the level is specified.
+TEST(AXTreeTest, TestSetSizePosInSetFlatTreeLevelsOnly) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(9);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kTree;
+  tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6, 7, 8, 9};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kTreeItem;  // 1 of 3
+  tree_update.nodes[1].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kTreeItem;  // 1 of 2
+  tree_update.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kTreeItem;  // 2 of 2
+  tree_update.nodes[3].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kTreeItem;  // 2 of 3
+  tree_update.nodes[4].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kTreeItem;  // 1 of 3
+  tree_update.nodes[5].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kTreeItem;  // 2 of 3
+  tree_update.nodes[6].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].role = ax::mojom::Role::kTreeItem;  // 3 of 3
+  tree_update.nodes[7].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  tree_update.nodes[8].id = 9;
+  tree_update.nodes[8].role = ax::mojom::Role::kTreeItem;  // 3 of 3
+  tree_update.nodes[8].AddIntAttribute(
+      ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  AXTree tree(tree_update);
+
+  // The order in which we query the nodes should not matter.
+  AXNode* item3_level1 = tree.GetFromId(9);
+  EXPECT_EQ(item3_level1->GetPosInSet(), 3);
+  EXPECT_EQ(item3_level1->GetSetSize(), 3);
+  AXNode* item3_level2a = tree.GetFromId(8);
+  EXPECT_EQ(item3_level2a->GetPosInSet(), 3);
+  EXPECT_EQ(item3_level2a->GetSetSize(), 3);
+  AXNode* item2_level2a = tree.GetFromId(7);
+  EXPECT_EQ(item2_level2a->GetPosInSet(), 2);
+  EXPECT_EQ(item2_level2a->GetSetSize(), 3);
+  AXNode* item1_level2a = tree.GetFromId(6);
+  EXPECT_EQ(item1_level2a->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level2a->GetSetSize(), 3);
+  AXNode* item2_level1 = tree.GetFromId(5);
+  EXPECT_EQ(item2_level1->GetPosInSet(), 2);
+  EXPECT_EQ(item2_level1->GetSetSize(), 3);
+  AXNode* item2_level2 = tree.GetFromId(4);
+  EXPECT_EQ(item2_level2->GetPosInSet(), 2);
+  EXPECT_EQ(item2_level2->GetSetSize(), 2);
+  AXNode* item1_level2 = tree.GetFromId(3);
+  EXPECT_EQ(item1_level2->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level2->GetSetSize(), 2);
+  AXNode* item1_level1 = tree.GetFromId(2);
+  EXPECT_EQ(item1_level1->GetPosInSet(), 1);
+  EXPECT_EQ(item1_level1->GetSetSize(), 3);
+  AXNode* ordered_set = tree.GetFromId(1);
+  EXPECT_EQ(ordered_set->GetSetSize(), 3);
+}
+
 }  // namespace ui

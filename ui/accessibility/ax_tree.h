@@ -245,7 +245,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   void PopulateOrderedSetItems(const AXNode* ordered_set,
                                const AXNode* local_parent,
                                std::vector<const AXNode*>& items,
-                               bool node_is_radio_button) const;
+                               const AXNode& original_node) const;
 
   // Helper for GetPosInSet and GetSetSize. Computes the pos_in_set and set_size
   // values of all items in ordered_set and caches those values.
