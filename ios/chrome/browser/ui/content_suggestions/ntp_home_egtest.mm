@@ -643,6 +643,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testOpeningNewTab {
+  // TODO(crbug.com/933953): Re-enable this test when grey_tap() issue is fixed.
+  EARL_GREY_TEST_DISABLED(@"Disabled due to full-configs and slimnav failures");
+
   [ChromeEarlGreyUI openNewTab];
 
   // Check that the fake omnibox is here.
