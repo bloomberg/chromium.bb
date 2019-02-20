@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
+import org.chromium.chrome.browser.customtabs.CloseButtonNavigator.PageCriteria;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
@@ -154,6 +155,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
             new DynamicModuleNavigationEventObserver();
     private final DynamicModulePageLoadObserver mPageLoadObserver;
 
+    private final PageCriteria mPageCriteria;
+
     @Inject
     public DynamicModuleCoordinator(CustomTabIntentDataProvider intentDataProvider,
                                     CloseButtonNavigator closeButtonNavigator,
@@ -184,8 +187,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         mBottomBarDelegate = bottomBarDelegate;
         mFullscreenManager = fullscreenManager;
 
-        closeButtonNavigator.setLandingPageCriteria(url ->
-                (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url));
+        mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
+        closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
 
         activityLifecycleDispatcher.register(this);
     }
@@ -385,6 +388,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         return mModuleCallback != null;
     }
 
+    /* package */ boolean hasModuleFailedToLoad() {
+        return mActivityDelegate == null;
+    }
+
     private boolean isModuleManagedUrl(String url) {
         if (TextUtils.isEmpty(url)) {
             return false;
@@ -445,9 +452,9 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                 mIntentDataProvider.getSession());
     }
 
-    private View getProgressBarAnchorView(boolean isModuleManagedUrl) {
+    private View getProgressBarAnchorView(boolean showTopBar) {
         View anchorView = null;
-        if (isModuleManagedUrl) {
+        if (showTopBar) {
             View topBarContentView = mTopBarDelegate.get().getTopBarContentView();
             if (topBarContentView != null && topBarContentView.getVisibility() == View.VISIBLE) {
                 anchorView = topBarContentView;
@@ -459,19 +466,19 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     private void maybeCustomizeCctHeader(String url) {
-        if (!isModuleLoaded() && !isModuleLoading()) return;
+        if (!isModuleLoaded() && !isModuleLoading() && !hasModuleFailedToLoad()) return;
 
-        boolean isModuleManagedUrl = isModuleManagedUrl(url);
-        mTopBarDelegate.get().showTopBarIfNecessary(isModuleManagedUrl);
+        boolean showTopBar = mPageCriteria.matches(url);
+        mTopBarDelegate.get().showTopBarIfNecessary(showTopBar);
         if (shouldHideCctHeaderOnModuleManagedUrls()) {
             mActivity.getToolbarManager().setToolbarVisibility(
-                    isModuleManagedUrl ? View.GONE : mDefaultToolbarVisibility);
+                    showTopBar ? View.GONE : mDefaultToolbarVisibility);
             mActivity.getToolbarManager().setToolbarShadowVisibility(
-                    isModuleManagedUrl ? View.GONE : mDefaultToolbarShadowVisibility);
+                    showTopBar ? View.GONE : mDefaultToolbarShadowVisibility);
             mFullscreenManager.get().setTopControlsHeight(
-                    isModuleManagedUrl ? getTopBarHeight() : mDefaultTopControlContainerHeight);
+                    showTopBar ? getTopBarHeight() : mDefaultTopControlContainerHeight);
             mActivity.getToolbarManager().setProgressBarAnchorView(
-                    getProgressBarAnchorView(isModuleManagedUrl));
+                    getProgressBarAnchorView(showTopBar));
         }
     }
 

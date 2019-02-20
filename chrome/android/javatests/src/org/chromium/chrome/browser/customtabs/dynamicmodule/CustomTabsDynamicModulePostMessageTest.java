@@ -193,7 +193,8 @@ public class CustomTabsDynamicModulePostMessageTest {
         // onFinishNativeInitialization() call happens before therefore if we instantiate
         // DynamicModuleCoordinator now, the module will not be loaded.
         DynamicModuleCoordinator coordinator = getModuleCoordinator();
-        assertFalse(coordinator.isModuleLoading() || coordinator.isModuleLoaded());
+        assertFalse(coordinator.isModuleLoading() || coordinator.isModuleLoaded()
+                || coordinator.hasModuleFailedToLoad());
 
         // We shouldn't be able to open a channel or post messages yet.
         assertFalse(coordinator.requestPostMessageChannel(FAKE_ORIGIN_URI));
