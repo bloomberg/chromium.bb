@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
@@ -197,6 +198,11 @@ PerfettoTracingCoordinator::PerfettoTracingCoordinator(
       binding_(this),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  agent_registry->SetAgentInitializationCallback(
+      base::BindRepeating(&PerfettoTracingCoordinator::OnNewAgentConnected,
+                          weak_factory_.GetWeakPtr()),
+      false /* call_on_new_agents_only */);
 }
 
 PerfettoTracingCoordinator::~PerfettoTracingCoordinator() {
@@ -219,11 +225,44 @@ void PerfettoTracingCoordinator::BindCoordinatorRequest(
                      base::Unretained(this)));
 }
 
-void PerfettoTracingCoordinator::StartTracing(const std::string& config) {
+void PerfettoTracingCoordinator::StartTracing(const std::string& config,
+                                              StartTracingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  parsed_config_ = base::trace_event::TraceConfig(config);
   tracing_session_ = std::make_unique<TracingSession>(
       config, base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
                              weak_factory_.GetWeakPtr()));
+
+  SetStartTracingCallback(std::move(callback));
+}
+
+void PerfettoTracingCoordinator::OnNewAgentConnected(
+    AgentRegistry::AgentEntry* agent_entry) {
+  // TODO(oysteine): While we're still using the Agent
+  // system as a fallback when using Perfetto, rather than
+  // the browser directly using a Consumer interface, we have to
+  // attempt to linearize with newly connected agents so we only
+  // call the BeginTracing callback when we can be fairly sure
+  // that all current agents have registered with Perfetto and
+  // started tracing if requested. We do this linearization
+  // by calling RequestBufferStatus but just throwing away the
+  // result.
+  agent_entry->AddDisconnectClosure(GetStartTracingClosureName(),
+                                    base::DoNothing());
+
+  agent_entry->agent()->RequestBufferStatus(base::BindRepeating(
+      [](base::WeakPtr<PerfettoTracingCoordinator> coordinator,
+         AgentRegistry::AgentEntry* agent_entry, uint32_t capacity,
+         uint32_t count) {
+        bool removed =
+            agent_entry->RemoveDisconnectClosure(GetStartTracingClosureName());
+        DCHECK(removed);
+
+        if (coordinator) {
+          coordinator->RemoveExpectedPID(agent_entry->pid());
+        }
+      },
+      weak_factory_.GetWeakPtr(), base::Unretained(agent_entry)));
 }
 
 void PerfettoTracingCoordinator::OnTracingOverCallback() {
@@ -235,8 +274,25 @@ void PerfettoTracingCoordinator::OnTracingOverCallback() {
 void PerfettoTracingCoordinator::StopAndFlush(
     mojo::ScopedDataPipeProducerHandle stream,
     StopAndFlushCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(tracing_session_);
+  StopAndFlushAgent(std::move(stream), "", std::move(callback));
+}
+
+void PerfettoTracingCoordinator::StopAndFlushInternal(
+    mojo::ScopedDataPipeProducerHandle stream,
+    StopAndFlushCallback callback) {
+  if (start_tracing_callback_) {
+    // We received a |StopAndFlush| command before receiving |StartTracing| acks
+    // from all agents. Let's retry after a delay.
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&PerfettoTracingCoordinator::StopAndFlushInternal,
+                       weak_factory_.GetWeakPtr(), std::move(stream),
+                       std::move(callback)),
+        base::TimeDelta::FromMilliseconds(
+            mojom::kStopTracingRetryTimeMilliseconds));
+    return;
+  }
+
   tracing_session_->StopAndFlush(std::move(stream), std::move(callback));
 }
 
@@ -244,7 +300,11 @@ void PerfettoTracingCoordinator::StopAndFlushAgent(
     mojo::ScopedDataPipeProducerHandle stream,
     const std::string& agent_label,
     StopAndFlushCallback callback) {
-  NOTREACHED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(tracing_session_);
+
+  ClearConnectedPIDs();
+  StopAndFlushInternal(std::move(stream), std::move(callback));
 }
 
 void PerfettoTracingCoordinator::IsTracing(IsTracingCallback callback) {

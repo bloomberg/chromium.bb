@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
 #include "base/values.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -50,10 +51,24 @@ class Coordinator : public mojom::Coordinator {
 
   bool IsConnected();
 
+  void AddExpectedPID(base::ProcessId pid);
+  void RemoveExpectedPID(base::ProcessId pid);
+  void FinishedReceivingRunningPIDs();
+
  protected:
   ~Coordinator() override;
 
+  static const void* GetStartTracingClosureName();
+
   virtual void OnClientConnectionError();
+  void CallStartTracingCallbackIfNeeded();
+  void OnBeginTracingTimeout();
+  void SetStartTracingCallback(StartTracingCallback callback);
+  void ClearConnectedPIDs();
+
+  base::trace_event::TraceConfig parsed_config_;
+  StartTracingCallback start_tracing_callback_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:
   friend std::default_delete<Coordinator>;
@@ -64,7 +79,8 @@ class Coordinator : public mojom::Coordinator {
   void Reset();
 
   // mojom::Coordinator
-  void StartTracing(const std::string& config) override;
+  void StartTracing(const std::string& config,
+                    StartTracingCallback callback) override;
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
                     StopAndFlushCallback callback) override;
   void StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
@@ -75,6 +91,7 @@ class Coordinator : public mojom::Coordinator {
 
   // Internal methods for collecting events from agents.
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
+  void OnTracingStarted(AgentRegistry::AgentEntry* agent_entry, bool success);
   void StopAndFlushInternal();
   void SendStopTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
   void SendStopTracingWithNoOpRecorderToAgent(
@@ -89,14 +106,15 @@ class Coordinator : public mojom::Coordinator {
 
   base::RepeatingClosure on_disconnect_callback_;
   mojo::Binding<mojom::Coordinator> binding_;
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   AgentRegistry* agent_registry_;
   std::string config_;
-  base::trace_event::TraceConfig parsed_config_;
   bool is_tracing_ = false;
 
   std::unique_ptr<TraceStreamer> trace_streamer_;
+  std::set<base::ProcessId> pending_connected_pids_;
+  bool pending_currently_running_pids_ = true;
+  base::OneShotTimer start_tracing_callback_timer_;
   StopAndFlushCallback stop_and_flush_callback_;
 
   // For computing trace buffer usage.
