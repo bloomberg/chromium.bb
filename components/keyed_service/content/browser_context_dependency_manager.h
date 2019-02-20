@@ -96,7 +96,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
 
 #ifndef NDEBUG
   // DependencyManager:
-  void DumpContextDependencies(base::SupportsUserData* context) const final;
+  void DumpContextDependencies(void* context) const final;
 #endif  // NDEBUG
 
   // A list of callbacks to call just before executing

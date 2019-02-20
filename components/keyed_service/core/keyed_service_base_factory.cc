@@ -25,15 +25,14 @@ void KeyedServiceBaseFactory::DependsOn(KeyedServiceBaseFactory* rhs) {
   dependency_manager_->AddEdge(rhs, this);
 }
 
-void KeyedServiceBaseFactory::AssertContextWasntDestroyed(
-    base::SupportsUserData* context) const {
+void KeyedServiceBaseFactory::AssertContextWasntDestroyed(void* context) const {
   // TODO(crbug.com/701326): We should DCHECK(CalledOnValidThread()) here, but
   // currently some code doesn't do service getting on the main thread.
   // This needs to be fixed and DCHECK should be restored here.
   dependency_manager_->AssertContextWasntDestroyed(context);
 }
 
-void KeyedServiceBaseFactory::MarkContextLive(base::SupportsUserData* context) {
+void KeyedServiceBaseFactory::MarkContextLive(void* context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dependency_manager_->MarkContextLive(context);
 }
@@ -46,8 +45,7 @@ bool KeyedServiceBaseFactory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 
-void KeyedServiceBaseFactory::ContextDestroyed(
-    base::SupportsUserData* context) {
+void KeyedServiceBaseFactory::ContextDestroyed(void* context) {
   // While object destruction can be customized in ways where the object is
   // only dereferenced, this still must run on the UI thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

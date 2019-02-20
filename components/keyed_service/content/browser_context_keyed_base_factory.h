@@ -94,15 +94,14 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;
 
   // KeyedServiceBaseFactory:
-  base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const final;
+  void* GetContextToUse(void* context) const final;
   bool ServiceIsCreatedWithContext() const final;
-  void ContextShutdown(base::SupportsUserData* context) final;
-  void ContextDestroyed(base::SupportsUserData* context) final;
+  void ContextShutdown(void* context) final;
+  void ContextDestroyed(void* context) final;
   void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
-  void SetEmptyTestingFactory(base::SupportsUserData* context) final;
-  bool HasTestingFactory(base::SupportsUserData* context) final;
-  void CreateServiceNow(base::SupportsUserData* context) final;
+  void SetEmptyTestingFactory(void* context) final;
+  bool HasTestingFactory(void* context) final;
+  void CreateServiceNow(void* context) final;
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_

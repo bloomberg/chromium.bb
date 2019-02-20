@@ -60,6 +60,5 @@ void BrowserStateDependencyManager::DoCreateBrowserStateServices(
 
 #ifndef NDEBUG
 void BrowserStateDependencyManager::DumpContextDependencies(
-    base::SupportsUserData* context) const {
-}
+    void* context) const {}
 #endif  // NDEBUG

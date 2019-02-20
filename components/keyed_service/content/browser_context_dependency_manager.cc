@@ -85,7 +85,7 @@ BrowserContextDependencyManager::~BrowserContextDependencyManager() {
 
 #ifndef NDEBUG
 void BrowserContextDependencyManager::DumpContextDependencies(
-    base::SupportsUserData* context) const {
+    void* context) const {
   // Whenever we try to build a destruction ordering, we should also dump a
   // dependency graph to "/path/to/context/context-dependencies.dot".
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
