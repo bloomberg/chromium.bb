@@ -223,7 +223,7 @@ def _MaybeCleanDistfiles(repo, distfiles_ts):
   osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
                 ignore_missing=True, sudo=True)
   metrics.Counter(METRIC_DISTFILES_CLEANUP).increment(
-      field({}, reason='cache_expired'))
+      fields=field({}, reason='cache_expired'))
 
   # Cleaned cache, so reset distfiles_ts
   return time.time()
@@ -252,7 +252,7 @@ def CleanBuildRoot(root, repo, build_state):
   if previous_state.buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     metrics.Counter(METRIC_CLOBBER).increment(
-        field({}, reason='layout_change'))
+        fields=field({}, reason='layout_change'))
     chroot_dir = os.path.join(root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
       cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
@@ -263,7 +263,7 @@ def CleanBuildRoot(root, repo, build_state):
       logging.info('Unmatched branch: %s -> %s', previous_state.branch,
                    repo.branch)
       metrics.Counter(METRIC_BRANCH_CLEANUP).increment(
-          field({}, old_branch=previous_state.branch))
+          fields=field({}, old_branch=previous_state.branch))
 
       logging.info('Remove Chroot.')
       chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
@@ -290,7 +290,7 @@ def CleanBuildRoot(root, repo, build_state):
   except Exception:
     logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
     metrics.Counter(METRIC_CLOBBER).increment(
-        field({}, reason='repo_cleanup_failure'))
+        fields=field({}, reason='repo_cleanup_failure'))
     repository.ClearBuildRoot(repo.directory)
 
   # Ensure buildroot exists. Save the state we are prepped for.
