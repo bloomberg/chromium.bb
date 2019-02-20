@@ -195,8 +195,8 @@ void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
   GURL local_url(url);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ReadingListDownloadService::DownloadEntry,
-                 weak_ptr_factory_.GetWeakPtr(), local_url),
+      base::BindOnce(&ReadingListDownloadService::DownloadEntry,
+                     weak_ptr_factory_.GetWeakPtr(), local_url),
       entry->TimeUntilNextTry());
 }
 

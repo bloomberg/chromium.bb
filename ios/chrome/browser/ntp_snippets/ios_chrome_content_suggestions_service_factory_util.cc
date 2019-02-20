@@ -74,10 +74,11 @@ void ParseJson(const std::string& json,
   std::unique_ptr<base::Value> value = json_reader.ReadToValueDeprecated(json);
   if (value) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(success_callback, base::Passed(&value)));
+        FROM_HERE, base::BindOnce(success_callback, std::move(value)));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(error_callback, json_reader.GetErrorMessage()));
+        FROM_HERE,
+        base::BindOnce(error_callback, json_reader.GetErrorMessage()));
   }
 }
 

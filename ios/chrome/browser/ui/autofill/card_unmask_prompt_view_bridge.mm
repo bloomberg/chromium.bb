@@ -91,8 +91,9 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
   if (error_message.empty()) {
     [view_controller_ showSuccess];
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&CardUnmaskPromptViewBridge::PerformClose,
+                       weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
     if (allow_retry) {

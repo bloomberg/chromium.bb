@@ -178,8 +178,8 @@ void ReadingListDistillerPage::OnLoadURLDone(
       weak_ptr_factory_.GetWeakPtr();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ReadingListDistillerPage::DelayedOnLoadURLDone, weak_this,
-                 delayed_task_id_),
+      base::BindOnce(&ReadingListDistillerPage::DelayedOnLoadURLDone, weak_this,
+                     delayed_task_id_),
       base::TimeDelta::FromSeconds(kPageLoadDelayInSeconds));
 }
 

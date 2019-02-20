@@ -27,7 +27,7 @@ namespace {
 void PostCallback(const scoped_refptr<base::TaskRunner>& task_runner,
                   const net::CompletionCallback& callback,
                   int error) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, error));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, error));
 }
 
 // Clears the disk_cache::Backend on the IO thread and deletes |backend|.
@@ -47,7 +47,7 @@ void DoomHttpCache(std::unique_ptr<disk_cache::Backend*> backend,
       client_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, rv));
     }
   } else {
-    client_task_runner->PostTask(FROM_HERE, base::Bind(callback, error));
+    client_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, error));
   }
 }
 
@@ -93,9 +93,9 @@ void ClearHttpCache(const scoped_refptr<net::URLRequestContextGetter>& getter,
                     const net::CompletionCallback& callback) {
   DCHECK(delete_end != base::Time());
   network_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ClearHttpCacheOnIOThread, getter,
-                            base::ThreadTaskRunnerHandle::Get(), delete_begin,
-                            delete_end, callback));
+      FROM_HERE, base::BindOnce(&ClearHttpCacheOnIOThread, getter,
+                                base::ThreadTaskRunnerHandle::Get(),
+                                delete_begin, delete_end, callback));
 }
 
 }  // namespace net

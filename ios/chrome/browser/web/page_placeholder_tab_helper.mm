@@ -114,8 +114,8 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   // Remove placeholder if it takes too long to load the page.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PagePlaceholderTabHelper::RemovePlaceholder,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&PagePlaceholderTabHelper::RemovePlaceholder,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSeconds));
 }
 

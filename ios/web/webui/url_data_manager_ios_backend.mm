@@ -515,12 +515,13 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI});
   target_runner->PostTask(
-      FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
-                            job->weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&GetMimeTypeOnUI, base::RetainedRef(source),
+                                path, job->weak_factory_.GetWeakPtr()));
 
   target_runner->PostTask(
-      FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
-                            base::WrapRefCounted(source), path, request_id));
+      FROM_HERE,
+      base::BindOnce(&URLDataManagerIOSBackend::CallStartRequest,
+                     base::WrapRefCounted(source), path, request_id));
   return true;
 }
 
