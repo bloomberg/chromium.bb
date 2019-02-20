@@ -46,9 +46,10 @@ _DATE_FORMAT_ERROR = "Unable to parse expiry {date} in histogram {name}."
 # Some extra "grace" time is given to expired histograms during which they
 # will contintue to be collected and reported.  The dashboard should ignore
 # data from this period making the expiry noticeable and giving time for
-# owners to re-enable them without any discontinuity of data.
+# owners to re-enable them without any discontinuity of data. Releases are
+# geneally 6 weeks apart but sometimes 7 so +2 to be safe.
 _EXPIRE_GRACE_MSTONES = 2
-_EXPIRE_GRACE_WEEKS = _EXPIRE_GRACE_MSTONES * 6
+_EXPIRE_GRACE_WEEKS = _EXPIRE_GRACE_MSTONES * 6 + 2
 
 
 class Error(Exception):

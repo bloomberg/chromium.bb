@@ -155,7 +155,7 @@ class ExpiredHistogramsTest(unittest.TestCase):
 <histograms><!-- Must be alphabetical. -->
   <histogram name="FirstHistogram" expires_after="2010-11-01"/>
   <histogram name="FourthHistogram" expires_after="M61"/>
-  <histogram name="SecondHistogram" expires_after="2010-10-01"/>
+  <histogram name="SecondHistogram" expires_after="2010-09-01"/>
   <histogram name="ThirdHistogram" expires_after="M60"/>
 </histograms>
 </histogram-configuration>
@@ -166,7 +166,7 @@ class ExpiredHistogramsTest(unittest.TestCase):
 
     content = generate_expired_histograms_array._GenerateFileContent(
         histograms, branch_data, mstone_data, "header.h", "uma")
-    # These have expired but are within the 12-week/2-milestone grace period.
+    # These have expired but are within the 14-week/2-milestone grace period.
     self.assertNotIn("FirstHistogram", content);
     self.assertNotIn("FourthHistogram", content);
     # These have expired and are outside of the grace period.
