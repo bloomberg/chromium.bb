@@ -4,13 +4,13 @@
 
 #include "components/update_client/request_sender.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/client_update_protocol/ecdsa.h"
@@ -28,25 +28,6 @@ constexpr int kKeyVersion = 9;
 const char kKeyPubBytesBase64[] =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsVwVMmIJaWBjktSx9m1JrZWYBvMm"
     "bsrGGQPhScDtao+DloD871YmEeunAaQvRMZgDh1nCaWkVG6wo75+yDbKDA==";
-
-// The ETag header carries the ECSDA signature of the protocol response, if
-// signing has been used.
-constexpr const char* kHeaderEtag = "ETag";
-
-// The server uses the optional X-Retry-After header to indicate that the
-// current request should not be attempted again. Any response received along
-// with the X-Retry-After header should be interpreted as it would have been
-// without the X-Retry-After header.
-//
-// In addition to the presence of the header, the value of the header is
-// used as a signal for when to do future update checks, but only when the
-// response is over https. Values over http are not trusted and are ignored.
-//
-// The value of the header is the number of seconds to wait before trying to do
-// a subsequent update check. The upper bound for the number of seconds to wait
-// before trying to do a subsequent update check is capped at 24 hours.
-constexpr const char* kHeaderXRetryAfter = "X-Retry-After";
-constexpr int64_t kMaxRetryAfterSec = 24 * 60 * 60;
 
 }  // namespace
 
@@ -165,33 +146,33 @@ void RequestSender::OnResponseStarted(const GURL& final_url,
 
 void RequestSender::OnNetworkFetcherComplete(
     const GURL& original_url,
-    std::unique_ptr<std::string> response_body) {
+    std::unique_ptr<std::string> response_body,
+    int net_error,
+    const std::string& header_etag,
+    int64_t xheader_retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   VLOG(1) << "request completed from url: " << original_url.spec();
 
-  int fetch_error = -1;
+  int error = -1;
   if (response_body && response_code_ == 200) {
-    fetch_error = 0;
+    DCHECK_EQ(0, net_error);
+    error = 0;
   } else if (response_code_ != -1) {
-    fetch_error = response_code_;
+    error = response_code_;
   } else {
-    fetch_error = network_fetcher_->NetError();
+    error = net_error;
   }
 
-  int64_t retry_after_sec(-1);
-  if (original_url.SchemeIsCryptographic() && fetch_error > 0) {
-    retry_after_sec = network_fetcher_->GetInt64HeaderValue(kHeaderXRetryAfter);
-    retry_after_sec = std::min(retry_after_sec, kMaxRetryAfterSec);
-  }
+  int retry_after_sec = -1;
+  if (original_url.SchemeIsCryptographic() && error > 0)
+    retry_after_sec = base::saturated_cast<int>(xheader_retry_after_sec);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RequestSender::SendInternalComplete,
-                     base::Unretained(this), fetch_error,
-                     response_body ? *response_body : std::string(),
-                     network_fetcher_->GetStringHeaderValue(kHeaderEtag),
-                     static_cast<int>(retry_after_sec)));
+      FROM_HERE, base::BindOnce(&RequestSender::SendInternalComplete,
+                                base::Unretained(this), error,
+                                response_body ? *response_body : std::string(),
+                                header_etag, retry_after_sec));
 }
 
 void RequestSender::HandleSendError(int error, int retry_after_sec) {
