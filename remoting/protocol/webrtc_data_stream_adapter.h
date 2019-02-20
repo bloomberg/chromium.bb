@@ -30,7 +30,7 @@ class WebrtcDataStreamAdapter : public MessagePipe,
   // MessagePipe interface.
   void Start(EventHandler* event_handler) override;
   void Send(google::protobuf::MessageLite* message,
-            const base::Closure& done) override;
+            base::OnceClosure done) override;
 
  private:
   enum class State { CONNECTING, OPEN, CLOSED };

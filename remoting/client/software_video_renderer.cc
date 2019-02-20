@@ -111,10 +111,10 @@ protocol::FrameStatsConsumer* SoftwareVideoRenderer::GetFrameStatsConsumer() {
 
 void SoftwareVideoRenderer::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::ScopedClosureRunner done_runner(done);
+  base::ScopedClosureRunner done_runner(std::move(done));
 
   std::unique_ptr<protocol::FrameStats> frame_stats(new protocol::FrameStats());
   frame_stats->host_stats =

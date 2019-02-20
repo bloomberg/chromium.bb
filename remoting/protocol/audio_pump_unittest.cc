@@ -68,7 +68,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
 
   // protocol::AudioStub interface.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> audio_packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  protected:
   base::MessageLoop message_loop_;
@@ -80,7 +80,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
   std::unique_ptr<AudioPump> pump_;
 
   std::vector<std::unique_ptr<AudioPacket>> sent_packets_;
-  std::vector<base::Closure> done_closures_;
+  std::vector<base::OnceClosure> done_closures_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioPumpTest);
@@ -103,9 +103,9 @@ void AudioPumpTest::TearDown() {
 
 void AudioPumpTest::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> audio_packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   sent_packets_.push_back(std::move(audio_packet));
-  done_closures_.push_back(done);
+  done_closures_.push_back(std::move(done));
 }
 
 // Verify that the pump pauses pumping when the network is congested.
@@ -127,7 +127,7 @@ TEST_F(AudioPumpTest, BufferSizeLimit) {
 
   // Call done closure for the first packet. This should allow one more packet
   // to be sent below.
-  done_closures_.front().Run();
+  std::move(done_closures_.front()).Run();
   base::RunLoop().RunUntilIdle();
 
   // Verify that the pump continues to send captured audio.
@@ -177,7 +177,7 @@ TEST_F(AudioPumpTest, DownmixAudioPacket) {
     base::RunLoop().RunUntilIdle();
     // Call done closure to allow one more packet to be sent.
     ASSERT_EQ(done_closures_.size(), 1U);
-    done_closures_.front().Run();
+    std::move(done_closures_.front()).Run();
     done_closures_.pop_back();
     base::RunLoop().RunUntilIdle();
   }

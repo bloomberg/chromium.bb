@@ -314,7 +314,7 @@ void XmppSignalStrategy::Core::SendMessage(const std::string& message) {
             "approaches to manage this feature."
         })");
   writer_->Write(buffer,
-                 base::Bind(&Core::OnMessageSent, base::Unretained(this)),
+                 base::BindOnce(&Core::OnMessageSent, base::Unretained(this)),
                  traffic_annotation);
 }
 

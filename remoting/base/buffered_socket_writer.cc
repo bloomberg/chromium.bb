@@ -4,6 +4,8 @@
 
 #include "remoting/base/buffered_socket_writer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "net/base/io_buffer.h"
@@ -28,14 +30,14 @@ int WriteNetSocket(net::Socket* socket,
 
 struct BufferedSocketWriter::PendingPacket {
   PendingPacket(scoped_refptr<net::DrainableIOBuffer> data,
-                const base::Closure& done_task,
+                base::OnceClosure done_task,
                 const net::NetworkTrafficAnnotationTag& traffic_annotation)
       : data(data),
-        done_task(done_task),
+        done_task(std::move(done_task)),
         traffic_annotation(traffic_annotation) {}
 
   scoped_refptr<net::DrainableIOBuffer> data;
-  base::Closure done_task;
+  base::OnceClosure done_task;
   net::NetworkTrafficAnnotationTag traffic_annotation;
 };
 
@@ -65,7 +67,7 @@ void BufferedSocketWriter::Start(
 
 void BufferedSocketWriter::Write(
     scoped_refptr<net::IOBufferWithSize> data,
-    const base::Closure& done_task,
+    base::OnceClosure done_task,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data.get());
@@ -77,7 +79,7 @@ void BufferedSocketWriter::Write(
   int data_size = data->size();
   queue_.push_back(std::make_unique<PendingPacket>(
       base::MakeRefCounted<net::DrainableIOBuffer>(std::move(data), data_size),
-      done_task, traffic_annotation));
+      std::move(done_task), traffic_annotation));
 
   DoWrite();
 }
@@ -115,11 +117,11 @@ void BufferedSocketWriter::HandleWriteResult(int result) {
   queue_.front()->data->DidConsume(result);
 
   if (queue_.front()->data->BytesRemaining() == 0) {
-    base::Closure done_task = queue_.front()->done_task;
+    base::OnceClosure done_task = std::move(queue_.front()->done_task);
     queue_.pop_front();
 
     if (!done_task.is_null())
-      done_task.Run();
+      std::move(done_task).Run();
   }
 }
 

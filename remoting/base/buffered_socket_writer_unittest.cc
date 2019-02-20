@@ -148,11 +148,12 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
   void TestAppendInCallback() {
-    writer_->Write(test_buffer_,
-                   base::Bind(base::IgnoreResult(&BufferedSocketWriter::Write),
-                              base::Unretained(writer_.get()), test_buffer_2_,
-                              base::Closure(), TRAFFIC_ANNOTATION_FOR_TESTS),
-                   TRAFFIC_ANNOTATION_FOR_TESTS);
+    writer_->Write(
+        test_buffer_,
+        base::BindOnce(base::IgnoreResult(&BufferedSocketWriter::Write),
+                       base::Unretained(writer_.get()), test_buffer_2_,
+                       base::Closure(), TRAFFIC_ANNOTATION_FOR_TESTS),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     base::RunLoop().RunUntilIdle();
     VerifyWrittenData();
   }

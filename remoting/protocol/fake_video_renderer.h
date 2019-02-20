@@ -31,7 +31,7 @@ class FakeVideoStub : public VideoStub {
 
   // VideoStub interface.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   base::ThreadChecker thread_checker_;

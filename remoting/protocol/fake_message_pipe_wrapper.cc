@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/fake_message_pipe.h"
@@ -25,8 +26,8 @@ void FakeMessagePipeWrapper::Start(EventHandler* event_handler) {
 }
 
 void FakeMessagePipeWrapper::Send(google::protobuf::MessageLite* message,
-                                  const base::Closure& done) {
-  pipe_->Send(message, done);
+                                  base::OnceClosure done) {
+  pipe_->Send(message, std::move(done));
 }
 
 void FakeMessagePipeWrapper::Receive(std::unique_ptr<CompoundBuffer> message) {

@@ -21,7 +21,7 @@ class AudioStub {
   virtual ~AudioStub() { }
 
   virtual void ProcessAudioPacket(std::unique_ptr<AudioPacket> audio_packet,
-                                  const base::Closure& done) = 0;
+                                  base::OnceClosure done) = 0;
 
  protected:
   AudioStub() { }

@@ -30,7 +30,7 @@ class AudioWriter : public ChannelDispatcherBase,
 
   // AudioStub interface.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   AudioWriter();

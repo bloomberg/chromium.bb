@@ -37,7 +37,7 @@ namespace protocol {
 namespace {
 
 ACTION(FinishSend) {
-  arg1.Run();
+  std::move(*arg1).Run();
 }
 
 std::unique_ptr<webrtc::DesktopFrame> CreateNullFrame(

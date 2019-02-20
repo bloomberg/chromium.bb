@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/audio_writer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "net/socket/stream_socket.h"
@@ -21,8 +23,8 @@ AudioWriter::AudioWriter() : ChannelDispatcherBase(kAudioChannelName) {}
 AudioWriter::~AudioWriter() = default;
 
 void AudioWriter::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                                     const base::Closure& done) {
-  message_pipe()->Send(packet.get(), done);
+                                     base::OnceClosure done) {
+  message_pipe()->Send(packet.get(), std::move(done));
 }
 
 // static

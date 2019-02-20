@@ -5,6 +5,7 @@
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -46,7 +47,7 @@ void WebrtcDataStreamAdapter::Start(EventHandler* event_handler) {
 }
 
 void WebrtcDataStreamAdapter::Send(google::protobuf::MessageLite* message,
-                                   const base::Closure& done) {
+                                   base::OnceClosure done) {
   DCHECK(state_ == State::OPEN);
 
   rtc::CopyOnWriteBuffer buffer;
@@ -61,7 +62,7 @@ void WebrtcDataStreamAdapter::Send(google::protobuf::MessageLite* message,
   }
 
   if (!done.is_null())
-    done.Run();
+    std::move(done).Run();
 }
 
 void WebrtcDataStreamAdapter::OnStateChange() {

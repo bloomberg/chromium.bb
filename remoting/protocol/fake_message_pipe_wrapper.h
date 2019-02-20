@@ -30,7 +30,7 @@ class FakeMessagePipeWrapper final : public MessagePipe {
   // MessagePipe implementation.
   void Start(EventHandler* event_handler) override;
   void Send(google::protobuf::MessageLite* message,
-            const base::Closure& done) override;
+            base::OnceClosure done) override;
 
   void Receive(std::unique_ptr<CompoundBuffer> message);
   void OpenPipe();

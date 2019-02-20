@@ -5,6 +5,7 @@
 #include "remoting/test/fake_connection_event_logger.h"
 
 #include <string>
+#include <utility>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
@@ -249,7 +250,7 @@ class FakeConnectionEventLogger::CounterAudioStub
 
  private:
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> audio_packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 };
 
 FakeConnectionEventLogger::CounterAudioStub::CounterAudioStub()
@@ -257,11 +258,11 @@ FakeConnectionEventLogger::CounterAudioStub::CounterAudioStub()
 
 void FakeConnectionEventLogger::CounterAudioStub::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> audio_packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   if (audio_packet) {
     LogMessage(*audio_packet);
   }
-  done.Run();
+  std::move(done).Run();
 }
 
 // Analyzes messages from ProcessVideoPacket function.
@@ -274,7 +275,7 @@ class FakeConnectionEventLogger::CounterVideoStub
 
  private:
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
   protocol::FakeConnectionToClient* connection_ = nullptr;
   MessageCounter video_data_;
@@ -300,7 +301,7 @@ void FakeConnectionEventLogger::CounterVideoStub::DisplayStatistics(
 
 void FakeConnectionEventLogger::CounterVideoStub::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> video_packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   if (video_packet && video_packet->has_capture_overhead_time_ms()) {
     // Not a keepalive packet.
     if (connection_ &&
@@ -314,7 +315,7 @@ void FakeConnectionEventLogger::CounterVideoStub::ProcessVideoPacket(
     capture_time_.LogMessage(video_packet->capture_time_ms());
     encode_time_.LogMessage(video_packet->encode_time_ms());
   }
-  done.Run();
+  std::move(done).Run();
 }
 
 FakeConnectionEventLogger::FakeConnectionEventLogger(

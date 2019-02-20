@@ -202,9 +202,10 @@ void VideoFramePump::SendPacket(std::unique_ptr<PacketWithTimestamps> packet) {
   UpdateFrameTimers(packet->packet.get(), packet->timestamps.get());
 
   send_pending_ = true;
-  video_stub_->ProcessVideoPacket(std::move(packet->packet),
-                                  base::Bind(&VideoFramePump::OnVideoPacketSent,
-                                             weak_factory_.GetWeakPtr()));
+  video_stub_->ProcessVideoPacket(
+      std::move(packet->packet),
+      base::BindOnce(&VideoFramePump::OnVideoPacketSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::UpdateFrameTimers(VideoPacket* packet,
@@ -253,8 +254,8 @@ void VideoFramePump::SendKeepAlivePacket() {
 
   video_stub_->ProcessVideoPacket(
       std::make_unique<VideoPacket>(),
-      base::Bind(&VideoFramePump::OnKeepAlivePacketSent,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&VideoFramePump::OnKeepAlivePacketSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::OnKeepAlivePacketSent() {

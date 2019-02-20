@@ -5,6 +5,7 @@
 #include "remoting/host/file_transfer/file_transfer_message_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -157,7 +158,7 @@ void FileTransferMessageHandler::SendResult(
   } else {
     *result_message.mutable_error() = std::move(result.error());
   }
-  Send(result_message, base::Closure());
+  Send(result_message, base::DoNothing());
 }
 
 void FileTransferMessageHandler::CancelAndSendError(

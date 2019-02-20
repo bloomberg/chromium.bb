@@ -26,7 +26,7 @@ class HostVideoDispatcher : public ChannelDispatcherBase, public VideoStub {
 
   // VideoStub interface.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;

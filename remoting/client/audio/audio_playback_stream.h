@@ -35,7 +35,7 @@ class AudioPlaybackStream : public protocol::AudioStub {
 
   // AudioStub implementations.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::RepeatingClosure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   class Core;

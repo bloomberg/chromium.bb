@@ -39,10 +39,10 @@ class AudioDecodeScheduler : public AudioStub {
 
   // AudioStub implementation.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
-  void ProcessDecodedPacket(const base::Closure& done,
+  void ProcessDecodedPacket(base::OnceClosure done,
                             std::unique_ptr<AudioPacket> packet);
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;

@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -179,11 +180,10 @@ class MockVideoStub : public VideoStub {
   ~MockVideoStub() override;
 
   MOCK_METHOD2(ProcessVideoPacketPtr,
-               void(const VideoPacket* video_packet,
-                    const base::Closure& done));
+               void(const VideoPacket* video_packet, base::OnceClosure* done));
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
-                          const base::Closure& done) override {
-    ProcessVideoPacketPtr(video_packet.get(), done);
+                          base::OnceClosure done) override {
+    ProcessVideoPacketPtr(video_packet.get(), &done);
   }
 
  private:

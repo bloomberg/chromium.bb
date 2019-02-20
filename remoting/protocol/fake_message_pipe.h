@@ -39,7 +39,7 @@ class FakeMessagePipe final : public MessagePipe {
   // MessagePipe implementation.
   void Start(EventHandler* event_handler) override;
   void Send(google::protobuf::MessageLite* message,
-            const base::Closure& done) override;
+            base::OnceClosure done) override;
 
   // Forwards |message| to EventHandler.
   void Receive(std::unique_ptr<CompoundBuffer> message);
@@ -54,8 +54,7 @@ class FakeMessagePipe final : public MessagePipe {
   const base::queue<std::string>& sent_messages() { return sent_messages_; }
 
  private:
-  void SendImpl(google::protobuf::MessageLite* message,
-                const base::Closure& done);
+  void SendImpl(google::protobuf::MessageLite* message, base::OnceClosure done);
   void ReceiveImpl(std::unique_ptr<CompoundBuffer> message);
   void OpenPipeImpl();
   void ClosePipeImpl();

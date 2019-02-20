@@ -37,28 +37,28 @@ void AudioDecodeScheduler::Initialize(const protocol::SessionConfig& config) {
 
 void AudioDecodeScheduler::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
       audio_decode_task_runner_.get(), FROM_HERE,
-      base::Bind(&AudioDecoder::Decode, base::Unretained(decoder_.get()),
-                 base::Passed(&packet)),
-      base::Bind(&AudioDecodeScheduler::ProcessDecodedPacket,
-                 weak_factory_.GetWeakPtr(), done));
+      base::BindOnce(&AudioDecoder::Decode, base::Unretained(decoder_.get()),
+                     std::move(packet)),
+      base::BindOnce(&AudioDecodeScheduler::ProcessDecodedPacket,
+                     weak_factory_.GetWeakPtr(), std::move(done)));
 }
 
 void AudioDecodeScheduler::ProcessDecodedPacket(
-    const base::Closure& done,
+    base::OnceClosure done,
     std::unique_ptr<AudioPacket> packet) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!packet || !audio_consumer_) {
-    done.Run();
+    std::move(done).Run();
     return;
   }
 
-  audio_consumer_->ProcessAudioPacket(std::move(packet), done);
+  audio_consumer_->ProcessAudioPacket(std::move(packet), std::move(done));
 }
 
 }  // namespace protocol
