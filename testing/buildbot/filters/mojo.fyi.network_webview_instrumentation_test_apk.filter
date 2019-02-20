@@ -19,10 +19,6 @@
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataUrlShouldTriggerShouldInterceptRequest
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataWithBaseUrlTriggersShouldInterceptRequest
 
-# https://crbug.com/893572
--org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedRedirectHangingNavigation
--org.chromium.android_webview.test.ClientOnPageStartedTest.testRendererInitiatedRedirectHangingNavigation
-
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
