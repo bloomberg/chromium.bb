@@ -6,6 +6,7 @@
 #define BASE_OBSERVER_LIST_THREADSAFE_H_
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/base_export.h"
 #include "base/bind.h"
@@ -21,12 +22,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
-
-// TODO(fdoray): Removing these includes causes IWYU failures in other headers,
-// remove them in a follow- up CL.
-#include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
