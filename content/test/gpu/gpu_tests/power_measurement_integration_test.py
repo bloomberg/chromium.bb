@@ -25,6 +25,7 @@ This script is tested and works fine with the following video sites:
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import ipg_utils
+from gpu_tests import path_util
 from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 import logging
@@ -41,6 +42,40 @@ _POWER_MEASUREMENT_DURATION = 30
 
 # Measures power in resolution of [x] milli-seconds.
 _POWER_MEASUREMENT_RESOLUTION = 100
+
+_GPU_RELATIVE_PATH = "content/test/data/gpu/"
+
+_DATA_PATHS = [os.path.join(
+                   path_util.GetChromiumSrcDir(), _GPU_RELATIVE_PATH),
+               os.path.join(
+                   path_util.GetChromiumSrcDir(), 'media', 'test', 'data')]
+
+_BASIC_TEST_HARNESS_SCRIPT = r"""
+  var domAutomationController = {};
+
+  domAutomationController._proceed = false;
+
+  domAutomationController._readyForActions = false;
+  domAutomationController._succeeded = false;
+  domAutomationController._finished = false;
+
+  domAutomationController.send = function(msg) {
+    domAutomationController._proceed = true;
+    let lmsg = msg.toLowerCase();
+    if (lmsg == "ready") {
+      domAutomationController._readyForActions = true;
+    } else {
+      domAutomationController._finished = true;
+      if (lmsg == "success") {
+        domAutomationController._succeeded = true;
+      } else {
+        domAutomationController._succeeded = false;
+      }
+    }
+  }
+
+  window.domAutomationController = domAutomationController;
+"""
 
 _FULLSCREEN_SCRIPT = r"""
   function locateElement(tag) {
@@ -196,14 +231,26 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       yield ('Basic', '-',
              {'test_func': 'Basic',
               'bypass_ipg': options.bypass_ipg})
+      yield ('Video_720_MP4',
+             _GPU_RELATIVE_PATH + 'power_video_bear_1280x720_mp4.html',
+             {'test_func': 'Video',
+              'bypass_ipg': options.bypass_ipg,
+              'underlay': False,
+              'fullscreen': False})
+      yield ('Video_720_MP4_Underlay',
+             _GPU_RELATIVE_PATH + 'power_video_bear_1280x720_mp4.html',
+             {'test_func': 'Video',
+              'bypass_ipg': options.bypass_ipg,
+              'underlay': True,
+              'fullscreen': False})
 
   @classmethod
   def SetUpProcess(cls):
     super(cls, PowerMeasurementIntegrationTest).SetUpProcess()
-    cls.CustomizeBrowserArgs([
-      '--autoplay-policy=no-user-gesture-required'
-    ])
+    path_util.SetupTelemetryPaths()
+    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
+    cls.SetStaticServerDirs(_DATA_PATHS)
 
   def RunActualGpuTest(self, test_path, *args):
     test_params = args[0]
@@ -215,11 +262,13 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _CreateExpectations(cls):
     return PowerMeasurementExpectations()
 
-  #########################################
-  # Actual test functions
+  @staticmethod
+  def _AddDefaultArgs(browser_args):
+    # All tests receive the following options.
+    return ['--autoplay-policy=no-user-gesture-required'] + browser_args
 
-  def _RunTest_Basic(self, test_path, params):
-    bypass_ipg = params['bypass_ipg']
+  @staticmethod
+  def _MeasurePowerWithIPG(bypass_ipg):
     total_time = _POWER_MEASUREMENT_DURATION + _POWER_MEASUREMENT_DELAY
     if bypass_ipg:
       logging.info("Bypassing Intel Power Gadget")
@@ -231,6 +280,41 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # TODO(zmo): output in a way that the results can be tracked at
     # chromeperf.appspot.com.
     logging.info("Results: %s", str(results))
+
+  #########################################
+  # Actual test functions
+
+  def _RunTest_Basic(self, test_path, params):
+    bypass_ipg = params['bypass_ipg']
+    PowerMeasurementIntegrationTest._MeasurePowerWithIPG(bypass_ipg)
+
+
+  def _RunTest_Video(self, test_path, params):
+    fullscreen = params['fullscreen']
+    underlay = params['underlay']
+    bypass_ipg = params['bypass_ipg']
+
+    disabled_features = [
+      'D3D11VideoDecoder',
+      'DirectCompositionUseNV12DecodeSwapChain',
+      'DirectCompositionUnderlays']
+    self.RestartBrowserWithArgs(
+      PowerMeasurementIntegrationTest._AddDefaultArgs([
+        '--disable-features=' + ','.join(disabled_features)]))
+
+    url = self.UrlOfStaticFilePath(test_path)
+    self.tab.Navigate(
+      url, script_to_evaluate_on_commit=_BASIC_TEST_HARNESS_SCRIPT)
+    self.tab.action_runner.WaitForJavaScriptCondition(
+      'domAutomationController._finished', timeout=30)
+    if fullscreen:
+      # TODO(zmo): Figure out why the following doesn't work
+      self.tab.action_runner.ClickElement(element_function=(
+        'document.getElementById("fullscreen")'))
+    if underlay:
+      self.tab.action_runner.ExecuteJavaScript('goUnderlay();')
+
+    PowerMeasurementIntegrationTest._MeasurePowerWithIPG(bypass_ipg)
 
 
   def _RunTest_URL(self, test_path, params):

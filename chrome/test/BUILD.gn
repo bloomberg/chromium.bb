@@ -382,6 +382,9 @@ group("telemetry_gpu_integration_test") {
     "//media/test/data/four-colors-rot-180.mp4",
     "//media/test/data/four-colors-rot-270.mp4",
     "//media/test/data/four-colors-vp9.webm",
+
+    # For power
+    "//media/test/data/bear-1280x720.mp4",
   ]
 
   # For pixel_test and maps_pixel_test. Because this links to a CIPD
