@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
@@ -205,7 +206,9 @@ class AppSearchProviderTest : public AppListTestBase {
   ArcAppTest& arc_test() { return arc_test_; }
 
   // Train the |app_search| provider with id.
-  void Train(const std::string& id) { app_search_->Train(id); }
+  void Train(const std::string& id) {
+    app_search_->Train(id, RankingItemType::kApp);
+  }
 
   sync_sessions::SyncedSessionTracker* session_tracker() {
     return session_tracker_.get();

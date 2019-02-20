@@ -23,6 +23,7 @@ FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
 class SearchProvider;
+enum class RankingItemType;
 
 // Mixer collects results from providers, sorts them and publishes them to the
 // SearchResults UI model. The targeted results have 6 slots to hold the
@@ -46,6 +47,9 @@ class Mixer {
 
   // Collects the results, sorts and publishes them.
   void MixAndPublish(size_t num_max_results);
+
+  // Handle a training signal.
+  void Train(const std::string& id, RankingItemType type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);

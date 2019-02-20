@@ -114,9 +114,10 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   return nullptr;
 }
 
-void SearchController::Train(const std::string& id) {
+void SearchController::Train(const std::string& id, RankingItemType type) {
   for (const auto& provider : providers_)
-    provider->Train(id);
+    provider->Train(id, type);
+  mixer_->Train(id, type);
 }
 
 }  // namespace app_list

@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -662,8 +663,9 @@ void AppSearchProvider::Start(const base::string16& query) {
     UpdateResults();
 }
 
-void AppSearchProvider::Train(const std::string& id) {
-  ranker_->Train(id);
+void AppSearchProvider::Train(const std::string& id, RankingItemType type) {
+  if (type == RankingItemType::kApp)
+    ranker_->Train(id);
 }
 
 void AppSearchProvider::RefreshAppsAndUpdateResults() {

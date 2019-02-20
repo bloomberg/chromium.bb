@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -100,12 +101,9 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
     search_controller_->OpenResult(result, event_flags);
 
     // Send training signal to search controller.
-    if (result->result_type() == ash::SearchResultType::kInstalledApp ||
-        result->result_type() == ash::SearchResultType::kInternalApp) {
-      search_controller_->Train(
-          static_cast<app_list::AppResult*>(result)->app_id());
-    }
-
+    search_controller_->Train(
+        result_id,
+        app_list::RankingItemTypeFromSearchResultType(result->result_type()));
   }
 }
 
@@ -176,7 +174,11 @@ void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
   model_updater_->ActivateChromeItem(id, event_flags);
 
   // Send training signal to search controller.
-  search_controller_->Train(id);
+  const auto* item = model_updater_->FindItem(id);
+  if (item) {
+    search_controller_->Train(
+        id, app_list::RankingItemTypeFromChromeAppListItem(*item));
+  }
 
   app_launch_event_logger_.OnGridClicked(id);
 }
