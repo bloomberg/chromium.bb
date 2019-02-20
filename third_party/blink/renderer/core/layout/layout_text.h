@@ -105,7 +105,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // Returns first letter part of |LayoutTextFragment|.
   virtual LayoutText* GetFirstLetterPart() const { return nullptr; }
 
-  InlineTextBox* CreateInlineTextBox(int start, unsigned short length);
+  InlineTextBox* CreateInlineTextBox(int start, uint16_t length);
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
   void DirtyLineBoxes();
 
@@ -340,9 +340,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       const LayoutRect& container_rect,
       TouchAction container_whitelisted_touch_action) const override;
 
-  virtual InlineTextBox* CreateTextBox(
-      int start,
-      unsigned short length);  // Subclassed by SVG.
+  virtual InlineTextBox* CreateTextBox(int start,
+                                       uint16_t length);  // Subclassed by SVG.
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 

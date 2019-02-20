@@ -47,7 +47,7 @@ namespace blink {
 
 struct SameSizeAsInlineTextBox : public InlineBox {
   unsigned variables[1];
-  unsigned short variables2[2];
+  uint16_t variables2[2];
   void* pointers[2];
 };
 

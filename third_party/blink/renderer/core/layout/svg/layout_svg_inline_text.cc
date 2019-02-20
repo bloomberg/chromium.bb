@@ -89,8 +89,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   }
 }
 
-InlineTextBox* LayoutSVGInlineText::CreateTextBox(int start,
-                                                  unsigned short length) {
+InlineTextBox* LayoutSVGInlineText::CreateTextBox(int start, uint16_t length) {
   InlineTextBox* box =
       new SVGInlineTextBox(LineLayoutItem(this), start, length);
   box->SetHasVirtualLogicalHeight();

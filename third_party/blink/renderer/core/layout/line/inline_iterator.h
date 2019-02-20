@@ -760,7 +760,7 @@ static void inline AppendRunObjectIfNecessary(LineLayoutItem obj,
   while (end > start || add_empty_run) {
     add_empty_run = false;
     const int kLimit =
-        USHRT_MAX;  // InlineTextBox stores text length as unsigned short.
+        USHRT_MAX;  // InlineTextBox stores text length as uint16_t.
     unsigned limited_end = end;
     if (end - start > kLimit)
       limited_end = start + kLimit;
