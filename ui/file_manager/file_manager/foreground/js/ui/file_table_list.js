@@ -496,8 +496,29 @@ filelist.handleKeyDown = function(e) {
   if (e.key == ' ') {
     if (leadIndex != -1) {
       const selected = sm.getIndexSelected(leadIndex);
-      if (e.ctrlKey || !selected) {
-        sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
+      if (e.ctrlKey) {
+        sm.beginChange();
+
+        // Force selecting if it's the first item selected, otherwise flip the
+        // "selected" status.
+        if (selected && sm.selectedIndexes.length === 1 &&
+            !sm.getCheckSelectMode()) {
+          // It needs to go back/forth to trigger the 'change' event.
+          sm.setIndexSelected(leadIndex, false);
+          sm.setIndexSelected(leadIndex, true);
+        } else {
+          // Toggle the current one and make it anchor index.
+          sm.setIndexSelected(leadIndex, !selected);
+        }
+
+        // Force check-select, FileListSelectionModel.onChangeEvent_ resets it
+        // if needed.
+        sm.setCheckSelectMode(true);
+        sm.endChange();
+
+        // Prevents space to opening quickview.
+        e.stopPropagation();
+        e.preventDefault();
         return;
       }
     }
@@ -547,6 +568,9 @@ filelist.handleKeyDown = function(e) {
       } else {
         sm.selectRange(anchorIndex, newIndex);
       }
+    } else if (e.ctrlKey) {
+      // While Ctrl is being held, only leadIndex and anchorIndex are moved.
+      sm.anchorIndex = newIndex;
     } else {
       // 1) When pressing direction key results in a single selection, the
       //    check-select mode should be terminated.
