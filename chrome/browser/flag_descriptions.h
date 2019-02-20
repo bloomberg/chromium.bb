@@ -1284,6 +1284,9 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 extern const char kAndroidSurfaceControl[];
 extern const char kAndroidSurfaceControlDescription[];
 
+extern const char kAndroidWebContentsDarkMode[];
+extern const char kAndroidWebContentsDarkModeDescription[];
+
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];
 

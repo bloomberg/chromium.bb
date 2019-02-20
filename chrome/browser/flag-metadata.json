@@ -718,6 +718,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-android-web-contents-dark-mode",
+    "owners": [ "huayinz", "tedchoc" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-app-banners",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

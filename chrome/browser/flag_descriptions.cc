@@ -2162,6 +2162,10 @@ const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     "Use the SurfaceControl API for supporting overlays on Android";
 
+const char kAndroidWebContentsDarkMode[] = "Android web contents dark mode";
+const char kAndroidWebContentsDarkModeDescription[] =
+    "Enable dark mode on web contents in Android";
+
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";
 const char kAppNotificationStatusMessagingDescription[] =

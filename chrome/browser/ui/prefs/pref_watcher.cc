@@ -32,6 +32,7 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebKitDomPasteEnabled,
 #if defined(OS_ANDROID)
     prefs::kWebKitFontScaleFactor,
+    prefs::kWebKitForceDarkModeEnabled,
     prefs::kWebKitForceEnableZoom,
     prefs::kWebKitPasswordEchoEnabled,
 #endif
