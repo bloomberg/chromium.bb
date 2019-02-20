@@ -102,6 +102,7 @@ class ProtoDatabaseSelector
 
  private:
   friend class base::RefCountedThreadSafe<ProtoDatabaseSelector>;
+  friend class ProtoDatabaseImplTest;
 
   enum class InitStatus {
     NOT_STARTED,
@@ -116,18 +117,17 @@ class ProtoDatabaseSelector
                       Callbacks::InitStatusCallback callback,
                       Enums::InitStatus status);
 
-  // |unique_db| should contain a nullptr if initializing the DB fails.
-  void GetSharedDBClient(std::unique_ptr<UniqueProtoDatabase> unique_db,
-                         bool use_shared_db,
-                         Callbacks::InitStatusCallback callback);
   void OnInitSharedDB(std::unique_ptr<UniqueProtoDatabase> unique_db,
+                      Enums::InitStatus unique_db_status,
                       bool use_shared_db,
                       Callbacks::InitStatusCallback callback,
                       scoped_refptr<SharedProtoDatabase> shared_db);
   void OnGetSharedDBClient(std::unique_ptr<UniqueProtoDatabase> unique_db,
+                           Enums::InitStatus unique_db_status,
                            bool use_shared_db,
                            Callbacks::InitStatusCallback callback,
-                           std::unique_ptr<SharedProtoDatabaseClient> client);
+                           std::unique_ptr<SharedProtoDatabaseClient> client,
+                           Enums::InitStatus shared_db_status);
   void DeleteOldDataAndMigrate(
       std::unique_ptr<UniqueProtoDatabase> unique_db,
       std::unique_ptr<SharedProtoDatabaseClient> client,

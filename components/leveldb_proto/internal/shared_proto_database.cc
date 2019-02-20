@@ -401,8 +401,8 @@ SharedProtoDatabase::~SharedProtoDatabase() {
 }
 
 void GetClientInitCallback(
-    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
-        callback,
+    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>,
+                            Enums::InitStatus)> callback,
     std::unique_ptr<SharedProtoDatabaseClient> client,
     Enums::InitStatus status,
     SharedDBMetadataProto::MigrationStatus migration_status) {
@@ -417,14 +417,15 @@ void GetClientInitCallback(
   if (client)
     client->set_migration_status(migration_status);
   current_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(client)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(client), status));
 }
 
 void SharedProtoDatabase::GetClientAsync(
     ProtoDbType db_type,
     bool create_if_missing,
-    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
-        callback) {
+    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>,
+                            Enums::InitStatus)> callback) {
   auto client = GetClientInternal(db_type);
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
