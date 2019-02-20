@@ -279,14 +279,13 @@ CastTracingAgent::~CastTracingAgent() = default;
 
 // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
 void CastTracingAgent::StartTracing(const std::string& config,
-                                    base::TimeTicks coordinator_time,
-                                    Agent::StartTracingCallback callback) {
+                                    base::TimeTicks coordinator_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!session_);
   session_ = std::make_unique<CastSystemTracingSession>(worker_task_runner_);
   session_->StartTracing(
       config, base::BindOnce(&CastTracingAgent::StartTracingCallbackProxy,
-                             base::Unretained(this), std::move(callback)));
+                             base::Unretained(this)));
 }
 
 void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
@@ -306,12 +305,10 @@ void CastTracingAgent::GetCategories(std::set<std::string>* category_set) {
 }
 
 void CastTracingAgent::StartTracingCallbackProxy(
-    Agent::StartTracingCallback callback,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success)
     session_.reset();
-  std::move(callback).Run(success);
 }
 
 void CastTracingAgent::HandleTraceData(chromecast::SystemTracer::Status status,

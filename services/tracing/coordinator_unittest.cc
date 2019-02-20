@@ -19,7 +19,6 @@ class CoordinatorTest : public testing::Test, public CoordinatorTestUtil {
     CoordinatorTestUtil::SetUp();
     coordinator_ = std::make_unique<Coordinator>(agent_registry(),
                                                  base::RepeatingClosure());
-    coordinator_->FinishedReceivingRunningPIDs();
   }
   void TearDown() override { CoordinatorTestUtil::TearDown(); }
 };
@@ -27,7 +26,7 @@ class CoordinatorTest : public testing::Test, public CoordinatorTestUtil {
 TEST_F(CoordinatorTest, StartTracingSimple) {
   base::RunLoop run_loop;
   auto* agent = AddArrayAgent();
-  StartTracing("*", true);
+  StartTracing("*");
   run_loop.RunUntilIdle();
 
   // The agent should have received exactly one call from the coordinator.
@@ -38,7 +37,7 @@ TEST_F(CoordinatorTest, StartTracingSimple) {
 TEST_F(CoordinatorTest, StartTracingTwoAgents) {
   base::RunLoop run_loop;
   auto* agent1 = AddArrayAgent();
-  StartTracing("*", true);
+  StartTracing("*");
   auto* agent2 = AddStringAgent();
   run_loop.RunUntilIdle();
 
@@ -53,13 +52,13 @@ TEST_F(CoordinatorTest, StartTracingWithProcessFilter) {
   base::RunLoop run_loop1;
   auto* agent1 = AddArrayAgent(static_cast<base::ProcessId>(1));
   auto* agent2 = AddArrayAgent(static_cast<base::ProcessId>(2));
-  StartTracing("{\"included_process_ids\":[2,4]}", true);
+  StartTracing("{\"included_process_ids\":[2,4]}");
   run_loop1.RunUntilIdle();
 
   base::RunLoop run_loop2;
   auto* agent3 = AddArrayAgent(static_cast<base::ProcessId>(3));
   auto* agent4 = AddArrayAgent(static_cast<base::ProcessId>(4));
-  StartTracing("{\"included_process_ids\":[4,6]}", true);
+  StartTracing("{\"included_process_ids\":[4,6]}");
   run_loop2.RunUntilIdle();
 
   base::RunLoop run_loop3;
@@ -68,38 +67,27 @@ TEST_F(CoordinatorTest, StartTracingWithProcessFilter) {
   run_loop3.RunUntilIdle();
 
   // StartTracing should only be received by agents 2, 4, and 6.
+  // Agent 4 should receive StartTracing twice, as it's
+  // included in both configs.
   EXPECT_EQ(0u, agent1->call_stat().size());
   EXPECT_EQ(1u, agent2->call_stat().size());
   EXPECT_EQ("StartTracing", agent2->call_stat()[0]);
   EXPECT_EQ(0u, agent3->call_stat().size());
-  EXPECT_EQ(1u, agent4->call_stat().size());
+  EXPECT_EQ(2u, agent4->call_stat().size());
   EXPECT_EQ("StartTracing", agent4->call_stat()[0]);
+  EXPECT_EQ("StartTracing", agent4->call_stat()[1]);
   EXPECT_EQ(0u, agent5->call_stat().size());
   EXPECT_EQ(1u, agent6->call_stat().size());
   EXPECT_EQ("StartTracing", agent6->call_stat()[0]);
 }
 
-TEST_F(CoordinatorTest, StartTracingWithDifferentConfigs) {
-  base::RunLoop run_loop;
-  auto* agent = AddArrayAgent();
-  StartTracing("config 1", true);
-  // The 2nd |StartTracing| should return false.
-  StartTracing("config 2", false);
-  run_loop.RunUntilIdle();
-
-  // The agent should have received exactly one call from the coordinator
-  // because the 2nd |StartTracing| was aborted.
-  EXPECT_EQ(1u, agent->call_stat().size());
-  EXPECT_EQ("StartTracing", agent->call_stat()[0]);
-}
-
 TEST_F(CoordinatorTest, StartTracingWithSameConfigs) {
   base::RunLoop run_loop;
   auto* agent = AddArrayAgent();
-  StartTracing("config", true);
-  // The 2nd |StartTracing| should return true when we are not trying to change
+  StartTracing("config");
+  // The 2nd |StartTracing| should succeed when we are not trying to change
   // the config.
-  StartTracing("config", true);
+  StartTracing("config");
   run_loop.RunUntilIdle();
 
   // The agent should have received exactly one call from the coordinator
@@ -113,7 +101,7 @@ TEST_F(CoordinatorTest, StopAndFlushObjectAgent) {
   agent->data_.push_back("\"content\":{\"a\":1}");
   agent->data_.push_back("\"name\":\"etw\"");
 
-  StartTracing("config", true);
+  StartTracing("config");
   std::string output = StopAndFlush();
 
   EXPECT_EQ("{\"systemTraceEvents\":{\"content\":{\"a\":1},\"name\":\"etw\"}}",
@@ -134,7 +122,7 @@ TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true);
+  StartTracing("config");
   std::string output = StopAndFlush();
 
   // |output| should be of the form {"traceEvents":[ei,ej,ek,el]}, where
@@ -168,7 +156,7 @@ TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true);
+  StartTracing("config");
   std::string output = StopAndFlush();
 
   EXPECT_TRUE(output == "{\"traceEvents\":[e1,e2],\"power\":\"e3e4\"}" ||
@@ -189,7 +177,7 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
   agent->data_.push_back("event");
   agent->metadata_.SetString("key", "value");
 
-  StartTracing("config", true);
+  StartTracing("config");
   std::string output = StopAndFlush();
 
   // Metadata is written at after trace data.
@@ -203,7 +191,7 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
 TEST_F(CoordinatorTest, IsTracing) {
   base::RunLoop run_loop;
   AddArrayAgent();
-  StartTracing("config", true);
+  StartTracing("config");
   IsTracing(true);
   run_loop.RunUntilIdle();
 }
@@ -250,8 +238,7 @@ TEST_F(CoordinatorTest, RequestBufferUsage) {
 
 TEST_F(CoordinatorTest, LateAgents) {
   auto* agent1 = AddArrayAgent();
-
-  StartTracing("config", true);
+  StartTracing("config");
   StopAndFlush();
 
   base::RunLoop run_loop;
@@ -267,33 +254,6 @@ TEST_F(CoordinatorTest, LateAgents) {
   // receive a StopAndFlush message.
   EXPECT_EQ(1u, agent2->call_stat().size());
   EXPECT_EQ("StopAndFlush", agent2->call_stat()[0]);
-}
-
-TEST_F(CoordinatorTest, WaitForSpecificPIDs) {
-  coordinator_->AddExpectedPID(42);
-  coordinator_->AddExpectedPID(4242);
-
-  auto* agent1 = AddArrayAgent(42);
-  StartTracing("config", true);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(tracing_begin_callback_received());
-
-  auto* agent2 = AddArrayAgent(4242);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(tracing_begin_callback_received());
-
-  StopAndFlush();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(2u, agent1->call_stat().size());
-  EXPECT_EQ("StartTracing", agent1->call_stat()[0]);
-  EXPECT_EQ("StopAndFlush", agent1->call_stat()[1]);
-
-  EXPECT_EQ(2u, agent2->call_stat().size());
-  EXPECT_EQ("StartTracing", agent2->call_stat()[0]);
-  EXPECT_EQ("StopAndFlush", agent2->call_stat()[1]);
 }
 
 }  // namespace tracing

@@ -49,8 +49,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
 
   // mojom::Agent
   void StartTracing(const std::string& config,
-                    base::TimeTicks coordinator_time,
-                    StartTracingCallback callback) override;
+                    base::TimeTicks coordinator_time) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
 
   void RequestBufferStatus(RequestBufferStatusCallback callback) override;

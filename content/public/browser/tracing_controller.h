@@ -75,8 +75,9 @@ class TracingController {
   // Tracing begins immediately locally, and asynchronously on child processes
   // as soon as they receive the StartTracing request.
   //
-  // Once all child processes have acked to the StartTracing request,
-  // StartTracingDoneCallback will be called back.
+  // Once tracing is enabled in the current process and trace events can be
+  // emitted (unless excluded from the config), StartTracingDoneCallback will
+  // be called back.
   //
   // |category_filter| is a filter to control what category groups should be
   // traced. A filter can have an optional '-' prefix to exclude category groups

@@ -24,7 +24,6 @@ CoordinatorTestUtil::~CoordinatorTestUtil() {}
 void CoordinatorTestUtil::SetUp() {
   agent_registry_ = std::make_unique<AgentRegistry>();
   output_ = "";
-  tracing_begin_callback_received_ = false;
 }
 
 // testing::Test
@@ -74,18 +73,9 @@ MockAgent* CoordinatorTestUtil::AddStringAgent() {
   return agents_.back().get();
 }
 
-void CoordinatorTestUtil::StartTracing(std::string config,
-                                       bool expected_response) {
+void CoordinatorTestUtil::StartTracing(std::string config) {
   wait_for_data_closure_ = tracing_loop_.QuitClosure();
-
-  coordinator_->StartTracing(
-      config, base::BindRepeating(
-                  [](bool expected, bool* tracing_begin_callback_received,
-                     bool actual) {
-                    EXPECT_EQ(expected, actual);
-                    *tracing_begin_callback_received = true;
-                  },
-                  expected_response, &tracing_begin_callback_received_));
+  coordinator_->StartTracing(config);
 }
 
 std::string CoordinatorTestUtil::StopAndFlush() {

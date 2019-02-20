@@ -90,8 +90,7 @@ class TraceEventAgentTest : public testing::Test {
   void StartTracing(const std::string& categories) {
     TraceEventAgent::GetInstance()->StartTracing(
         base::trace_event::TraceConfig(categories, "").ToString(),
-        base::TimeTicks::Now(),
-        base::BindRepeating([](bool success) { EXPECT_TRUE(success); }));
+        base::TimeTicks::Now());
   }
 
   void StopAndFlush(base::Closure quit_closure) {

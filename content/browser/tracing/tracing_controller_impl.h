@@ -12,6 +12,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/trace_event/trace_log.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -36,8 +38,10 @@ namespace content {
 class TracingDelegate;
 class TracingUI;
 
-class TracingControllerImpl : public TracingController,
-                              public mojo::DataPipeDrainer::Client {
+class TracingControllerImpl
+    : public TracingController,
+      public mojo::DataPipeDrainer::Client,
+      public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
   // Create an endpoint for dumping the trace data to a callback.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
@@ -83,6 +87,10 @@ class TracingControllerImpl : public TracingController,
   void OnDataAvailable(const void* data, size_t num_bytes) override;
   void OnDataComplete() override;
 
+  // base::trace_event::TraceLog::AsyncEnabledStateObserver
+  void OnTraceLogEnabled() override;
+  void OnTraceLogDisabled() override;
+
   void OnMetadataAvailable(base::Value metadata);
 
   void CompleteFlush();
@@ -91,6 +99,7 @@ class TracingControllerImpl : public TracingController,
   std::vector<std::unique_ptr<tracing::BaseAgent>> agents_;
   std::unique_ptr<TracingDelegate> delegate_;
   std::unique_ptr<base::trace_event::TraceConfig> trace_config_;
+  StartTracingDoneCallback start_tracing_done_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   scoped_refptr<TraceDataEndpoint> trace_data_endpoint_;
   std::unique_ptr<base::DictionaryValue> filtered_metadata_;
@@ -98,6 +107,8 @@ class TracingControllerImpl : public TracingController,
   bool is_data_complete_ = false;
   bool is_metadata_available_ = false;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<TracingControllerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };
 
