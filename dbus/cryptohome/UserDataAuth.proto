@@ -342,3 +342,36 @@ message GetSupportedKeyPoliciesReply {
   // Whether low entropy credentials is supported by the policies
   bool low_entropy_credentials_supported = 1;
 }
+
+message GetDiskFeaturesRequest {
+}
+
+message GetDiskFeaturesReply {
+  bool quota_supported = 1;
+}
+
+message GetAccountDiskUsageRequest {
+  cryptohome.AccountIdentifier identifier = 1;
+}
+
+message GetAccountDiskUsageReply {
+  CryptohomeErrorCode error = 1;
+  // The size of cryptohome in bytes.
+  int64 size = 2;
+}
+
+message GetCurrentSpaceForUidRequest {
+  uint32 uid = 1;
+}
+
+message GetCurrentSpaceForUidReply {
+  int64 cur_space = 1;
+}
+
+message GetCurrentSpaceForGidRequest {
+  uint32 gid = 1;
+}
+
+message GetCurrentSpaceForGidReply {
+  int64 cur_space = 1;
+}
