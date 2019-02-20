@@ -284,7 +284,8 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     mojom::InterventionsInternalsPageHandlerRequest handler_request =
         mojo::MakeRequest(&page_handler_ptr);
     page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(
-        std::move(handler_request), previews_ui_service_.get());
+        std::move(handler_request), previews_ui_service_.get(),
+        &test_network_quality_tracker_);
 
     mojom::InterventionsInternalsPagePtr page_ptr;
     mojom::InterventionsInternalsPageRequest page_request =

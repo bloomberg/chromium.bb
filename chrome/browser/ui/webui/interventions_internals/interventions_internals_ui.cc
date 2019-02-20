@@ -67,6 +67,6 @@ InterventionsInternalsUI::~InterventionsInternalsUI() {}
 void InterventionsInternalsUI::BindInterventionsInternalsPageHandler(
     mojom::InterventionsInternalsPageHandlerRequest request) {
   DCHECK(previews_ui_service_);
-  page_handler_.reset(new InterventionsInternalsPageHandler(
-      std::move(request), previews_ui_service_));
+  page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(
+      std::move(request), previews_ui_service_, nullptr);
 }

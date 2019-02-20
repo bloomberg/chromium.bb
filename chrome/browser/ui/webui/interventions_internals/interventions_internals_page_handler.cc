@@ -118,9 +118,11 @@ std::string GetEnabledStateForSwitch(const std::string& switch_name) {
 
 InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
     mojom::InterventionsInternalsPageHandlerRequest request,
-    previews::PreviewsUIService* previews_ui_service)
+    previews::PreviewsUIService* previews_ui_service,
+    network::NetworkQualityTracker* network_quality_tracker)
     : binding_(this, std::move(request)),
       previews_ui_service_(previews_ui_service),
+      network_quality_tracker_(network_quality_tracker),
       current_estimated_ect_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   logger_ = previews_ui_service_->previews_logger();
   DCHECK(logger_);
@@ -129,7 +131,8 @@ InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
 InterventionsInternalsPageHandler::~InterventionsInternalsPageHandler() {
   DCHECK(logger_);
   logger_->RemoveObserver(this);
-  g_browser_process->network_quality_tracker()
+  (network_quality_tracker_ ? network_quality_tracker_
+                            : g_browser_process->network_quality_tracker())
       ->RemoveEffectiveConnectionTypeObserver(this);
 }
 
@@ -138,7 +141,8 @@ void InterventionsInternalsPageHandler::SetClientPage(
   page_ = std::move(page);
   DCHECK(page_);
   logger_->AddAndNotifyObserver(this);
-  g_browser_process->network_quality_tracker()
+  (network_quality_tracker_ ? network_quality_tracker_
+                            : g_browser_process->network_quality_tracker())
       ->AddEffectiveConnectionTypeObserver(this);
 }
 
