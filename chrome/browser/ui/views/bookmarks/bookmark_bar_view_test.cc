@@ -270,9 +270,8 @@ class TestingPageNavigator : public PageNavigator {
 // TearDown.
 class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  public:
-  BookmarkBarViewEventTestBase()
-      : ViewEventTestBase(),
-        model_(NULL) {}
+  BookmarkBarViewEventTestBase() = default;
+  ~BookmarkBarViewEventTestBase() override = default;
 
   void SetUp() override {
     content_client_.reset(new ChromeContentClient);
@@ -377,7 +376,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   // See comment above class description for what this does.
   virtual bool CreateBigMenu() { return false; }
 
-  BookmarkModel* model_;
+  BookmarkModel* model_ = nullptr;
   std::unique_ptr<BookmarkBarView> bb_view_;
   TestingPageNavigator navigator_;
 
@@ -717,12 +716,11 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != NULL);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
-
-    views::MenuItemView* child_menu =
-        menu->GetSubmenu()->GetMenuItemAt(0);
-    ASSERT_TRUE(child_menu != NULL);
+    ASSERT_NE(nullptr, menu);
+    views::SubmenuView* submenu = menu->GetSubmenu();
+    ASSERT_TRUE(submenu->IsShowing());
+    views::MenuItemView* child_menu = submenu->GetMenuItemAt(0);
+    ASSERT_NE(nullptr, child_menu);
 
     // Move mouse to center of menu and press button.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
@@ -827,12 +825,11 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != NULL);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
-
-    views::MenuItemView* child_menu =
-        menu->GetSubmenu()->GetMenuItemAt(0);
-    ASSERT_TRUE(child_menu != NULL);
+    ASSERT_NE(nullptr, menu);
+    views::SubmenuView* submenu = menu->GetSubmenu();
+    ASSERT_TRUE(submenu->IsShowing());
+    views::MenuItemView* child_menu = submenu->GetMenuItemAt(0);
+    ASSERT_NE(nullptr, child_menu);
 
     // Move mouse to center of menu and press button.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
@@ -842,9 +839,8 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // Drag over other button.
-    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
-    views::View::ConvertPointToScreen(other_button, &loc);
+    gfx::Point loc = ui_test_utils::GetCenterInScreenCoordinates(
+        bb_view_->other_bookmarks_button());
 
 #if defined(USE_AURA)
     // TODO: fix this. Aura requires an additional mouse event to trigger drag
@@ -865,9 +861,8 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step3A() {
     // Drag over other button.
-    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
-    views::View::ConvertPointToScreen(other_button, &loc);
+    gfx::Point loc = ui_test_utils::GetCenterInScreenCoordinates(
+        bb_view_->other_bookmarks_button());
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x(), loc.y(),
@@ -876,14 +871,15 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step4() {
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
-    ASSERT_TRUE(drop_menu != NULL);
-    ASSERT_TRUE(drop_menu->GetSubmenu()->IsShowing());
+    ASSERT_NE(nullptr, drop_menu);
+    views::SubmenuView* drop_submenu = drop_menu->GetSubmenu();
+    ASSERT_TRUE(drop_submenu->IsShowing());
+
     // The button should be highlighted now.
     views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    ASSERT_EQ(views::Button::STATE_PRESSED, other_button->state());
+    EXPECT_EQ(views::Button::STATE_PRESSED, other_button->state());
 
-    views::MenuItemView* target_menu =
-        drop_menu->GetSubmenu()->GetMenuItemAt(0);
+    views::MenuItemView* target_menu = drop_submenu->GetMenuItemAt(0);
     gfx::Point loc(1, 1);
     views::View::ConvertPointToScreen(target_menu, &loc);
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
@@ -897,10 +893,10 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   }
 
   void Step6() {
-    ASSERT_TRUE(model_->other_node()->GetChild(0)->url() == url_dragging_);
+    EXPECT_EQ(url_dragging_, model_->other_node()->GetChild(0)->url());
     // The button should be in normal state now.
     views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    ASSERT_EQ(views::Button::STATE_NORMAL, other_button->state());
+    EXPECT_EQ(views::Button::STATE_NORMAL, other_button->state());
     Done();
   }
 
@@ -934,12 +930,11 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != NULL);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
-
-    views::MenuItemView* child_menu =
-        menu->GetSubmenu()->GetMenuItemAt(0);
-    ASSERT_TRUE(child_menu != NULL);
+    ASSERT_NE(nullptr, menu);
+    views::SubmenuView* submenu = menu->GetSubmenu();
+    ASSERT_TRUE(submenu->IsShowing());
+    views::MenuItemView* child_menu = submenu->GetMenuItemAt(0);
+    ASSERT_NE(nullptr, child_menu);
 
     // Move mouse to center of menu and press button.
     ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
@@ -949,9 +944,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // Drag over other button.
-    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
-    views::View::ConvertPointToScreen(other_button, &loc);
+    gfx::Point loc = ui_test_utils::GetCenterInScreenCoordinates(
+        bb_view_->other_bookmarks_button());
 
     // Start a drag.
 #if defined(USE_AURA)
@@ -971,9 +965,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
   void Step3A() {
     // Drag over other button.
-    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
-    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
-    views::View::ConvertPointToScreen(other_button, &loc);
+    gfx::Point loc = ui_test_utils::GetCenterInScreenCoordinates(
+        bb_view_->other_bookmarks_button());
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
@@ -982,13 +975,12 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
   void Step4() {
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
-    ASSERT_TRUE(drop_menu != NULL);
+    ASSERT_NE(nullptr, drop_menu);
     ASSERT_TRUE(drop_menu->GetSubmenu()->IsShowing());
 
     // Now drag back over first menu.
-    views::LabelButton* button = GetBookmarkButton(0);
-    gfx::Point loc(button->width() / 2, button->height() / 2);
-    views::View::ConvertPointToScreen(button, &loc);
+    gfx::Point loc =
+        ui_test_utils::GetCenterInScreenCoordinates(GetBookmarkButton(0));
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x(), loc.y(),
         base::BindOnce(&BookmarkBarViewTest8::Step5, base::Unretained(this))));
@@ -997,11 +989,11 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   void Step5() {
     // Drop on folder F11.
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
-    ASSERT_TRUE(drop_menu != NULL);
-    ASSERT_TRUE(drop_menu->GetSubmenu()->IsShowing());
+    ASSERT_NE(nullptr, drop_menu);
+    views::SubmenuView* drop_submenu = drop_menu->GetSubmenu();
+    ASSERT_TRUE(drop_submenu->IsShowing());
 
-    views::MenuItemView* target_menu =
-        drop_menu->GetSubmenu()->GetMenuItemAt(1);
+    views::MenuItemView* target_menu = drop_submenu->GetMenuItemAt(1);
     ui_test_utils::MoveMouseToCenterAndPress(
         target_menu, ui_controls::LEFT, ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest8::Step6));
@@ -1011,7 +1003,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     // Make sure drop was processed.
     GURL final_url = model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->
         GetChild(1)->url();
-    ASSERT_TRUE(final_url == url_dragging_);
+    EXPECT_EQ(url_dragging_, final_url);
     Done();
   }
 
@@ -2025,13 +2017,13 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
  private:
   void Step2() {
     // Menu should be showing.
-    views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+    views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
+    ASSERT_NE(nullptr, drop_menu);
+    views::SubmenuView* drop_submenu = drop_menu->GetSubmenu();
+    ASSERT_TRUE(drop_submenu->IsShowing());
 
-    views::MenuItemView* child_menu =
-        menu->GetSubmenu()->GetMenuItemAt(0);
-    ASSERT_TRUE(child_menu != NULL);
+    views::MenuItemView* child_menu = drop_submenu->GetMenuItemAt(0);
+    ASSERT_NE(nullptr, child_menu);
 
     // Move mouse to center of menu and press button.
     ui_test_utils::MoveMouseToCenterAndPress(
