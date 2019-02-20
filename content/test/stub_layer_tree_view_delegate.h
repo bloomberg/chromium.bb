@@ -26,7 +26,6 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void SendScrollEndEventFromImplSide(
       cc::ElementId scroll_latched_element_id) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
-  void DidBeginMainFrame() override {}
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void RequestNewLayerTreeFrameSink(

@@ -61,10 +61,6 @@ void WebViewFrameWidget::BeginFrame(base::TimeTicks last_frame_time,
   web_view_->BeginFrame(last_frame_time, record_main_frame_metrics);
 }
 
-void WebViewFrameWidget::DidBeginFrame() {
-  web_view_->DidBeginFrame();
-}
-
 void WebViewFrameWidget::BeginRafAlignedInput() {
   web_view_->BeginRafAlignedInput();
 }

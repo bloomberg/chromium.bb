@@ -1102,12 +1102,6 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
 
-void RenderWidget::DidBeginMainFrame() {
-  if (!GetWebWidget())
-    return;
-  GetWebWidget()->DidBeginFrame();
-}
-
 void RenderWidget::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
   // For widgets that are never visible, we don't start the compositor, so we
