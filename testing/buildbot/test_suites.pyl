@@ -3481,7 +3481,7 @@
     },
 
     'gpu_telemetry_tests_for_skia_gold_testing': {
-      'pixel': {
+      'pixel_skia': {
         'name': 'pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
@@ -3513,7 +3513,8 @@
         'experiment_percentage': 100,
         'swarming': {
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
-        }
+        },
+        'telemetry_test_name': 'pixel',
       },
     },
 
@@ -4738,6 +4739,7 @@
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
     ],
 
     'gpu_fyi_linux_optional_gtests': [
