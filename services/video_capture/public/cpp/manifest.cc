@@ -5,6 +5,9 @@
 #include "services/video_capture/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
@@ -14,22 +17,26 @@ namespace video_capture {
 
 const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .WithServiceName(mojom::kServiceName)
-          .WithDisplayName("Video Capture")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
-          .ExposeCapability("capture", service_manager::Manifest::InterfaceList<
-                                           mojom::DeviceFactoryProvider>())
-          .ExposeCapability(
-              "tests",
-              service_manager::Manifest::InterfaceList<
-                  mojom::DeviceFactoryProvider, mojom::TestingControls>())
-          .Build()};
+    service_manager::ManifestBuilder()
+        .WithServiceName(mojom::kServiceName)
+        .WithDisplayName("Video Capture")
+        .WithOptions(service_manager::ManifestOptionsBuilder()
+                         .WithSandboxType("none")
+                         .WithInstanceSharingPolicy(
+                             service_manager::Manifest::InstanceSharingPolicy::
+                                 kSharedAcrossGroups)
+                         .Build())
+        .ExposeCapability("capture", service_manager::Manifest::InterfaceList<
+#if defined(OS_CHROMEOS)
+                                         cros::mojom::CrosImageCapture,
+#endif  // defined(OS_CHROMEOS)
+                                         mojom::DeviceFactoryProvider>())
+        .ExposeCapability(
+            "tests",
+            service_manager::Manifest::InterfaceList<
+                mojom::DeviceFactoryProvider, mojom::TestingControls>())
+        .Build()
+  };
   return *manifest;
 }
 

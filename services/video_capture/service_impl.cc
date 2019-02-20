@@ -4,6 +4,8 @@
 
 #include "services/video_capture/service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -11,6 +13,10 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "services/video_capture/testing_controls_impl.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
 
@@ -92,6 +98,11 @@ void ServiceImpl::OnStart() {
       base::BindRepeating(&ServiceImpl::OnTestingControlsRequest,
                           base::Unretained(this)));
 
+#if defined(OS_CHROMEOS)
+  registry_.AddInterface<cros::mojom::CrosImageCapture>(base::BindRepeating(
+      &ServiceImpl::OnCrosImageCaptureRequest, base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
+
   // Unretained |this| is safe because |factory_provider_bindings_| is owned by
   // |this|.
   factory_provider_bindings_.set_connection_error_handler(base::BindRepeating(
@@ -144,6 +155,14 @@ void ServiceImpl::OnTestingControlsRequest(
       std::make_unique<TestingControlsImpl>(keepalive_.CreateRef()),
       std::move(request));
 }
+
+#if defined(OS_CHROMEOS)
+void ServiceImpl::OnCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  LazyInitializeDeviceFactoryProvider();
+  device_factory_provider_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 void ServiceImpl::LazyInitializeDeviceFactoryProvider() {
   if (device_factory_provider_)

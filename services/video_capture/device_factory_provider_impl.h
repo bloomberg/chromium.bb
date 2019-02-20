@@ -18,6 +18,10 @@
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace video_capture {
 
 class VirtualDeviceEnabledDeviceFactory;
@@ -39,6 +43,11 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void ConnectToVideoSourceProvider(
       mojom::VideoSourceProviderRequest request) override;
   void ShutdownServiceAsap() override;
+
+#if defined(OS_CHROMEOS)
+  void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request);
+#endif  // defined(OS_CHROMEOS)
 
  private:
   class GpuDependenciesContext;

@@ -20,6 +20,7 @@ namespace media {
 class Camera3AController;
 class CameraDeviceContext;
 class CameraHalDelegate;
+class ReprocessManager;
 class RequestManager;
 
 enum class StreamType : uint64_t {
@@ -66,7 +67,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   CameraDeviceDelegate(
       VideoCaptureDeviceDescriptor device_descriptor,
       scoped_refptr<CameraHalDelegate> camera_hal_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+      ReprocessManager* reprocess_manager);
 
   ~CameraDeviceDelegate();
 
@@ -181,6 +183,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   base::OnceClosure device_close_callback_;
 
   VideoCaptureDevice::SetPhotoOptionsCallback set_photo_option_callback_;
+
+  ReprocessManager* reprocess_manager_;  // weak
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_;
 

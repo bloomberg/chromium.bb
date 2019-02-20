@@ -6,12 +6,17 @@
 #define SERVICES_VIDEO_CAPTURE_VIRTUAL_DEVICE_ENABLED_DEVICE_FACTORY_H_
 
 #include <map>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
 
@@ -40,6 +45,11 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
+
+#if defined(OS_CHROMEOS)
+  void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request) override;
+#endif  // defined(OS_CHROMEOS)
 
  private:
   class VirtualDeviceEntry;

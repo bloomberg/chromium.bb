@@ -28,6 +28,7 @@ namespace media {
 class CameraHalDelegate;
 class CameraDeviceContext;
 class CameraDeviceDelegate;
+class ReprocessManager;
 
 // Implementation of VideoCaptureDevice for ChromeOS with CrOS camera HALv3.
 class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
@@ -39,7 +40,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
       scoped_refptr<base::SingleThreadTaskRunner>
           task_runner_for_screen_observer,
       const VideoCaptureDeviceDescriptor& device_descriptor,
-      scoped_refptr<CameraHalDelegate> camera_hal_delegate);
+      scoped_refptr<CameraHalDelegate> camera_hal_delegate,
+      ReprocessManager* reprocess_manager);
 
   ~VideoCaptureDeviceChromeOSHalv3() final;
 
@@ -98,6 +100,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
   // Whether the incoming frames should rotate when the device rotates.
   const bool rotates_with_device_;
   int rotation_;
+
+  ReprocessManager* reprocess_manager_;  // weak
 
   base::WeakPtrFactory<VideoCaptureDeviceChromeOSHalv3> weak_ptr_factory_;
 

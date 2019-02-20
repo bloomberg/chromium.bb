@@ -4,6 +4,8 @@
 
 #include "services/video_capture/device_factory_provider_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -175,5 +177,14 @@ void DeviceFactoryProviderImpl::OnFactoryClientDisconnected() {
   if (factory_bindings_.empty())
     device_factory_->SetServiceRef(nullptr);
 }
+
+#if defined(OS_CHROMEOS)
+void DeviceFactoryProviderImpl::BindCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  CHECK(device_factory_);
+
+  device_factory_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace video_capture

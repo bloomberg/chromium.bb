@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension.h"
@@ -24,7 +25,9 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #endif
 
 namespace extensions {
@@ -86,6 +89,11 @@ void RegisterChromeInterfacesForExtension(
                                   ForwardMediaPerceptionRequest,
                               base::Unretained(delegate)));
     }
+  }
+  if (extension->id().compare(extension_misc::kChromeCameraAppId) == 0) {
+    registry->AddInterface(
+        base::BindRepeating(&ForwardRequest<cros::mojom::CrosImageCapture>,
+                            video_capture::mojom::kServiceName));
   }
 #endif
 }

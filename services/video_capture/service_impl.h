@@ -24,6 +24,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -68,6 +72,9 @@ class ServiceImpl : public service_manager::Service,
   void OnDeviceFactoryProviderRequest(
       mojom::DeviceFactoryProviderRequest request);
   void OnTestingControlsRequest(mojom::TestingControlsRequest request);
+#if defined(OS_CHROMEOS)
+  void OnCrosImageCaptureRequest(cros::mojom::CrosImageCaptureRequest request);
+#endif  // defined(OS_CHROMEOS)
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
   void LazyInitializeDeviceFactoryProvider();

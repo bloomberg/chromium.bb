@@ -19,6 +19,7 @@
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
+#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
@@ -28,7 +29,8 @@ namespace media {
 VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
     const VideoCaptureDeviceDescriptor& device_descriptor,
-    scoped_refptr<CameraHalDelegate> camera_hal_delegate)
+    scoped_refptr<CameraHalDelegate> camera_hal_delegate,
+    ReprocessManager* reprocess_manager)
     : device_descriptor_(device_descriptor),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       capture_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -44,6 +46,7 @@ VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
       rotates_with_device_(lens_facing_ !=
                            VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
       rotation_(0),
+      reprocess_manager_(reprocess_manager),
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
@@ -76,7 +79,7 @@ void VideoCaptureDeviceChromeOSHalv3::AllocateAndStart(
   device_context_ = std::make_unique<CameraDeviceContext>(std::move(client));
   camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
       device_descriptor_, camera_hal_delegate_,
-      camera_device_ipc_thread_.task_runner());
+      camera_device_ipc_thread_.task_runner(), reprocess_manager_);
   OpenDevice();
 }
 
