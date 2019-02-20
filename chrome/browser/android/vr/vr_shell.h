@@ -333,7 +333,6 @@ class VrShell : device::GvrGamepadDataProvider,
   std::unique_ptr<PageInfo> CreatePageInfo();
 
   bool webvr_mode_ = false;
-  bool web_vr_autopresentation_expected_ = false;
 
   content::WebContents* web_contents_ = nullptr;
   bool web_contents_is_native_page_ = false;

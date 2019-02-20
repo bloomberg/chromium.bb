@@ -22,7 +22,6 @@ TEST_F(UiPixelTest, DrawVrBrowsingMode) {
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_web_vr = false;
-  ui_initial_state.web_vr_autopresentation_expected = false;
   MakeUi(ui_initial_state,
          LocationBarState(GURL("https://example.com"), security_state::SECURE,
                           &omnibox::kHttpsValidIcon, true, false));

@@ -149,9 +149,7 @@ VrShell::VrShell(JNIEnv* env,
                  int display_height_pixels,
                  bool pause_content,
                  bool low_density)
-    : web_vr_autopresentation_expected_(
-          ui_initial_state.web_vr_autopresentation_expected),
-      delegate_provider_(delegate),
+    : delegate_provider_(delegate),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
       display_size_meters_(display_width_meters, display_height_meters),
@@ -180,12 +178,6 @@ VrShell::VrShell(JNIEnv* env,
           &BrowserUiInterface::SetOmniboxSuggestions, base::Unretained(ui_)));
 
   gl_thread_->Start();
-
-  if (ui_initial_state.in_web_vr ||
-      ui_initial_state.web_vr_autopresentation_expected) {
-    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR",
-                          ui_initial_state.web_vr_autopresentation_expected);
-  }
 
   can_load_new_assets_ = AssetsLoader::GetInstance()->ComponentReady();
   if (!can_load_new_assets_) {
@@ -259,8 +251,7 @@ void VrShell::SwapContents(JNIEnv* env,
   if (web_contents_ && !SessionMetricsHelper::FromWebContents(web_contents_)) {
     SessionMetricsHelper::CreateForWebContents(
         web_contents_,
-        webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular,
-        web_vr_autopresentation_expected_);
+        webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular);
   }
 }
 
@@ -542,11 +533,11 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   CreatePageInfo();
   ui_->SetWebVrMode(enabled);
 
-  if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
-    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);
-  } else {
+  if (webvr_mode_) {
     AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
         Mode::kWebXrVrPresentation);
+  } else {
+    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);
   }
 }
 
