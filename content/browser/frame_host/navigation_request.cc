@@ -774,9 +774,6 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   if (!is_for_commit)
     redirect_chain.push_back(common_params_.url);
 
-  bool is_external_protocol =
-      !GetContentClient()->browser()->IsHandledURL(common_params_.url);
-
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
 
@@ -787,8 +784,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
               common_params_.navigation_type),
           nav_entry_id_, std::move(navigation_ui_data_), std::move(headers),
           Referrer::SanitizeForRequest(common_params_.url,
-                                       common_params_.referrer),
-          is_external_protocol));
+                                       common_params_.referrer)));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -875,8 +871,6 @@ void NavigationRequest::OnRequestRedirected(
     return;
 
   if (should_override_url_loading) {
-    bool is_external_protocol =
-        !GetContentClient()->browser()->IsHandledURL(common_params_.url);
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
     common_params_.url = redirect_info.new_url;
     common_params_.method = redirect_info.new_method;
@@ -884,8 +878,8 @@ void NavigationRequest::OnRequestRedirected(
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
     navigation_handle_->UpdateStateFollowingRedirect(
-        GURL(redirect_info.new_referrer), is_external_protocol,
-        response->head.headers, response->head.connection_info,
+        GURL(redirect_info.new_referrer), response->head.headers,
+        response->head.connection_info,
         base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                    base::Unretained(this)));
     frame_tree_node_->ResetNavigationRequest(false, true);
@@ -1012,10 +1006,8 @@ void NavigationRequest::OnRequestRedirected(
 
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
-  bool is_external_protocol =
-      !GetContentClient()->browser()->IsHandledURL(common_params_.url);
   navigation_handle_->WillRedirectRequest(
-      common_params_.referrer.url, is_external_protocol, response->head.headers,
+      common_params_.referrer.url, response->head.headers,
       response->head.connection_info, expected_process,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));

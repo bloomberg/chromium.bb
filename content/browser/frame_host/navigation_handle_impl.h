@@ -230,7 +230,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // redirect.
   void UpdateStateFollowingRedirect(
       const GURL& new_referrer_url,
-      bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       ThrottleChecksFinishedCallback callback);
@@ -246,7 +245,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // renderer process will be created at commit time.
   void WillRedirectRequest(
       const GURL& new_referrer_url,
-      bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       RenderProcessHost* post_redirect_process,
@@ -390,8 +388,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
                        int pending_nav_entry_id,
                        std::unique_ptr<NavigationUIData> navigation_ui_data,
                        net::HttpRequestHeaders request_headers,
-                       const Referrer& sanitized_referrer,
-                       bool is_external_protocol);
+                       const Referrer& sanitized_referrer);
 
   // NavigationThrottleRunner::Delegate:
   void OnNavigationEventProcessed(
@@ -445,7 +442,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // See NavigationHandle for a description of those member variables.
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
   Referrer sanitized_referrer_;
-  bool is_external_protocol_;
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   const bool is_same_document_;
