@@ -29,29 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LINE_ENDING_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LINE_ENDING_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_LINE_ENDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_LINE_ENDING_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace blink {
+namespace WTF {
 
 // Normalize all line-endings in the given string to CRLF.
-PLATFORM_EXPORT String NormalizeLineEndingsToCRLF(const String& from);
+WTF_EXPORT String NormalizeLineEndingsToCRLF(const String& from);
 
 // Normalize all line-endings in the given string to LF and append the result to
 // the given buffer.
-PLATFORM_EXPORT void NormalizeLineEndingsToLF(const CString& from,
-                                              Vector<char>& result);
+WTF_EXPORT void NormalizeLineEndingsToLF(const CString& from,
+                                         Vector<char>& result);
 
 // Normalize all line-endings in the given string to the native line-endings and
 // append the result to the given buffer.
 // (Normalize to CRLF on Windows and normalize to LF on all other platforms.)
-PLATFORM_EXPORT void NormalizeLineEndingsToNative(const CString& from,
-                                                  Vector<char>& result);
+WTF_EXPORT void NormalizeLineEndingsToNative(const CString& from,
+                                             Vector<char>& result);
 
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LINE_ENDING_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_LINE_ENDING_H_
