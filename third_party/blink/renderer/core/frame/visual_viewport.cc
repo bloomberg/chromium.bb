@@ -126,7 +126,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     const auto& device_emulation_transform =
         GetChromeClient()->GetDeviceEmulationTransform();
     if (!device_emulation_transform.IsIdentity()) {
-      TransformPaintPropertyNode::State state{device_emulation_transform};
+      TransformPaintPropertyNode::State state;
+      state.matrix = device_emulation_transform;
       if (!device_emulation_transform_node_) {
         device_emulation_transform_node_ = TransformPaintPropertyNode::Create(
             *transform_parent, std::move(state));
@@ -162,8 +163,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   {
-    TransformPaintPropertyNode::State state{
-        TransformationMatrix().Scale(Scale())};
+    TransformPaintPropertyNode::State state;
+    state.matrix.Scale(Scale());
     state.compositor_element_id = GetCompositorElementId();
 
     if (!scale_transform_node_) {
@@ -208,10 +209,11 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   {
+    TransformPaintPropertyNode::State state;
     ScrollOffset scroll_position = GetScrollOffset();
-    TransformPaintPropertyNode::State state{
-        FloatSize(-scroll_position.Width(), -scroll_position.Height())};
+    state.matrix.Translate(-scroll_position.Width(), -scroll_position.Height());
     state.scroll = scroll_node_;
+    state.is_identity_or_2d_translation = true;
     if (!translation_transform_node_) {
       translation_transform_node_ = TransformPaintPropertyNode::Create(
           *scale_transform_node_, std::move(state));

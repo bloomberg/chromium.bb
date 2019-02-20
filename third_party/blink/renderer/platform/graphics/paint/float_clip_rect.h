@@ -92,11 +92,9 @@ class PLATFORM_EXPORT FloatClipRect {
     rect_.MoveBy(offset);
   }
 
-  // Assumes that the transform always makes the clip rect not tight. The caller
-  // should use MoveBy() to keep tightness if the transform is known to be
-  // identity or a 2d translation.
   void Map(const TransformationMatrix& matrix) {
-    is_tight_ = false;
+    if (is_tight_ && !matrix.IsIdentityOr2DTranslation())
+      is_tight_ = false;
     if (is_infinite_)
       return;
     rect_ = matrix.MapRect(rect_);

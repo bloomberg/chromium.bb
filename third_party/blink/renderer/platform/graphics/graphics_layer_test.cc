@@ -127,7 +127,8 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
       });
 
   transform1->Update(transform_root,
-                     TransformPaintPropertyNode::State{FloatSize(20, 30)});
+                     TransformPaintPropertyNode::State{
+                         TransformationMatrix().Translate(20, 30)});
   EXPECT_TRUE(transform1->Changed(transform_root));
   EXPECT_TRUE(transform2->Changed(transform_root));
   layers_.graphics_layer_client().SetNeedsRepaint(true);

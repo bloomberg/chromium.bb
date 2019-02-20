@@ -46,7 +46,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
     return transform_lookup_result->value;
 
   int parent_id = GetTransformId(transform->Parent(), context);
-  if (transform->IsIdentity() && !transform->RenderingContextId()) {
+  if (transform->Matrix().IsIdentity() && !transform->RenderingContextId()) {
     context.transform_id_map.Set(transform, parent_id);
     return parent_id;
   }
@@ -59,11 +59,10 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   if (parent_id)
     json->SetInteger("parent", parent_id);
 
-  if (!transform->IsIdentity())
-    json->SetArray("transform", TransformAsJSONArray(transform->SlowMatrix()));
+  if (!transform->Matrix().IsIdentity())
+    json->SetArray("transform", TransformAsJSONArray(transform->Matrix()));
 
-  if (!transform->IsIdentityOr2DTranslation() &&
-      !transform->Matrix().IsIdentityOrTranslation())
+  if (!transform->Matrix().IsIdentityOrTranslation())
     json->SetArray("origin", PointAsJSONArray(transform->Origin()));
 
   if (!transform->FlattensInheritedTransform())

@@ -4276,8 +4276,9 @@ LayoutRect LayoutObject::AdjustVisualRectForInlineBox(
       // This mapping happens for inline box whose LayoutObject is a LayoutBlock
       // whose VisualRect is not in the same transform space as the inline box.
       // For now this happens for EllipsisBox only.
+      DCHECK(scroll_translation->IsIdentityOr2DTranslation());
       auto float_visual_rect = FloatRect(visual_rect);
-      float_visual_rect.Move(-scroll_translation->Translation2D());
+      float_visual_rect.Move(-scroll_translation->Matrix().To2DTranslation());
       return EnclosingLayoutRect(float_visual_rect);
     }
   }
