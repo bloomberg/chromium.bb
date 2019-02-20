@@ -1449,11 +1449,14 @@ extern const char kLanguagesPreferenceDescription[];
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];
 
-extern const char kModalPermissionDialogViewName[];
-extern const char kModalPermissionDialogViewDescription[];
+extern const char kManualPasswordGenerationAndroidName[];
+extern const char kManualPasswordGenerationAndroidDescription[];
 
 extern const char kMediaScreenCaptureName[];
 extern const char kMediaScreenCaptureDescription[];
+
+extern const char kModalPermissionDialogViewName[];
+extern const char kModalPermissionDialogViewDescription[];
 
 extern const char kModalPermissionPromptsName[];
 extern const char kModalPermissionPromptsDescription[];

@@ -6,6 +6,8 @@
 
 namespace password_manager {
 
+// NOTE: It is strongly recommended to use UpperCamelCase style for feature
+//       names, e.g. "MyGreatFeature".
 namespace features {
 
 // Enable affiliation based matching, so that credentials stored for an Android
@@ -84,6 +86,11 @@ const base::Feature kNewPasswordFormParsingForSaving = {
 // the old parser, details in https://goo.gl/QodPH1
 const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to offer manual password generation in the accessory sheet
+// on Android.
+const base::Feature kManualPasswordGenerationAndroid{
+    "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Performs a one-off migration (with retries) from a native backend into
 // logindb. Passwords are served from the new location.

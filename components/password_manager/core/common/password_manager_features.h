@@ -25,6 +25,7 @@ extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kFillOnAccountSelectHttp;
 extern const base::Feature kGooglePasswordManager;
+extern const base::Feature kManualPasswordGenerationAndroid;
 extern const base::Feature kMigrateLinuxToLoginDB;
 extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kNewPasswordFormParsingForSaving;
