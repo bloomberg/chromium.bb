@@ -816,7 +816,7 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
   return open_windows;
 }
 
-views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) const {
+views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
   if (last) {
     return overflow_button_->visible()
                ? overflow_button_

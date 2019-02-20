@@ -264,7 +264,7 @@ class ASH_EXPORT ShelfView : public views::View,
   const std::vector<aura::Window*> GetOpenWindowsForShelfView(
       views::View* view);
 
-  views::View* FindFirstOrLastFocusableChild(bool last) const;
+  views::View* FindFirstOrLastFocusableChild(bool last);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
