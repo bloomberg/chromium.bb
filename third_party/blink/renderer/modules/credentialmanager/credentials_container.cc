@@ -163,10 +163,14 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
 
   // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
   // for the IP address check.
-  OriginAccessEntry access_entry(
-      origin->Protocol(), effective_domain,
-      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
-  if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
+  bool reject_because_invalid_domain = effective_domain.IsEmpty();
+  if (!reject_because_invalid_domain) {
+    OriginAccessEntry access_entry(
+        origin->Protocol(), effective_domain,
+        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+    reject_because_invalid_domain = access_entry.HostIsIPAddress();
+  }
+  if (reject_because_invalid_domain) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kSecurityError,
                              "Effective domain is not a valid domain."));
