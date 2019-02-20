@@ -15,7 +15,7 @@ namespace android_webview {
 
 class AwGLFunctor {
  public:
-  AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref);
+  explicit AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref);
   ~AwGLFunctor();
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
