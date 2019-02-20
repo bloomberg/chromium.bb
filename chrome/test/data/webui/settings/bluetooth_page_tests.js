@@ -18,6 +18,25 @@ function getFakePrefs() {
   };
 }
 
+/**
+ * @param {number} numPairedDevices Number of paired devices to generate.
+ * @param {number} numUnpairedDevices Number of unparied devices to generate.
+ * @return {!Array<!chrome.bluetooth.Device>} An array of fake bluetooth
+ *     devices.
+ */
+function generateFakeDevices(numPairedDevices, numUnpairedDevices) {
+  let devices = [];
+  for (let i = 0; i < numPairedDevices + numUnpairedDevices; ++i) {
+    devices.push({
+      address: '00:00:00:00:01:' + i.toString().padStart(2, '0'),
+      name: 'FakeDevice' + i,
+      paired: i < numPairedDevices,
+      connected: false,
+    });
+  }
+  return devices;
+}
+
 suite('Bluetooth', function() {
   let bluetoothPage = null;
 
@@ -161,14 +180,17 @@ suite('Bluetooth', function() {
       assertFalse(bluetoothPage.bluetoothToggleState_);
     });
 
-    // listUpdateFrequencyMs is set to 0 for tests, but we still need to wait
-    // for the callback of setTimeout(0) to be processed in the message queue.
-    // Add another setTimeout(0) to the end of message queue and wait for it to
-    // complete ensures the previous callback has been executed.
-    function waitForListUpdateTimeout() {
-      return new Promise(function(resolve) {
+    async function waitForListUpdateTimeout() {
+      // listUpdateFrequencyMs is set to 0 for tests, but we still need to wait
+      // for the callback of setTimeout(0) to be processed in the message queue.
+      await new Promise(function(resolve) {
         setTimeout(resolve, 0);
       });
+
+      // Adding two flushTasks ensures that all events are fully handled after
+      // being fired.
+      await PolymerTest.flushTasks();
+      await PolymerTest.flushTasks();
     }
 
     test('pair device', async function() {
@@ -178,8 +200,9 @@ suite('Bluetooth', function() {
       ]);
 
       await waitForListUpdateTimeout();
-      Polymer.dom.flush();
 
+      // TODO(jlklein): Stop referencing private state in these tests. Only use
+      // public observable state.
       assertEquals(4, subpage.deviceList_.length);
       assertEquals(2, subpage.pairedDeviceList_.length);
       assertEquals(2, subpage.unpairedDeviceList_.length);
@@ -189,7 +212,6 @@ suite('Bluetooth', function() {
           resolve => bluetoothPrivateApi.connect(address, resolve));
 
       await waitForListUpdateTimeout();
-      Polymer.dom.flush();
 
       assertEquals(3, subpage.pairedDeviceList_.length);
       assertEquals(1, subpage.unpairedDeviceList_.length);
@@ -202,7 +224,6 @@ suite('Bluetooth', function() {
       ]);
       await waitForListUpdateTimeout();
 
-      Polymer.dom.flush();
       const dialog = subpage.$.deviceDialog;
       assertTrue(!!dialog);
       assertFalse(dialog.$.dialog.open);
@@ -251,7 +272,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest(
             [fakeUnpairedDevice1, fakeUnpairedDevice2]);
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(2, deviceList().length);
         assertEquals(2, unpairedDeviceList().length);
@@ -264,7 +284,6 @@ suite('Bluetooth', function() {
         assertEquals(
             unpairedDeviceList()[1].address, fakeUnpairedDevice2.address);
 
-        unpairedDeviceIronList.notifyResize();
         Polymer.dom.flush();
 
         const devices = unpairedDeviceIronList.querySelectorAll(
@@ -294,7 +313,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest([fakeUnpairedDevice1]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(2, deviceList().length);
         assertEquals(2, unpairedDeviceList().length);
@@ -312,7 +330,6 @@ suite('Bluetooth', function() {
             [fakeUnpairedDevice1.address, fakeUnpairedDevice2.address]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(0, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -327,7 +344,6 @@ suite('Bluetooth', function() {
             [fakeUnpairedDevice1, fakeUnpairedDevice2, fakeUnpairedDevice3]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(3, deviceList().length);
         assertEquals(3, unpairedDeviceList().length);
@@ -341,7 +357,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDeviceUpdatedForTest(updatedDevice);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(3, deviceList().length);
         assertEquals(3, unpairedDeviceList().length);
@@ -360,7 +375,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest(
             [fakePairedDevice1, fakePairedDevice2]);
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(2, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -368,7 +382,6 @@ suite('Bluetooth', function() {
         assertFalse(subpage.$.noUnpairedDevices.hidden);
         assertTrue(subpage.$.noPairedDevices.hidden);
 
-        pairedDeviceIronList.notifyResize();
         Polymer.dom.flush();
 
         const devices =
@@ -383,7 +396,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesRemovedForTest([fakePairedDevice1.address]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(1, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -398,7 +410,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest([fakePairedDevice1]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(2, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -414,7 +425,6 @@ suite('Bluetooth', function() {
             [fakePairedDevice1.address, fakePairedDevice2.address]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(0, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -429,7 +439,6 @@ suite('Bluetooth', function() {
             [fakePairedDevice1, fakePairedDevice2, fakePairedDevice3]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(3, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -443,7 +452,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDeviceUpdatedForTest(updatedDevice);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(3, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -462,7 +470,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest([fakeUnpairedDevice1]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(1, deviceList().length);
         assertEquals(1, unpairedDeviceList().length);
@@ -477,7 +484,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDeviceUpdatedForTest(nowPairedDevice);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(1, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -495,7 +501,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDevicesAddedForTest([fakePairedDevice1]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(1, deviceList().length);
         assertEquals(0, unpairedDeviceList().length);
@@ -510,7 +515,6 @@ suite('Bluetooth', function() {
         bluetoothApi.simulateDeviceUpdatedForTest(nowUnpairedDevice);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(1, deviceList().length);
         assertEquals(1, unpairedDeviceList().length);
@@ -530,7 +534,6 @@ suite('Bluetooth', function() {
         ]);
 
         await waitForListUpdateTimeout();
-        Polymer.dom.flush();
 
         assertEquals(4, deviceList().length);
         assertEquals(2, unpairedDeviceList().length);
@@ -538,8 +541,6 @@ suite('Bluetooth', function() {
         assertTrue(subpage.$.noUnpairedDevices.hidden);
         assertTrue(subpage.$.noPairedDevices.hidden);
 
-        pairedDeviceIronList.notifyResize();
-        unpairedDeviceIronList.notifyResize();
         Polymer.dom.flush();
 
         const unpairedDevices = unpairedDeviceIronList.querySelectorAll(
@@ -555,6 +556,26 @@ suite('Bluetooth', function() {
         assertTrue(pairedDevices[0].device.connected);
         assertTrue(pairedDevices[1].device.paired);
         assertFalse(pairedDevices[1].device.connected);
+      });
+
+      test('Unpaired and paired devices: many devices added', async function() {
+        bluetoothApi.simulateDevicesAddedForTest(generateFakeDevices(5, 15));
+
+        await waitForListUpdateTimeout();
+
+        assertEquals(20, deviceList().length);
+        assertEquals(15, unpairedDeviceList().length);
+        assertEquals(5, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        const unpairedDevices = unpairedDeviceIronList.querySelectorAll(
+            'bluetooth-device-list-item');
+        assertEquals(15, unpairedDevices.length);
+
+        const pairedDevices =
+            pairedDeviceIronList.querySelectorAll('bluetooth-device-list-item');
+        assertEquals(5, pairedDevices.length);
       });
     });
   });
