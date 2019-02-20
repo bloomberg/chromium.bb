@@ -14,10 +14,6 @@ const AtomicString& ActivateInvisibleEvent::InterfaceName() const {
   return event_interface_names::kActivateInvisibleEvent;
 }
 
-bool ActivateInvisibleEvent::IsActivateInvisibleEvent() const {
-  return true;
-}
-
 ActivateInvisibleEvent::ActivateInvisibleEvent(Element* activated_element)
     : Event(event_type_names::kActivateinvisible,
             Bubbles::kYes,

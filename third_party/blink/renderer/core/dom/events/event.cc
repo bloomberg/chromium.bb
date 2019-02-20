@@ -223,10 +223,6 @@ bool Event::IsCompositionEvent() const {
   return false;
 }
 
-bool Event::IsActivateInvisibleEvent() const {
-  return false;
-}
-
 bool Event::IsClipboardEvent() const {
   return false;
 }

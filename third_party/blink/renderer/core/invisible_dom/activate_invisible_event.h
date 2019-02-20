@@ -28,15 +28,12 @@ class ActivateInvisibleEvent : public Event {
   }
 
   const AtomicString& InterfaceName() const override;
-  bool IsActivateInvisibleEvent() const override;
 
   void Trace(Visitor*) override;
 
  private:
   Member<Element> activated_element_;
 };
-
-DEFINE_EVENT_TYPE_CASTS(ActivateInvisibleEvent);
 
 }  // namespace blink
 
