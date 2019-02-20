@@ -156,6 +156,7 @@ extern const char kWebKitAllowRunningInsecureContent[];
 extern const char kWebKitFontScaleFactor[];
 extern const char kWebKitForceEnableZoom[];
 extern const char kWebKitPasswordEchoEnabled[];
+extern const char kWebKitForceDarkModeEnabled[];
 #endif
 extern const char kDataSaverEnabled[];
 extern const char kSSLErrorOverrideAllowed[];

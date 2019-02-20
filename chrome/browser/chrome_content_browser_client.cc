@@ -3100,6 +3100,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->device_scale_adjustment = GetDeviceScaleAdjustment();
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
+  web_prefs->force_dark_mode_enabled =
+      prefs->GetBoolean(prefs::kWebKitForceDarkModeEnabled);
 #endif
 
 #if defined(OS_ANDROID)

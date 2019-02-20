@@ -2447,6 +2447,10 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordsKeyboardAccessory)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
+    {"enable-android-web-contents-dark-mode",
+     flag_descriptions::kAndroidWebContentsDarkMode,
+     flag_descriptions::kAndroidWebContentsDarkModeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidWebContentsDarkMode)},
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
      flag_descriptions::kAndroidNightModeDescription, kOsAndroid,

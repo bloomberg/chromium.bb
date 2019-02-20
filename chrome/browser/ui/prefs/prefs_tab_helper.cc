@@ -47,7 +47,9 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#else  // !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #endif
 
@@ -358,6 +360,13 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.force_enable_zoom);
   registry->RegisterBooleanPref(prefs::kWebKitPasswordEchoEnabled,
                                 pref_defaults.password_echo_enabled);
+
+  bool force_dark_mode_enabled =
+      base::FeatureList::IsEnabled(chrome::android::kAndroidWebContentsDarkMode)
+          ? true
+          : pref_defaults.force_dark_mode_enabled;
+  registry->RegisterBooleanPref(prefs::kWebKitForceDarkModeEnabled,
+                                force_dark_mode_enabled);
 #endif
   registry->RegisterStringPref(
       prefs::kDefaultCharset,
