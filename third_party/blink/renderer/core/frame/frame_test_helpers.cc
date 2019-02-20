@@ -632,10 +632,6 @@ void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
 }
 
-gfx::Size TestWebWidgetClient::PhysicalPixelViewportSize() const {
-  return layer_tree_view_->layer_tree_host()->device_viewport_size();
-}
-
 void TestWebWidgetClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {
   switch (meaningful_layout) {

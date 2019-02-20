@@ -366,12 +366,6 @@ void DevToolsEmulator::DisableMobileEmulation() {
     web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
-float DevToolsEmulator::CompositorDeviceScaleFactor() const {
-  if (device_metrics_enabled_)
-    return emulation_params_.device_scale_factor;
-  return web_view_->GetPage()->DeviceScaleFactorDeprecated();
-}
-
 void DevToolsEmulator::ForceViewport(const WebFloatPoint& position,
                                      float scale) {
   GraphicsLayer* container_layer =
@@ -456,16 +450,12 @@ void DevToolsEmulator::UpdateRootLayerTransform() {
   web_view_->SetDeviceEmulationTransform(transform);
 }
 
-void DevToolsEmulator::OverrideVisibleRect(
-    const IntSize& physical_pixel_viewport_size,
-    IntRect* visible_rect) const {
+void DevToolsEmulator::OverrideVisibleRect(const IntSize& viewport_size,
+                                           IntRect* visible_rect) const {
   if (!viewport_override_)
     return;
 
-  FloatSize scaled_viewport_size(physical_pixel_viewport_size);
-  // Get a value in DIPs if IsUseZoomForDSFEnabled() is false. When true, the
-  // DSF here should be 1.
-  scaled_viewport_size.Scale(1. / CompositorDeviceScaleFactor());
+  FloatSize scaled_viewport_size(viewport_size);
   scaled_viewport_size.Scale(1. / viewport_override_->scale);
   *visible_rect = EnclosingIntRect(
       FloatRect(viewport_override_->position, scaled_viewport_size));

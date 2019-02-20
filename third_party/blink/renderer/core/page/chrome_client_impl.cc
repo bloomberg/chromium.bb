@@ -455,7 +455,7 @@ void ChromeClientImpl::OverrideVisibleRectForMainFrame(
   WebWidgetClient* client =
       WebLocalFrameImpl::FromFrame(frame)->FrameWidgetImpl()->Client();
   return web_view_->GetDevToolsEmulator()->OverrideVisibleRect(
-      IntSize(client->PhysicalPixelViewportSize()), visible_rect);
+      IntRect(client->ViewRect()).Size(), visible_rect);
 }
 
 float ChromeClientImpl::InputEventsScaleForEmulation() const {

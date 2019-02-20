@@ -64,9 +64,10 @@ class CORE_EXPORT DevToolsEmulator final
 
   // Rewrites the |visible_rect| to the area of the devtools custom viewport if
   // it is enabled. Otherwise, leaves |visible_rect| unchanged. Takes as input
-  // the size of the compositor viewport, which gives an upper bound on the size
-  // of the area that is visible.
-  void OverrideVisibleRect(const IntSize& physical_pixel_viewport_size,
+  // the size of the viewport, which gives an upper bound on the size of the
+  // area that is visible. The |viewport_size| is physical pixels if
+  // UseZoomForDSF() is enabled, or DIP otherwise.
+  void OverrideVisibleRect(const IntSize& viewport_size,
                            IntRect* visible_rect) const;
 
   // Returns the scale used to convert incoming input events while emulating

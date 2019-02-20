@@ -374,7 +374,6 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
-  gfx::Size PhysicalPixelViewportSize() const final;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
   void SetShowPaintRects(bool) override;
@@ -670,6 +669,10 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();
+
+  // Helper method to get the device_viewport_size() from the compositor, which
+  // is always in physical pixels.
+  gfx::Size CompositorViewportSize() const;
 
   // Just Close the WebWidget, in cases where the Close() will be deferred.
   // It is safe to call this multiple times, which happens in the case of
