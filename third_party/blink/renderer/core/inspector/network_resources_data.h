@@ -51,19 +51,23 @@ class TextResourceDecoder;
 
 class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
  public:
-  static XHRReplayData* Create(const AtomicString& method,
+  static XHRReplayData* Create(ExecutionContext*,
+                               const AtomicString& method,
                                const KURL&,
                                bool async,
                                scoped_refptr<EncodedFormData>,
                                bool include_credentials);
 
-  XHRReplayData(const AtomicString& method,
+  XHRReplayData(ExecutionContext*,
+                const AtomicString& method,
                 const KURL&,
                 bool async,
                 scoped_refptr<EncodedFormData>,
                 bool include_credentials);
 
   void AddHeader(const AtomicString& key, const AtomicString& value);
+
+  ExecutionContext* GetExecutionContext() const { return execution_context_; }
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
   bool Async() const { return async_; }
@@ -71,9 +75,12 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
 
-  virtual void Trace(blink::Visitor*) {}
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(execution_context_);
+  }
 
  private:
+  WeakMember<ExecutionContext> execution_context_;
   AtomicString method_;
   KURL url_;
   bool async_;
@@ -90,7 +97,6 @@ class NetworkResourcesData final
 
    public:
     ResourceData(NetworkResourcesData*,
-                 ExecutionContext*,
                  const String& request_id,
                  const String& loader_id,
                  const KURL&);
@@ -167,7 +173,6 @@ class NetworkResourcesData final
       post_data_ = post_data;
     }
     EncodedFormData* PostData() const { return post_data_.get(); }
-    ExecutionContext* GetExecutionContext() const { return execution_context_; }
     void Trace(blink::Visitor*);
 
    private:
@@ -200,7 +205,6 @@ class NetworkResourcesData final
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
     scoped_refptr<EncodedFormData> post_data_;
-    Member<ExecutionContext> execution_context_;
   };
 
   static NetworkResourcesData* Create(size_t total_buffer_size,
@@ -212,8 +216,7 @@ class NetworkResourcesData final
   NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
   ~NetworkResourcesData();
 
-  void ResourceCreated(ExecutionContext*,
-                       const String& request_id,
+  void ResourceCreated(const String& request_id,
                        const String& loader_id,
                        const KURL&,
                        scoped_refptr<EncodedFormData>);

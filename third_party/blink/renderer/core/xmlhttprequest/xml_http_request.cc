@@ -1069,8 +1069,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
 
-  probe::willLoadXHR(&execution_context, this, this, method_, url_, async_,
-                     http_body.get(), request_headers_, with_credentials_);
+  probe::willLoadXHR(&execution_context, method_, url_, async_, http_body.get(),
+                     request_headers_, with_credentials_);
 
   if (http_body) {
     DCHECK_NE(method_, http_names::kGET);
