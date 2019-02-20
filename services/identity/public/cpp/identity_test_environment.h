@@ -17,6 +17,7 @@
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
+class TestSigninClient;
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -73,7 +74,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
       sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
       signin::AccountConsistencyMethod account_consistency =
-          signin::AccountConsistencyMethod::kDisabled);
+          signin::AccountConsistencyMethod::kDisabled,
+      TestSigninClient* test_signin_client = nullptr);
 
   // Constructor that takes in instances of the dependencies of
   // IdentityManager and constructs an IdentityManager instance from those
