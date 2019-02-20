@@ -57,7 +57,7 @@ class PDFMetrics {
   }
 }
 
-/** @private {Object} */
+/** @private {?chrome.metricsPrivate.MetricType} */
 PDFMetrics.actionsMetric_ = null;
 
 /** @private {Set} */
@@ -80,24 +80,75 @@ PDFMetrics.UserAction = {
    * denominator to determine percentages of documents in which an action was
    * taken as well as average number of each action per document.
    */
-  DOCUMENT_OPENED: 0,  // Baseline to use as denominator for all formulas.
-  ROTATE_FIRST: 1,
+  DOCUMENT_OPENED: 0,
+
   /** Recorded when the document is rotated clockwise or counter-clockwise. */
+  ROTATE_FIRST: 1,
   ROTATE: 2,
+
   FIT_TO_WIDTH_FIRST: 3,
   FIT_TO_WIDTH: 4,
+
   FIT_TO_PAGE_FIRST: 5,
   FIT_TO_PAGE: 6,
-  OPEN_BOOKMARKS_PANEL_FIRST: 7,
+
   /** Recorded when the bookmarks panel is opened. */
+  OPEN_BOOKMARKS_PANEL_FIRST: 7,
   OPEN_BOOKMARKS_PANEL: 8,
-  FOLLOW_BOOKMARK_FIRST: 9,
+
   /** Recorded when a bookmark is followed. */
+  FOLLOW_BOOKMARK_FIRST: 9,
   FOLLOW_BOOKMARK: 10,
-  PAGE_SELECTOR_NAVIGATE_FIRST: 11,
+
   /** Recorded when the page selection is used to navigate to another page. */
+  PAGE_SELECTOR_NAVIGATE_FIRST: 11,
   PAGE_SELECTOR_NAVIGATE: 12,
-  NUMBER_OF_ACTIONS: 13
+
+  /** Recorded when the user triggers a save of the document. */
+  SAVE_FIRST: 13,
+  SAVE: 14,
+
+  /**
+   * Recorded when the user triggers a save of the document and the document
+   * has been modified by annotations.
+   */
+  SAVE_WITH_ANNOTATION_FIRST: 15,
+  SAVE_WITH_ANNOTATION: 16,
+
+  PRINT_FIRST: 17,
+  PRINT: 18,
+
+  ENTER_ANNOTATION_MODE_FIRST: 19,
+  ENTER_ANNOTATION_MODE: 20,
+
+  EXIT_ANNOTATION_MODE_FIRST: 21,
+  EXIT_ANNOTATION_MODE: 22,
+
+  /** Recorded when a pen stroke is made. */
+  ANNOTATE_STROKE_TOOL_PEN_FIRST: 23,
+  ANNOTATE_STROKE_TOOL_PEN: 24,
+
+  /** Recorded when an eraser stroke is made. */
+  ANNOTATE_STROKE_TOOL_ERASER_FIRST: 25,
+  ANNOTATE_STROKE_TOOL_ERASER: 26,
+
+  /** Recorded when a highlighter stroke is made. */
+  ANNOTATE_STROKE_TOOL_HIGHLIGHTER_FIRST: 27,
+  ANNOTATE_STROKE_TOOL_HIGHLIGHTER: 28,
+
+  /** Recorded when a stroke is made using touch. */
+  ANNOTATE_STROKE_DEVICE_TOUCH_FIRST: 29,
+  ANNOTATE_STROKE_DEVICE_TOUCH: 30,
+
+  /** Recorded when a stroke is made using mouse. */
+  ANNOTATE_STROKE_DEVICE_MOUSE_FIRST: 31,
+  ANNOTATE_STROKE_DEVICE_MOUSE: 32,
+
+  /** Recorded when a stroke is made using pen. */
+  ANNOTATE_STROKE_DEVICE_PEN_FIRST: 33,
+  ANNOTATE_STROKE_DEVICE_PEN: 34,
+
+  NUMBER_OF_ACTIONS: 35,
 };
 
 // Map from UserAction to the 'FIRST' action. These metrics are recorded
@@ -127,5 +178,49 @@ PDFMetrics.firstMap_ = new Map([
   [
     PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE,
     PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.SAVE,
+    PDFMetrics.UserAction.SAVE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.SAVE_WITH_ANNOTATION,
+    PDFMetrics.UserAction.SAVE_WITH_ANNOTATION_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.PRINT,
+    PDFMetrics.UserAction.PRINT_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ENTER_ANNOTATION_MODE,
+    PDFMetrics.UserAction.ENTER_ANNOTATION_MODE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.EXIT_ANNOTATION_MODE,
+    PDFMetrics.UserAction.EXIT_ANNOTATION_MODE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_PEN,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_PEN_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_ERASER,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_ERASER_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_HIGHLIGHTER,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_HIGHLIGHTER_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_TOUCH,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_TOUCH_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_MOUSE,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_MOUSE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN,
+    PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN_FIRST,
   ],
 ]);
