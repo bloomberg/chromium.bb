@@ -15,6 +15,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.signin.SigninManager;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Aggregation point for application lifecycle events that the Feed cares about. Events that
  * originate in Java flow directly to FeedAppLifecycle, while native-originating events arrive
@@ -22,12 +25,13 @@ import org.chromium.chrome.browser.signin.SigninManager;
  */
 public class FeedAppLifecycle
         implements SigninManager.SignInStateObserver, ApplicationStatus.ActivityStateListener {
-    @IntDef({AppLifecycleEvent.ENTER_FOREGROUND, AppLifecycleEvent.ENTER_BACKGROUND,
-            AppLifecycleEvent.CLEAR_ALL, AppLifecycleEvent.INITIALIZE,
-            AppLifecycleEvent.NUM_ENTRIES})
-
     // Intdef used to assign each event a number for metrics logging purposes. This maps directly to
     // the AppLifecycleEvent enum defined in tools/metrics/enums.xml
+    @IntDef({AppLifecycleEvent.ENTER_FOREGROUND, AppLifecycleEvent.ENTER_BACKGROUND,
+            AppLifecycleEvent.CLEAR_ALL, AppLifecycleEvent.INITIALIZE, AppLifecycleEvent.SIGN_IN,
+            AppLifecycleEvent.SIGN_OUT, AppLifecycleEvent.HISTORY_DELETED,
+            AppLifecycleEvent.CACHED_DATA_CLEARED})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface AppLifecycleEvent {
         int ENTER_FOREGROUND = 0;
         int ENTER_BACKGROUND = 1;

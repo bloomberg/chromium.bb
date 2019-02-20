@@ -29,20 +29,21 @@ import java.lang.annotation.RetentionPolicy;
  */
 class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener {
     /** The different states that the Stream can be in its lifecycle. */
-    @IntDef({NOT_SPECIFIED, CREATED, SHOWN, ACTIVE, INACTIVE, HIDDEN, DESTROYED})
+    @IntDef({StreamState.NOT_SPECIFIED, StreamState.CREATED, StreamState.SHOWN, StreamState.ACTIVE,
+            StreamState.INACTIVE, StreamState.HIDDEN, StreamState.DESTROYED})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface StreamState {}
+    private @interface StreamState {
+        int NOT_SPECIFIED = -1;
+        int CREATED = 0;
+        int SHOWN = 1;
+        int ACTIVE = 2;
+        int INACTIVE = 3;
+        int HIDDEN = 4;
+        int DESTROYED = 5;
+    }
 
     /** Key for the Stream instance state that may be stored in a navigation entry. */
     private static final String STREAM_SAVED_INSTANCE_STATE_KEY = "StreamSavedInstanceState";
-
-    private static final int NOT_SPECIFIED = -1;
-    private static final int CREATED = 0;
-    private static final int SHOWN = 1;
-    private static final int ACTIVE = 2;
-    private static final int INACTIVE = 3;
-    private static final int HIDDEN = 4;
-    private static final int DESTROYED = 5;
 
     /** The {@link Stream} that this class manages. */
     private final Stream mStream;
@@ -60,7 +61,7 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
     private final TabObserver mTabObserver;
 
     /** The current state the Stream is in its lifecycle. */
-    private @StreamState int mStreamState = NOT_SPECIFIED;
+    private @StreamState int mStreamState = StreamState.NOT_SPECIFIED;
 
     /**
      * @param stream The {@link Stream} that this class manages.
@@ -100,7 +101,7 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
             }
         };
 
-        mStreamState = CREATED;
+        mStreamState = StreamState.CREATED;
         mStream.onCreate(restoreInstanceState());
         show();
         activate();
@@ -138,7 +139,8 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
         final int state = ApplicationStatus.getStateForActivity(mActivity);
         // We don't call Stream#onShow to prevent feed services from being warmed up if the user
         // has opted out from article suggestions during the previous session.
-        return (mStreamState == CREATED || mStreamState == HIDDEN) && !mTab.isHidden()
+        return (mStreamState == StreamState.CREATED || mStreamState == StreamState.HIDDEN)
+                && !mTab.isHidden()
                 && (state == ActivityState.STARTED || state == ActivityState.RESUMED)
                 && FeedProcessScopeFactory.areArticlesVisibleDuringSession();
     }
@@ -147,13 +149,14 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
     private void show() {
         if (!canShow()) return;
 
-        mStreamState = SHOWN;
+        mStreamState = StreamState.SHOWN;
         mStream.onShow();
     }
 
     /** @return Whether the {@link Stream} can be activated. */
     private boolean canActivate() {
-        return (mStreamState == SHOWN || mStreamState == INACTIVE) && mTab.isUserInteractable()
+        return (mStreamState == StreamState.SHOWN || mStreamState == StreamState.INACTIVE)
+                && mTab.isUserInteractable()
                 && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED
                 && FeedProcessScopeFactory.areArticlesVisibleDuringSession();
     }
@@ -164,25 +167,27 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
         show();
         if (!canActivate()) return;
 
-        mStreamState = ACTIVE;
+        mStreamState = StreamState.ACTIVE;
         mStream.onActive();
     }
 
     /** Calls {@link Stream#onInactive()}. */
     private void deactivate() {
-        if (mStreamState != ACTIVE) return;
+        if (mStreamState != StreamState.ACTIVE) return;
 
-        mStreamState = INACTIVE;
+        mStreamState = StreamState.INACTIVE;
         mStream.onInactive();
     }
 
     /** Calls {@link Stream#onHide()}. */
     private void hide() {
-        if (mStreamState == HIDDEN || mStreamState == CREATED || mStreamState == DESTROYED) return;
+        if (mStreamState == StreamState.HIDDEN || mStreamState == StreamState.CREATED
+                || mStreamState == StreamState.DESTROYED)
+            return;
 
         // Make sure the Stream is inactive before setting it to hidden state.
         deactivate();
-        mStreamState = HIDDEN;
+        mStreamState = StreamState.HIDDEN;
         // Save instance state as the Stream begins to hide. This matches the activity lifecycle
         // that instance state is saved as the activity begins to stop.
         saveInstanceState();
@@ -194,11 +199,11 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
      * anymore.
      */
     void destroy() {
-        if (mStreamState == DESTROYED) return;
+        if (mStreamState == StreamState.DESTROYED) return;
 
         // Make sure the Stream is hidden before setting it to destroyed state.
         hide();
-        mStreamState = DESTROYED;
+        mStreamState = StreamState.DESTROYED;
         mTab.removeObserver(mTabObserver);
         ApplicationStatus.unregisterActivityStateListener(this);
         mStream.onDestroy();
