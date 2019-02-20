@@ -499,6 +499,8 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-002.htm
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Failure ]
+crbug.com/377847 external/wpt/css/css-tables/subpixel-collapsed-borders-002.html [ Failure ]
+crbug.com/377847 external/wpt/css/css-tables/subpixel-collapsed-borders-003.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-height-001.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-width-001.html [ Failure ]
 crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-width-002.html [ Failure ]
