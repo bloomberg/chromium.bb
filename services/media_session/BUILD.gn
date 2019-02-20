@@ -25,6 +25,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
+    "//skia",
   ]
 
   public_deps = [

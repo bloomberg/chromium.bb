@@ -120,9 +120,12 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void SkipAd() override {}
   void Seek(base::TimeDelta seek_time) override;
   void Stop(SuspendType type) override;
+  void GetMediaImageBitmap(const MediaImage& image,
+                           int minimum_size_px,
+                           int desired_size_px,
+                           GetMediaImageBitmapCallback callback) override {}
 
   void SetIsControllable(bool value);
-
   void SetPreferStop(bool value) { prefer_stop_ = value; }
 
   void AbandonAudioFocusFromClient();

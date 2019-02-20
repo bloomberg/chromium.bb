@@ -37,7 +37,34 @@ std::string GetExtension(const std::string& path) {
   return base::ToLowerASCII(path.substr(pos));
 }
 
+double GetImageDominantSizeScore(int min_size,
+                                 int ideal_size,
+                                 const gfx::Size& size) {
+  int dominant_size = std::max(size.width(), size.height());
+
+  // If the size is "any".
+  if (dominant_size == 0)
+    return 0.8;
+
+  // Ignore images that are too small.
+  if (dominant_size < min_size)
+    return 0;
+
+  if (dominant_size <= ideal_size)
+    return 0.8 * (dominant_size - min_size) / (ideal_size - min_size) + 0.2;
+
+  return 1.0 * ideal_size / dominant_size;
+}
+
 }  // namespace
+
+// static
+double MediaImageManager::GetImageSizeScore(int min_size,
+                                            int ideal_size,
+                                            const gfx::Size& size) {
+  return GetImageDominantSizeScore(min_size, ideal_size, size) *
+         GetImageAspectRatioScore(size);
+}
 
 MediaImageManager::MediaImageManager(int min_size, int ideal_size)
     : min_size_(min_size), ideal_size_(ideal_size) {}
@@ -66,8 +93,10 @@ double MediaImageManager::GetImageScore(const MediaImage& image) const {
   if (image.sizes.empty()) {
     best_size_score = kDefaultImageSizeScore;
   } else {
-    for (auto& size : image.sizes)
-      best_size_score = std::max(best_size_score, GetImageSizeScore(size));
+    for (auto& size : image.sizes) {
+      best_size_score = std::max(
+          best_size_score, GetImageSizeScore(min_size_, ideal_size_, size));
+    }
   }
 
   double type_score = kDefaultTypeScore;
@@ -79,28 +108,6 @@ double MediaImageManager::GetImageScore(const MediaImage& image) const {
   }
 
   return best_size_score * type_score;
-}
-
-double MediaImageManager::GetImageSizeScore(const gfx::Size& size) const {
-  return GetImageDominantSizeScore(size) * GetImageAspectRatioScore(size);
-}
-
-double MediaImageManager::GetImageDominantSizeScore(
-    const gfx::Size& size) const {
-  int dominant_size = std::max(size.width(), size.height());
-
-  // If the size is "any".
-  if (dominant_size == 0)
-    return 0.8;
-
-  // Ignore images that are too small.
-  if (dominant_size < min_size_)
-    return 0;
-
-  if (dominant_size <= ideal_size_)
-    return 0.8 * (dominant_size - min_size_) / (ideal_size_ - min_size_) + 0.2;
-
-  return 1.0 * ideal_size_ / dominant_size;
 }
 
 // static

@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_content_type.h"
+#include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
@@ -100,6 +101,10 @@ void MaybePushBackString(std::vector<std::string>& vector,
                          const std::string& str) {
   if (!str.empty())
     vector.push_back(str);
+}
+
+bool IsSizeAtLeast(const gfx::Size& size, int min_size) {
+  return size.width() >= min_size || size.height() >= min_size;
 }
 
 }  // anonymous namespace
@@ -544,6 +549,43 @@ void MediaSessionImpl::RemoveAllPlayersForTest() {
   AbandonSystemAudioFocusIfNeeded();
 }
 
+void MediaSessionImpl::OnImageDownloadComplete(
+    GetMediaImageBitmapCallback callback,
+    int minimum_size_px,
+    int desired_size_px,
+    int id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& sizes) {
+  DCHECK(bitmaps.size() == sizes.size());
+  SkBitmap image;
+  double best_image_score = 0.0;
+
+  // Rank |sizes| and |bitmaps| using MediaImageManager.
+  for (size_t i = 0; i < bitmaps.size(); i++) {
+    double image_score = media_session::MediaImageManager::GetImageSizeScore(
+        minimum_size_px, desired_size_px, sizes.at(i));
+
+    if (image_score > best_image_score)
+      image = bitmaps.at(i);
+  }
+
+  // If the image is the wrong color type then we should convert it.
+  SkBitmap bitmap;
+  if (!image.isNull()) {
+    if (image.colorType() == kRGBA_8888_SkColorType) {
+      bitmap = image;
+    } else {
+      SkImageInfo info = image.info().makeColorType(kRGBA_8888_SkColorType);
+      if (bitmap.tryAllocPixels(info))
+        image.readPixels(info, bitmap.getPixels(), bitmap.rowBytes(), 0, 0);
+    }
+  }
+
+  std::move(callback).Run(bitmap);
+}
+
 void MediaSessionImpl::OnSystemAudioFocusRequested(bool result) {
   uma_helper_.RecordRequestAudioFocusResult(result);
   if (result)
@@ -788,6 +830,34 @@ void MediaSessionImpl::NextTrack() {
 
 void MediaSessionImpl::SkipAd() {
   DidReceiveAction(media_session::mojom::MediaSessionAction::kSkipAd);
+}
+
+void MediaSessionImpl::GetMediaImageBitmap(
+    const media_session::MediaImage& image,
+    int minimum_size_px,
+    int desired_size_px,
+    GetMediaImageBitmapCallback callback) {
+  // We should make sure |image| is in |images_|.
+  bool found = false;
+  for (auto& image_type : images_)
+    found = found || base::ContainsValue(image_type.second, image);
+
+  // Check that |image.sizes| contains a size that is above the minimum size.
+  bool check_size = false;
+  for (auto& size : image.sizes)
+    check_size = check_size || IsSizeAtLeast(size, minimum_size_px);
+
+  if (!found || !check_size) {
+    std::move(callback).Run(SkBitmap());
+    return;
+  }
+
+  web_contents()->DownloadImage(
+      image.src, false, desired_size_px /* max_bitmap_size */,
+      false /* bypass_cache */,
+      base::BindOnce(&MediaSessionImpl::OnImageDownloadComplete,
+                     base::Unretained(this), std::move(callback),
+                     minimum_size_px, desired_size_px));
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
