@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ANIMATION_WORKLET_MUTATOR_DISPATCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ANIMATION_WORKLET_MUTATOR_DISPATCHER_H_
 
+#include "base/bind.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -14,11 +15,20 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcher {
  public:
   virtual ~AnimationWorkletMutatorDispatcher() = default;
 
+  using AsyncMutationCompleteCallback = base::OnceCallback<void(MutateStatus)>;
+
   // Run the animation frame callbacks from all connected AnimationWorklets.
   virtual void MutateSynchronously(
       std::unique_ptr<AnimationWorkletDispatcherInput>) = 0;
-  virtual void MutateAsynchronously(
-      std::unique_ptr<AnimationWorkletDispatcherInput>) = 0;
+
+  // Queues the animation frame callbacks from all connected AnimationWorklets.
+  // The queuing strategy determines what action to take when busy servicing
+  // another request. The callback is triggered on completion or canceling of
+  // the mutation cycle. Returns true if mutations results are expected.
+  virtual bool MutateAsynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>,
+      MutateQueuingStrategy,
+      AsyncMutationCompleteCallback) = 0;
 
   // Returns true if Mutate may do something if called 'now'.
   virtual bool HasMutators() = 0;
