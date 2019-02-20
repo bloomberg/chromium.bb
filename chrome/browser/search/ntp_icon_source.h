@@ -36,12 +36,6 @@ class NtpIconSource : public content::URLDataSource {
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
-  // Calls back a rendered icon consisting of a favicon + icon background for
-  // the site from |path|. Depending on availability, the favicon can be:
-  // - The locally stored icon.
-  // - Fetched from the suggestions server.
-  // - Fetched from the site's icon source (/favicon.ico).
-  // - A colored fallback monogram.
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -58,26 +52,10 @@ class NtpIconSource : public content::URLDataSource {
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
   // Returns whether |url| is in the set of server suggestions.
   bool IsRequestedUrlInServerSuggestions(const GURL& url);
-
-  // Requests the server favicon for |request.path| iff |request.path| is known
-  // to the server. If not known (or the request fails), |RequestSiteFavicon| is
-  // called instead.
   void RequestServerFavicon(const NtpIconRequest& request);
-  // Requests |request.path|'s icon source (/favicon.ico) directly.
-  void RequestSiteFavicon(const NtpIconRequest& request);
-
-  // Fetches the icon from |request_url|. Invokes |callback| when finished.
-  void StartFaviconRequest(const NtpIconRequest& request,
-                           const GURL request_url,
-                           net::NetworkTrafficAnnotationTag traffic_annotation,
-                           image_fetcher::ImageFetcherCallback callback);
-
   void OnServerFaviconAvailable(const NtpIconRequest& request,
                                 const gfx::Image& fetched_image,
                                 const image_fetcher::RequestMetadata& metadata);
-  void OnSiteFaviconAvailable(const NtpIconRequest& request,
-                              const gfx::Image& fetched_image,
-                              const image_fetcher::RequestMetadata& metadata);
 
   // Will call |request.callback| with the rendered icon. |bitmap| can be empty,
   // in which case the returned icon is a fallback circle with a letter drawn
