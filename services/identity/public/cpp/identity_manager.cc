@@ -277,7 +277,7 @@ void IdentityManager::StartObservingCookieChanges() {
   gaia_cookie_manager_service_->InitCookieListener();
 }
 
-void IdentityManager::LegacyLoadCredentials(
+void IdentityManager::LegacyLoadCredentialsForSupervisedUser(
     const std::string& primary_account_id) {
   token_service_->LoadCredentials(primary_account_id);
 }
