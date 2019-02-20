@@ -29,6 +29,8 @@ namespace blink {
 // instead of passing String with occasionally converting to KURL.
 // This avoid duplicated URL parsing.
 class ParsedSpecifier final {
+  STACK_ALLOCATED();
+
  public:
   // Parse |specifier|, which may be a non-bare or bare specifier.
   // This implements
