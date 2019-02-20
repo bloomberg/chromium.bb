@@ -17,15 +17,16 @@ config("mdnsresponder_config") {
     cflags_c += [
       "-Wno-address-of-packed-member",
       "-Wno-array-bounds",
-
-      # We need to rename some linked symbols in order to avoid multiple
-      # definitions.
-      "-DMD5_Update=MD5_Update_mDNS",
-      "-DMD5_Init=MD5_Init_mDNS",
-      "-DMD5_Final=MD5_Final_mDNS",
-      "-DMD5_Transform=MD5_Transform_mDNS",
     ]
   }
+  cflags_c += [
+    # We need to rename some linked symbols in order to avoid multiple
+    # definitions.
+    "-DMD5_Update=MD5_Update_mDNS",
+    "-DMD5_Init=MD5_Init_mDNS",
+    "-DMD5_Final=MD5_Final_mDNS",
+    "-DMD5_Transform=MD5_Transform_mDNS",
+  ]
 }
 
 source_set("core") {

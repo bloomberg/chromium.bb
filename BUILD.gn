@@ -25,7 +25,6 @@ executable("demo") {
     "//demo/demo.cc",
   ]
 
-  ldflags = [ "-Wl" ]
   deps = [
     "//api:api_with_chromium_quic",
     "//base",
