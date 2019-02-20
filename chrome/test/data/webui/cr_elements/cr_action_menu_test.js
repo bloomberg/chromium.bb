@@ -166,6 +166,13 @@ suite('CrActionMenu', function() {
     assertEquals(items[2], getDeepActiveElement());
   });
 
+  test('close on click away', function() {
+    menu.showAt(dots);
+    assertTrue(dialog.open);
+    menu.click();
+    assertFalse(dialog.open);
+  });
+
   test('close on resize', function() {
     menu.showAt(dots);
     assertTrue(dialog.open);
