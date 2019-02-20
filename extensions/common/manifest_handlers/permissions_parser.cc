@@ -94,8 +94,7 @@ bool ParseHelper(Extension* extension,
 
   const base::Value* permissions = nullptr;
   if (!extension->manifest()->GetList(key, &permissions)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermissions,
-                                                 std::string());
+    *error = base::UTF8ToUTF16(errors::kInvalidPermissions);
     return false;
   }
 

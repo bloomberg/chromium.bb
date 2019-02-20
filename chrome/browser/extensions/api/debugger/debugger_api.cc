@@ -525,7 +525,7 @@ bool DebuggerAttachFunction::RunAsync() {
       GetProfile(), agent_host_.get(), extension(), debuggee_);
 
   if (!host->Attach()) {
-    FormatErrorMessage(debugger_api_constants::kRestrictedError);
+    error_ = debugger_api_constants::kRestrictedError;
     return false;
   }
 

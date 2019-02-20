@@ -5,7 +5,7 @@
 var callbackFail = chrome.test.callbackFail;
 var callbackPass = chrome.test.callbackPass;
 var expectedError =
-    "Invalid value for origin pattern file:///Invalid scheme.: *";
+    "Invalid value for origin pattern file:///*: Invalid scheme.";
 
 function test() {
   chrome.permissions.request({"origins": ["file:///*"]},
