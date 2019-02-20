@@ -53,7 +53,6 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
 
   // Sets the serialized metadata retrieved from the platform's cache.
   void SetSerializedCachedMetadata(const uint8_t*, size_t);
-  size_t GetCodeCacheSize() const override;
 
  private:
   void SendToPlatform();

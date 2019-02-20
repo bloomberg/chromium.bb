@@ -247,7 +247,6 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "web_cache/Script_resources",
     "web_cache/XSL stylesheet_resources",
     "web_cache/Font_resources",
-    "web_cache/Code_cache",
     "web_cache/Other_resources",
     "partition_alloc/allocated_objects",
     "partition_alloc/partitions",

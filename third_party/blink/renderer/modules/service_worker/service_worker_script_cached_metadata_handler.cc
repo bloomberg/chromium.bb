@@ -77,13 +77,9 @@ void ServiceWorkerScriptCachedMetadataHandler::OnMemoryDump(
     return;
   const String dump_name = dump_prefix + "/service_worker";
   auto* dump = pmd->CreateMemoryAllocatorDump(dump_name);
-  dump->AddScalar("size", "bytes", GetCodeCacheSize());
+  dump->AddScalar("size", "bytes", cached_metadata_->SerializedData().size());
   pmd->AddSuballocation(dump->Guid(),
                         String(WTF::Partitions::kAllocatedObjectPoolName));
-}
-
-size_t ServiceWorkerScriptCachedMetadataHandler::GetCodeCacheSize() const {
-  return (cached_metadata_) ? cached_metadata_->SerializedData().size() : 0;
 }
 
 }  // namespace blink

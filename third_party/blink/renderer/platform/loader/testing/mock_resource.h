@@ -29,7 +29,6 @@ class MockCacheHandler : public CachedMetadataHandler {
   bool IsServedFromCacheStorage() const override { return false; }
   void OnMemoryDump(WebProcessMemoryDump* pmd,
                     const String& dump_prefix) const override {}
-  size_t GetCodeCacheSize() const override { return 0; }
 
  private:
   std::unique_ptr<CachedMetadataSender> send_callback_;
