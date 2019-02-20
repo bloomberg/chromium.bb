@@ -462,9 +462,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       const NGConstraintSpace&,
       const NGBreakToken*);
   virtual scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting();
-  virtual void SetCachedLayoutResult(const NGConstraintSpace&,
-                                     const NGBreakToken*,
-                                     const NGLayoutResult&);
+  virtual void SetCachedLayoutResult(const NGLayoutResult&,
+                                     const NGBreakToken*);
   virtual void ClearCachedLayoutResult();
   virtual bool AreCachedLinesValidFor(const NGConstraintSpace&) const;
   virtual void WillCollectInlines() {}

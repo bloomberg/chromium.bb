@@ -27,10 +27,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
  public:
   NGBoxFragmentBuilder(NGLayoutInputNode node,
                        scoped_refptr<const ComputedStyle> style,
+                       const NGConstraintSpace* space,
                        WritingMode writing_mode,
                        TextDirection direction)
       : NGContainerFragmentBuilder(node,
                                    std::move(style),
+                                   space,
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
@@ -44,8 +46,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                        scoped_refptr<const ComputedStyle> style,
                        WritingMode writing_mode,
                        TextDirection direction)
-      : NGContainerFragmentBuilder(nullptr,
+      : NGContainerFragmentBuilder(/* node */ nullptr,
                                    std::move(style),
+                                   /* space */ nullptr,
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),

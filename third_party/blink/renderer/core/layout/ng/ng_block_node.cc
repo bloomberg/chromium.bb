@@ -353,8 +353,7 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
   DCHECK(layout_result->PhysicalFragment());
 
   if (block_flow) {
-    block_flow->SetCachedLayoutResult(constraint_space, break_token,
-                                      *layout_result);
+    block_flow->SetCachedLayoutResult(*layout_result, break_token);
     NGLayoutInputNode first_child = FirstChild();
     bool has_inline_children = first_child && first_child.IsInline();
     if (has_inline_children || box_->IsLayoutNGFieldset()) {
@@ -933,8 +932,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.
-  NGBoxFragmentBuilder builder(*this, box_->Style(), writing_mode,
-                               box_->StyleRef().Direction());
+  NGBoxFragmentBuilder builder(*this, box_->Style(), &constraint_space,
+                               writing_mode, box_->StyleRef().Direction());
   builder.SetIsNewFormattingContext(constraint_space.IsNewFormattingContext());
   builder.SetIsOldLayoutRoot();
   builder.SetInlineSize(box_size.inline_size);

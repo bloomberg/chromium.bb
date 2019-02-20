@@ -115,6 +115,15 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return depends_on_percentage_block_size_;
   }
 
+  // Returns true if the space stored with this layout result, is valid.
+  bool HasValidConstraintSpaceForCaching() const { return has_valid_space_; }
+
+  // Returns the space which generated this object for caching purposes.
+  const NGConstraintSpace& GetConstraintSpaceForCaching() const {
+    DCHECK(has_valid_space_);
+    return space_;
+  }
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
@@ -133,9 +142,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(const NGLayoutResult&) = delete;
 
   // Delegate constructor that sets up what it can, based on the builder.
-  NGLayoutResult(NGContainerFragmentBuilder* builder);
+  NGLayoutResult(NGContainerFragmentBuilder* builder, bool cache_space);
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
+
+  // The constraint space which generated this layout result, may not be valid
+  // as indicated by |has_valid_space_|.
+  const NGConstraintSpace space_;
 
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
@@ -152,6 +165,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   EBreakBetween initial_break_before_ = EBreakBetween::kAuto;
   EBreakBetween final_break_after_ = EBreakBetween::kAuto;
 
+  unsigned has_valid_space_ : 1;
   unsigned has_forced_break_ : 1;
 
   unsigned is_pushed_by_floats_ : 1;

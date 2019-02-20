@@ -809,7 +809,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     NGLineInfo line_info;
     NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
-                               constraint_space_, line_opportunity,
+                               ConstraintSpace(), line_opportunity,
                                leading_floats, handled_leading_floats_index,
                                break_token, &exclusion_space);
     line_breaker.NextLine(&line_info);

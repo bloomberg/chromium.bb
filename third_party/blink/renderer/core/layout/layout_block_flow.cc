@@ -2550,9 +2550,8 @@ LayoutBlockFlow::CachedLayoutResultForTesting() {
   return nullptr;
 }
 
-void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
-                                            const NGBreakToken*,
-                                            const NGLayoutResult&) {}
+void LayoutBlockFlow::SetCachedLayoutResult(const NGLayoutResult&,
+                                            const NGBreakToken*) {}
 
 void LayoutBlockFlow::ClearCachedLayoutResult() {}
 

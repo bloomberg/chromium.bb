@@ -193,6 +193,12 @@ void LayoutScrollbar::UpdateScrollbarParts(bool destroy) {
       if (box->IsLayoutBlock())
         ToLayoutBlock(box)->NotifyScrollbarThicknessChanged();
       box->SetChildNeedsLayout();
+      // LayoutNG may attempt to reuse line-box fragments. It will do this even
+      // if the |LayoutObject::ChildNeedsLayout| is true (set above).
+      // The box itself needs to be marked as needs layout here, as conceptually
+      // this is similar to border or padding changing, (which marks the box as
+      // self needs layout).
+      box->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged);
       if (scrollable_area_)
         scrollable_area_->SetScrollCornerNeedsPaintInvalidation();
     }

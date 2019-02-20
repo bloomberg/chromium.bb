@@ -57,10 +57,18 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   const ComputedStyle* container_style = container->Style();
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
+
+  // As this is part of the Legacy->NG bridge, the container_builder is used
+  // for indicating the resolved size of the OOF-positioned containing-block
+  // and not used for caching purposes.
+  // When we produce a layout result from it, we access its child fragments
+  // which must contain *at least* this node. We use the child fragments for
+  // copying back position information.
   NGBlockNode container_node(container);
   NGBoxFragmentBuilder container_builder(
       container_node, scoped_refptr<const ComputedStyle>(container_style),
-      container_style->GetWritingMode(), container_style->Direction());
+      /* space */ nullptr, container_style->GetWritingMode(),
+      container_style->Direction());
   container_builder.SetIsNewFormattingContext(
       container_node.CreatesNewFormattingContext());
 
