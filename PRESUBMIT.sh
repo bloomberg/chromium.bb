@@ -44,7 +44,7 @@ function check_gn_format() {
   fi
 }
 
-if [[ "${BASH_VERSION:0:1}" -le 4 ]]; then
+if [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
   echo "This script requires at least bash version 4.0, please upgrade!"
   echo "Your version: " $BASH_VERSION
   exit $fail
