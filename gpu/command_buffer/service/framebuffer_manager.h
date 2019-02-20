@@ -155,6 +155,7 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasColorAttachment(int index) const;
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
+  bool HasFloatColorAttachment() const;
   GLenum GetDepthFormat() const;
   GLenum GetStencilFormat() const;
   GLenum GetDrawBufferInternalFormat() const;
