@@ -116,7 +116,7 @@ class BASE_EXPORT TraceConfig {
 
   class BASE_EXPORT EventFilterConfig {
    public:
-    EventFilterConfig(const std::string& predicate_name);
+    explicit EventFilterConfig(const std::string& predicate_name);
     EventFilterConfig(const EventFilterConfig& tc);
 
     ~EventFilterConfig();
@@ -229,6 +229,7 @@ class BASE_EXPORT TraceConfig {
   size_t GetTraceBufferSizeInEvents() const {
     return trace_buffer_size_in_events_;
   }
+  size_t GetTraceBufferSizeInKb() const { return trace_buffer_size_in_kb_; }
   bool IsSystraceEnabled() const { return enable_systrace_; }
   bool IsArgumentFilterEnabled() const { return enable_argument_filter_; }
 
@@ -236,6 +237,7 @@ class BASE_EXPORT TraceConfig {
   void SetTraceBufferSizeInEvents(size_t size) {
     trace_buffer_size_in_events_ = size;
   }
+  void SetTraceBufferSizeInKb(size_t size) { trace_buffer_size_in_kb_ = size; }
   void EnableSystrace() { enable_systrace_ = true; }
   void EnableArgumentFilter() { enable_argument_filter_ = true; }
   void EnableHistogram(const std::string& histogram_name);
@@ -317,6 +319,7 @@ class BASE_EXPORT TraceConfig {
 
   TraceRecordMode record_mode_;
   size_t trace_buffer_size_in_events_ = 0;  // 0 specifies default size
+  size_t trace_buffer_size_in_kb_ = 0;      // 0 specifies default size
   bool enable_systrace_ : 1;
   bool enable_argument_filter_ : 1;
 

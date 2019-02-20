@@ -505,8 +505,10 @@ void BackgroundTracingManagerImpl::StartTracing(
     config.EnableArgumentFilter();
 #if defined(OS_ANDROID)
   // Set low trace buffer size on Android in order to upload small trace files.
-  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)
+  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
     config.SetTraceBufferSizeInEvents(20000);
+    config.SetTraceBufferSizeInKb(500);
+  }
 #endif
 
   // Activate the categories immediately. StartTracing eventually does this

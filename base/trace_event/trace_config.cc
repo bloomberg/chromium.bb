@@ -33,6 +33,7 @@ const char kEnableArgumentFilter[] = "enable-argument-filter";
 // String parameters that can be used to parse the trace config string.
 const char kRecordModeParam[] = "record_mode";
 const char kTraceBufferSizeInEvents[] = "trace_buffer_size_in_events";
+const char kTraceBufferSizeInKb[] = "trace_buffer_size_in_kb";
 const char kEnableSystraceParam[] = "enable_systrace";
 const char kEnableArgumentFilterParam[] = "enable_argument_filter";
 
@@ -292,6 +293,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
 
   record_mode_ = rhs.record_mode_;
   trace_buffer_size_in_events_ = rhs.trace_buffer_size_in_events_;
+  trace_buffer_size_in_kb_ = rhs.trace_buffer_size_in_kb_;
   enable_systrace_ = rhs.enable_systrace_;
   enable_argument_filter_ = rhs.enable_argument_filter_;
   category_filter_ = rhs.category_filter_;
@@ -334,6 +336,8 @@ void TraceConfig::Merge(const TraceConfig& config) {
   }
   DCHECK_EQ(trace_buffer_size_in_events_, config.trace_buffer_size_in_events_)
       << "Cannot change trace buffer size";
+  DCHECK_EQ(trace_buffer_size_in_kb_, config.trace_buffer_size_in_kb_)
+      << "Cannot change trace buffer size";
 
   category_filter_.Merge(config.category_filter_);
   memory_dump_config_.Merge(config.memory_dump_config_);
@@ -348,6 +352,7 @@ void TraceConfig::Merge(const TraceConfig& config) {
 void TraceConfig::Clear() {
   record_mode_ = RECORD_UNTIL_FULL;
   trace_buffer_size_in_events_ = 0;
+  trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
   category_filter_.Clear();
@@ -360,6 +365,7 @@ void TraceConfig::Clear() {
 void TraceConfig::InitializeDefault() {
   record_mode_ = RECORD_UNTIL_FULL;
   trace_buffer_size_in_events_ = 0;
+  trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
 }
@@ -381,6 +387,8 @@ void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {
   int buffer_size = 0;
   trace_buffer_size_in_events_ =
       dict.GetInteger(kTraceBufferSizeInEvents, &buffer_size) ? buffer_size : 0;
+  trace_buffer_size_in_kb_ =
+      dict.GetInteger(kTraceBufferSizeInKb, &buffer_size) ? buffer_size : 0;
 
   bool val;
   enable_systrace_ = dict.GetBoolean(kEnableSystraceParam, &val) ? val : false;
@@ -423,6 +431,7 @@ void TraceConfig::InitializeFromStrings(StringPiece category_filter_string,
 
   record_mode_ = RECORD_UNTIL_FULL;
   trace_buffer_size_in_events_ = 0;
+  trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
   if (!trace_options_string.empty()) {
@@ -564,6 +573,8 @@ std::unique_ptr<DictionaryValue> TraceConfig::ToDict() const {
   dict->SetBoolean(kEnableArgumentFilterParam, enable_argument_filter_);
   if (trace_buffer_size_in_events_ > 0)
     dict->SetInteger(kTraceBufferSizeInEvents, trace_buffer_size_in_events_);
+  if (trace_buffer_size_in_kb_ > 0)
+    dict->SetInteger(kTraceBufferSizeInKb, trace_buffer_size_in_kb_);
 
   category_filter_.ToDict(dict.get());
   process_filter_config_.ToDict(dict.get());
