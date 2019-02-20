@@ -505,6 +505,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "cap_ect_based_on_signal_strength",
               "false") == "true"),
+      upper_bound_typical_kbps_multiplier_(
+          GetDoubleValueForVariationParamWithDefaultValue(
+              params_,
+              "upper_bound_typical_kbps_multiplier",
+              3.5)),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);
