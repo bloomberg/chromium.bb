@@ -1146,6 +1146,11 @@ void RasterImplementation::EndRasterCHROMIUM() {
     FlushPaintCachePurgedEntries();
 }
 
+bool RasterImplementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) {
+  return image_decode_accelerator_->IsImageSupported(encoded_data);
+}
+
 SyncToken RasterImplementation::ScheduleImageDecode(
     base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,

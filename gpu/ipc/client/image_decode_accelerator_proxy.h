@@ -50,6 +50,12 @@ class ImageDecodeAcceleratorProxy : public ImageDecodeAcceleratorInterface {
   ImageDecodeAcceleratorProxy(GpuChannelHost* host, int32_t route_id);
   ~ImageDecodeAcceleratorProxy() override;
 
+  // Determines if an encoded image is supported by the hardware accelerator.
+  // The ScheduleImageDecode() method should only be called for images for which
+  // IsImageSupported() returns true. Otherwise, the client faces a GPU channel
+  // teardown if the decode fails.
+  bool IsImageSupported(base::span<const uint8_t> encoded_data) const override;
+
   // Schedules a hardware-accelerated image decode on the GPU process. The image
   // in |encoded_data| is decoded and scaled to |output_size|. Upon completion
   // and after the sync token corresponding to

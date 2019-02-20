@@ -153,6 +153,12 @@ void RasterImplementationGLES::EndRasterCHROMIUM() {
   NOTREACHED();
 }
 
+bool RasterImplementationGLES::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) {
+  NOTREACHED();
+  return false;
+}
+
 SyncToken RasterImplementationGLES::ScheduleImageDecode(
     base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,

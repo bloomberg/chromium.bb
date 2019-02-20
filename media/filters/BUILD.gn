@@ -47,8 +47,6 @@ jumbo_source_set("filters") {
     "frame_processor.h",
     "gpu_video_decoder.cc",
     "gpu_video_decoder.h",
-    "jpeg_parser.cc",
-    "jpeg_parser.h",
     "memory_data_source.cc",
     "memory_data_source.h",
     "offloading_video_decoder.cc",
@@ -94,6 +92,10 @@ jumbo_source_set("filters") {
     # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
+  ]
+
+  public_deps = [
+    ":jpeg_parser",
   ]
 
   deps = [
@@ -229,6 +231,34 @@ jumbo_source_set("filters") {
   }
 }
 
+# This component allows other targets to use the JPEG parser as a standalone,
+# general-purpose utility without having to pull all of //media as a dependency
+# (which could potentially result in cycles).
+component("jpeg_parser") {
+  output_name = "media_filters_jpeg_parser"
+  sources = [
+    "jpeg_parser.cc",
+    "jpeg_parser.h",
+  ]
+  defines = [ "IS_JPEG_PARSER_IMPL" ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("jpeg_parser_unit_tests") {
+  testonly = true
+  sources = [
+    "jpeg_parser_unittest.cc",
+  ]
+  deps = [
+    ":jpeg_parser",
+    "//base",
+    "//media:test_support",
+    "//testing/gtest",
+  ]
+}
+
 source_set("perftests") {
   testonly = true
   sources = []
@@ -288,7 +318,6 @@ source_set("unit_tests") {
     "frame_buffer_pool_unittest.cc",
     "frame_processor_unittest.cc",
     "ivf_parser_unittest.cc",
-    "jpeg_parser_unittest.cc",
     "memory_data_source_unittest.cc",
     "offloading_video_decoder_unittest.cc",
     "pipeline_controller_unittest.cc",
@@ -304,6 +333,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":jpeg_parser_unit_tests",
     "//base/test:test_support",
     "//media:test_support",
     "//testing/gmock",
