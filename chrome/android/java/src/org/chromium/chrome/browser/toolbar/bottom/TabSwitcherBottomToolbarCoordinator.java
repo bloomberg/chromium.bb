@@ -84,13 +84,6 @@ public class TabSwitcherBottomToolbarCoordinator {
     }
 
     /**
-     * @return The tab switcher mode bottom toolbar's menu button.
-     */
-    public MenuButton getMenuButton() {
-        return mMenuButton;
-    }
-
-    /**
      * Clean up any state when the bottom toolbar is destroyed.
      */
     public void destroy() {
