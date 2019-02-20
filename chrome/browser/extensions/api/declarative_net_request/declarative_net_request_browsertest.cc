@@ -606,12 +606,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   }
 }
 
-// Tests that the separator character '^' correctly matches the end of the url.
-// TODO(crbug.com/772260): Enable once the bug is fixed.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       DISABLED_BlockRequests_SeparatorMatchesEndOfURL) {
+                       BlockRequests_SeparatorMatchesEndOfURL) {
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("page2.html^");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 

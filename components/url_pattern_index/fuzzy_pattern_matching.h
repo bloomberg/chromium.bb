@@ -6,8 +6,10 @@
 // separator character, which is any ASCII symbol except letters, digits, and
 // the following: '_', '-', '.', '%'. Note that the separator placeholder
 // character '^' is itself a separator, as well as '\0'.
-// TODO(pkalinnikov): In addition, a separator placeholder at the end of the
-// pattern can be matched by the end of |text|.
+//
+// In addition, a separator placeholder at the end of the pattern can be matched
+// by the end of |text|. This should be handled by the clients using the
+// following utility functions.
 //
 // We define a fuzzy occurrence as an occurrence of a |subpattern| in |text|
 // such that all its non-placeholder characters are equal to the corresponding
