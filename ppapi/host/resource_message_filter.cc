@@ -68,8 +68,9 @@ bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
       // other threads. It would be better to have a thread-safe refcounted
       // context.
       HostMessageContext context_copy = *context;
-      runner->PostTask(FROM_HERE, base::Bind(
-          &ResourceMessageFilter::DispatchMessage, this, msg, context_copy));
+      runner->PostTask(FROM_HERE,
+                       base::BindOnce(&ResourceMessageFilter::DispatchMessage,
+                                      this, msg, context_copy));
     }
     return true;
   }
@@ -82,7 +83,7 @@ void ResourceMessageFilter::SendReply(const ReplyMessageContext& context,
   if (!reply_thread_task_runner_->BelongsToCurrentThread()) {
     reply_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ResourceMessageFilter::SendReply, this, context, msg));
+        base::BindOnce(&ResourceMessageFilter::SendReply, this, context, msg));
     return;
   }
   if (resource_host_)
