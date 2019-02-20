@@ -67,7 +67,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   const WebURLResponse& GetResponse() const override;
   bool HasUnreachableURL() const override;
   WebURL UnreachableURL() const override;
-  void AppendRedirect(const WebURL&) override;
   void RedirectChain(WebVector<WebURL>&) const override;
   bool IsClientRedirect() const override;
   bool ReplacesCurrentHistoryItem() const override;

@@ -218,7 +218,10 @@ DocumentLoader::DocumentLoader(
   // The document URL needs to be added to the head of the list as that is
   // where the redirects originated.
   if (is_client_redirect_)
-    AppendRedirect(frame_->GetDocument()->Url());
+    redirect_chain_.push_back(frame_->GetDocument()->Url());
+
+  if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
+    redirect_chain_.push_back(url_);
 
   if (!params_->origin_to_commit.IsNull())
     origin_to_commit_ = params_->origin_to_commit.Get()->IsolatedCopy();
@@ -368,8 +371,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   }
   redirect_chain_.clear();
   if (is_client_redirect_)
-    AppendRedirect(old_url);
-  AppendRedirect(new_url);
+    redirect_chain_.push_back(old_url);
+  redirect_chain_.push_back(new_url);
 
   SetHistoryItemStateForCommit(
       history_item_.Get(), type,
@@ -620,7 +623,7 @@ void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
   CHECK(SecurityOrigin::Create(current_request_url)->CanDisplay(url_));
 
   DCHECK(!GetTiming().FetchStart().is_null());
-  AppendRedirect(url_);
+  redirect_chain_.push_back(url_);
   GetTiming().AddRedirect(current_request_url, url_);
 
   // If a redirection happens during a back/forward navigation, don't restore
@@ -697,7 +700,7 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   original_url_ = blocked_url;
   url_ = blocked_url;
   redirect_chain_.pop_back();
-  AppendRedirect(blocked_url);
+  redirect_chain_.push_back(blocked_url);
   response_ = ResourceResponse(blocked_url);
   response_.SetMimeType("text/html");
   FinishedLoading(CurrentTimeTicks());
@@ -925,10 +928,6 @@ void DocumentLoader::ProcessDataBuffer() {
     CommitData(span.data(), span.size());
   // All data has been consumed, so flush the buffer.
   data_buffer_->Clear();
-}
-
-void DocumentLoader::AppendRedirect(const KURL& url) {
-  redirect_chain_.push_back(url);
 }
 
 void DocumentLoader::StopLoading() {

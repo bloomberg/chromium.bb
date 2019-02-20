@@ -1019,8 +1019,6 @@ void FrameLoader::CommitNavigation(
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, navigation_type, std::move(navigation_params),
       std::move(extra_data));
-  provisional_document_loader_->AppendRedirect(
-      provisional_document_loader_->Url());
   if (history_item)
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
 
@@ -1101,8 +1099,6 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, info.navigation_type, std::move(navigation_params),
       std::move(extra_data));
-  provisional_document_loader_->AppendRedirect(
-      provisional_document_loader_->Url());
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   probe::didStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
