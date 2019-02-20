@@ -9,8 +9,10 @@
 #include <string>
 #include <utility>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/process.h"
 #include "fuchsia/runners/cast/cast_component.h"
 #include "url/gurl.h"
 
@@ -22,7 +24,11 @@ CastRunner::CastRunner(
     : WebContentRunner(service_directory,
                        std::move(context),
                        std::move(on_idle_closure)),
-      app_config_manager_(std::move(app_config_manager)) {}
+      app_config_manager_(std::move(app_config_manager)) {
+  app_config_manager_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(WARNING, status) << "ApplicationConfigManager disconnected";
+  });
+}
 
 CastRunner::~CastRunner() = default;
 
@@ -46,11 +52,22 @@ void CastRunner::StartComponent(
 
   // Fetch the Cast application configuration for the specified Id.
   const std::string cast_app_id(cast_url.GetContent());
+
+  // TODO(https://crbug.com/933831): Look for ApplicationConfigManager in the
+  // per-component incoming services. This works-around an issue with binding
+  // to that service via the Runner's incoming services. Replace this with a
+  // request for services from a Cast-specific Agent.
+  auto startup_context =
+      std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info));
+  if (!app_config_manager_) {
+    LOG(WARNING) << "Connect to ApplicationConfigManager from component /svc";
+    startup_context->incoming_services()->ConnectToService(
+        app_config_manager_.NewRequest());
+  }
+
   app_config_manager_->GetConfig(
       cast_app_id,
-      [this,
-       startup_context = std::make_unique<base::fuchsia::StartupContext>(
-           std::move(startup_info)),
+      [this, startup_context = std::move(startup_context),
        controller_request = std::move(controller_request)](
           chromium::cast::ApplicationConfigPtr app_config) mutable {
         GetConfigCallback(std::move(startup_context),
