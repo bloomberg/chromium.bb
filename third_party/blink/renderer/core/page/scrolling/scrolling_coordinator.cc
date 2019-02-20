@@ -279,13 +279,12 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
     return;
   }
 
-  auto offset = layer.GetOffsetFromTransformNode();
-  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
+  layer.CcLayer()->SetOffsetToTransformParent(
+      gfx::Vector2dF(FloatPoint(layer.GetOffsetFromTransformNode())));
   PaintChunkSubset paint_chunks =
       PaintChunkSubset(layer.GetPaintController().PaintChunks());
-  PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
-                                                  layer.GetPropertyTreeState(),
-                                                  paint_chunks);
+  PaintArtifactCompositor::UpdateTouchActionRects(
+      layer.CcLayer(), layer.GetPropertyTreeState(), paint_chunks);
 }
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
