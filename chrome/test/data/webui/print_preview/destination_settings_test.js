@@ -68,18 +68,6 @@ cr.define('destination_settings_test', function() {
       document.body.appendChild(destinationSettings);
     });
 
-    function waitForRender(element) {
-      return new Promise(resolve => {
-        if (Polymer.DomIf) {
-          Polymer.RenderStatus.beforeNextRender(element, resolve);
-        } else {
-          setTimeout(() => {
-            resolve();
-          });
-        }
-      });
-    }
-
     // Tests that the dropdown is enabled or disabled correctly based on
     // the state.
     test(assert(TestNames.ChangeDropdownState), function() {
@@ -117,7 +105,7 @@ cr.define('destination_settings_test', function() {
 
       // Enable controls.
       destinationSettings.disabled = false;
-      return waitForRender(dropdown).then(() => {
+      return test_util.waitForRenderOrTimeout0(dropdown).then(() => {
         assertFalse(dropdown.disabled);
 
         // Simulate setting a setting to an invalid value. Dropdown is disabled
