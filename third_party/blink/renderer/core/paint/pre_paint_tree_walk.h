@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/paint/clip_rect.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ class LocalFrameView;
 // tree node to perform actual actions.  It expects to be invoked in InPrePaint
 // phase.
 class CORE_EXPORT PrePaintTreeWalk {
+  DISALLOW_NEW();
+
  public:
   PrePaintTreeWalk() = default;
   void WalkTree(LocalFrameView& root_frame);

@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -18,6 +19,8 @@ class PaintLayer;
 // FragmentData, and even then only when they are inside of multicol.
 // See README.md.
 class CORE_EXPORT FragmentData {
+  USING_FAST_MALLOC(FragmentData);
+
  public:
   FragmentData* NextFragment() const { return next_fragment_.get(); }
   FragmentData& EnsureNextFragment();

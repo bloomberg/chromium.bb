@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -23,6 +24,8 @@ namespace blink {
 // function called by several public paint-invalidation-flag setting functions).
 
 class FindPaintOffsetNeedingUpdateScope {
+  STACK_ALLOCATED();
+
  public:
   FindPaintOffsetNeedingUpdateScope(const LayoutObject& object,
                                     const FragmentData& fragment_data,

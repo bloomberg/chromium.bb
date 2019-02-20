@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -136,6 +137,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
 };
 
 class PaintInvalidator {
+  DISALLOW_NEW();
+
  public:
   // Returns true if the object is invalidated.
   bool InvalidatePaint(const LayoutObject&,

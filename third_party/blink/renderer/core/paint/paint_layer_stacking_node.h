@@ -49,6 +49,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -183,6 +184,8 @@ class CORE_EXPORT PaintLayerStackingNode {
 
 #if DCHECK_IS_ON()
 class LayerListMutationDetector {
+  STACK_ALLOCATED();
+
  public:
   explicit LayerListMutationDetector(PaintLayerStackingNode* stacking_node)
       : stacking_node_(stacking_node),

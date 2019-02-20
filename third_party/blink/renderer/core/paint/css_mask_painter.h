@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -16,6 +17,8 @@ class LayoutObject;
 class LayoutPoint;
 
 class CORE_EXPORT CSSMaskPainter {
+  STATIC_ONLY(CSSMaskPainter);
+
  public:
   // Returns the bounding box of the computed mask, which could be
   // smaller or bigger than the reference box. Returns nullopt if the

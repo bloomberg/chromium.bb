@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -64,6 +65,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   template <typename Traverse>
   class List {
+    STACK_ALLOCATED();
+
    public:
     explicit List(NGPaintFragment* first) : first_(first) {}
 
@@ -115,6 +118,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   };
 
   class TraverseNextSibling {
+    STATIC_ONLY(TraverseNextSibling);
+
    public:
     static NGPaintFragment* Next(NGPaintFragment* current) {
       return current->next_sibling_.get();
@@ -228,6 +233,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // A range of fragments for |FragmentsFor()|.
   class TraverseNextForSameLayoutObject {
+    STATIC_ONLY(TraverseNextForSameLayoutObject);
+
    public:
     static NGPaintFragment* Next(NGPaintFragment* current) {
       return current->next_for_same_layout_object_;

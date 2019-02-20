@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -182,6 +183,8 @@ struct PaintPropertyTreeBuilderContext {
 };
 
 class VisualViewportPaintPropertyTreeBuilder {
+  STATIC_ONLY(VisualViewportPaintPropertyTreeBuilder);
+
  public:
   // Update the paint properties for the visual viewport and ensure the context
   // is up to date.
@@ -203,6 +206,8 @@ enum class PaintPropertyChangedState {
 // fixed-pos, animation, mask, filters, etc. It expects to be invoked for each
 // layout tree node in DOM order during the PrePaint lifecycle phase.
 class PaintPropertyTreeBuilder {
+  STACK_ALLOCATED();
+
  public:
   static void SetupContextForFrame(LocalFrameView&,
                                    PaintPropertyTreeBuilderContext&);
