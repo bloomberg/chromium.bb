@@ -784,7 +784,13 @@ app_list::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  if (!IsTabletMode() && !app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+        ash::AssistantEntryPoint::kLauncherSearchBoxMic);
+    return;
+  }
+
+  if (!IsTabletMode())
     DismissAppList();
 
   ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(

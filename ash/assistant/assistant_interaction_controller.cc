@@ -618,10 +618,13 @@ void AssistantInteractionController::OnUiVisible(
   DCHECK_EQ(AssistantVisibility::kVisible,
             assistant_controller_->ui_controller()->model()->visibility());
 
-  const bool launch_with_mic_open =
+  bool launch_with_mic_open =
       Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
 
   switch (entry_point) {
+    case AssistantEntryPoint::kLauncherSearchBoxMic:
+      launch_with_mic_open = true;
+      FALLTHROUGH;
     case AssistantEntryPoint::kHotkey:
     case AssistantEntryPoint::kLauncherSearchBox:
     case AssistantEntryPoint::kLongPressLauncher: {
