@@ -1005,6 +1005,15 @@
           "keyCode": [79, 66]
         }
       }
+    },
+    {
+      "command": "getRichTextDescription",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 70]
+        }
+      }
     }
   ]
 }

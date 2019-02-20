@@ -17,6 +17,7 @@ goog.require('cvox.ChromeVoxBackground');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
+goog.require('Color');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -868,6 +869,28 @@ CommandHandler.onCommand = function(command) {
             .go();
       });
       break;
+    case 'getRichTextDescription':
+      var node = ChromeVoxState.instance.currentRange.start.node;
+      var optSubs = [];
+      node.fontSize ? optSubs.push('font size: ' + node.fontSize) :
+                      optSubs.push('');
+      node.color ? optSubs.push(Color.getColorDescription(node.color)) :
+                   optSubs.push('');
+      node.bold ? optSubs.push(Msgs.getMsg('bold')) : optSubs.push('');
+      node.italic ? optSubs.push(Msgs.getMsg('italic')) : optSubs.push('');
+      node.underline ? optSubs.push(Msgs.getMsg('underline')) :
+                       optSubs.push('');
+      node.lineThrough ? optSubs.push(Msgs.getMsg('linethrough')) :
+                         optSubs.push('');
+      node.fontFamily ? optSubs.push('font family: ' + node.fontFamily) :
+                        optSubs.push('');
+
+      var richTextDescription = Msgs.getMsg('rich_text_attributes', optSubs);
+      new Output()
+          .withString(richTextDescription)
+          .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+          .go();
+      return false;
     default:
       return true;
   }
