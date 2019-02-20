@@ -51,6 +51,8 @@ class ServiceImpl : public service_manager::Service,
   void SetShutdownTimeoutCancelledObserver(base::RepeatingClosure observer_cb);
   bool HasNoContextRefs();
 
+  void ShutdownServiceAsap();
+
   // service_manager::Service implementation.
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,

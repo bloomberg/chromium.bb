@@ -178,6 +178,7 @@ CONTENT_EXPORT extern const base::Feature kWebUIPolymer2Exceptions;
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacV2GPUSandbox;
+CONTENT_EXPORT extern const base::Feature kRetryGetVideoCaptureDeviceInfos;
 #endif  // defined(OS_MACOSX)
 
 #if defined(WEBRTC_USE_PIPEWIRE)

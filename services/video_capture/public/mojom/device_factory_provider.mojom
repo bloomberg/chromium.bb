@@ -31,4 +31,8 @@ interface DeviceFactoryProvider  {
 
   // Current API. Supports multiple clients per source.
   ConnectToVideoSourceProvider(VideoSourceProvider& request);
+
+  // Lets the service to close all connections and ask the service_manager to be
+  // shut down.
+  ShutdownServiceAsap();
 };

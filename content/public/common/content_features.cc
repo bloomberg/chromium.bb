@@ -748,6 +748,12 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 
 const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables retrying to obtain list of available cameras on Macbooks after
+// restarting the video capture service if a previous attempt delivered zero
+// cameras.
+const base::Feature kRetryGetVideoCaptureDeviceInfos{
+    "RetryGetVideoCaptureDeviceInfos", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(WEBRTC_USE_PIPEWIRE)

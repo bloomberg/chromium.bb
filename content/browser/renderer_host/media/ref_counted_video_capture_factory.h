@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace content {
 
@@ -21,6 +22,7 @@ class CONTENT_EXPORT RefCountedVideoCaptureFactory
  public:
   RefCountedVideoCaptureFactory(
       video_capture::mojom::DeviceFactoryPtr device_factory,
+      video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider,
       base::OnceClosure destruction_cb);
 
   base::WeakPtr<RefCountedVideoCaptureFactory> GetWeakPtr();
@@ -29,6 +31,8 @@ class CONTENT_EXPORT RefCountedVideoCaptureFactory
     return device_factory_;
   }
 
+  void ShutdownServiceAsap();
+
   void ReleaseFactoryForTesting();
 
  private:
@@ -36,6 +40,7 @@ class CONTENT_EXPORT RefCountedVideoCaptureFactory
   ~RefCountedVideoCaptureFactory();
 
   video_capture::mojom::DeviceFactoryPtr device_factory_;
+  video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   base::OnceClosure destruction_cb_;
   base::WeakPtrFactory<RefCountedVideoCaptureFactory> weak_ptr_factory_;
 

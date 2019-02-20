@@ -53,7 +53,9 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
         std::make_unique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
             &mock_device_factory_, mojo::MakeRequest(&device_factory));
     factory_delegate_ = base::MakeRefCounted<RefCountedVideoCaptureFactory>(
-        std::move(device_factory), release_connection_cb_.Get());
+        std::move(device_factory),
+        video_capture::mojom::DeviceFactoryProviderPtr(),
+        release_connection_cb_.Get());
 
     launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(
         connect_to_device_factory_cb_.Get());

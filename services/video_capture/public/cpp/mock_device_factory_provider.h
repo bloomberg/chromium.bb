@@ -33,6 +33,7 @@ class MockDeviceFactoryProvider
                void(video_capture::mojom::DeviceFactoryRequest& request));
   MOCK_METHOD1(DoConnectToVideoSourceProvider,
                void(video_capture::mojom::VideoSourceProviderRequest& request));
+  MOCK_METHOD0(ShutdownServiceAsap, void());
 };
 
 }  // namespace video_capture
