@@ -161,6 +161,28 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrame) {
   EXPECT_FALSE(frame);
 }
 
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
+  chromium::web::FramePtr frame = CreateFrame();
+  EXPECT_TRUE(frame);
+
+  zx::eventpair import_token;
+  fuchsia::ui::gfx::ExportToken export_token;
+  ASSERT_EQ(zx::eventpair::create(0, &import_token, &export_token.value),
+            ZX_OK);
+
+  frame->CreateView(std::move(export_token));
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  frame.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    run_loop.Quit();
+  });
+  context().Unbind();
+  run_loop.Run();
+  EXPECT_FALSE(frame);
+}
+
 IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
   chromium::web::FramePtr frame = CreateFrame();
   chromium::web::NavigationControllerPtr controller;
