@@ -42,8 +42,8 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "text/calendar")
     return DownloadMimeTypeResult::iCalendar;
 
-  if (mime_type == kUsdzMimeType)
-    return DownloadMimeTypeResult::UniversalSceneDescription;
+  if (mime_type == kLegacyUsdzMimeType)
+    return DownloadMimeTypeResult::LegacyUniversalSceneDescription;
 
   if (mime_type == "application/x-apple-diskimage")
     return DownloadMimeTypeResult::AppleDiskImage;
@@ -75,6 +75,12 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "application/java-archive")
     return DownloadMimeTypeResult::JavaArchive;
 
+  if (mime_type == kLegacyPixarUsdzMimeType)
+    return DownloadMimeTypeResult::LegacyPixarUniversalSceneDescription;
+
+  if (mime_type == kUsdzMimeType)
+    return DownloadMimeTypeResult::UniversalSceneDescription;
+
   return DownloadMimeTypeResult::Other;
 }
 }  // namespace
@@ -105,7 +111,7 @@ void BrowserDownloadService::OnDownloadCreated(
     if (tab_helper) {
       tab_helper->Download(std::move(task));
     }
-  } else if (task->GetMimeType() == kUsdzMimeType &&
+  } else if (IsUsdzFileFormat(task->GetMimeType()) &&
              download::IsUsdzPreviewEnabled()) {
     ARQuickLookTabHelper* tab_helper =
         ARQuickLookTabHelper::FromWebState(web_state);
