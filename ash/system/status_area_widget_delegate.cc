@@ -6,7 +6,6 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -20,8 +19,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace {
-
-using session_manager::SessionState;
 
 constexpr int kAnimationDurationMs = 250;
 
