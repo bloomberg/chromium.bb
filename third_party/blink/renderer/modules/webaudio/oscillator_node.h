@@ -46,7 +46,13 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
  public:
   // The waveform type.
   // These must be defined as in the .idl file.
-  enum { SINE = 0, SQUARE = 1, SAWTOOTH = 2, TRIANGLE = 3, CUSTOM = 4 };
+  enum : uint8_t {
+    SINE = 0,
+    SQUARE = 1,
+    SAWTOOTH = 2,
+    TRIANGLE = 3,
+    CUSTOM = 4
+  };
 
   static scoped_refptr<OscillatorHandler> Create(AudioNode&,
                                                  float sample_rate,
@@ -71,7 +77,7 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
                     PeriodicWave* wave_table,
                     AudioParamHandler& frequency,
                     AudioParamHandler& detune);
-  bool SetType(unsigned);  // Returns true on success.
+  bool SetType(uint8_t);  // Returns true on success.
 
   // Returns true if there are sample-accurate timeline parameter changes.
   bool CalculateSampleAccuratePhaseIncrements(uint32_t frames_to_process);
@@ -79,7 +85,7 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   bool PropagatesSilence() const override;
 
   // One of the waveform types defined in the enum.
-  unsigned short type_;
+  uint8_t type_;
 
   // Frequency value in Hertz.
   scoped_refptr<AudioParamHandler> frequency_;
