@@ -249,7 +249,7 @@ WebFormControlElement::WebFormControlElement(HTMLFormControlElement* elem)
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebFormControlElement,
                            IsElementNode() &&
-                               ConstUnwrap<Element>()->IsFormControlElement());
+                               ConstUnwrap<Element>()->IsFormControlElement())
 
 WebFormControlElement& WebFormControlElement::operator=(
     HTMLFormControlElement* elem) {

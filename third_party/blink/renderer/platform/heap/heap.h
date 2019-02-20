@@ -604,9 +604,9 @@ inline bool ThreadHeap::IsNormalArenaIndex(int index) {
          index <= BlinkGC::kNormalPage4ArenaIndex;
 }
 
-#define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
- public:                                          \
-  GC_PLUGIN_IGNORE("491488")                      \
+#define DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW() \
+ public:                                                \
+  GC_PLUGIN_IGNORE("491488")                            \
   void* operator new(size_t size) { return AllocateObject(size, true); }
 
 #define IS_EAGERLY_FINALIZED()                    \
@@ -625,7 +625,7 @@ class VerifyEagerFinalization {
     // this class' leftmost base is for a class that is not
     // eagerly finalized. Declaring and defining an 'operator new'
     // for this class is what's required -- consider using
-    // DECLARE_EAGER_FINALIZATION_OPERATOR_NEW().
+    // DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW().
     DCHECK(IS_EAGERLY_FINALIZED());
   }
 };

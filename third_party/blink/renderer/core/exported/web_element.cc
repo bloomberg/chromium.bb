@@ -168,7 +168,7 @@ void WebElement::RequestFullscreen() {
 
 WebElement::WebElement(Element* elem) : WebNode(elem) {}
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebElement, IsElementNode());
+DEFINE_WEB_NODE_TYPE_CASTS(WebElement, IsElementNode())
 
 WebElement& WebElement::operator=(Element* elem) {
   private_ = elem;

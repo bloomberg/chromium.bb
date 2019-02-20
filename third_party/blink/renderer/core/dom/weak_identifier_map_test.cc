@@ -29,7 +29,7 @@ class WeakIdentifierMapTest : public ::testing::Test {
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(WeakIdentifierMapTest::TestClass);
-DEFINE_WEAK_IDENTIFIER_MAP(WeakIdentifierMapTest::TestClass);
+DEFINE_WEAK_IDENTIFIER_MAP(WeakIdentifierMapTest::TestClass)
 
 void WeakIdentifierMapTest::SetUp() {
   EXPECT_EQ(0u, TestMap::GetSizeForTesting());

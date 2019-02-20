@@ -1622,6 +1622,6 @@ void DocumentLoader::ParseAndPersistClientHints(
       client_hints_preferences_.GetPersistDuration(), url);
 }
 
-DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
+DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)
 
 }  // namespace blink

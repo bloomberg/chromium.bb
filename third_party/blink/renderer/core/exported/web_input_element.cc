@@ -143,7 +143,7 @@ WebInputElement::WebInputElement(HTMLInputElement* elem)
     : WebFormControlElement(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebInputElement,
-                           IsHTMLInputElement(ConstUnwrap<Node>()));
+                           IsHTMLInputElement(ConstUnwrap<Node>()))
 
 WebInputElement& WebInputElement::operator=(HTMLInputElement* elem) {
   private_ = elem;
