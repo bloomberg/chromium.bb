@@ -107,17 +107,15 @@ void GoBackToApp(content::WebContents* web_contents) {
 // page.
 class CustomTabBarTitleOriginView : public views::View {
  public:
-  explicit CustomTabBarTitleOriginView(SkColor foreground_color,
-                                       SkColor background_color) {
-    title_label_ = new views::Label(
-        base::string16(), views::style::TextContext::CONTEXT_DIALOG_TITLE);
-    location_label_ = new views::Label(base::string16());
+  explicit CustomTabBarTitleOriginView(SkColor background_color) {
+    title_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
+                                    views::style::TextStyle::STYLE_PRIMARY);
+    location_label_ = new views::Label(
+        base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
 
-    title_label_->SetEnabledColor(foreground_color);
     title_label_->SetBackgroundColor(background_color);
     title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
-    location_label_->SetEnabledColor(foreground_color);
     location_label_->SetBackgroundColor(background_color);
     location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
@@ -171,19 +169,20 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
   SetBackground(views::CreateSolidBackground(kCustomTabBarViewBackgroundColor));
 
-  constexpr SkColor kForegroundColor = gfx::kGoogleGrey900;
+  const SkColor foreground_color =
+      color_utils::GetColorWithMaxContrast(kCustomTabBarViewBackgroundColor);
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  close_button_ = CreateCloseButton(this, kForegroundColor);
+  close_button_ = CreateCloseButton(this, foreground_color);
   AddChildView(close_button_);
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
 
-  title_origin_view_ = new CustomTabBarTitleOriginView(
-      kForegroundColor, kCustomTabBarViewBackgroundColor);
+  title_origin_view_ =
+      new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
   AddChildView(title_origin_view_);
 
   auto layout = std::make_unique<views::FlexLayout>();
