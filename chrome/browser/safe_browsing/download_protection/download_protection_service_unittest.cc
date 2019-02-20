@@ -900,9 +900,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       // Add paths so we can check they are properly removed.
       {"http://referrer.com/1/2", "http://referrer.com/3/4",
        "http://download.com/path/a.foobar_unknown_type"},
-      "http://referrer.com/3/4",                    // Referrer
-      FILE_PATH_LITERAL("a.tmp"),                   // tmp_path
-      FILE_PATH_LITERAL("a.foobar_unknown_type"));  // final_path
+      "http://referrer.com/3/4",    // Referrer
+      FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+      FILE_PATH_LITERAL("a.txt"));  // final_path, txt is set to SAMPLED_PING
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
       .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
@@ -2269,9 +2269,9 @@ TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadPingToken) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
-  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.jpg"));
   std::vector<base::FilePath::StringType> alternate_extensions{
-      FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".asdfasdf")};
+      FILE_PATH_LITERAL(".jpeg")};
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), GURL(), nullptr, default_file_path,
       alternate_extensions, profile(),

@@ -166,7 +166,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   EXPECT_EQ("", file_type.extension());
   EXPECT_EQ(18l, file_type.uma_value());
   EXPECT_FALSE(file_type.is_archive());
-  EXPECT_EQ(DownloadFileType::SAMPLED_PING, file_type.ping_setting());
+  EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
   EXPECT_EQ(DownloadFileType::NOT_DANGEROUS,
             file_type.platform_settings(0).danger_level());
   EXPECT_EQ(DownloadFileType::ALLOW_AUTO_OPEN,

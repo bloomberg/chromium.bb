@@ -385,8 +385,24 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
   EXPECT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
-  ASSERT_EQ(2, results.archived_binary.size());
-  ExpectBinary(kUnsignedMachO, results.archived_binary.Get(0));
-  ExpectBinary(kSignedMachO, results.archived_binary.Get(1));
+
+  // Many of the files within the app have no extension, and are therefore
+  // flagged by Safe Browsing. So search for the two executables.
+  bool found_unsigned = false;
+  bool found_signed = false;
+  for (const auto& binary : results.archived_binary) {
+    if (kSignedMachO.file_basename == binary.file_basename()) {
+      found_signed = true;
+      ExpectBinary(kSignedMachO, binary);
+    }
+
+    if (kUnsignedMachO.file_basename == binary.file_basename()) {
+      found_unsigned = true;
+      ExpectBinary(kUnsignedMachO, binary);
+    }
+  }
+
+  EXPECT_TRUE(found_unsigned);
+  EXPECT_TRUE(found_signed);
 }
 #endif  // OS_MACOSX

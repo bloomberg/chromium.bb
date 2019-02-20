@@ -13,7 +13,7 @@ sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
   uma_value: 18
-  ping_setting: SAMPLED_PING
+  ping_setting: FULL_PING
   platform_settings {
     danger_level: NOT_DANGEROUS
     auto_open_hint: ALLOW_AUTO_OPEN
