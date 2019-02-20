@@ -112,16 +112,18 @@ class CORE_EXPORT WorkerGlobalScope
                              ExceptionState&);
 
   // ExecutionContext
-  const KURL& Url() const final { return url_; }
+  const KURL& Url() const final;
   KURL CompleteURL(const String&) const final;
   bool IsWorkerGlobalScope() const final { return true; }
   bool IsContextThread() const final;
-  const KURL& BaseURL() const final { return url_; }
+  const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
   HttpsState GetHttpsState() const override { return https_state_; }
   const base::UnguessableToken& GetAgentClusterID() const final {
     return agent_cluster_id_;
   }
+
+  void InitializeURL(const KURL& url);
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
@@ -239,7 +241,7 @@ class CORE_EXPORT WorkerGlobalScope
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
 
-  const KURL url_;
+  KURL url_;
   const mojom::ScriptType script_type_;
   const String user_agent_;
   const base::UnguessableToken parent_devtools_token_;

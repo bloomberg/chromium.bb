@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL redirect assert_equals: expected "/workers/interfaces/WorkerGlobalScope/location/redirect.js" but got "/common/redirect.py"
-Harness: the test ran to completion.
-

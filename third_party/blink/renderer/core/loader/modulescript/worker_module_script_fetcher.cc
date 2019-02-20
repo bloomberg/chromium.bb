@@ -79,6 +79,8 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     }
 
     // Step 13.3. "Set worker global scope's url to response's url." [spec text]
+    global_scope_->InitializeURL(response_url);
+
     // Step 13.4. "Set worker global scope's HTTPS state to response's HTTPS
     // state." [spec text]
 

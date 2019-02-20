@@ -95,6 +95,11 @@ WorkerGlobalScope::~WorkerGlobalScope() {
       InstanceCounters::kWorkerGlobalScopeCounter);
 }
 
+NOINLINE const KURL& WorkerGlobalScope::Url() const {
+  CHECK(url_.IsValid());
+  return url_;
+}
+
 KURL WorkerGlobalScope::CompleteURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // FIXME: Should we change the KURL constructor to have this behavior?
@@ -102,6 +107,22 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
     return KURL();
   // Always use UTF-8 in Workers.
   return KURL(BaseURL(), url);
+}
+
+const KURL& WorkerGlobalScope::BaseURL() const {
+  return Url();
+}
+
+NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
+  CHECK(url_.IsNull());
+  DCHECK(url.IsValid());
+  if (GetSecurityOrigin()->IsOpaque()) {
+    DCHECK(SecurityOrigin::Create(url)->IsOpaque());
+  } else {
+    DCHECK(GetSecurityOrigin()->IsSameSchemeHostPort(
+        SecurityOrigin::Create(url).get()));
+  }
+  url_ = url;
 }
 
 void WorkerGlobalScope::Dispose() {
@@ -120,7 +141,7 @@ void WorkerGlobalScope::ExceptionUnhandled(int exception_id) {
 
 WorkerLocation* WorkerGlobalScope::location() const {
   if (!location_)
-    location_ = WorkerLocation::Create(url_);
+    location_ = WorkerLocation::Create(Url());
   return location_.Get();
 }
 
@@ -424,9 +445,11 @@ void WorkerGlobalScope::DidImportClassicScript(
                         classic_script_loader->SourceText());
 
   // Step 12.3. "Set worker global scope's url to response's url."
+  InitializeURL(classic_script_loader->ResponseURL());
+
   // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
   // state."
-  // These are done in the constructor of WorkerGlobalScope.
+  // This is done in the constructor of WorkerGlobalScope.
 
   // Step 12.5. "Set worker global scope's referrer policy to the result of
   // parsing the `Referrer-Policy` header of response."
@@ -501,7 +524,6 @@ WorkerGlobalScope::WorkerGlobalScope(
           creation_params->worker_clients,
           std::move(creation_params->web_worker_fetch_context),
           thread->GetWorkerReportingProxy()),
-      url_(creation_params->script_url),
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
       parent_devtools_token_(creation_params->parent_devtools_token),
@@ -517,7 +539,8 @@ WorkerGlobalScope::WorkerGlobalScope(
                             : creation_params->agent_cluster_id) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
-  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url_);
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(creation_params->script_url);
   if (creation_params->starter_origin) {
     security_origin->TransferPrivilegesFrom(
         creation_params->starter_origin->CreatePrivilegeData());
@@ -535,12 +558,14 @@ WorkerGlobalScope::WorkerGlobalScope(
   BindContentSecurityPolicyToExecutionContext();
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
-  // Set the referrer policy here for workers whose script is fetched on the
-  // main thread. For off-the-main-thread fetches, it is instead set after the
-  // script is fetched.
+  // Set the URL and referrer policy here for workers whose script is fetched
+  // on the main thread. For off-the-main-thread fetches, they are instead set
+  // after the script is fetched.
   if (creation_params->off_main_thread_fetch_option ==
-      OffMainThreadWorkerScriptFetchOption::kDisabled)
+      OffMainThreadWorkerScriptFetchOption::kDisabled) {
+    InitializeURL(creation_params->script_url);
     SetReferrerPolicy(creation_params->referrer_policy);
+  }
 
   SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(this,

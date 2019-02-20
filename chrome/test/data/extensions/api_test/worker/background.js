@@ -88,11 +88,10 @@ chrome.test.getConfig(function(config) {
       undefined,
       () => { return new Worker(redirectedWorkerUrl) },
       workerUrl),
-    // TODO(crbug.com/861564): expectedUrl should be the response URL.
     sameOriginRedirectTest.bind(
       undefined,
       () => { return new Worker(redirectedWorkerUrl, {type: 'module'}) },
-      redirectedWorkerUrl),
+      workerUrl),
     sameOriginRedirectTest.bind(
       undefined,
       () => { return new SharedWorker(redirectedSharedWorkerUrl) },
