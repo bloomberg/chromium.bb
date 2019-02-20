@@ -108,13 +108,13 @@ class ScopedInterfaceEndpointHandle::State
     if (!pending_association_) {
       runner_->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &ScopedInterfaceEndpointHandle::State::RunAssociationEventHandler,
               this, runner_, ASSOCIATED));
     } else if (!peer_state_) {
       runner_->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &ScopedInterfaceEndpointHandle::State::RunAssociationEventHandler,
               this, runner_, PEER_CLOSED_BEFORE_ASSOCIATION));
     }
@@ -196,10 +196,10 @@ class ScopedInterfaceEndpointHandle::State
           handler = std::move(association_event_handler_);
           runner_ = nullptr;
         } else {
-          runner_->PostTask(FROM_HERE,
-                            base::Bind(&ScopedInterfaceEndpointHandle::State::
-                                           RunAssociationEventHandler,
-                                       this, runner_, ASSOCIATED));
+          runner_->PostTask(
+              FROM_HERE, base::BindOnce(&ScopedInterfaceEndpointHandle::State::
+                                            RunAssociationEventHandler,
+                                        this, runner_, ASSOCIATED));
         }
       }
     }
@@ -234,9 +234,9 @@ class ScopedInterfaceEndpointHandle::State
         } else {
           runner_->PostTask(
               FROM_HERE,
-              base::Bind(&ScopedInterfaceEndpointHandle::State::
-                             RunAssociationEventHandler,
-                         this, runner_, PEER_CLOSED_BEFORE_ASSOCIATION));
+              base::BindOnce(&ScopedInterfaceEndpointHandle::State::
+                                 RunAssociationEventHandler,
+                             this, runner_, PEER_CLOSED_BEFORE_ASSOCIATION));
         }
       }
     }

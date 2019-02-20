@@ -118,8 +118,8 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       weak_watcher_->OnHandleReady(watch_id_, result, state);
     } else {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&SimpleWatcher::OnHandleReady, weak_watcher_,
-                                watch_id_, result, state));
+          FROM_HERE, base::BindOnce(&SimpleWatcher::OnHandleReady,
+                                    weak_watcher_, watch_id_, result, state));
     }
   }
 
@@ -258,8 +258,8 @@ void SimpleWatcher::ArmOrNotify() {
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SimpleWatcher::OnHandleReady, weak_factory_.GetWeakPtr(),
-                 watch_id_, ready_result, ready_state));
+      base::BindOnce(&SimpleWatcher::OnHandleReady, weak_factory_.GetWeakPtr(),
+                     watch_id_, ready_result, ready_state));
 }
 
 void SimpleWatcher::OnHandleReady(int watch_id,

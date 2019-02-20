@@ -151,8 +151,8 @@ class AssociatedInterfaceTest : public testing::Test {
     } else {
       main_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
-                     base::Unretained(this), base::Unretained(run_loop)));
+          base::BindOnce(&AssociatedInterfaceTest::QuitRunLoop,
+                         base::Unretained(this), base::Unretained(run_loop)));
     }
   }
 
@@ -272,8 +272,8 @@ class TestSender {
     ptr_->Send(value);
 
     next_sender_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestSender::Send, base::Unretained(next_sender_), ++value));
+        FROM_HERE, base::BindOnce(&TestSender::Send,
+                                  base::Unretained(next_sender_), ++value));
   }
 
   void TearDown() {
@@ -395,9 +395,10 @@ TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
   TestSender senders[4];
   for (size_t i = 0; i < 4; ++i) {
     senders[i].task_runner()->PostTask(
-        FROM_HERE, base::Bind(&TestSender::SetUp, base::Unretained(&senders[i]),
-                              base::Passed(&ptr_infos[i]), nullptr,
-                              kMaxValue * (i + 1) / 4));
+        FROM_HERE,
+        base::BindOnce(&TestSender::SetUp, base::Unretained(&senders[i]),
+                       std::move(ptr_infos[i]), nullptr,
+                       kMaxValue * (i + 1) / 4));
   }
 
   base::RunLoop run_loop;
@@ -408,18 +409,19 @@ TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
   for (size_t i = 0; i < 2; ++i) {
     receivers[i].task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
-                   base::Passed(&requests[2 * i]),
-                   base::Passed(&requests[2 * i + 1]),
-                   static_cast<size_t>(kMaxValue / 2),
-                   base::Bind(&NotificationCounter::OnGotNotification,
-                              base::Unretained(&counter))));
+        base::BindOnce(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
+                       std::move(requests[2 * i]),
+                       std::move(requests[2 * i + 1]),
+                       static_cast<size_t>(kMaxValue / 2),
+                       base::Bind(&NotificationCounter::OnGotNotification,
+                                  base::Unretained(&counter))));
   }
 
   for (size_t i = 0; i < 4; ++i) {
     senders[i].task_runner()->PostTask(
-        FROM_HERE, base::Bind(&TestSender::Send, base::Unretained(&senders[i]),
-                              kMaxValue * i / 4 + 1));
+        FROM_HERE,
+        base::BindOnce(&TestSender::Send, base::Unretained(&senders[i]),
+                       kMaxValue * i / 4 + 1));
   }
 
   run_loop.Run();
@@ -481,9 +483,9 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
   for (size_t i = 0; i < 4; ++i) {
     senders[i].task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&TestSender::SetUp, base::Unretained(&senders[i]),
-                   base::Passed(&ptr_infos[i]),
-                   base::Unretained(&senders[(i + 1) % 4]), kMaxValue));
+        base::BindOnce(&TestSender::SetUp, base::Unretained(&senders[i]),
+                       std::move(ptr_infos[i]),
+                       base::Unretained(&senders[(i + 1) % 4]), kMaxValue));
   }
 
   base::RunLoop run_loop;
@@ -494,17 +496,17 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
   for (size_t i = 0; i < 2; ++i) {
     receivers[i].task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
-                   base::Passed(&requests[2 * i]),
-                   base::Passed(&requests[2 * i + 1]),
-                   static_cast<size_t>(kMaxValue / 2),
-                   base::Bind(&NotificationCounter::OnGotNotification,
-                              base::Unretained(&counter))));
+        base::BindOnce(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
+                       std::move(requests[2 * i]),
+                       std::move(requests[2 * i + 1]),
+                       static_cast<size_t>(kMaxValue / 2),
+                       base::Bind(&NotificationCounter::OnGotNotification,
+                                  base::Unretained(&counter))));
   }
 
   senders[0].task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&TestSender::Send, base::Unretained(&senders[0]), 1));
+      base::BindOnce(&TestSender::Send, base::Unretained(&senders[0]), 1));
 
   run_loop.Run();
 
@@ -1124,7 +1126,7 @@ TEST_F(AssociatedInterfaceTest,
   };
   other_thread_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(setup, &sender_info_bound_event, &sender_info, context));
+      base::BindOnce(setup, &sender_info_bound_event, &sender_info, context));
   sender_info_bound_event.Wait();
 
   // Create a ThreadSafeAssociatedPtr that binds on the background thread and is

@@ -136,7 +136,7 @@ TEST_F(MessagePipePerfTest, PingPong) {
   client_thread.Start();
   client_thread.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&RunPingPongClient), client_handle));
+      base::BindOnce(base::IgnoreResult(&RunPingPongClient), client_handle));
 
   RunPingPongServer(server_handle);
 }

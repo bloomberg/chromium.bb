@@ -86,7 +86,7 @@ void PingPongTest::RunTest(int iterations, int batch_size, int message_size) {
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PingPongTest::DoPing, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&PingPongTest::DoPing, base::Unretained(this)));
   run_loop.Run();
 }
 
@@ -174,10 +174,10 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {
   base::RunLoop run_loop;
   core::GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&CreateAndRunService, base::Passed(&request),
-                 base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                            message_loop_.task_runner(), FROM_HERE,
-                            run_loop.QuitClosure())));
+      base::BindOnce(&CreateAndRunService, std::move(request),
+                     base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
+                                message_loop_.task_runner(), FROM_HERE,
+                                run_loop.QuitClosure())));
   run_loop.Run();
 }
 

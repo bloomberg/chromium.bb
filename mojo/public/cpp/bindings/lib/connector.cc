@@ -458,7 +458,7 @@ void Connector::WaitToReadMore() {
     // no longer be met, we signal the error asynchronously to avoid reentry.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Connector::OnWatcherHandleReady, weak_self_, rv));
+        base::BindOnce(&Connector::OnWatcherHandleReady, weak_self_, rv));
   } else {
     handle_watcher_->ArmOrNotify();
   }
