@@ -20,7 +20,7 @@ void GuardedPageAllocator::UnmapRegion() {
   CHECK(state_.pages_base_addr);
   int err =
       munmap(reinterpret_cast<void*>(state_.pages_base_addr), RegionSize());
-  DCHECK_EQ(err, 0);
+  DPCHECK(err == 0) << "munmap";
   (void)err;
 }
 
