@@ -72,7 +72,8 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
 }
 
 void TraceEventAgent::StartTracing(const std::string& config,
-                                   base::TimeTicks coordinator_time) {
+                                   base::TimeTicks coordinator_time,
+                                   StartTracingCallback callback) {
   DCHECK(!recorder_);
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
@@ -87,6 +88,7 @@ void TraceEventAgent::StartTracing(const std::string& config,
     enabled_tracing_modes_ |= base::trace_event::TraceLog::FILTERING_MODE;
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       trace_config, enabled_tracing_modes_);
+  std::move(callback).Run(true);
 }
 
 void TraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {

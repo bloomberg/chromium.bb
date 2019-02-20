@@ -37,10 +37,17 @@ namespace {
 const char kMetadataTraceLabel[] = "metadata";
 
 const char kRequestBufferUsageClosureName[] = "RequestBufferUsageClosure";
+const char kStartTracingClosureName[] = "StartTracingClosure";
+const int32_t kBeginTracingTimeoutInSeconds = 10;
 
 }  // namespace
 
 namespace tracing {
+
+// static
+const void* Coordinator::GetStartTracingClosureName() {
+  return &kStartTracingClosureName;
+}
 
 class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
  public:
@@ -269,9 +276,9 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
 
 Coordinator::Coordinator(AgentRegistry* agent_registry,
                          const base::RepeatingClosure& on_disconnect_callback)
-    : on_disconnect_callback_(std::move(on_disconnect_callback)),
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      on_disconnect_callback_(std::move(on_disconnect_callback)),
       binding_(this),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       // USER_VISIBLE because the task posted from StopAndFlushInternal() is
       // required to stop tracing from the UI.
       // TODO(fdoray): Once we have support for dynamic priorities
@@ -294,10 +301,14 @@ bool Coordinator::IsConnected() {
 }
 
 void Coordinator::Reset() {
+  start_tracing_callback_timer_.Stop();
+
   if (!stop_and_flush_callback_.is_null()) {
     base::ResetAndReturn(&stop_and_flush_callback_)
         .Run(base::Value(base::Value::Type::DICTIONARY));
   }
+  if (!start_tracing_callback_.is_null())
+    base::ResetAndReturn(&start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
     base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
 
@@ -326,8 +337,11 @@ void Coordinator::BindCoordinatorRequest(
       &Coordinator::OnClientConnectionError, base::Unretained(this)));
 }
 
-void Coordinator::StartTracing(const std::string& config) {
-  if ((is_tracing_ && config == config_)) {
+void Coordinator::StartTracing(const std::string& config,
+                               StartTracingCallback callback) {
+  bool is_initializing = !start_tracing_callback_.is_null();
+  if (is_initializing || (is_tracing_ && config == config_)) {
+    std::move(callback).Run(config == config_);
     return;
   }
 
@@ -338,13 +352,113 @@ void Coordinator::StartTracing(const std::string& config) {
       base::BindRepeating(&Coordinator::SendStartTracingToAgent,
                           weak_ptr_factory_.GetWeakPtr()),
       false /* call_on_new_agents_only */);
+
+  SetStartTracingCallback(std::move(callback));
+}
+
+void Coordinator::SetStartTracingCallback(StartTracingCallback callback) {
+  start_tracing_callback_ = std::move(callback);
+  CallStartTracingCallbackIfNeeded();
+
+  if (!start_tracing_callback_)
+    return;
+
+  // We can't know for sure whether all processses we request
+  // to connect to the tracing service will connect back, or
+  // if all the connected services will ACK our BeginTracing
+  // request eventually, so we'll add a timeout for that case.
+  start_tracing_callback_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kBeginTracingTimeoutInSeconds),
+      this, &Coordinator::OnBeginTracingTimeout);
+}
+
+void Coordinator::OnBeginTracingTimeout() {
+  if (start_tracing_callback_)
+    std::move(start_tracing_callback_).Run(true);
+}
+
+void Coordinator::CallStartTracingCallbackIfNeeded() {
+  // We still have processes we've asked to begin tracing and
+  // need ACKs from.
+  if (agent_registry_->HasDisconnectClosure(&kStartTracingClosureName))
+    return;
+
+  // We're still waiting for the list of PIDs of the currently
+  // running services.
+  if (pending_currently_running_pids_)
+    return;
+
+  // We're still waiting for processes to connect to the
+  // service.
+  for (auto& pid : pending_connected_pids_) {
+    if (parsed_config_.process_filter_config().IsEnabled(pid))
+      return;
+  }
+
+  if (start_tracing_callback_)
+    std::move(start_tracing_callback_).Run(true);
+
+  start_tracing_callback_timer_.Stop();
+}
+
+void Coordinator::AddExpectedPID(base::ProcessId pid) {
+  if (!pid)
+    return;
+
+  bool pid_is_connected = false;
+  agent_registry_->ForAllAgents(
+      [&pid_is_connected, pid](AgentRegistry::AgentEntry* agent_entry) {
+        if (pid == agent_entry->pid())
+          pid_is_connected = true;
+      });
+
+  if (!pid_is_connected)
+    pending_connected_pids_.insert(pid);
+}
+
+void Coordinator::RemoveExpectedPID(base::ProcessId pid) {
+  pending_connected_pids_.erase(pid);
+  CallStartTracingCallbackIfNeeded();
+}
+
+void Coordinator::FinishedReceivingRunningPIDs() {
+  pending_currently_running_pids_ = false;
+  CallStartTracingCallbackIfNeeded();
+}
+
+void Coordinator::ClearConnectedPIDs() {
+  if (!pending_connected_pids_.empty()) {
+    pending_connected_pids_.clear();
+    CallStartTracingCallbackIfNeeded();
+  }
 }
 
 void Coordinator::SendStartTracingToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
+  if (agent_entry->HasDisconnectClosure(&kStartTracingClosureName))
+    return;
   if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
     return;
-  agent_entry->agent()->StartTracing(config_, TRACE_TIME_TICKS_NOW());
+  agent_entry->AddDisconnectClosure(
+      &kStartTracingClosureName,
+      base::BindOnce(&Coordinator::OnTracingStarted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Unretained(agent_entry), false));
+  RemoveExpectedPID(agent_entry->pid());
+
+  agent_entry->agent()->StartTracing(
+      config_, TRACE_TIME_TICKS_NOW(),
+      base::BindRepeating(&Coordinator::OnTracingStarted,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          base::Unretained(agent_entry)));
+}
+
+void Coordinator::OnTracingStarted(AgentRegistry::AgentEntry* agent_entry,
+                                   bool success) {
+  bool removed =
+      agent_entry->RemoveDisconnectClosure(&kStartTracingClosureName);
+  DCHECK(removed);
+  CallStartTracingCallbackIfNeeded();
 }
 
 void Coordinator::StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
@@ -363,6 +477,12 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
   DCHECK(!trace_streamer_);
   DCHECK(stream.is_valid());
   is_tracing_ = false;
+  // If we get a Stop call and this is non-empty, it means we either
+  // hit a timeout waiting for processes to connect, or the trace
+  // client sent a stop without waiting for the BeginTracing callback
+  // to happen. In either case, we don't want/need to wait for additional
+  // processes to connect anymore.
+  ClearConnectedPIDs();
 
   trace_streamer_.reset(new Coordinator::TraceStreamer(
       std::move(stream), agent_label, task_runner_,
@@ -372,6 +492,18 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
 }
 
 void Coordinator::StopAndFlushInternal() {
+  if (start_tracing_callback_) {
+    // We received a |StopAndFlush| command before receiving |StartTracing| acks
+    // from all agents. Let's retry after a delay.
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::BindRepeating(&Coordinator::StopAndFlushInternal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(
+            mojom::kStopTracingRetryTimeMilliseconds));
+    return;
+  }
+
   size_t num_initialized_agents =
       agent_registry_->SetAgentInitializationCallback(
           base::BindRepeating(&Coordinator::SendStopTracingToAgent,

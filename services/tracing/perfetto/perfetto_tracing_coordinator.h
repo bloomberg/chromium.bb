@@ -37,7 +37,8 @@ class PerfettoTracingCoordinator : public Coordinator {
 
   // mojom::Coordinator implementation.
   // Called by the tracing controller.
-  void StartTracing(const std::string& config) override;
+  void StartTracing(const std::string& config,
+                    StartTracingCallback callback) override;
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
                     StopAndFlushCallback callback) override;
   void StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
@@ -49,6 +50,9 @@ class PerfettoTracingCoordinator : public Coordinator {
  private:
   void OnTracingOverCallback();
   void OnClientConnectionError() override;
+  void OnNewAgentConnected(AgentRegistry::AgentEntry* agent_entry);
+  void StopAndFlushInternal(mojo::ScopedDataPipeProducerHandle stream,
+                            StopAndFlushCallback callback);
 
   mojo::Binding<mojom::Coordinator> binding_;
 

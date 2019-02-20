@@ -143,22 +143,16 @@ TracingController* TracingController::GetInstance() {
 }
 
 TracingControllerImpl::TracingControllerImpl()
-    : delegate_(GetContentClient()->browser()->GetTracingDelegate()),
-      weak_ptr_factory_(this) {
+    : delegate_(GetContentClient()->browser()->GetTracingDelegate()) {
   DCHECK(!g_tracing_controller);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Deliberately leaked, like this class.
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
   AddAgents();
-  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
-      weak_ptr_factory_.GetWeakPtr());
   g_tracing_controller = this;
 }
 
-TracingControllerImpl::~TracingControllerImpl() {
-  base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
-      this);
-}
+TracingControllerImpl::~TracingControllerImpl() = default;
 
 void TracingControllerImpl::AddAgents() {
   tracing::TracedProcessImpl::GetInstance()->SetTaskRunner(
@@ -364,31 +358,19 @@ bool TracingControllerImpl::StartTracing(
   trace_config_ =
       std::make_unique<base::trace_event::TraceConfig>(trace_config);
 
-  start_tracing_done_ = std::move(callback);
   ConnectToServiceIfNeeded();
-  coordinator_->StartTracing(trace_config.ToString());
-
-  if (start_tracing_done_ &&
-      (base::trace_event::TraceLog::GetInstance()->IsEnabled() ||
-       !trace_config.process_filter_config().IsEnabled(
-           base::Process::Current().Pid()))) {
-    // If we're already tracing, or if the current process is excluded from the
-    // process filter, we'll never receive a callback from the TraceLog, so then
-    // we just run the callback right away.
-    std::move(start_tracing_done_).Run();
-  }
-
+  coordinator_->StartTracing(
+      trace_config.ToString(),
+      base::BindOnce(
+          [](StartTracingDoneCallback callback, bool success) {
+            if (!callback.is_null())
+              std::move(callback).Run();
+          },
+          std::move(callback)));
   // TODO(chiniforooshan): The actual success value should be sent by the
   // callback asynchronously.
   return true;
 }
-
-void TracingControllerImpl::OnTraceLogEnabled() {
-  if (start_tracing_done_)
-    std::move(start_tracing_done_).Run();
-}
-
-void TracingControllerImpl::OnTraceLogDisabled() {}
 
 bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint) {
