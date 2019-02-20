@@ -251,8 +251,12 @@ void AssistantUiController::OnUrlOpened(const GURL& url, bool from_server) {
   // navigation was initiated by a server response. Otherwise the navigation
   // was user initiated so we only hide the UI to retain session state. That way
   // the user can choose to resume their session if they are so inclined.
+  // However, we close the UI if it is in the |kLauncherEmbeddedUi| mode, where
+  // we only maintain |kVisible| and |kClosed| two states.
   if (from_server)
     CloseUi(AssistantExitPoint::kNewBrowserTabFromServer);
+  else if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
+    CloseUi(AssistantExitPoint::kNewBrowserTabFromUser);
   else
     HideUi(AssistantExitPoint::kNewBrowserTabFromUser);
 }
