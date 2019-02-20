@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/lookalike_url_navigation_observer.h"
+#include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(LookalikeUrlNavigationObserverTest, IsEditDistanceAtMostOne) {
+TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
   const struct TestCase {
     const wchar_t* domain;
     const wchar_t* top_domain;
@@ -59,7 +59,7 @@ TEST(LookalikeUrlNavigationObserverTest, IsEditDistanceAtMostOne) {
       {L"google.com", L"goooglé.com", false},
   };
   for (const TestCase& test_case : kTestCases) {
-    bool result = LookalikeUrlNavigationObserver::IsEditDistanceAtMostOne(
+    bool result = LookalikeUrlNavigationThrottle::IsEditDistanceAtMostOne(
         base::WideToUTF16(test_case.domain),
         base::WideToUTF16(test_case.top_domain));
     EXPECT_EQ(test_case.expected, result);

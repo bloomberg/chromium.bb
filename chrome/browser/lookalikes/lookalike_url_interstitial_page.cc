@@ -9,11 +9,20 @@
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/common_string_util.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using security_interstitials::MetricsHelper;
+
+// static
+const content::InterstitialPageDelegate::TypeID
+    LookalikeUrlInterstitialPage::kTypeForTesting =
+        &LookalikeUrlInterstitialPage::kTypeForTesting;
 
 LookalikeUrlInterstitialPage::LookalikeUrlInterstitialPage(
     content::WebContents* web_contents,
@@ -24,9 +33,18 @@ LookalikeUrlInterstitialPage::LookalikeUrlInterstitialPage(
     : security_interstitials::SecurityInterstitialPage(
           web_contents,
           request_url,
-          std::move(controller_client)) {}
+          std::move(controller_client)) {
+  controller()->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
+  controller()->metrics_helper()->RecordUserInteraction(
+      MetricsHelper::TOTAL_VISITS);
+}
 
 LookalikeUrlInterstitialPage::~LookalikeUrlInterstitialPage() {}
+
+content::InterstitialPageDelegate::TypeID
+LookalikeUrlInterstitialPage::GetTypeForTesting() const {
+  return LookalikeUrlInterstitialPage::kTypeForTesting;
+}
 
 bool LookalikeUrlInterstitialPage::ShouldCreateNewNavigation() const {
   return true;
@@ -69,9 +87,13 @@ void LookalikeUrlInterstitialPage::CommandReceived(const std::string& command) {
 
   switch (cmd) {
     case security_interstitials::CMD_DONT_PROCEED:
+      controller()->metrics_helper()->RecordUserDecision(
+          MetricsHelper::DONT_PROCEED);
       controller()->GoBack();
       break;
     case security_interstitials::CMD_PROCEED:
+      controller()->metrics_helper()->RecordUserDecision(
+          MetricsHelper::PROCEED);
       controller()->Proceed();
       break;
     case security_interstitials::CMD_DO_REPORT:

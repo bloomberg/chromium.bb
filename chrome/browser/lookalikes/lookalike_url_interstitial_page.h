@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 
 class GURL;
 
@@ -21,7 +22,7 @@ class LookalikeUrlInterstitialPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
-  static const InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
   LookalikeUrlInterstitialPage(
       content::WebContents* web_contents,
@@ -31,6 +32,9 @@ class LookalikeUrlInterstitialPage
           controller);
 
   ~LookalikeUrlInterstitialPage() override;
+
+  // InterstitialPageDelegate method:
+  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
  protected:
   // InterstitialPageDelegate implementation:
@@ -44,6 +48,8 @@ class LookalikeUrlInterstitialPage
   int GetHTMLTemplateId() override;
 
  private:
+  friend class LookalikeUrlNavigationThrottleBrowserTest;
+
   // Values added to get our shared interstitial HTML to play nice.
   void PopulateStringsForSharedHTML(base::DictionaryValue* load_time_data);
 

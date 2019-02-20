@@ -60,6 +60,7 @@
 #include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
@@ -4203,6 +4204,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (password_protection_navigation_throttle) {
     throttles.push_back(std::move(password_protection_navigation_throttle));
   }
+#endif
+
+#if !defined(OS_ANDROID)
+  std::unique_ptr<content::NavigationThrottle>
+      lookalike_url_navigation_throttle =
+          LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle);
+  if (lookalike_url_navigation_throttle)
+    throttles.push_back(std::move(lookalike_url_navigation_throttle));
 #endif
 
   std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =

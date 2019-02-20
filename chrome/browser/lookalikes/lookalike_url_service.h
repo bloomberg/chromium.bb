@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_
 #define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_
 
+#include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -30,19 +31,22 @@ class LookalikeUrlService : public KeyedService {
   explicit LookalikeUrlService(Profile* profile);
   ~LookalikeUrlService() override;
 
-  using EngagedSitesCallback =
-      base::OnceCallback<void(const std::vector<GURL>&)>;
+  using EngagedSitesCallback = base::OnceCallback<void(const std::set<GURL>&)>;
 
   static LookalikeUrlService* Get(Profile* profile);
 
-  // Triggers an update to engaged site list and passes the most recent result
-  // |callback|. The list is updated only after a certain amount of time passes
-  // after the last update. As a result, calling this method may or may not
-  // change the contents of engaged_sites, depending on the timing.
-  void GetEngagedSites(EngagedSitesCallback callback);
+  // Checks whether the engaged site list is recently updated, and triggers
+  // an update to the list if not. This method will not update the contents of
+  // engaged_sites nor call |callback| if an update is not required.  The method
+  // returns whether or not an update was triggered (and thus whether the
+  // callback will be called).
+  bool UpdateEngagedSites(EngagedSitesCallback callback);
+
+  // Returns the _current_ list of engaged sites, without updating them if
+  // they're out of date.
+  const std::set<GURL> GetLatestEngagedSites() const;
 
   void SetClockForTesting(base::Clock* clock);
-  void ClearEngagedSitesForTesting();
 
  private:
   void OnFetchEngagedSites(EngagedSitesCallback callback,
@@ -51,7 +55,7 @@ class LookalikeUrlService : public KeyedService {
   Profile* profile_;
   base::Clock* clock_;
   base::Time last_engagement_fetch_time_;
-  std::vector<GURL> engaged_sites_;
+  std::set<GURL> engaged_sites_;
   base::WeakPtrFactory<LookalikeUrlService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);

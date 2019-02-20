@@ -19,9 +19,11 @@ class WebContents;
 class LookalikeUrlControllerClient
     : public security_interstitials::SecurityInterstitialControllerClient {
  public:
+  static std::unique_ptr<security_interstitials::MetricsHelper>
+  GetMetricsHelper(const GURL& url);
+
   LookalikeUrlControllerClient(
       content::WebContents* web_contents,
-      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper,
       const GURL& request_url,
       const GURL& safe_url);
 

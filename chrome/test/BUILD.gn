@@ -690,7 +690,7 @@ test("browser_tests") {
       "../browser/loader/cors_origin_access_list_browsertest.cc",
       "../browser/loadtimes_extension_bindings_browsertest.cc",
       "../browser/locale_tests_browsertest.cc",
-      "../browser/lookalikes/lookalike_url_navigation_observer_browsertest.cc",
+      "../browser/lookalikes/lookalike_url_navigation_throttle_browsertest.cc",
       "../browser/media/autoplay_metrics_browsertest.cc",
       "../browser/media/cast_mirroring_service_host_browsertest.cc",
       "../browser/media/defer_background_media_browsertest.cc",
@@ -3242,7 +3242,7 @@ test("unit_tests") {
       "../browser/importer/firefox_profile_lock_unittest.cc",
       "../browser/importer/profile_writer_unittest.cc",
       "../browser/lifetime/application_lifetime_unittest.cc",
-      "../browser/lookalikes/lookalike_url_navigation_observer_unittest.cc",
+      "../browser/lookalikes/lookalike_url_navigation_throttle_unittest.cc",
 
       # Media remoting is not supported on Android for now.
       "../browser/media/cast_remoting_connector_unittest.cc",

@@ -261,8 +261,8 @@ LookalikeUrlInterstitialPage* CreateLookalikeInterstitialPage(
 
   return new LookalikeUrlInterstitialPage(
       web_contents, safe_url,
-      std::make_unique<LookalikeUrlControllerClient>(web_contents, nullptr,
-                                                     request_url, safe_url));
+      std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
+                                                     safe_url));
 }
 
 safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(

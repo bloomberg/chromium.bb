@@ -16,14 +16,23 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 
+// static
+std::unique_ptr<security_interstitials::MetricsHelper>
+LookalikeUrlControllerClient::GetMetricsHelper(const GURL& url) {
+  security_interstitials::MetricsHelper::ReportDetails settings;
+  settings.metric_prefix = "lookalike";
+
+  return std::make_unique<security_interstitials::MetricsHelper>(url, settings,
+                                                                 nullptr);
+}
+
 LookalikeUrlControllerClient::LookalikeUrlControllerClient(
     content::WebContents* web_contents,
-    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper,
     const GURL& request_url,
     const GURL& safe_url)
     : SecurityInterstitialControllerClient(
           web_contents,
-          std::move(metrics_helper),
+          GetMetricsHelper(request_url),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->GetPrefs(),
           g_browser_process->GetApplicationLocale(),
