@@ -419,10 +419,10 @@ config("default_crt") {
   }
 }
 
-# Use this to force the debug CRT for when building perf-critical build tools
-# that need to be fully optimized even in debug builds, for those times when the
-# debug CRT is part of the bottleneck. This also avoids *implicitly* defining
-# _DEBUG.
+# Use this to force use of the release CRT when building perf-critical build
+# tools that need to be fully optimized even in debug builds, for those times
+# when the debug CRT is part of the bottleneck. This also avoids *implicitly*
+# defining _DEBUG.
 config("release_crt") {
   if (is_component_build) {
     cflags = [ "/MD" ]
