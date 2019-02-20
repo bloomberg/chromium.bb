@@ -625,16 +625,19 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
 
   AutofillProfile* profile = GetProfileByGUID(data_model.guid());
   if (profile) {
-    if (profile->record_type() == AutofillProfile::LOCAL_PROFILE) {
-      profile->RecordAndLogUse();
-      UpdateProfileInDB(*profile, /*enforced=*/true);
-    } else if (profile->record_type() == AutofillProfile::SERVER_PROFILE) {
-      profile->RecordAndLogUse();
-      // TODO(crbug.com/864519): Update this once addresses support account
-      // storage, and also use the server database.
-      database_helper_->GetLocalDatabase()->UpdateServerAddressMetadata(
-          *profile);
-      Refresh();
+    profile->RecordAndLogUse();
+
+    switch (profile->record_type()) {
+      case AutofillProfile::LOCAL_PROFILE:
+        UpdateProfileInDB(*profile, /*enforced=*/true);
+        break;
+      case AutofillProfile::SERVER_PROFILE:
+        DCHECK(database_helper_->GetServerDatabase())
+            << "Recording use of server address without server storage.";
+        database_helper_->GetServerDatabase()->UpdateServerAddressMetadata(
+            *profile);
+        Refresh();
+        break;
     }
   }
 }
