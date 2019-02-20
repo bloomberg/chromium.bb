@@ -279,6 +279,25 @@ cr.define('test_util', function() {
     });
   }
 
+  /**
+   * Similar to waitForRender(), but resolves after setTimeout() for Polymer 1.
+   * TODO (rbpotter): Delete this function when the Polymer 2 migration is
+   * complete, and update callers to use waitForRender().
+   * @param {!Element} element
+   * @return {!Promise}
+   */
+  function waitForRenderOrTimeout0(element) {
+    return new Promise(resolve => {
+      if (Polymer.DomIf) {
+        Polymer.RenderStatus.beforeNextRender(element, resolve);
+      } else {
+        setTimeout(() => {
+          resolve();
+        });
+      }
+    });
+  }
+
   return {
     createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
     createDefaultContentSetting: createDefaultContentSetting,
@@ -292,6 +311,7 @@ cr.define('test_util', function() {
     getContentSettingsTypeFromChooserType:
         getContentSettingsTypeFromChooserType,
     waitForRender: waitForRender,
+    waitForRenderOrTimeout0: waitForRenderOrTimeout0,
     whenAttributeIs: whenAttributeIs,
   };
 
