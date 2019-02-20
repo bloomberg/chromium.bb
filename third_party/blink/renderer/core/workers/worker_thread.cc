@@ -447,6 +447,9 @@ void WorkerThread::InitializeOnWorkerThread(
     }
     GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 
+    // TODO(crbug.com/866666): Ideally this URL should be the response URL of
+    // the worker top-level script, while currently can be the request URL
+    // for off-the-main-thread top-level script fetch cases.
     const KURL url_for_debugger = global_scope_creation_params->script_url;
 
     console_message_storage_ = MakeGarbageCollected<ConsoleMessageStorage>();
@@ -455,7 +458,8 @@ void WorkerThread::InitializeOnWorkerThread(
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
 
     worker_inspector_controller_ = WorkerInspectorController::Create(
-        this, inspector_task_runner_, std::move(devtools_params));
+        this, url_for_debugger, inspector_task_runner_,
+        std::move(devtools_params));
 
     // Since context initialization below may fail, we should notify debugger
     // about the new worker thread separately, so that it can resolve it by id
