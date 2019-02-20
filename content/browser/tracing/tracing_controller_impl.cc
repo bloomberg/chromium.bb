@@ -55,7 +55,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/debug/elf_reader_linux.h"
+#include "base/debug/elf_reader.h"
 
 // Symbol with virtual address of the start of ELF header of the current binary.
 extern char __ehdr_start;
@@ -215,10 +215,10 @@ TracingControllerImpl::GenerateMetadataDict() const {
   // obtained from process maps since library can be mapped from apk directly.
   // This is not added as part of memory-infra os dumps since it is special case
   // only for chrome library.
-  base::Optional<std::string> soname =
+  base::Optional<base::StringPiece> soname =
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
-    metadata_dict->SetString("chrome-library-name", soname.value());
+    metadata_dict->SetString("chrome-library-name", *soname);
 #endif  // defined(OS_ANDROID)
   metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
 

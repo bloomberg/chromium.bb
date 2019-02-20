@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/debug/elf_reader_linux.h"
+#include "base/debug/elf_reader.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
@@ -69,11 +69,12 @@ ModuleData GetMainModuleData() {
   ModuleData module_data;
   Dl_info dl_info;
   if (dladdr(&__ehdr_start, &dl_info)) {
-    base::Optional<std::string> build_id =
-        base::debug::ReadElfBuildId(&__ehdr_start);
-    if (build_id) {
+    base::debug::ElfBuildIdBuffer build_id;
+    size_t build_id_length =
+        base::debug::ReadElfBuildId(&__ehdr_start, true, build_id);
+    if (build_id_length) {
       module_data.path = dl_info.dli_fname;
-      module_data.build_id = *build_id;
+      module_data.build_id = std::string(build_id, build_id_length);
     }
   }
   return module_data;
