@@ -289,4 +289,23 @@ TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
                                   reference_glyphs.size()));
 }
 
+TEST_F(ShapeResultViewTest, TrimEndOfView) {
+  String string = To16Bit("12345678901234567890", 20);
+  TextDirection direction = TextDirection::kLtr;
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Create a view from 5 to 20.
+  scoped_refptr<const ShapeResultView> view1 =
+      ShapeResultView::Create(result.get(), 5, 20);
+  EXPECT_EQ(view1->NumCharacters(), 15u);
+  EXPECT_EQ(view1->NumGlyphs(), 15u);
+
+  // Trim the last character from the view.
+  scoped_refptr<const ShapeResultView> view2 =
+      ShapeResultView::Create(view1.get(), 5, 19);
+  EXPECT_EQ(view2->NumCharacters(), 14u);
+  EXPECT_EQ(view2->NumGlyphs(), 14u);
+}
+
 }  // namespace blink

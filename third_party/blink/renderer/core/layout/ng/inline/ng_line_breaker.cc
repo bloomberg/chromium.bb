@@ -730,16 +730,15 @@ scoped_refptr<ShapeResultView> NGLineBreaker::TruncateLineEndResult(
     unsigned end_offset) {
   DCHECK(item_result.item);
   const NGInlineItem& item = *item_result.item;
-  const ShapeResult* source_result = item.TextShapeResult();
-  DCHECK(source_result);
 
   // Check given offsets require to truncate |item_result.shape_result|.
   const unsigned start_offset = item_result.start_offset;
-  DCHECK(item_result.shape_result);
-  DCHECK_GE(start_offset, item_result.shape_result->StartIndex());
-  DCHECK_LE(end_offset, item_result.shape_result->EndIndex());
-  DCHECK(start_offset > item_result.shape_result->StartIndex() ||
-         end_offset < item_result.shape_result->EndIndex());
+  const ShapeResultView* source_result = item_result.shape_result.get();
+  DCHECK(source_result);
+  DCHECK_GE(start_offset, source_result->StartIndex());
+  DCHECK_LE(end_offset, source_result->EndIndex());
+  DCHECK(start_offset > source_result->StartIndex() ||
+         end_offset < source_result->EndIndex());
 
   if (!NeedsAccurateEndPosition(*line_info_, item)) {
     return ShapeResultView::Create(source_result, start_offset, end_offset);

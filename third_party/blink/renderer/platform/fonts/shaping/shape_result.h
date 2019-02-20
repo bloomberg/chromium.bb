@@ -438,6 +438,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   float LineLeftBounds() const;
   float LineRightBounds() const;
 
+  // Common signatures with ShapeResultView, to templatize algorithms.
+  const Vector<scoped_refptr<RunInfo>>& RunsOrParts() const { return runs_; }
+  unsigned StartIndexOffsetForRun() const { return 0; }
+
   float width_;
   FloatRect glyph_bounding_box_;
   Vector<scoped_refptr<RunInfo>> runs_;
