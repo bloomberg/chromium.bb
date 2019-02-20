@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class XRViewerPose;
 class XRInputPose;
 class XRInputSource;
@@ -28,16 +29,21 @@ class XRFrame final : public ScriptWrappable {
 
   XRSession* session() const { return session_; }
 
-  XRViewerPose* getViewerPose(XRReferenceSpace*) const;
-  XRInputPose* getInputPose(XRInputSource*, XRReferenceSpace*) const;
+  XRViewerPose* getViewerPose(XRReferenceSpace*, ExceptionState&) const;
+  XRInputPose* getInputPose(XRInputSource*,
+                            XRReferenceSpace*,
+                            ExceptionState&) const;
 
   void SetBasePoseMatrix(const TransformationMatrix&);
 
   void Trace(blink::Visitor*) override;
 
+  void Deactivate();
+
  private:
   const Member<XRSession> session_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
+  bool active_ = true;
 };
 
 }  // namespace blink
