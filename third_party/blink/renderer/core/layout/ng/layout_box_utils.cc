@@ -174,4 +174,9 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
                                   static_location);
 }
 
+bool LayoutBoxUtils::SkipContainingBlockForPercentHeightCalculation(
+    const LayoutBlock* cb) {
+  return LayoutBox::SkipContainingBlockForPercentHeightCalculation(cb);
+}
+
 }  // namespace blink

@@ -232,9 +232,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_last_resort_break_ = false;
 
   bool is_pushed_by_floats_ = false;
+  bool is_old_layout_root_ = false;
 
   bool has_orthogonal_flow_roots_ = false;
-  bool has_depends_on_percentage_block_size_child_ = false;
+  bool has_child_that_depends_on_percentage_block_size_ = false;
   bool has_block_fragmentation_ = false;
 };
 

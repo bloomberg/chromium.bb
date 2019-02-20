@@ -30,6 +30,9 @@ class LayoutBoxUtils {
   // |container_builder| is needed as not all information from current NG
   // layout is copied to the layout-tree yet.
   static NGStaticPosition ComputeStaticPositionFromLegacy(const LayoutBox& box);
+
+  static bool SkipContainingBlockForPercentHeightCalculation(
+      const LayoutBlock* cb);
 };
 
 }  // namespace blink

@@ -90,7 +90,7 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
   NGLayoutInputNode node = builder.node_;
 
   if (!node || node.IsInline())
-    return builder.has_depends_on_percentage_block_size_child_;
+    return builder.has_child_that_depends_on_percentage_block_size_;
 
   // NOTE: If an element is OOF positioned, and has top/bottom constraints
   // which are percentage based, this function will return false.
@@ -103,18 +103,18 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
   // element if it has a percentage block-size however, but this will return
   // the correct result from below.
 
-  const ComputedStyle& style = builder.Style();
-  if (style.LogicalHeight().IsAuto() &&
-      builder.has_depends_on_percentage_block_size_child_) {
+  if ((builder.has_child_that_depends_on_percentage_block_size_ ||
+       builder.is_old_layout_root_) &&
+      node.UseParentPercentageResolutionBlockSizeForChildren()) {
     // Quirks mode has different %-block-size behaviour, than standards mode.
     // An arbitrary descendant may depend on the percentage resolution
     // block-size given.
     // If this is also an anonymous block we need to mark ourselves dependent
     // if we have a dependent child.
-    if (node.IsAnonymousBlock() || node.GetDocument().InQuirksMode())
-      return true;
+    return true;
   }
 
+  const ComputedStyle& style = builder.Style();
   if (style.LogicalHeight().IsPercentOrCalc() ||
       style.LogicalMinHeight().IsPercentOrCalc() ||
       style.LogicalMaxHeight().IsPercentOrCalc())

@@ -60,8 +60,12 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (child.HasOrthogonalFlowRoots())
     has_orthogonal_flow_roots_ = true;
 
-  if (child.DependsOnPercentageBlockSize())
-    has_depends_on_percentage_block_size_child_ = true;
+  // We only need to report if inflow or floating elements depend on the
+  // percentage resolution block-size. OOF-positioned children resolve their
+  // percentages against the "final" size of their parent.
+  if (child.DependsOnPercentageBlockSize() &&
+      !child.PhysicalFragment()->IsOutOfFlowPositioned())
+    has_child_that_depends_on_percentage_block_size_ = true;
 
   return AddChild(child.PhysicalFragment(), child_offset);
 }
@@ -94,10 +98,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
                              Style().GetWritingMode()))
     has_orthogonal_flow_roots_ = true;
-
-  // We mark all legacy layout nodes as dependent on percentage block-size.
-  if (child->IsOldLayoutRoot())
-    has_depends_on_percentage_block_size_child_ = true;
 
   children_.emplace_back(std::move(child));
   offsets_.push_back(child_offset);

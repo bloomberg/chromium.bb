@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -96,9 +97,6 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsBody() const { return IsBlock() && box_->IsBody(); }
   bool IsDocumentElement() const { return box_->IsDocumentElement(); }
   bool IsFlexItem() const { return IsBlock() && box_->IsFlexItemIncludingNG(); }
-  bool IsFlexBox() const {
-    return IsBlock() && box_->IsFlexibleBoxIncludingNG();
-  }
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
@@ -141,6 +139,17 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool CreatesNewFormattingContext() const {
     return IsBlock() && box_->AvoidsFloats();
+  }
+
+  // Returns true if this node should pass its percentage resolution block-size
+  // to its children. Typically only quirks-mode, auto block-size, block nodes.
+  bool UseParentPercentageResolutionBlockSizeForChildren() const {
+    if (IsBlock() && box_->IsLayoutBlock()) {
+      return LayoutBoxUtils::SkipContainingBlockForPercentHeightCalculation(
+          ToLayoutBlock(box_));
+    }
+
+    return false;
   }
 
   // Performs layout on this input node, will return the layout result.

@@ -190,6 +190,102 @@ TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
+TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Quirks mode triggers the interesting parent-child %-resolution behaviour.
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="display: flow-root; width: 100px; height: 100px;">
+      <div id="box1"></div>
+      <div id="box2">
+        <div style="height: 20px;"></div>
+        <div style="height: 20px;"></div>
+      </div>
+      <div id="box3">
+        <div style="height: 20px;"></div>
+        <div style="height: 50%;"></div>
+      </div>
+      <div id="box4">
+        <div style="height: 20px;"></div>
+        <div style="display: flex;"></div>
+      </div>
+      <div id="box5">
+        <div style="height: 20px;"></div>
+        <div style="display: flex; height: 50%;"></div>
+      </div>
+      <div id="box6">
+        <div style="height: 20px;"></div>
+        <div style="display: table;"></div>
+      </div>
+      <div id="box7" style="position: relative;">
+        <div style="position: absolute; width: 10px; height: 100%;"></div>
+      </div>
+      <div id="box8">
+        <img />
+      </div>
+      <div id="box9">
+        <img style="height: 100%;" />
+      </div>
+    </div>
+  )HTML");
+
+  NGConstraintSpace space100 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
+  NGConstraintSpace space200 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(200)));
+
+  auto run_test = [&](auto id) -> scoped_refptr<NGLayoutResult> {
+    // Grab the box under test.
+    LayoutBlockFlow* box = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+
+    // Check that we have a cache hit with space100.
+    scoped_refptr<NGLayoutResult> result =
+        box->CachedLayoutResult(space100, nullptr);
+    EXPECT_NE(result.get(), nullptr);
+
+    // Return the result of the cache with space200.
+    return box->CachedLayoutResult(space200, nullptr);
+  };
+
+  // Test 1: No descendants.
+  EXPECT_NE(run_test("box1"), nullptr);
+
+  // Test 2: No %-height descendants.
+  EXPECT_NE(run_test("box2"), nullptr);
+
+  // Test 3: A %-height descendant.
+  EXPECT_EQ(run_test("box3"), nullptr);
+
+  // Test 4: A flexbox (legacy descendant), which doesn't use the quirks mode
+  // behaviour.
+  EXPECT_NE(run_test("box4"), nullptr);
+
+  // Test 5: A flexbox (legacy descendant), which doesn't use the quirks mode
+  // behaviour, but is %-sized.
+  EXPECT_EQ(run_test("box5"), nullptr);
+
+  // Test 6: A table (legacy descendant), which does use the quirks mode
+  // behaviour.
+  // NOTE: This test may fail when tables are converted to LayoutNG.
+  EXPECT_EQ(run_test("box6"), nullptr);
+
+  // Test 7: An OOF positioned descentant which has a %-height, should not
+  // count as a percentage descendant.
+  EXPECT_NE(run_test("box7"), nullptr);
+
+  // Test 8: A replaced element (legacy descendant), shouldn't use the quirks
+  // mode behaviour.
+  EXPECT_NE(run_test("box8"), nullptr);
+
+  // Test 9: A replaced element (legacy descendant), shouldn't use the quirks
+  // mode behaviour, but is %-sized.
+  EXPECT_EQ(run_test("box9"), nullptr);
+}
+
 // Verifies that two children are laid out with the correct size and position.
 TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   SetBodyInnerHTML(R"HTML(

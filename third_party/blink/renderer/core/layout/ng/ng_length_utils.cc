@@ -1200,13 +1200,9 @@ NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
   // In quirks mode the percentage resolution height is passed from parent to
   // child.
   // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
-  // TODO(layout-dev): grid, and css-layout-api containers need to also bypass
-  // this quirk.
   if (child_percentage_size.block_size == NGSizeIndefinite &&
-      node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
-      !node.Style().HasOutOfFlowPosition() && !node.IsFlexBox()) {
+      node.UseParentPercentageResolutionBlockSizeForChildren())
     child_percentage_size.block_size = parent_percentage_block_size;
-  }
 
   return child_percentage_size;
 }
@@ -1299,11 +1295,8 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
           ? NGSizeIndefinite
           : (block_size - border_padding.BlockSum()).ClampNegativeToZero();
 
-  // TODO(layout-dev): grid, and css-layout-api containers need to also bypass
-  // this quirk.
   if (child_percentage_block_size == NGSizeIndefinite &&
-      node.GetDocument().InQuirksMode() &&
-      !node.Style().HasOutOfFlowPosition() && !node.IsFlexBox())
+      node.UseParentPercentageResolutionBlockSizeForChildren())
     child_percentage_block_size = parent_percentage_block_size;
 
   return child_percentage_block_size;

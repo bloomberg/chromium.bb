@@ -3458,13 +3458,7 @@ bool LayoutBox::StretchesToViewportInQuirksMode() const {
 }
 
 bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
-    const LayoutBox* containing_block) const {
-  // If the writing mode of the containing block is orthogonal to ours, it means
-  // that we shouldn't skip anything, since we're going to resolve the
-  // percentage height against a containing block *width*.
-  if (IsHorizontalWritingMode() != containing_block->IsHorizontalWritingMode())
-    return false;
-
+    const LayoutBox* containing_block) {
   // Anonymous blocks should not impede percentage resolution on a child.
   // Examples of such anonymous blocks are blocks wrapped around inlines that
   // have block siblings (from the CSS spec) and multicol flow threads (an
@@ -3474,19 +3468,21 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
   // non-anonymous.
   if (containing_block->IsAnonymous()) {
     EDisplay display = containing_block->StyleRef().Display();
-    return display == EDisplay::kBlock || display == EDisplay::kInlineBlock;
+    return display == EDisplay::kBlock || display == EDisplay::kInlineBlock ||
+           display == EDisplay::kFlowRoot;
   }
 
   // For quirks mode, we skip most auto-height containing blocks when computing
   // percentages.
-  return GetDocument().InQuirksMode() && !containing_block->IsTableCell() &&
+  return containing_block->GetDocument().InQuirksMode() &&
+         containing_block->StyleRef().LogicalHeight().IsAuto() &&
+         !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
          !(containing_block->IsLayoutCustom() &&
            ToLayoutCustom(containing_block)->IsLoaded()) &&
          !containing_block->HasOverridePercentageResolutionBlockSize() &&
          !containing_block->IsLayoutGrid() &&
-         !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG() &&
-         containing_block->StyleRef().LogicalHeight().IsAuto();
+         !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG();
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
@@ -3498,7 +3494,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
   bool skipped_auto_height_containing_block = false;
   LayoutUnit root_margin_border_padding_height;
   while (!cb->IsLayoutView() &&
-         SkipContainingBlockForPercentHeightCalculation(cb)) {
+         (IsHorizontalWritingMode() == cb->IsHorizontalWritingMode() &&
+          SkipContainingBlockForPercentHeightCalculation(cb))) {
     if ((cb->IsBody() || cb->IsDocumentElement()) &&
         !HasOverrideContainingBlockContentLogicalHeight())
       root_margin_border_padding_height += cb->MarginBefore() +

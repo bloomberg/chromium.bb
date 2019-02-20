@@ -82,7 +82,7 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     bool is_new_formatting_context,
     LayoutUnit fragmentainer_space_available) {
   NGFragmentationType block_fragmentation =
-      fragmentainer_space_available != LayoutUnit()
+      fragmentainer_space_available != NGSizeIndefinite
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 
@@ -94,6 +94,10 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
       .SetIsShrinkToFit(shrink_to_fit)
       .SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available)
       .SetFragmentationType(block_fragmentation)
+      .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
+                           FontBaseline::kAlphabeticBaseline})
+      .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
+                           FontBaseline::kAlphabeticBaseline})
       .ToConstraintSpace();
 }
 
