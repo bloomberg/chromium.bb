@@ -64,8 +64,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Flakes heavily on many OpenGL configurations
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['no_angle'], bug=832238)
-    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
-        ['opengl'], bug=832238)
 
     # Failing on NVIDIA OpenGL, but fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -357,10 +355,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl'], bug=835364)
-
-    # These Transform Feedback tests seem flaky on ANGLE/GL with passthrough.
-    self.Flaky('conformance2/transform_feedback/switching-objects.html',
-        ['passthrough', 'opengl'], bug=832238)
 
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
