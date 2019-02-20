@@ -664,8 +664,7 @@ void FrameFetchContext::DidLoadResource(Resource* resource) {
     }
   }
 
-  if (resource->IsLoadEventBlockingResourceType())
-    frame_or_imported_document_->GetDocument()->CheckCompleted();
+  frame_or_imported_document_->GetDocument()->CheckCompleted();
 }
 
 void FrameFetchContext::DidObserveLoadingBehavior(
