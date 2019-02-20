@@ -105,18 +105,18 @@ void AccountFetcherService::FetchUserInfoBeforeSignin(
   RefreshAccountInfo(account_id, false);
 }
 
-void AccountFetcherService::OnProfileLoaded() {
-  DCHECK(!profile_loaded_);
+void AccountFetcherService::OnNetworkInitialized() {
+  DCHECK(!network_initialized_);
   DCHECK(!network_fetches_enabled_);
 #if defined(OS_ANDROID)
   DCHECK(!child_info_request_);
 #endif
-  profile_loaded_ = true;
+  network_initialized_ = true;
   MaybeEnableNetworkFetches();
 }
 
 void AccountFetcherService::EnableNetworkFetchesForTest() {
-  OnProfileLoaded();
+  OnNetworkInitialized();
   OnRefreshTokensLoaded();
 }
 
@@ -155,7 +155,7 @@ void AccountFetcherService::UpdateChildInfo() {
 
 void AccountFetcherService::MaybeEnableNetworkFetches() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!profile_loaded_ || !refresh_tokens_loaded_)
+  if (!network_initialized_ || !refresh_tokens_loaded_)
     return;
   if (!network_fetches_enabled_) {
     network_fetches_enabled_ = true;

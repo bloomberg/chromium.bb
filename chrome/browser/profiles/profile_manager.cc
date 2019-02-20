@@ -54,7 +54,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -1345,8 +1344,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       profile->GetPath());
 
-  IdentityManagerFactory::GetForProfile(profile)->StartObservingCookieChanges();
-  AccountFetcherServiceFactory::GetForProfile(profile)->OnProfileLoaded();
+  IdentityManagerFactory::GetForProfile(profile)->OnNetworkInitialized();
   AccountReconcilorFactory::GetForProfile(profile);
 
   // Initialization needs to happen after the browser context is available

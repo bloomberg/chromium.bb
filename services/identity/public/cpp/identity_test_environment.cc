@@ -286,9 +286,10 @@ IdentityTestEnvironment::IdentityTestEnvironment(
             gaia_cookie_manager_service_);
 
     owned_identity_manager_ = std::make_unique<IdentityManager>(
-        signin_manager_, token_service_, account_tracker_service_,
-        gaia_cookie_manager_service_, std::move(primary_account_mutator),
-        std::move(accounts_mutator), std::move(accounts_cookie_mutator));
+        signin_manager_, token_service_, account_fetcher_service_,
+        account_tracker_service_, gaia_cookie_manager_service_,
+        std::move(primary_account_mutator), std::move(accounts_mutator),
+        std::move(accounts_cookie_mutator));
   }
 
   test_identity_manager_observer_ =

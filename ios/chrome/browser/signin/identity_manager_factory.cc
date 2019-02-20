@@ -10,6 +10,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
@@ -34,6 +35,8 @@ class IdentityManagerWrapper : public KeyedService,
       : identity::IdentityManager(
             ios::SigninManagerFactory::GetForBrowserState(browser_state),
             ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+            ios::AccountFetcherServiceFactory::GetForBrowserState(
+                browser_state),
             ios::AccountTrackerServiceFactory::GetForBrowserState(
                 browser_state),
             ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
@@ -52,6 +55,7 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::AccountFetcherServiceFactory::GetInstance());
   DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(ios::GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
