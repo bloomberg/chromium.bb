@@ -60,8 +60,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void OnJavascriptDisallowed() override;
 
   // IdentityManager::Observer implementation.
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Called when print preview failed. |request_id| identifies the request that
