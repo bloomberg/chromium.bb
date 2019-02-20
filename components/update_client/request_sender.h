@@ -70,7 +70,10 @@ class RequestSender {
                          int64_t content_length);
 
   void OnNetworkFetcherComplete(const GURL& original_url,
-                                std::unique_ptr<std::string> response_body);
+                                std::unique_ptr<std::string> response_body,
+                                int net_error,
+                                const std::string& header_etag,
+                                int64_t xheader_retry_after_sec);
 
   // Implements the error handling and url fallback mechanism.
   void SendInternal();

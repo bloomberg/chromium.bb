@@ -26,11 +26,26 @@ namespace update_client {
 class NetworkFetcher {
  public:
   using PostRequestCompleteCallback =
-      base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
-  using DownloadToFileCompleteCallback =
-      base::OnceCallback<void(base::FilePath path)>;
+      base::OnceCallback<void(std::unique_ptr<std::string> response_body,
+                              int net_error,
+                              const std::string& header_etag,
+                              int64_t xheader_retry_after_sec)>;
+  using DownloadToFileCompleteCallback = base::OnceCallback<
+      void(base::FilePath path, int net_error, int64_t content_size)>;
   using ResponseStartedCallback = base::OnceCallback<
       void(const GURL& final_url, int response_code, int64_t content_length)>;
+
+  // The ETag header carries the ECSDA signature of the POST response, if
+  // signing has been used.
+  static constexpr char kHeaderEtag[] = "ETag";
+
+  // The server uses the optional X-Retry-After header to indicate that the
+  // current request should not be attempted again.
+  //
+  // The value of the header is the number of seconds to wait before trying to
+  // do a subsequent update check. Only the values retrieved over HTTPS are
+  // trusted.
+  static constexpr char kHeaderXRetryAfter[] = "X-Retry-After";
 
   virtual ~NetworkFetcher() = default;
 
@@ -45,17 +60,6 @@ class NetworkFetcher {
       const base::FilePath& file_path,
       ResponseStartedCallback response_started_callback,
       DownloadToFileCompleteCallback download_to_file_complete_callback) = 0;
-  virtual int NetError() const = 0;
-
-  // Returns the string value of a header of the server response or an empty
-  // string if the header is not available. Only the first header is returned
-  // if multiple instances of the same header are present.
-  virtual std::string GetStringHeaderValue(const char* header_name) const = 0;
-
-  // Returns the integral value of a header of the server response or -1 if
-  // if the header is not available or a conversion error has occured.
-  virtual int64_t GetInt64HeaderValue(const char* header_name) const = 0;
-  virtual int64_t GetContentSize() const = 0;
 
  protected:
   NetworkFetcher() = default;

@@ -35,7 +35,9 @@ class UrlFetcherDownloader : public CrxDownloader {
 
   void CreateDownloadDir();
   void StartURLFetch(const GURL& url);
-  void OnNetworkFetcherComplete(base::FilePath file_path);
+  void OnNetworkFetcherComplete(base::FilePath file_path,
+                                int net_error,
+                                int64_t content_size);
   void OnResponseStarted(const GURL& final_url,
                          int response_code,
                          int64_t content_length);

@@ -47,6 +47,37 @@ const net::NetworkTrafficAnnotationTag traffic_annotation =
           }
         })");
 
+// Returns the string value of a header of the server response or an empty
+// string if the header is not available. Only the first header is returned
+// if multiple instances of the same header are present.
+std::string GetStringHeader(const network::SimpleURLLoader* simple_url_loader,
+                            const char* header_name) {
+  DCHECK(simple_url_loader);
+
+  const auto* response_info = simple_url_loader->ResponseInfo();
+  if (!response_info || !response_info->headers)
+    return {};
+
+  std::string header_value;
+  return response_info->headers->EnumerateHeader(nullptr, header_name,
+                                                 &header_value)
+             ? header_value
+             : std::string{};
+}
+
+// Returns the integral value of a header of the server response or -1 if
+// if the header is not available or a conversion error has occured.
+int64_t GetInt64Header(const network::SimpleURLLoader* simple_url_loader,
+                       const char* header_name) {
+  DCHECK(simple_url_loader);
+
+  const auto* response_info = simple_url_loader->ResponseInfo();
+  if (!response_info || !response_info->headers)
+    return -1;
+
+  return response_info->headers->GetInt64HeaderValue(header_name);
+}
+
 }  // namespace
 
 namespace update_client {
@@ -83,7 +114,17 @@ void NetworkFetcherImpl::PostRequest(
   constexpr size_t kMaxResponseSize = 1024 * 1024;
   simple_url_loader_->DownloadToString(
       shared_url_network_factory_.get(),
-      std::move(post_request_complete_callback), kMaxResponseSize);
+      base::BindOnce(
+          [](const network::SimpleURLLoader* simple_url_loader,
+             PostRequestCompleteCallback post_request_complete_callback,
+             std::unique_ptr<std::string> response_body) {
+            std::move(post_request_complete_callback)
+                .Run(std::move(response_body), simple_url_loader->NetError(),
+                     GetStringHeader(simple_url_loader, kHeaderEtag),
+                     GetInt64Header(simple_url_loader, kHeaderXRetryAfter));
+          },
+          simple_url_loader_.get(), std::move(post_request_complete_callback)),
+      kMaxResponseSize);
 }
 
 void NetworkFetcherImpl::DownloadToFile(
@@ -109,42 +150,17 @@ void NetworkFetcherImpl::DownloadToFile(
       std::move(response_started_callback)));
   simple_url_loader_->DownloadToFile(
       shared_url_network_factory_.get(),
-      std::move(download_to_file_complete_callback), file_path);
-}
-
-int64_t NetworkFetcherImpl::GetContentSize() const {
-  DCHECK(simple_url_loader_);
-  return simple_url_loader_->GetContentSize();
-}
-
-int NetworkFetcherImpl::NetError() const {
-  DCHECK(simple_url_loader_);
-  return simple_url_loader_->NetError();
-}
-
-std::string NetworkFetcherImpl::GetStringHeaderValue(
-    const char* header_name) const {
-  DCHECK(simple_url_loader_);
-
-  const auto* response_info = simple_url_loader_->ResponseInfo();
-  if (!response_info || !response_info->headers)
-    return {};
-
-  std::string header_value;
-  return response_info->headers->EnumerateHeader(nullptr, header_name,
-                                                 &header_value)
-             ? header_value
-             : std::string{};
-}
-
-int64_t NetworkFetcherImpl::GetInt64HeaderValue(const char* header_name) const {
-  DCHECK(simple_url_loader_);
-
-  const auto* response_info = simple_url_loader_->ResponseInfo();
-  if (!response_info || !response_info->headers)
-    return -1;
-
-  return response_info->headers->GetInt64HeaderValue(header_name);
+      base::BindOnce(
+          [](const network::SimpleURLLoader* simple_url_loader,
+             DownloadToFileCompleteCallback download_to_file_complete_callback,
+             base::FilePath file_path) {
+            std::move(download_to_file_complete_callback)
+                .Run(file_path, simple_url_loader->NetError(),
+                     simple_url_loader->GetContentSize());
+          },
+          simple_url_loader_.get(),
+          std::move(download_to_file_complete_callback)),
+      file_path);
 }
 
 void NetworkFetcherImpl::OnResponseStartedCallback(

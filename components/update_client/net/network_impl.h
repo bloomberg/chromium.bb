@@ -40,11 +40,6 @@ class NetworkFetcherImpl : public NetworkFetcher {
                       ResponseStartedCallback response_started_callback,
                       DownloadToFileCompleteCallback
                           download_to_file_complete_callback) override;
-  int NetError() const override;
-  std::string GetStringHeaderValue(const char* header_name) const override;
-  int64_t GetInt64HeaderValue(const char* header_name) const override;
-  int64_t GetContentSize() const override;
-
  private:
   void OnResponseStartedCallback(
       ResponseStartedCallback response_started_callback,
