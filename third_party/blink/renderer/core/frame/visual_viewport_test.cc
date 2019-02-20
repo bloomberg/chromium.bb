@@ -376,8 +376,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(0, -300),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(0, -300),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -401,8 +401,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(0, -75),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(0, -75),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -466,8 +466,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -490,8 +490,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -2557,8 +2557,8 @@ TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
   UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Matrix(),
-            emulation_transform);
+  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Translation2D(),
+            emulation_transform.To2DTranslation());
 
   // Set an identity device emulation transform and ensure the transform
   // paint property node is cleared.

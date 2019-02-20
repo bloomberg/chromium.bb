@@ -1021,9 +1021,10 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
   const auto* sticky = GetLayoutObjectByElementId("sticky");
   EXPECT_TRUE(sticky->NeedsPaintPropertyUpdate());
   EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(0.f, 50.f),
-      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
+                                  .PaintProperties()
+                                  ->StickyTranslation()
+                                  ->Translation2D());
   const auto* inner = GetLayoutObjectByElementId("inner");
   EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 
@@ -1031,9 +1032,10 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
 
   EXPECT_FALSE(sticky->NeedsPaintPropertyUpdate());
   EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(0.f, 150.f),
-      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 150), sticky->FirstFragment()
+                                   .PaintProperties()
+                                   ->StickyTranslation()
+                                   ->Translation2D());
   EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 }
 

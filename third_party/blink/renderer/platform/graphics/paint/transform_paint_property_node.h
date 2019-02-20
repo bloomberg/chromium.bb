@@ -42,17 +42,71 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     kVisible,
   };
 
+  // Stores a transform and origin with an optimization for the identity and
+  // 2d translation cases that avoids allocating a full matrix and origin.
+  class TransformAndOrigin {
+   public:
+    TransformAndOrigin() {}
+    // These constructors are not explicit so that we can use FloatSize or
+    // TransformationMatrix directly in the initialization list of State.
+    TransformAndOrigin(const FloatSize& translation_2d)
+        : translation_2d_(translation_2d) {}
+    // This should be used for arbitrary matrix only. If the caller knows that
+    // the transform is identity or a 2d translation, the translation_2d version
+    // should be used instead.
+    TransformAndOrigin(const TransformationMatrix& matrix,
+                       const FloatPoint3D& origin = FloatPoint3D()) {
+      if (matrix.IsIdentityOr2DTranslation())
+        translation_2d_ = matrix.To2DTranslation();
+      else
+        matrix_and_origin_.reset(new MatrixAndOrigin{matrix, origin});
+    }
+
+    bool IsIdentityOr2DTranslation() const { return !matrix_and_origin_; }
+    bool IsIdentity() const {
+      return !matrix_and_origin_ && translation_2d_.IsZero();
+    }
+    const FloatSize& Translation2D() const {
+      DCHECK(IsIdentityOr2DTranslation());
+      return translation_2d_;
+    }
+    const TransformationMatrix& Matrix() const {
+      DCHECK(matrix_and_origin_);
+      return matrix_and_origin_->matrix;
+    }
+    TransformationMatrix SlowMatrix() const {
+      return matrix_and_origin_
+                 ? matrix_and_origin_->matrix
+                 : TransformationMatrix().Translate(translation_2d_.Width(),
+                                                    translation_2d_.Height());
+    }
+    FloatPoint3D Origin() const {
+      return matrix_and_origin_ ? matrix_and_origin_->origin : FloatPoint3D();
+    }
+
+    bool operator==(const TransformAndOrigin& o) const {
+      return translation_2d_ == o.translation_2d_ &&
+             ((!matrix_and_origin_ && !o.matrix_and_origin_) ||
+              (matrix_and_origin_ && o.matrix_and_origin_ &&
+               matrix_and_origin_->matrix == o.matrix_and_origin_->matrix &&
+               matrix_and_origin_->origin == o.matrix_and_origin_->origin));
+    }
+
+   private:
+    struct MatrixAndOrigin {
+      TransformationMatrix matrix;
+      FloatPoint3D origin;
+    };
+    FloatSize translation_2d_;
+    std::unique_ptr<MatrixAndOrigin> matrix_and_origin_;
+  };
+
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
-    TransformationMatrix matrix;
+    TransformAndOrigin transform_and_origin;
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
-    FloatPoint3D origin;
     bool flattens_inherited_transform = false;
-    // Caches value of matrix_.IsIdentityOr2DTranslation(). The caller can set
-    // this field to true if the matrix is known to be identity or 2d
-    // translation, or the field will be updated automatically.
-    bool is_identity_or_2d_translation = false;
     bool affected_by_outer_viewport_bounds_delta = false;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
@@ -61,7 +115,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
 
     bool operator==(const State& o) const {
-      return matrix == o.matrix && origin == o.origin &&
+      return transform_and_origin == o.transform_and_origin &&
              flattens_inherited_transform == o.flattens_inherited_transform &&
              backface_visibility == o.backface_visibility &&
              rendering_context_id == o.rendering_context_id &&
@@ -100,7 +154,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
     state_ = std::move(state);
     SetChanged();
-    CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
     return true;
   }
@@ -111,8 +164,25 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // from |this| and |relative_to_node| to the root.
   bool Changed(const TransformPaintPropertyNode& relative_to_node) const;
 
-  const TransformationMatrix& Matrix() const { return state_.matrix; }
-  const FloatPoint3D& Origin() const { return state_.origin; }
+  bool IsIdentityOr2DTranslation() const {
+    return state_.transform_and_origin.IsIdentityOr2DTranslation();
+  }
+  bool IsIdentity() const { return state_.transform_and_origin.IsIdentity(); }
+  // Only available when IsIdentityOr2DTranslation() is true.
+  const FloatSize& Translation2D() const {
+    return state_.transform_and_origin.Translation2D();
+  }
+  // Only available when IsIdentityOr2DTranslation() is false.
+  const TransformationMatrix& Matrix() const {
+    return state_.transform_and_origin.Matrix();
+  }
+  // The slow version always return meaningful TransformationMatrix regardless
+  // of IsIdentityOr2DTranslation(). Should be used only in contexts that are
+  // not performance sensitive.
+  TransformationMatrix SlowMatrix() const {
+    return state_.transform_and_origin.SlowMatrix();
+  }
+  FloatPoint3D Origin() const { return state_.transform_and_origin.Origin(); }
 
   // The associated scroll node, or nullptr otherwise.
   const ScrollPaintPropertyNode* ScrollNode() const {
@@ -140,12 +210,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // accumulated transform from its ancestors.
   bool FlattensInheritedTransform() const {
     return state_.flattens_inherited_transform;
-  }
-
-  bool IsIdentityOr2DTranslation() const {
-    DCHECK_EQ(state_.is_identity_or_2d_translation,
-              state_.matrix.IsIdentityOr2DTranslation());
-    return state_.is_identity_or_2d_translation;
   }
 
   // Returns the local BackfaceVisibility value set on this node.
@@ -201,31 +265,22 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
                              State&& state,
                              bool is_parent_alias)
       : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {
-    CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
-  }
-
-  void CheckAndUpdateIsIdentityOr2DTranslation() {
-    if (IsParentAlias()) {
-      DCHECK(state_.matrix.IsIdentity());
-      state_.is_identity_or_2d_translation = true;
-    } else if (state_.is_identity_or_2d_translation) {
-      DCHECK(state_.matrix.IsIdentityOr2DTranslation());
-    } else {
-      state_.is_identity_or_2d_translation =
-          state_.matrix.IsIdentityOr2DTranslation();
-    }
   }
 
   void Validate() const {
 #if DCHECK_IS_ON()
+    if (IsParentAlias())
+      DCHECK(IsIdentity());
     if (state_.scroll) {
       // If there is an associated scroll node, this can only be a 2d
       // translation for scroll offset.
-      DCHECK(state_.is_identity_or_2d_translation);
+      DCHECK(IsIdentityOr2DTranslation());
       // The scroll compositor element id should be stored on the scroll node.
       DCHECK(!state_.compositor_element_id);
     }
+    if (!IsIdentityOr2DTranslation())
+      DCHECK(!Matrix().IsIdentityOr2DTranslation());
 #endif
   }
 
