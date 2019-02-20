@@ -18,7 +18,7 @@ ScriptPromise NavigatorUserAgent::getUserAgent(ScriptState* script_state) {
   blink::UserAgent* idl_metadata = blink::UserAgent::Create();
 
   idl_metadata->setBrand(String::FromUTF8(metadata.brand.data()));
-  idl_metadata->setVersion(String::FromUTF8(metadata.version.data()));
+  idl_metadata->setVersion(String::FromUTF8(metadata.full_version.data()));
   idl_metadata->setPlatform(String::FromUTF8(metadata.platform.data()));
   idl_metadata->setArchitecture(String::FromUTF8(metadata.architecture.data()));
   idl_metadata->setModel(String::FromUTF8(metadata.model.data()));

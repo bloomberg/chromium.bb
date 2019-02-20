@@ -21,8 +21,13 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
   static const std::string& brand(const ::blink::UserAgentMetadata& data) {
     return data.brand;
   }
-  static const std::string& version(const ::blink::UserAgentMetadata& data) {
-    return data.version;
+  static const std::string& full_version(
+      const ::blink::UserAgentMetadata& data) {
+    return data.full_version;
+  }
+  static const std::string& major_version(
+      const ::blink::UserAgentMetadata& data) {
+    return data.major_version;
   }
   static const std::string& platform(const ::blink::UserAgentMetadata& data) {
     return data.platform;

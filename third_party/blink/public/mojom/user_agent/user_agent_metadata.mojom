@@ -6,7 +6,8 @@ module blink.mojom;
 
 struct UserAgentMetadata {
   string brand;
-  string version;
+  string full_version;
+  string major_version;
   string platform;
   string architecture;
   string model;

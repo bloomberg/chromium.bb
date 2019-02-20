@@ -464,7 +464,8 @@ TEST(ChromeContentBrowserClient, UserAgentMetadata) {
   auto metadata = content_browser_client.GetUserAgentMetadata();
 
   EXPECT_EQ(metadata.brand, version_info::GetProductName());
-  EXPECT_EQ(metadata.version, version_info::GetVersionNumber());
+  EXPECT_EQ(metadata.full_version, version_info::GetVersionNumber());
+  EXPECT_EQ(metadata.major_version, version_info::GetMajorVersionNumber());
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
   EXPECT_EQ(metadata.architecture, "");
   EXPECT_EQ(metadata.model, "");

@@ -13,7 +13,8 @@ namespace blink {
 
 struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string brand;
-  std::string version;
+  std::string full_version;
+  std::string major_version;
   std::string platform;
   std::string architecture;
   std::string model;
