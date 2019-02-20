@@ -39,7 +39,7 @@ enum class DownloadMimeTypeResult {
   // text/calendar MIME type.
   iCalendar = 7,
   // model/usd MIME type.
-  UniversalSceneDescription = 8,
+  LegacyUniversalSceneDescription = 8,
   // application/x-apple-diskimage MIME type.
   AppleDiskImage = 9,
   // application/vnd.apple.installer+xml MIME type.
@@ -60,7 +60,11 @@ enum class DownloadMimeTypeResult {
   BitTorrent = 17,
   // application/java-archive MIME type.
   JavaArchive = 18,
-  kMaxValue = JavaArchive,
+  // model/vnd.pixar.usd MIME type.
+  LegacyPixarUniversalSceneDescription = 19,
+  // model/vnd.usdz+zip MIME type.
+  UniversalSceneDescription = 20,
+  kMaxValue = UniversalSceneDescription,
 };
 
 // Keyed Service which acts as web::DownloadController delegate and routes

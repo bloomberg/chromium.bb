@@ -12884,7 +12884,9 @@ Called by update_net_error_codes.py.-->
   </int>
   <int value="6" label="Virtual Contact File">text/vcard MIME type.</int>
   <int value="7" label="iCalendar">text/calendar MIME type.</int>
-  <int value="8" label="Universal Scene Description">model/usd MIME type.</int>
+  <int value="8" label="Legacy Universal Scene Description (model/usd)">
+    model/usd MIME type.
+  </int>
   <int value="9" label="Apple Disk Image">
     application/x-apple-diskimage MIME type.
   </int>
@@ -12907,6 +12909,13 @@ Called by update_net_error_codes.py.-->
   <int value="16" label="Binary Data">application/octet-stream MIME type.</int>
   <int value="17" label="Bit Torrent">application/x-bittorrent MIME type.</int>
   <int value="18" label="Java Archive">application/java-archive MIME type.</int>
+  <int value="19"
+      label="Legacy Pixar Universal Scene Description (model/vnd.pixar.usd)">
+    model/vnd.pixar.usd MIME type.
+  </int>
+  <int value="20" label="Universal Scene Description">
+    model/vnd.usdz+zip MIME type.
+  </int>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">
