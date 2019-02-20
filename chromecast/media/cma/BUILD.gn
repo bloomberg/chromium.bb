@@ -77,7 +77,16 @@ cast_source_set("unittests") {
 
   if (enable_video_with_mixed_audio) {
     defines = [ "ENABLE_VIDEO_WITH_MIXED_AUDIO" ]
-    libs = ["videodecoderformixer"]
+
+    # libvideodecoderformixer is linked here for the
+    # VideoDecoderForMixer::InitializeGraphicsForTesting symbol. Currently only
+    # alsa platforms do anything useful in this initialization, so otherwise
+    # just link in a dummy.
+    if (use_alsa) {
+      libs = [ "videodecoderformixer" ]
+    } else {
+      sources += [ "backend/dummy_initialize_graphics_for_testing.cc" ]
+    }
   }
 
   data = [
