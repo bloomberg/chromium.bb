@@ -593,4 +593,5 @@
     <dimen name="autofill_assistant_details_image_size">48dp</dimen>
 
     <dimen name="tab_grid_favicon_size">32dp</dimen>
+    <dimen name="tab_list_selected_inset">5dp</dimen>
 </resources>
