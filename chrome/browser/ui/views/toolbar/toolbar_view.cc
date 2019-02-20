@@ -594,8 +594,8 @@ void ToolbarView::ChildPreferredSizeChanged(views::View* child) {
 // also so that it selects all content in the location bar.
 bool ToolbarView::SetPaneFocusAndFocusDefault() {
   if (!location_bar_->HasFocus()) {
-    location_bar_->FocusLocation();
     SetPaneFocus(location_bar_);
+    location_bar_->FocusLocation();
     return true;
   }
 
