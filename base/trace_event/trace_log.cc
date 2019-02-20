@@ -49,7 +49,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/debug/elf_reader_linux.h"
+#include "base/debug/elf_reader.h"
 
 // The linker assigns the virtual address of the start of current library to
 // this symbol.
@@ -1510,11 +1510,12 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   AddMetadataEventWhileLocked(current_thread_id, "chrome_library_address",
                               "start_address",
                               base::StringPrintf("%p", &__executable_start));
-  base::Optional<std::string> buildid =
-      base::debug::ReadElfBuildId(&__executable_start);
-  if (buildid) {
+  base::debug::ElfBuildIdBuffer build_id;
+  size_t build_id_length =
+      base::debug::ReadElfBuildId(&__executable_start, true, build_id);
+  if (build_id_length > 0) {
     AddMetadataEventWhileLocked(current_thread_id, "chrome_library_module",
-                                "id", buildid.value());
+                                "id", build_id);
   }
 #endif
 
