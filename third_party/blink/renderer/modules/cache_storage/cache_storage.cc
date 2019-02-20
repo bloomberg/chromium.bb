@@ -65,8 +65,10 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
       cache_name,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
-             GlobalFetch::ScopedFetcher* fetcher, TimeTicks start_time,
+             GlobalFetch::ScopedFetcher* fetcher, base::TimeTicks start_time,
              CacheStorage* cache_storage, mojom::blink::OpenResultPtr result) {
+            UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Open",
+                                base::TimeTicks::Now() - start_time);
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed()) {
               return;
@@ -83,8 +85,6 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   break;
               }
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",
-                                  TimeTicks::Now() - start_time);
               // See https://bit.ly/2S0zRAS for task types.
               resolver->Resolve(Cache::Create(
                   fetcher, cache_storage, std::move(result->get_cache()),
@@ -108,15 +108,15 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
   cache_storage_ptr_->Has(
       cache_name,
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+          [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              CacheStorage* _, mojom::blink::CacheStorageError result) {
+            UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Has",
+                                base::TimeTicks::Now() - start_time);
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
             switch (result) {
               case mojom::blink::CacheStorageError::kSuccess:
-                UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Has",
-                                    TimeTicks::Now() - start_time);
                 resolver->Resolve(true);
                 break;
               case mojom::blink::CacheStorageError::kErrorNotFound:
@@ -142,15 +142,16 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
   cache_storage_ptr_->Delete(
       cache_name,
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+          [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              CacheStorage* _, mojom::blink::CacheStorageError result) {
+            UMA_HISTOGRAM_TIMES(
+                "ServiceWorkerCache.CacheStorage.Renderer.Delete",
+                base::TimeTicks::Now() - start_time);
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
             switch (result) {
               case mojom::blink::CacheStorageError::kSuccess:
-                UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Delete",
-                                    TimeTicks::Now() - start_time);
                 resolver->Resolve(true);
                 break;
               case mojom::blink::CacheStorageError::kErrorStorage:
@@ -174,13 +175,13 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
   cache_storage_ptr_->Keys(WTF::Bind(
-      [](ScriptPromiseResolver* resolver, TimeTicks start_time, CacheStorage* _,
-         const Vector<String>& keys) {
+      [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
+         CacheStorage* _, const Vector<String>& keys) {
+        UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Keys",
+                            base::TimeTicks::Now() - start_time);
         if (!resolver->GetExecutionContext() ||
             resolver->GetExecutionContext()->IsContextDestroyed())
           return;
-        UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Keys",
-                            TimeTicks::Now() - start_time);
         resolver->Resolve(keys);
       },
       WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(this)));
@@ -221,9 +222,19 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
       request->CreateFetchAPIRequest(),
       mojom::blink::MultiCacheQueryOptions::From(options),
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+          [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const MultiCacheQueryOptions* options, CacheStorage* _,
              mojom::blink::MatchResultPtr result) {
+            base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+            if (!options->hasCacheName() || options->cacheName().IsEmpty()) {
+              UMA_HISTOGRAM_LONG_TIMES(
+                  "ServiceWorkerCache.CacheStorage.Renderer.MatchAllCaches",
+                  elapsed);
+            } else {
+              UMA_HISTOGRAM_LONG_TIMES(
+                  "ServiceWorkerCache.CacheStorage.Renderer.MatchOneCache",
+                  elapsed);
+            }
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
@@ -240,20 +251,6 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                   break;
               }
             } else {
-              TimeDelta elapsed = TimeTicks::Now() - start_time;
-              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.CacheStorage.Match2",
-                                       elapsed);
-              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
-                UMA_HISTOGRAM_LONG_TIMES(
-                    "ServiceWorkerCache.CacheStorage.Match2."
-                    "IgnoreSearchEnabled",
-                    elapsed);
-              } else {
-                UMA_HISTOGRAM_LONG_TIMES(
-                    "ServiceWorkerCache.CacheStorage.Match2."
-                    "IgnoreSearchDisabled",
-                    elapsed);
-              }
               ScriptState::Scope scope(resolver->GetScriptState());
               resolver->Resolve(Response::Create(resolver->GetScriptState(),
                                                  *result->get_response()));
