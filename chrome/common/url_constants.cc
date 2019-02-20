@@ -188,9 +188,11 @@ const char kPaymentMethodsURL[] =
 
 const char kPaymentMethodsLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromebook/?p=settings_autofill";
+    "https://support.google.com/chromebook/answer/"
+    "142893?visit_id=636857416902558798-696405304&p=settings_autofill&rd=1";
 #else
-    "https://support.google.com/chrome/?p=settings_autofill";
+    "https://support.google.com/chrome/answer/"
+    "142893?visit_id=636857416902558798-696405304&p=settings_autofill&rd=1";
 #endif
 
 const char kPrivacyLearnMoreURL[] =
