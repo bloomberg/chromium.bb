@@ -15,11 +15,11 @@ namespace blink {
 
 class BluetoothManufacturerDataMap final
     : public ScriptWrappable,
-      public Maplike<unsigned short, Member<DOMDataView>> {
+      public Maplike<uint16_t, Member<DOMDataView>> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using MapType = HashMap<unsigned short, WTF::Vector<unsigned char>>;
+  using MapType = HashMap<uint16_t, WTF::Vector<unsigned char>>;
 
   explicit BluetoothManufacturerDataMap(const MapType&);
 
@@ -31,10 +31,11 @@ class BluetoothManufacturerDataMap final
   uint32_t size() const { return parameter_map_.size(); }
 
  private:
-  PairIterable<unsigned short, Member<DOMDataView>>::IterationSource*
-  StartIteration(ScriptState*, ExceptionState&) override;
+  PairIterable<uint16_t, Member<DOMDataView>>::IterationSource* StartIteration(
+      ScriptState*,
+      ExceptionState&) override;
   bool GetMapEntry(ScriptState*,
-                   const unsigned short& key,
+                   const uint16_t& key,
                    Member<DOMDataView>&,
                    ExceptionState&) override;
 

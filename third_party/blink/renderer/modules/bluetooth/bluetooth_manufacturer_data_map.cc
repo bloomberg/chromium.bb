@@ -10,15 +10,14 @@
 namespace blink {
 
 class BluetoothManufacturerDataMapIterationSource final
-    : public PairIterable<unsigned short,
-                          Member<DOMDataView>>::IterationSource {
+    : public PairIterable<uint16_t, Member<DOMDataView>>::IterationSource {
  public:
   explicit BluetoothManufacturerDataMapIterationSource(
       const BluetoothManufacturerDataMap& map)
       : map_(map), iterator_(map_->Map().begin()) {}
 
   bool Next(ScriptState* script_state,
-            unsigned short& map_key,
+            uint16_t& map_key,
             Member<DOMDataView>& map_value,
             ExceptionState&) override {
     if (iterator_ == map_->Map().end())
@@ -32,7 +31,7 @@ class BluetoothManufacturerDataMapIterationSource final
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(map_);
-    PairIterable<unsigned short, Member<DOMDataView>>::IterationSource::Trace(
+    PairIterable<uint16_t, Member<DOMDataView>>::IterationSource::Trace(
         visitor);
   }
 
@@ -48,14 +47,14 @@ BluetoothManufacturerDataMap::BluetoothManufacturerDataMap(
 
 BluetoothManufacturerDataMap::~BluetoothManufacturerDataMap() {}
 
-PairIterable<unsigned short, Member<DOMDataView>>::IterationSource*
+PairIterable<uint16_t, Member<DOMDataView>>::IterationSource*
 BluetoothManufacturerDataMap::StartIteration(ScriptState*, ExceptionState&) {
   return MakeGarbageCollected<BluetoothManufacturerDataMapIterationSource>(
       *this);
 }
 
 bool BluetoothManufacturerDataMap::GetMapEntry(ScriptState*,
-                                               const unsigned short& key,
+                                               const uint16_t& key,
                                                Member<DOMDataView>& value,
                                                ExceptionState&) {
   auto it = parameter_map_.find(key);
