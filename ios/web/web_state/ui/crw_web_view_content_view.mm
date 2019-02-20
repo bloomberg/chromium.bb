@@ -90,10 +90,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   }
 }
 
-- (BOOL)isViewAlive {
-  return YES;
-}
-
 - (void)setContentOffset:(CGPoint)contentOffset {
   if (CGPointEqualToPoint(_contentOffset, contentOffset))
     return;
