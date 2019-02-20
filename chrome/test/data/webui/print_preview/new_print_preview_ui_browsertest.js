@@ -1256,3 +1256,31 @@ TEST_F(
       this.runMochaTest(
           destination_settings_test.TestNames.TwoAccountsRecentDestinations);
     });
+
+PrintPreviewScalingSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/scaling_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'scaling_settings_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return scaling_settings_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewScalingSettingsTest', 'InputNotDisabledOnValidityChange',
+    function() {
+      this.runMochaTest(
+          scaling_settings_test.TestNames.InputNotDisabledOnValidityChange);
+    });
