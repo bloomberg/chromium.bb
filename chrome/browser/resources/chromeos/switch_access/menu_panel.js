@@ -45,10 +45,10 @@ class Panel {
    * @private
    */
   setupButton_(button) {
-    let id = button.id;
-    button.addEventListener('click', function() {
-      MessageHandler.sendMessage(MessageHandler.Destination.BACKGROUND, id);
-    }.bind(id));
+    let action = button.id;
+    button.addEventListener('click', function(action) {
+      this.menuManager_.performAction(action);
+    }.bind(this, action));
   }
 
   /**
