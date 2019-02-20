@@ -115,7 +115,7 @@ ReplayingWebDataConsumerHandle::Context::Context()
       client_(nullptr),
       result_(kShouldWait),
       is_handle_attached_(true),
-      detached_(std::make_unique<WaitableEvent>()) {}
+      detached_(std::make_unique<base::WaitableEvent>()) {}
 
 const ReplayingWebDataConsumerHandle::Command&
 ReplayingWebDataConsumerHandle::Context::Top() {

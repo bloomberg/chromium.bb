@@ -46,7 +46,7 @@ class PLATFORM_EXPORT SimpleThreadImpl : public SimpleThread {
 
   // Used by the Run function to only terminate when |this| is destructed, and
   // this is used so that |thread_data_| will live as long as |this|.
-  WaitableEvent thread_can_shutdown_;
+  base::WaitableEvent thread_can_shutdown_;
 
   ThreadCallback callback_;
 };

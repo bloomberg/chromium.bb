@@ -29,10 +29,10 @@
 #include "third_party/blink/renderer/platform/audio/hrtf_database_loader.h"
 
 #include "base/location.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 
@@ -117,7 +117,7 @@ HRTFDatabase* HRTFDatabaseLoader::Database() {
 
 // This cleanup task is needed just to make sure that the loader thread finishes
 // the load task and thus the loader thread doesn't touch m_thread any more.
-void HRTFDatabaseLoader::CleanupTask(WaitableEvent* sync) {
+void HRTFDatabaseLoader::CleanupTask(base::WaitableEvent* sync) {
   sync->Signal();
 }
 
@@ -125,7 +125,7 @@ void HRTFDatabaseLoader::WaitForLoaderThreadCompletion() {
   if (!thread_)
     return;
 
-  WaitableEvent sync;
+  base::WaitableEvent sync;
   // TODO(alexclarke): Should this be posted as a loading task?
   PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
                       CrossThreadBind(&HRTFDatabaseLoader::CleanupTask,
