@@ -101,23 +101,15 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // the histogram name.
   std::string uma_hacky_confusion_matrix;
 
-  // RandomTree parameters
-
-  // How RandomTree handles unknown feature values.
-  enum class RTUnknownValueHandling {
-    // Return an empty distribution as the prediction.
-    kEmptyDistribution,
-
-    // Return the sum of the traversal of all splits.
-    kUseAllSplits,
-  };
-  RTUnknownValueHandling rt_unknown_value_handling =
-      RTUnknownValueHandling::kUseAllSplits;
-
   // RandomForest parameters
 
   // Number of trees in the random forest.
   size_t rf_number_of_trees = 100;
+
+  // Should ExtraTrees apply one-hot conversion automatically?  RandomTree has
+  // been modified to support nominals directly, though it isn't exactly the
+  // same as one-hot conversion.  It is, however, much faster.
+  bool use_one_hot_conversion = false;
 
   // Reporting parameters
 

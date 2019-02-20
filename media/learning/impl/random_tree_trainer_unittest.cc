@@ -169,30 +169,17 @@ TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
   training_data.push_back(example_1);
   training_data.push_back(example_2);
 
-  task_.rt_unknown_value_handling =
-      LearningTask::RTUnknownValueHandling::kEmptyDistribution;
-  std::unique_ptr<Model> model = Train(task_, training_data);
-  TargetDistribution distribution =
+  auto model = Train(task_, training_data);
+  auto distribution =
       model->PredictDistribution(FeatureVector({FeatureValue(789)}));
   if (ordering_ == LearningTask::Ordering::kUnordered) {
-    // OOV data should return an empty distribution (nominal).
-    EXPECT_EQ(distribution.size(), 0u);
-  } else {
-    // OOV data should end up in the |example_2| bucket, since the feature is
-    // numerically higher.
+    // OOV data could be split on either feature first, so we don't really know
+    // which to expect.  We assert that there should be exactly one example, but
+    // whether it's |example_1| or |example_2| isn't clear.
     EXPECT_EQ(distribution.size(), 1u);
-    EXPECT_EQ(distribution[example_2.target_value], 1u);
-  }
-
-  task_.rt_unknown_value_handling =
-      LearningTask::RTUnknownValueHandling::kUseAllSplits;
-  model = Train(task_, training_data);
-  distribution = model->PredictDistribution(FeatureVector({FeatureValue(789)}));
-  if (ordering_ == LearningTask::Ordering::kUnordered) {
-    // OOV data should return with the sum of all splits.
-    EXPECT_EQ(distribution.size(), 2u);
-    EXPECT_EQ(distribution[example_1.target_value], 1u);
-    EXPECT_EQ(distribution[example_2.target_value], 1u);
+    EXPECT_EQ(distribution[example_1.target_value] +
+                  distribution[example_2.target_value],
+              1u);
   } else {
     // The unknown feature is numerically higher than |example_2|, so we
     // expect it to fall into that bucket.
@@ -212,8 +199,6 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
     training_data.push_back(example);
   }
 
-  task_.rt_unknown_value_handling =
-      LearningTask::RTUnknownValueHandling::kEmptyDistribution;
   std::unique_ptr<Model> model = Train(task_, training_data);
   for (size_t i = 0; i < 4; i++) {
     // Get a prediction for the |i|-th feature value.
