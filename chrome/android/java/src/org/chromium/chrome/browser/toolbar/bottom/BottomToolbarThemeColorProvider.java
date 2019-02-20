@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.content.Context;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -45,8 +44,8 @@ public class BottomToolbarThemeColorProvider
     /** Whether app is in overview mode. */
     private boolean mIsOverviewVisible;
 
-    public BottomToolbarThemeColorProvider() {
-        final Context context = ContextUtils.getApplicationContext();
+    public BottomToolbarThemeColorProvider(Context context) {
+        super(context);
         mLightPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.modern_primary_color);
         mDarkPrimaryColor = ApiCompatibilityUtils.getColor(

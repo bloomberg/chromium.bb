@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
+
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
@@ -13,7 +15,9 @@ public class TabThemeColorProvider extends ThemeColorProvider {
     /** The {@link sActivityTabTabObserver} used to know when the active tab color changed. */
     private ActivityTabTabObserver mActivityTabTabObserver;
 
-    public TabThemeColorProvider() {}
+    public TabThemeColorProvider(Context context) {
+        super(context);
+    }
 
     /**
      * @param provider A means of getting the activity's tab.

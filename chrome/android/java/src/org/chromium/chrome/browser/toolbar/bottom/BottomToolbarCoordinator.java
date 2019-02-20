@@ -60,7 +60,7 @@ public class BottomToolbarCoordinator {
 
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
-        mBottomToolbarThemeColorProvider = new BottomToolbarThemeColorProvider();
+        mBottomToolbarThemeColorProvider = new BottomToolbarThemeColorProvider(root.getContext());
     }
 
     /**
