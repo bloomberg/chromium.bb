@@ -11,6 +11,7 @@
 #include "chromeos/network/geolocation_handler.h"
 #endif
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "net/base/network_change_notifier.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/network_location_request.h"
@@ -42,7 +43,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
 #endif
-
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     // We need to initialize the above *before* the base fixture instantiates
     // the device service.
     DeviceServiceTestBase::SetUp();
@@ -75,6 +76,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     connector()->BindInterface(mojom::kServiceName, &geolocation_config_);
   }
 
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojom::GeolocationControlPtr geolocation_control_;
   mojom::GeolocationContextPtr geolocation_context_;
   mojom::GeolocationPtr geolocation_;
