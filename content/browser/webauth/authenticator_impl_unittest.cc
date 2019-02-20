@@ -418,12 +418,20 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     scoped_feature_list_->InitAndDisableFeature(feature);
   }
 
+  void SetUpMockBluetooth() {
+    mock_adapter_ = base::MakeRefCounted<
+        ::testing::NiceMock<device::MockBluetoothAdapter>>();
+    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+  }
+
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
+  scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
+      mock_adapter_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -814,6 +822,59 @@ TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
   }
 }
 
+// Test that Cryptotoken requests should only be dispatched to USB
+// authenticators.
+TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
+  TestServiceManagerContext smc;
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  authenticator_impl_->set_transports_for_testing(
+      device::GetAllTransportProtocols());
+  SetUpMockBluetooth();
+
+  for (const bool is_cryptotoken_request : {false, true}) {
+    // caBLE and platform discoveries cannot be instantiated through
+    // ScopedVirtualFidoDevice, so we don't test them here.
+    for (const device::FidoTransportProtocol transport :
+         {device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+          device::FidoTransportProtocol::kBluetoothLowEnergy,
+          device::FidoTransportProtocol::kNearFieldCommunication}) {
+      SCOPED_TRACE(::testing::Message()
+                   << "is_cryptotoken_request=" << is_cryptotoken_request
+                   << ", transport=" << device::ToString(transport));
+
+      OverrideLastCommittedOrigin(
+          main_rfh(),
+          url::Origin::Create(GURL(is_cryptotoken_request ? kCryptotokenOrigin
+                                                          : kTestOrigin1)));
+
+      device::test::ScopedVirtualFidoDevice device;
+      device.SetSupportedProtocol(device::ProtocolVersion::kU2f);
+      device.SetTransport(transport);
+      device.mutable_state()->transport = transport;
+
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      base::RunLoop().RunUntilIdle();
+      task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+      callback_receiver.WaitForCallback();
+      EXPECT_EQ(
+          !is_cryptotoken_request ||
+                  transport ==
+                      device::FidoTransportProtocol::kUsbHumanInterfaceDevice
+              ? AuthenticatorStatus::SUCCESS
+              : AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          callback_receiver.status());
+    }
+  }
+}
+
 // Requests originating from cryptotoken should only target U2F devices.
 TEST_F(AuthenticatorImplTest, AttestationPermitted) {
   TestServiceManagerContext smc;
@@ -1043,15 +1104,6 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionU2fDeviceBackwardsCompatibility) {
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
-  auto mock_adapter =
-      base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
-  EXPECT_CALL(*mock_adapter, IsPresent())
-      .WillRepeatedly(::testing::Return(true));
-  device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
-  auto bluetooth_adapter_factory_overrides =
-      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
-  bluetooth_adapter_factory_overrides->SetLESupported(true);
-
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
@@ -1544,78 +1596,114 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
   const std::vector<TestCase> kTests = {
       {
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
+          "",
       },
       {
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
+          "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kStandardCommonName,
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kStandardCommonName,
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kStandardCommonName,
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kStandardCommonName,
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kStandardCommonName,
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
           kIndividualCommonName,
       },
   };
@@ -1638,32 +1726,42 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   const std::vector<TestCase> kTests = {
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
           // certificate will be removed, even if consent is given, because the
           // consent isn't to be tracked.
-          AttestationType::NONE, "",
+          AttestationType::NONE,
+          "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
           // certificate will be removed, even if consent is given, because the
           // consent isn't to be tracked.
-          AttestationType::NONE, "",
+          AttestationType::NONE,
+          "",
       },
 
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::U2F, kCommonName,
+          IndividualAttestation::REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::U2F,
+          kCommonName,
       },
   };
 
@@ -1694,24 +1792,31 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // attestation is requested, the self-attestation will be removed but,
           // because the transport is kInternal, the AAGUID will be preserved.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
-          AttestationType::NONE_WITH_NONZERO_AAGUID, "",
+          AttestationType::NONE_WITH_NONZERO_AAGUID,
+          "",
       },
       {
           // If attestation is requested, but denied, we'll still fail the
           // request.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           // If attestation is requested and granted, the self attestation
           // will be returned.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
-          AttestationType::SELF_WITH_NONZERO_AAGUID, "",
+          AttestationType::SELF_WITH_NONZERO_AAGUID,
+          "",
       },
   };
 
@@ -1728,22 +1833,31 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           // If no attestation is requested, we'll return the self attestation
           // rather than erasing it.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, AttestationType::SELF, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::SELF,
+          "",
       },
       {
           // If attestation is requested, but denied, we'll still fail the
           // request.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR,
+          AttestationType::ANY,
+          "",
       },
       {
           // If attestation is requested and granted, the self attestation will
           // be returned.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, AttestationType::SELF, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::SELF,
+          "",
       },
   };
 
@@ -1763,8 +1877,11 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // self-attestation should still be replaced with a "none"
           // attestation.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
+          "",
       },
   };
 
@@ -2101,11 +2218,10 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
 TEST_F(AuthenticatorImplRequestDelegateTest,
        TestRequestDelegateObservesFidoRequestHandler) {
   EnableFeature(features::kWebAuthBle);
-  auto mock_adapter =
-      base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
-  EXPECT_CALL(*mock_adapter, IsPresent())
+  SetUpMockBluetooth();
+
+  EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillRepeatedly(::testing::Return(true));
-  device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   auto bluetooth_adapter_factory_overrides =
       device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
   bluetooth_adapter_factory_overrides->SetLESupported(true);
