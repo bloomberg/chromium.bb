@@ -40,13 +40,14 @@ void SurfaceLayer::SetSurfaceId(const viz::SurfaceId& surface_id,
       deadline_policy.use_existing_deadline()) {
     return;
   }
-
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Embed.Flow",
-      TRACE_ID_GLOBAL(surface_id.local_surface_id().embed_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SetSurfaceId", "surface_id", surface_id.ToString());
+  if (surface_id.local_surface_id().is_valid()) {
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Embed.Flow",
+        TRACE_ID_GLOBAL(surface_id.local_surface_id().embed_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "SetSurfaceId", "surface_id", surface_id.ToString());
+  }
 
   if (layer_tree_host() && surface_range_.IsValid())
     layer_tree_host()->RemoveSurfaceRange(surface_range_);
