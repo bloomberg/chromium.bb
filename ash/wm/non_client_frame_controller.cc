@@ -255,7 +255,7 @@ NonClientFrameController::NonClientFrameController(
   params.delegate = this;
   params.bounds = bounds;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
-  params.layer_type = ui::LAYER_SOLID_COLOR;
+  params.layer_type = ui::LAYER_NOT_DRAWN;
   WmNativeWidgetAura* native_widget =
       new WmNativeWidgetAura(widget_, DoesClientProvideFrame(properties));
   window_ = native_widget->GetNativeView();
@@ -274,15 +274,6 @@ NonClientFrameController::NonClientFrameController(
   params.show_state = window_->GetProperty(aura::client::kShowStateKey);
   widget_->Init(params);
   did_init_native_widget_ = true;
-
-  // Only the caption draws any content. So the caption has its own layer (see
-  // above in WmNativeWidgetAura::CreateNonClientFrameView()). The rest of the
-  // region needs to take part in occlusion in the compositor, but not generate
-  // any content to draw. So the layer is marked as opaque and to draw
-  // solid-color (but the color is transparent, so nothing is actually drawn).
-  ui::Layer* layer = widget_->GetNativeWindow()->layer();
-  layer->SetColor(SK_ColorTRANSPARENT);
-  layer->SetFillsBoundsOpaquely(true);
 
   wm::MakeGestureDraggableInImmersiveMode(window_);
 }
