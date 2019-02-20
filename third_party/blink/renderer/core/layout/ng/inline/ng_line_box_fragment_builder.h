@@ -28,10 +28,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
  public:
   NGLineBoxFragmentBuilder(NGInlineNode node,
                            scoped_refptr<const ComputedStyle> style,
+                           const NGConstraintSpace* space,
                            WritingMode writing_mode,
                            TextDirection)
       : NGContainerFragmentBuilder(node,
                                    style,
+                                   space,
                                    writing_mode,
                                    TextDirection::kLtr),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),

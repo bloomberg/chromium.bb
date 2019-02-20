@@ -709,11 +709,11 @@ const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
     return nullptr;
 
   // Cached fragments are not for intermediate layout.
-  if (constraint_space_.IsIntermediateLayout())
+  if (ConstraintSpace().IsIntermediateLayout())
     return nullptr;
 
   // Block fragmentation is not supported yet.
-  if (constraint_space_.HasBlockFragmentation())
+  if (ConstraintSpace().HasBlockFragmentation())
     return nullptr;
 
   // Laying out from a break token is not supported yet, because this logic
@@ -727,7 +727,7 @@ const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
   if (!paint_fragment)
     return nullptr;
 
-  if (!inline_node.PrepareReuseFragments(constraint_space_))
+  if (!inline_node.PrepareReuseFragments(ConstraintSpace()))
     return nullptr;
 
   return paint_fragment;
@@ -2055,7 +2055,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (floats_bfc_block_offset)
     builder.SetFloatsBfcBlockOffset(floats_bfc_block_offset);
 
-  LayoutUnit clearance_offset = constraint_space_.IsNewFormattingContext()
+  LayoutUnit clearance_offset = ConstraintSpace().IsNewFormattingContext()
                                     ? LayoutUnit::Min()
                                     : ConstraintSpace().ClearanceOffset();
   if (child.IsBlock()) {
@@ -2346,7 +2346,7 @@ void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
       return;
     container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
   }
-  if (list_marker.AddToBox(constraint_space_, Style().GetFontBaseline(),
+  if (list_marker.AddToBox(ConstraintSpace(), Style().GetFontBaseline(),
                            *layout_result.PhysicalFragment(), content_offset,
                            &container_builder_, border_scrollbar_padding_))
     return;
@@ -2364,7 +2364,7 @@ void NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes() {
   // Position the list marker without aligning to line boxes.
   LayoutUnit marker_block_size =
       container_builder_.UnpositionedListMarker().AddToBoxWithoutLineBoxes(
-          constraint_space_, Style().GetFontBaseline(), &container_builder_);
+          ConstraintSpace(), Style().GetFontBaseline(), &container_builder_);
   container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
 
   // Whether the list marker should affect the block size or not is not

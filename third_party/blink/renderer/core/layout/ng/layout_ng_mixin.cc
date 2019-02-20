@@ -270,11 +270,17 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
 
-  if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
-      (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly()))
+  if (break_token)
     return nullptr;
 
-  const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
+  if (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly())
+    return nullptr;
+
+  if (!cached_result_)
+    return nullptr;
+
+  const NGConstraintSpace& old_space =
+      cached_result_->GetConstraintSpaceForCaching();
   if (!new_space.MaySkipLayout(old_space))
     return nullptr;
 
@@ -336,24 +342,23 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 
 template <typename Base>
 void LayoutNGMixin<Base>::SetCachedLayoutResult(
-    const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token,
-    const NGLayoutResult& layout_result) {
-  if (break_token || layout_result.Status() != NGLayoutResult::kSuccess) {
-    // We can't cache these yet
+    const NGLayoutResult& layout_result,
+    const NGBreakToken* break_token) {
+  if (break_token)
     return;
-  }
-  if (constraint_space.IsIntermediateLayout())
+  if (layout_result.Status() != NGLayoutResult::kSuccess)
+    return;
+  if (!layout_result.HasValidConstraintSpaceForCaching())
+    return;
+  if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
     return;
 
-  Base::cached_constraint_space_.reset(new NGConstraintSpace(constraint_space));
   cached_result_ = &layout_result;
 }
 
 template <typename Base>
 void LayoutNGMixin<Base>::ClearCachedLayoutResult() {
   cached_result_.reset();
-  Base::cached_constraint_space_.reset();
 }
 
 template <typename Base>
@@ -364,20 +369,20 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 
 template <typename Base>
 bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
-    const NGConstraintSpace& constraint_space) const {
-  if (!Base::cached_constraint_space_)
+    const NGConstraintSpace& new_space) const {
+  if (!cached_result_)
     return false;
-  const NGConstraintSpace& cached_constraint_space =
-      *Base::cached_constraint_space_;
-  DCHECK(cached_result_);
 
-  if (constraint_space.AvailableSize().inline_size !=
-      cached_constraint_space.AvailableSize().inline_size)
+  const NGConstraintSpace& old_space =
+      cached_result_->GetConstraintSpaceForCaching();
+
+  if (new_space.AvailableSize().inline_size !=
+      old_space.AvailableSize().inline_size)
     return false;
 
   // Floats in either cached or new constraint space prevents reusing cached
   // lines.
-  if (constraint_space.HasFloats() || cached_constraint_space.HasFloats())
+  if (new_space.HasFloats() || old_space.HasFloats())
     return false;
 
   // Any floats might need to move, causing lines to wrap differently, needing

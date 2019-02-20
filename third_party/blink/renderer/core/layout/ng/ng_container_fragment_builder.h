@@ -164,6 +164,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return *this;
   }
 
+  const NGConstraintSpace* ConstraintSpace() const { return space_; }
+
 #ifndef NDEBUG
   String ToString() const;
 #endif
@@ -198,12 +200,15 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
+                             const NGConstraintSpace* space,
                              WritingMode writing_mode,
                              TextDirection direction)
       : NGFragmentBuilder(std::move(style), writing_mode, direction),
-        node_(node) {}
+        node_(node),
+        space_(space) {}
 
   NGLayoutInputNode node_;
+  const NGConstraintSpace* space_;
 
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;
