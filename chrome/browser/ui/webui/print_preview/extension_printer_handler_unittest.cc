@@ -323,11 +323,6 @@ std::string RefCountedMemoryToString(
   return std::string(memory->front_as<char>(), memory->size());
 }
 
-base::Value GetJsonAsValue(base::StringPiece json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
-  return base::Value::FromUniquePtrValue(std::move(value));
-}
-
 // Fake PwgRasterConverter used in the tests.
 class FakePwgRasterConverter : public PwgRasterConverter {
  public:
@@ -722,7 +717,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kPdfSettings), print_data,
+      title, *base::JSONReader::Read(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -735,7 +730,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -758,7 +753,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kPdfSettings), print_data,
+      title, *base::JSONReader::Read(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -783,7 +778,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kAllTypesSettings), print_data,
+      title, *base::JSONReader::Read(kAllTypesSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -797,7 +792,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -820,7 +815,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -850,7 +845,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -873,7 +868,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kDuplexSettings), print_data,
+      title, *base::JSONReader::Read(kDuplexSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -903,7 +898,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(GetJsonAsValue(kPrintTicketWithDuplex), print_job->ticket);
+  EXPECT_EQ(*base::JSONReader::Read(kPrintTicketWithDuplex), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -926,7 +921,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -954,7 +949,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kInvalidSettings), print_data,
+      title, *base::JSONReader::Read(kInvalidSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -975,7 +970,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
