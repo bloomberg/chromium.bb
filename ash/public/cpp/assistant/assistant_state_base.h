@@ -31,8 +31,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return settings_enabled_;
   }
 
-  const base::Optional<bool>& setup_completed() const {
-    return setup_completed_;
+  const base::Optional<mojom::ConsentStatus>& consent_status() const {
+    return consent_status_;
   }
 
   const base::Optional<bool>& context_enabled() const {
@@ -59,8 +59,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Whether voice interaction is enabled in system settings.
   base::Optional<bool> settings_enabled_;
 
-  // Whether voice interaction setup flow has completed.
-  base::Optional<bool> setup_completed_;
+  // The status of the user's consent.
+  base::Optional<mojom::ConsentStatus> consent_status_;
 
   // Whether screen context is enabled.
   base::Optional<bool> context_enabled_;

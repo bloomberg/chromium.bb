@@ -109,10 +109,6 @@ const char kEngagementTimeOsVersion[] =
 // engagement time was last recorded. Accumulated results are sent to UMA if day
 // ID has changed.
 const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
-// A preference that indicates the user has accepted voice interaction activity
-// control settings.
-const char kVoiceInteractionActivityControlAccepted[] =
-    "settings.voice_interaction.activity_control.accepted";
 // A preference that indicates the user has allowed voice interaction services
 // to access the "context" (text and graphic content that is currently on
 // screen).
@@ -160,8 +156,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
 
   // Sorted in lexicographical order.
-  registry->RegisterBooleanPref(kVoiceInteractionActivityControlAccepted,
-                                false);
   registry->RegisterBooleanPref(kAlwaysOnVpnLockdown, false);
   registry->RegisterStringPref(kAlwaysOnVpnPackage, std::string());
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);

@@ -61,7 +61,8 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnVoiceInteractionConsentStatusUpdated(
+      mojom::ConsentStatus consent_status) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;

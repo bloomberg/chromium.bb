@@ -286,6 +286,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/fast_transition_observer.h"
@@ -297,6 +298,11 @@
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#endif
+
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -394,6 +400,10 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
 
+// Deprecated 2/2019.
+const char kVoiceInteractionActivityControlAcceptedDeprecated[] =
+    "settings.voice_interaction.activity_control.accepted";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -423,6 +433,9 @@ void RegisterProfilePrefsForMigration(
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(kLastUpdateCheck, 0);
   registry->RegisterIntegerPref(kNextUpdateCheck, 0);
+
+  registry->RegisterBooleanPref(
+      kVoiceInteractionActivityControlAcceptedDeprecated, false);
 }
 
 }  // namespace
@@ -760,6 +773,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
   policy::DeviceStatusCollector::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  assistant::prefs::RegisterProfilePrefs(registry);
+#endif
+
 #endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
@@ -834,6 +852,29 @@ void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
 }
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+
+bool MigrateVoiceInteractionActivityControlAccepted(
+    PrefService* profile_prefs) {
+  const base::Value* activity_control_accepted =
+      profile_prefs->GetUserPrefValue(
+          kVoiceInteractionActivityControlAcceptedDeprecated);
+
+  if (!activity_control_accepted)
+    return false;
+
+  ash::mojom::ConsentStatus consent_status =
+      activity_control_accepted->GetBool()
+          ? ash::mojom::ConsentStatus::kActivityControlAccepted
+          : ash::mojom::ConsentStatus::kUnknown;
+
+  assistant::prefs::SetConsentStatus(profile_prefs, consent_status);
+  return true;
+}
+
+#endif
+
 #endif
 
 // This method should be periodically pruned of year+ old migrations.
@@ -908,11 +949,21 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Added 12/2018.
   profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // Added 2/2019.
+  if (MigrateVoiceInteractionActivityControlAccepted(profile_prefs)) {
+    profile_prefs->ClearPref(
+        kVoiceInteractionActivityControlAcceptedDeprecated);
+  }
+#endif
+
 #endif
 
   // Added 1/2019.
   profile_prefs->ClearPref(kLastUpdateCheck);
   profile_prefs->ClearPref(kNextUpdateCheck);
+
   syncer::MigrateSessionsToProxyTabsPrefs(profile_prefs);
   syncer::ClearObsoleteUserTypePrefs(profile_prefs);
 

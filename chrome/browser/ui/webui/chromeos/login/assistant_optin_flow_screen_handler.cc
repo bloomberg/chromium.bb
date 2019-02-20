@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -216,8 +217,8 @@ void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
             weak_factory_.GetWeakPtr()));
   } else {
     RecordAssistantOptInStatus(ACTIVITY_CONTROL_SKIPPED);
-    profile->GetPrefs()->SetBoolean(
-        arc::prefs::kVoiceInteractionActivityControlAccepted, false);
+    ::assistant::prefs::SetConsentStatus(profile->GetPrefs(),
+                                         ash::mojom::ConsentStatus::kUnknown);
     HandleFlowFinished();
   }
 }
@@ -314,12 +315,17 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
     // No need to consent. Move to the next screen.
     activity_control_needed_ = false;
     PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(
-        arc::prefs::kVoiceInteractionActivityControlAccepted,
-        (settings_ui.consent_flow_ui().consent_status() ==
-             assistant::ConsentFlowUi_ConsentStatus_ALREADY_CONSENTED ||
-         settings_ui.consent_flow_ui().consent_status() ==
-             assistant::ConsentFlowUi_ConsentStatus_ASK_FOR_CONSENT));
+
+    bool consented =
+        settings_ui.consent_flow_ui().consent_status() ==
+            assistant::ConsentFlowUi_ConsentStatus_ALREADY_CONSENTED ||
+        settings_ui.consent_flow_ui().consent_status() ==
+            assistant::ConsentFlowUi_ConsentStatus_ASK_FOR_CONSENT;
+
+    ::assistant::prefs::SetConsentStatus(
+        prefs, consented ? ash::mojom::ConsentStatus::kActivityControlAccepted
+                         : ash::mojom::ConsentStatus::kUnknown);
+
     // Skip activity control and users will be in opted out mode.
     ShowNextScreen();
   } else {
@@ -380,8 +386,8 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     } else if (activity_control_needed_) {
       activity_control_needed_ = false;
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        true);
+      ::assistant::prefs::SetConsentStatus(
+          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
     }
   }
 

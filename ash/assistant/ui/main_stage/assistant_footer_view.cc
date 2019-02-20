@@ -68,47 +68,52 @@ void AssistantFooterView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Initial view state is based on user consent state.
-  const bool setup_completed =
-      delegate_->VoiceInteractionControllerSetupCompleted();
+  const bool consent_given = delegate_->GetConsentStatus() ==
+                             mojom::ConsentStatus::kActivityControlAccepted;
+
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(delegate_);
-  suggestion_container_->set_can_process_events_within_subtree(setup_completed);
+  suggestion_container_->set_can_process_events_within_subtree(consent_given);
 
   // Suggestion container will be animated on its own layer.
   suggestion_container_->SetPaintToLayer();
   suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
-  suggestion_container_->layer()->SetOpacity(setup_completed ? 1.f : 0.f);
-  suggestion_container_->SetVisible(setup_completed);
+  suggestion_container_->layer()->SetOpacity(consent_given ? 1.f : 0.f);
+  suggestion_container_->SetVisible(consent_given);
 
   AddChildView(suggestion_container_);
 
   // Opt in view.
   opt_in_view_ = new AssistantOptInView();
-  opt_in_view_->set_can_process_events_within_subtree(!setup_completed);
+  opt_in_view_->set_can_process_events_within_subtree(!consent_given);
   opt_in_view_->set_delegate(delegate_->GetOptInDelegate());
 
   // Opt in view will be animated on its own layer.
   opt_in_view_->SetPaintToLayer();
   opt_in_view_->layer()->SetFillsBoundsOpaquely(false);
-  opt_in_view_->layer()->SetOpacity(setup_completed ? 0.f : 1.f);
-  opt_in_view_->SetVisible(!setup_completed);
+  opt_in_view_->layer()->SetOpacity(consent_given ? 0.f : 1.f);
+  opt_in_view_->SetVisible(!consent_given);
 
   AddChildView(opt_in_view_);
 }
 
-void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
+void AssistantFooterView::OnVoiceInteractionConsentStatusUpdated(
+    mojom::ConsentStatus consent_status) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
   using assistant::util::StartLayerAnimationSequence;
 
+  const bool consent_given =
+      consent_status == mojom::ConsentStatus::kActivityControlAccepted;
+
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
-      completed ? static_cast<views::View*>(opt_in_view_)
-                : static_cast<views::View*>(suggestion_container_);
+      consent_given ? static_cast<views::View*>(opt_in_view_)
+                    : static_cast<views::View*>(suggestion_container_);
 
   views::View* show_view =
-      completed ? static_cast<views::View*>(suggestion_container_)
-                : static_cast<views::View*>(opt_in_view_);
+      consent_given ? static_cast<views::View*>(suggestion_container_)
+                    : static_cast<views::View*>(opt_in_view_);
 
   // Reset visibility to enable animation.
   hide_view->SetVisible(true);
@@ -146,14 +151,14 @@ void AssistantFooterView::OnAnimationStarted(
 
 bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  const bool setup_completed =
-      delegate_->VoiceInteractionControllerSetupCompleted();
+  const bool consent_given = delegate_->GetConsentStatus() ==
+                             mojom::ConsentStatus::kActivityControlAccepted;
 
   // Only the view relevant to our consent state should process events.
-  suggestion_container_->set_can_process_events_within_subtree(setup_completed);
-  suggestion_container_->SetVisible(setup_completed);
-  opt_in_view_->set_can_process_events_within_subtree(!setup_completed);
-  opt_in_view_->SetVisible(!setup_completed);
+  suggestion_container_->set_can_process_events_within_subtree(consent_given);
+  suggestion_container_->SetVisible(consent_given);
+  opt_in_view_->set_can_process_events_within_subtree(!consent_given);
+  opt_in_view_->SetVisible(!consent_given);
 
   // Return false to prevent the observer from destroying itself.
   return false;

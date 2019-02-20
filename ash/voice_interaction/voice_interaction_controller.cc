@@ -83,16 +83,17 @@ void VoiceInteractionController::NotifyHotwordAlwaysOn(bool always_on) {
     observer.OnVoiceInteractionHotwordAlwaysOn(always_on);
 }
 
-void VoiceInteractionController::NotifySetupCompleted(bool completed) {
-  if (setup_completed_.has_value() && setup_completed_.value() == completed)
+void VoiceInteractionController::NotifyConsentStatus(
+    mojom::ConsentStatus consent_status) {
+  if (consent_status_.has_value() && consent_status_.value() == consent_status)
     return;
 
-  setup_completed_ = completed;
-  observers_.ForAllPtrs([completed](auto* observer) {
-    observer->OnVoiceInteractionSetupCompleted(completed);
+  consent_status_ = consent_status;
+  observers_.ForAllPtrs([consent_status](auto* observer) {
+    observer->OnVoiceInteractionConsentStatusUpdated(consent_status);
   });
   for (auto& observer : local_observers_)
-    observer.OnVoiceInteractionSetupCompleted(completed);
+    observer.OnVoiceInteractionConsentStatusUpdated(consent_status);
 }
 
 void VoiceInteractionController::NotifyFeatureAllowed(
@@ -156,8 +157,8 @@ void VoiceInteractionController::InitObserver(
     observer->OnVoiceInteractionContextEnabled(context_enabled_.value());
   if (hotword_enabled_.has_value())
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-  if (setup_completed_.has_value())
-    observer->OnVoiceInteractionSetupCompleted(setup_completed_.value());
+  if (consent_status_.has_value())
+    observer->OnVoiceInteractionConsentStatusUpdated(consent_status_.value());
   if (hotword_always_on_.has_value())
     observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())

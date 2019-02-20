@@ -26,7 +26,7 @@ class FakeVoiceInteractionController
   void NotifyContextEnabled(bool enabled) override;
   void NotifyHotwordAlwaysOn(bool enabled) override;
   void NotifyHotwordEnabled(bool enabled) override;
-  void NotifySetupCompleted(bool completed) override;
+  void NotifyConsentStatus(ash::mojom::ConsentStatus consent_status) override;
   void NotifyFeatureAllowed(ash::mojom::AssistantAllowedState state) override;
   void NotifyNotificationEnabled(bool enabled) override;
   void NotifyLocaleChanged(const std::string& locale) override;
@@ -45,8 +45,8 @@ class FakeVoiceInteractionController
   bool voice_interaction_hotword_enabled() const {
     return voice_interaction_hotword_enabled_;
   }
-  bool voice_interaction_setup_completed() const {
-    return voice_interaction_setup_completed_;
+  ash::mojom::ConsentStatus voice_interaction_consent_status() const {
+    return consent_status_;
   }
   ash::mojom::AssistantAllowedState assistant_allowed_state() const {
     return assistant_allowed_state_;
@@ -64,7 +64,8 @@ class FakeVoiceInteractionController
   bool voice_interaction_context_enabled_ = false;
   bool voice_interaction_hotword_always_on_ = false;
   bool voice_interaction_hotword_enabled_ = false;
-  bool voice_interaction_setup_completed_ = false;
+  ash::mojom::ConsentStatus consent_status_ =
+      ash::mojom::ConsentStatus::kUnknown;
   bool voice_interaction_notification_enabled_ = false;
   std::string locale_;
   ash::mojom::AssistantAllowedState assistant_allowed_state_ =

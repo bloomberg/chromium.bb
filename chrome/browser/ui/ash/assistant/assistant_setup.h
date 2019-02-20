@@ -28,7 +28,7 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
       ash::mojom::FlowType type,
       StartAssistantOptInFlowCallback callback) override;
 
-  // If prefs::kVoiceInteractionActivityControlAccepted is nullptr, means the
+  // If prefs::kVoiceInteractionConsentStatus is nullptr, means the
   // pref is not set by user. Therefore we need to start OOBE.
   void MaybeStartAssistantOptInFlow();
 

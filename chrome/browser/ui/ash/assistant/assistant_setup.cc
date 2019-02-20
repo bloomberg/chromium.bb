@@ -20,6 +20,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/grit/generated_resources.h"
@@ -188,29 +189,25 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
     case ConsentFlowUi::ASK_FOR_CONSENT:
       if (consent_ui.has_activity_control_ui() &&
           consent_ui.activity_control_ui().setting_zippy().size()) {
-        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                          false);
+        assistant::prefs::SetConsentStatus(
+            prefs, ash::mojom::ConsentStatus::kNotFound);
       } else {
-        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                          true);
+        assistant::prefs::SetConsentStatus(
+            prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
       }
       break;
     case ConsentFlowUi::ERROR_ACCOUNT:
-      // Show the opted out mode UI for unsupported Account as they are in opted
-      // out mode.
-      // TODO(llin): we should show a error account message in Opted out UI or
-      // in the onboarding flow.
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        false);
+      assistant::prefs::SetConsentStatus(
+          prefs, ash::mojom::ConsentStatus::kUnauthorized);
       break;
     case ConsentFlowUi::ALREADY_CONSENTED:
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        true);
+      assistant::prefs::SetConsentStatus(
+          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
       break;
     case ConsentFlowUi::UNSPECIFIED:
     case ConsentFlowUi::ERROR:
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        false);
+      assistant::prefs::SetConsentStatus(prefs,
+                                         ash::mojom::ConsentStatus::kUnknown);
       LOG(ERROR) << "Invalid activity control consent status.";
   }
 }
@@ -219,7 +216,7 @@ void AssistantSetup::MaybeStartAssistantOptInFlow() {
   auto* pref_service = ProfileManager::GetActiveUserProfile()->GetPrefs();
   DCHECK(pref_service);
   if (!pref_service->GetUserPrefValue(
-          arc::prefs::kVoiceInteractionActivityControlAccepted)) {
+          assistant::prefs::kAssistantConsentStatus)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
                                   weak_factory_.GetWeakPtr(),

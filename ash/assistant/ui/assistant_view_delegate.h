@@ -123,6 +123,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       const GURL& url,
       mojom::AssistantImageDownloader::DownloadCallback callback) = 0;
 
+  // Returns the status of the user's consent.
+  virtual mojom::ConsentStatus GetConsentStatus() const = 0;
+
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;
 
@@ -147,9 +150,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.
   virtual void OpenUrlFromView(const GURL& url) = 0;
-
-  // Returns true if voice interaction controller setup completed.
-  virtual bool VoiceInteractionControllerSetupCompleted() const = 0;
 };
 
 }  // namespace ash
