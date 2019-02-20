@@ -101,7 +101,7 @@ class DeclarativeNetRequestAddDynamicRulesFunction
  public:
   DeclarativeNetRequestAddDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addDynamicRules",
-                             DECLARATIVENETREQUEST_ADDDYNAMICRULES);
+                             DECLARATIVENETREQUEST_ADDDYNAMICRULES)
 
  protected:
   ~DeclarativeNetRequestAddDynamicRulesFunction() override;
@@ -119,7 +119,7 @@ class DeclarativeNetRequestRemoveDynamicRulesFunction
  public:
   DeclarativeNetRequestRemoveDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeDynamicRules",
-                             DECLARATIVENETREQUEST_REMOVEDYNAMICRULES);
+                             DECLARATIVENETREQUEST_REMOVEDYNAMICRULES)
 
  protected:
   ~DeclarativeNetRequestRemoveDynamicRulesFunction() override;
@@ -137,7 +137,7 @@ class DeclarativeNetRequestGetDynamicRulesFunction
  public:
   DeclarativeNetRequestGetDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getDynamicRules",
-                             DECLARATIVENETREQUEST_GETDYNAMICRULES);
+                             DECLARATIVENETREQUEST_GETDYNAMICRULES)
 
  protected:
   ~DeclarativeNetRequestGetDynamicRulesFunction() override;

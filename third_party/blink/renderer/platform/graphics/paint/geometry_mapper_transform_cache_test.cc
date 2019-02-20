@@ -50,7 +50,7 @@ class GeometryMapperTransformCacheTest : public testing::Test {
     TransformationMatrix actual_from_plane_root;
     cache.ApplyFromPlaneRoot(actual_from_plane_root);
     EXPECT_EQ(TransformationMatrix().Translate(-x, -y), actual_from_plane_root);
-  };
+  }
 
   static void CheckRootAsPlaneRoot(
       const TransformPaintPropertyNode& node,

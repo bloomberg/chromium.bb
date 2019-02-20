@@ -394,7 +394,7 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     NOTREACHED();
     return nullptr;
-  };
+  }
   scoped_refptr<CanvasResource> MakeUnaccelerated() final {
     NOTREACHED();
     return nullptr;

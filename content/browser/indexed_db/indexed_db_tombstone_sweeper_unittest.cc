@@ -70,7 +70,7 @@ MATCHER_P(SliceEq,
               base::HexEncode(str.data(), str.size())) {
   *result_listener << "which is " << base::HexEncode(arg.data(), arg.size());
   return std::string(arg.data(), arg.size()) == str;
-};
+}
 
 class MockTickClock : public base::TickClock {
  public:

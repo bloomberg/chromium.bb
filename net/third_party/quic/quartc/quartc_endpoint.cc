@@ -66,7 +66,7 @@ class QuartcAlarmEndpointImpl : public QuartcEndpointImpl {
     CreateSessionDelegate(QuartcAlarmEndpointImpl* endpoint)
         : endpoint_(endpoint) {}
 
-    void OnAlarm() override { endpoint_->OnCreateSessionAlarm(); };
+    void OnAlarm() override { endpoint_->OnCreateSessionAlarm(); }
 
    private:
     QuartcAlarmEndpointImpl* endpoint_;

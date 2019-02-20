@@ -397,5 +397,5 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
         ::testing::Bool()));
 
-};  // namespace test
+}  // namespace test
 }  // namespace net
