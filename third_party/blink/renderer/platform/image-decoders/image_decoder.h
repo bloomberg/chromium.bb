@@ -325,7 +325,9 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
   virtual bool CanDecodeToYUV() { return false; }
-  virtual bool DecodeToYUV() { return false; }
+  // Should only be called if CanDecodeToYuv() returns true, in which case
+  // the subclass of ImageDecoder must override this method.
+  virtual void DecodeToYUV() { NOTREACHED(); }
   virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
 
  protected:
