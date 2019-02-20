@@ -40,6 +40,11 @@ class PLATFORM_EXPORT SourceKeyedCachedMetadataHandler final
   }
   void OnMemoryDump(WebProcessMemoryDump* pmd,
                     const String& dump_prefix) const override;
+  size_t GetCodeCacheSize() const override {
+    // No need to implement this as inline scripts are not kept in
+    // blink::MemoryCache
+    return 0;
+  }
 
   void SetSerializedCachedMetadata(const uint8_t*, size_t);
 

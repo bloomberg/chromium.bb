@@ -43,6 +43,7 @@ class ServiceWorkerScriptCachedMetadataHandler
   bool IsServedFromCacheStorage() const override;
   void OnMemoryDump(WebProcessMemoryDump* pmd,
                     const String& dump_prefix) const override;
+  size_t GetCodeCacheSize() const override;
 
  private:
   Member<WorkerGlobalScope> worker_global_scope_;
