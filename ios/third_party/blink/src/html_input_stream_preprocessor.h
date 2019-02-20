@@ -28,6 +28,7 @@
 #ifndef InputStreamPreprocessor_h
 #define InputStreamPreprocessor_h
 
+#include "base/macros.h"
 #include "html_character_provider.h"
 
 namespace WebCore {
@@ -35,7 +36,6 @@ namespace WebCore {
 // http://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
 template <typename Tokenizer>
 class InputStreamPreprocessor {
-    WTF_MAKE_NONCOPYABLE(InputStreamPreprocessor);
 public:
     InputStreamPreprocessor(Tokenizer* tokenizer)
         : m_tokenizer(tokenizer)
@@ -125,6 +125,8 @@ private:
     // http://www.whatwg.org/specs/web-apps/current-work/#next-input-character
     UChar m_nextInputCharacter;
     bool m_skipNextNewLine;
+
+    DISALLOW_COPY_AND_ASSIGN(InputStreamPreprocessor);
 };
 
 }

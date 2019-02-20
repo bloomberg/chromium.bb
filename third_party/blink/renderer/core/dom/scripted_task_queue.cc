@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_task_queue_post_callback.h"
@@ -18,8 +19,6 @@ namespace blink {
 
 class ScriptedTaskQueue::WrappedCallback
     : public GarbageCollectedFinalized<WrappedCallback> {
-  WTF_MAKE_NONCOPYABLE(WrappedCallback);
-
  public:
   WrappedCallback(V8TaskQueuePostCallback* callback,
                   ScriptPromiseResolver* resolver,
@@ -44,6 +43,8 @@ class ScriptedTaskQueue::WrappedCallback
   TraceWrapperMember<V8TaskQueuePostCallback> callback_;
   Member<ScriptPromiseResolver> resolver_;
   TaskHandle task_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrappedCallback);
 };
 
 ScriptedTaskQueue::ScriptedTaskQueue(ExecutionContext* context,

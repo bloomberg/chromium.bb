@@ -107,7 +107,6 @@ current location][4] Source/platform/wtf.
 [Compiler.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/compiler.h
 [CPU.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/cpu.h
 [build_config.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/build_config.h
-[Noncopyable.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/noncopyable.h
 [StdLibExtras.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/std_lib_extras.h
 [Time.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/time.h
 [1]: https://chromium.googlesource.com/chromium/src/+/e372c152fc6e57743ebc508fe17f6eb131b4ff8d

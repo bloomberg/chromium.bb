@@ -100,7 +100,6 @@ jumbo_component("wtf") {
     "list_hash_set.h",
     "locker.h",
     "math_extras.h",
-    "noncopyable.h",
     "not_found.h",
     "pod_arena.h",
     "pod_free_list_arena.h",

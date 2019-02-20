@@ -11,8 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 
-#define WTF_MAKE_NONCOPYABLE(x) DISALLOW_COPY_AND_ASSIGN(x)
-
 #define ASSERT(x) DCHECK(x)
 #define ASSERT_NOT_REACHED NOTREACHED
 
