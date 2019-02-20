@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/task_annotator.h"
+#include "base/task/common/task_annotator.h"
 
 #include <array>
 
@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 
 namespace base {
-namespace debug {
 
 namespace {
 
@@ -63,7 +62,7 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   DCHECK(trace_event_name);
   DCHECK(pending_task);
 
-  ScopedTaskRunActivity task_activity(*pending_task);
+  debug::ScopedTaskRunActivity task_activity(*pending_task);
 
   TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
@@ -124,5 +123,4 @@ void TaskAnnotator::ClearObserverForTesting() {
   g_task_annotator_observer = nullptr;
 }
 
-}  // namespace debug
 }  // namespace base

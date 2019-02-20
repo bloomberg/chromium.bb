@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/task_annotator.h"
+#include "base/task/common/task_annotator.h"
 
 #include <algorithm>
 #include <vector>
@@ -23,7 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace debug {
 namespace {
 
 void TestTask(int* result) {
@@ -366,5 +365,4 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedNested) {
   run_loop.Run();
 }
 
-}  // namespace debug
 }  // namespace base

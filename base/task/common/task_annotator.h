@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_DEBUG_TASK_ANNOTATOR_H_
-#define BASE_DEBUG_TASK_ANNOTATOR_H_
+#ifndef BASE_TASK_COMMON_TASK_ANNOTATOR_H_
+#define BASE_TASK_COMMON_TASK_ANNOTATOR_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,6 @@
 
 namespace base {
 struct PendingTask;
-namespace debug {
 
 // Implements common debug annotations for posted tasks. This includes data
 // such as task origins, queueing durations and memory usage.
@@ -55,7 +54,6 @@ class BASE_EXPORT TaskAnnotator {
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotator);
 };
 
-}  // namespace debug
 }  // namespace base
 
-#endif  // BASE_DEBUG_TASK_ANNOTATOR_H_
+#endif  // BASE_TASK_COMMON_TASK_ANNOTATOR_H_
