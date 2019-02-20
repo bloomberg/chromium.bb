@@ -66,6 +66,9 @@
 namespace autofill {
 namespace {
 
+const char kPrimaryAccountEmail[] = "syncuser@example.com";
+const char kSyncTransportAccountEmail[] = "transport@example.com";
+
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
@@ -202,7 +205,8 @@ class PersonalDataManagerTestBase {
 
     personal_data->AddObserver(&personal_data_observer_);
     AccountInfo account_info;
-    account_info.email = "sync@account";
+    account_info.email = use_sync_transport_mode ? kSyncTransportAccountEmail
+                                                 : kPrimaryAccountEmail;
     sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_sync_transport_mode);
     personal_data->OnSyncServiceInitialized(&sync_service_);
@@ -222,7 +226,7 @@ class PersonalDataManagerTestBase {
   }
 
   void EnableWalletCardImport() {
-    identity_test_env_.MakePrimaryAccountAvailable("syncuser@example.com");
+    identity_test_env_.MakePrimaryAccountAvailable(kPrimaryAccountEmail);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOfferStoreUnmaskedWalletCards);
   }
@@ -274,7 +278,7 @@ class PersonalDataManagerTestBase {
 
   AccountInfo SetActiveSecondaryAccount() {
     AccountInfo account_info;
-    account_info.email = "signed_in_account@email.com";
+    account_info.email = kSyncTransportAccountEmail;
     account_info.account_id = "account_id";
     sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(false);
@@ -335,12 +339,6 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
 
   bool TurnOnSyncFeature() {
     return PersonalDataManagerTestBase::TurnOnSyncFeature(personal_data_.get());
-  }
-
-  void EnableWalletCardImport() {
-    identity_test_env_.MakePrimaryAccountAvailable("syncuser@example.com");
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableOfferStoreUnmaskedWalletCards);
   }
 
   void EnableAutofillProfileCleanup() {
@@ -5427,7 +5425,7 @@ TEST_F(PersonalDataManagerTest,
 
   // Make sure that the added address has the email address of the currently
   // signed-in user.
-  EXPECT_EQ(base::UTF8ToUTF16("syncuser@example.com"),
+  EXPECT_EQ(base::UTF8ToUTF16(kPrimaryAccountEmail),
             profiles[0]->GetRawInfo(EMAIL_ADDRESS));
 }
 
@@ -7317,18 +7315,15 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Disabled) {
 }
 
 TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
-  const std::string kIdentityManagerAccountEmail = "identity_account@email.com";
-  const std::string kSyncServiceAccountEmail = "active_sync_account@email.com";
-
   // Make the IdentityManager return a non-empty AccountInfo when
   // GetPrimaryAccountInfo() is called.
-  identity_test_env_.SetPrimaryAccount(kIdentityManagerAccountEmail);
+  identity_test_env_.SetPrimaryAccount(kPrimaryAccountEmail);
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // Make the sync service return a non-empty AccountInfo when
   // GetAuthenticatedAccountInfo() is called.
   AccountInfo active_info;
-  active_info.email = kSyncServiceAccountEmail;
+  active_info.email = kSyncTransportAccountEmail;
   sync_service_.SetAuthenticatedAccountInfo(active_info);
 
   // The IdentityManager's AccountInfo should be returned by default.
@@ -7339,7 +7334,7 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
         /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage,
                                features::kAutofillGetPaymentsIdentityFromSync});
 
-    EXPECT_EQ(kIdentityManagerAccountEmail,
+    EXPECT_EQ(kPrimaryAccountEmail,
               personal_data_->GetAccountInfoForPaymentsServer().email);
   }
 
@@ -7351,7 +7346,7 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
         /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync});
 
-    EXPECT_EQ(kSyncServiceAccountEmail,
+    EXPECT_EQ(kSyncTransportAccountEmail,
               personal_data_->GetAccountInfoForPaymentsServer().email);
   }
 
@@ -7363,7 +7358,7 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
         /*enabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync},
         /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage});
 
-    EXPECT_EQ(kSyncServiceAccountEmail,
+    EXPECT_EQ(kSyncTransportAccountEmail,
               personal_data_->GetAccountInfoForPaymentsServer().email);
   }
 }
@@ -7396,7 +7391,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set everything up so that the proposition should be shown.
   // Set an an active secondary account.
   AccountInfo active_info;
-  active_info.email = "signed_in_account@email.com";
+  active_info.email = kPrimaryAccountEmail;
   active_info.account_id = "account_id";
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
@@ -7521,7 +7516,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set everything up so that the proposition should be shown on Desktop.
   // Set an an active secondary account.
   AccountInfo active_info;
-  active_info.email = "signed_in_account@email.com";
+  active_info.email = kPrimaryAccountEmail;
   active_info.account_id = "account_id";
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
@@ -7654,7 +7649,7 @@ TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
 
   // Simulate that the user has enabled the sync feature.
   AccountInfo primary_account_info;
-  primary_account_info.email = "active_sync_account@email.com";
+  primary_account_info.email = kPrimaryAccountEmail;
   sync_service_.SetAuthenticatedAccountInfo(primary_account_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(true);
 // MakePrimaryAccountAvailable is not supported on CrOS.
@@ -7688,8 +7683,9 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   // Make a non-primary account available with both a refresh token and cookie
   // to be in Sync Transport for Wallet mode.
   AccountInfo active_info;
-  active_info.email = "test@gmail.com";
+  active_info.email = kSyncTransportAccountEmail;
   active_info.account_id = "account_id";
+  // TODO(treib): This seems wrong, we want a NON-primary account here.
   identity_test_env_.SetPrimaryAccount(active_info.email);
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
