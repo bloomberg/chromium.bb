@@ -361,6 +361,7 @@ Polymer({
     const index =
         Math.max(0, Math.min(this.selectedItem_.index, this.siteGroupMap.size));
     this.$.allSitesList.focusItem(index);
+    this.selectedItem_ = null;
   },
 
   /**
