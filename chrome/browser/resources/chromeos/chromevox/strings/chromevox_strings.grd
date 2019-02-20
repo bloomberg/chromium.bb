@@ -3043,6 +3043,26 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of a link's text." name="IDS_CHROMEVOX_LINK_END">
         Link end
       </message>
+
+      <message desc="Spoken when a user navigates to the beginning of a font family's text, e.g. 'Arial start'" name="IDS_CHROMEVOX_FONT_FAMILY_START">
+        <ph name="font_family">$1</ph> start
+      </message>
+      <message desc="Spoken when a user navigates to the end of a font family's text, e.g. 'Arial end'" name="IDS_CHROMEVOX_FONT_FAMILY_END">
+        <ph name="font_family">$1</ph> end
+      </message>
+      <message desc="Spoken when a user navigates to the beginning of a font size's text, e.g. 'Size 12 start'" name="IDS_CHROMEVOX_FONT_SIZE_START">
+        Size <ph name="font_size">$1</ph> start
+      </message>
+      <message desc="Spoken when a user navigates to the end of a font size's text, e.g. 'Size 12 end'" name="IDS_CHROMEVOX_FONT_SIZE_END">
+        Size <ph name="font_size">$1</ph> end
+      </message>
+      <message desc="Spoken when a user navigates to the beginning of a font color's text, e.g. 'Red start'" name="IDS_CHROMEVOX_FONT_COLOR_START">
+        <ph name="font_color">$1</ph> start
+      </message>
+      <message desc="Spoken when a user navigates to the end of a font color's text, e.g. 'Red end'" name="IDS_CHROMEVOX_FONT_COLOR_END">
+        <ph name="font_color">$1</ph> end
+      </message>
+
       <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
         Please enable the on screen keyboard under status tray, accessibility to use extended braille commands.
       </message>

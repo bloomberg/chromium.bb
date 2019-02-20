@@ -234,6 +234,19 @@ function AutomationRichEditableText(node) {
       root.anchorObject, root.anchorOffset, root.focusObject, root.focusOffset);
 
   this.updateIntraLineState_(this.line_);
+
+  /**
+   * @private {string|undefined}
+   */
+  this.fontFamily_;
+  /**
+   * @private {number|undefined}
+   */
+  this.fontSize_;
+  /**
+   * @private {string|undefined}
+   */
+  this.fontColor_;
 }
 
 AutomationRichEditableText.prototype = {
@@ -550,25 +563,57 @@ AutomationRichEditableText.prototype = {
    */
   speakTextStyle_: function(style, opt_end) {
     var msgs = [];
-    if (style.state.linked)
-      msgs.push(opt_end ? 'link_end' : 'link_start');
-    if (style.subscript)
-      msgs.push(opt_end ? 'subscript_end' : 'subscript_start');
-    if (style.superscript)
-      msgs.push(opt_end ? 'superscript_end' : 'superscript_start');
-    if (style.bold)
-      msgs.push(opt_end ? 'bold_end' : 'bold_start');
-    if (style.italic)
-      msgs.push(opt_end ? 'italic_end' : 'italic_start');
-    if (style.underline)
-      msgs.push(opt_end ? 'underline_end' : 'underline_start');
-    if (style.lineThrough)
-      msgs.push(opt_end ? 'line_through_end' : 'line_through_start');
+    var fontFamily = style.fontFamily;
+    var fontSize = style.fontSize;
+    var fontColor = Color.getColorDescription(style.color);
+    var msg;
+
+    if (fontSize && (fontSize !== this.fontSize_)) {
+      this.fontSize_ = fontSize;
+      msg = opt_end ? 'font_size_end' : 'font_size_start';
+      msgs.push({'msg': msg, 'opt_subs': [this.fontSize_]});
+    }
+    if (fontColor && (fontColor !== this.fontColor_)) {
+      this.fontColor_ = fontColor;
+      msg = opt_end ? 'font_color_end' : 'font_color_start';
+      msgs.push({'msg': msg, 'opt_subs': [this.fontColor_]});
+    }
+    if (style.state.linked) {
+      msgs.push(opt_end ? {'msg': 'link_end'} : {'msg': 'link_start'});
+    }
+    if (style.subscript) {
+      msgs.push(
+          opt_end ? {'msg': 'subscript_end'} : {'msg': 'subscript_start'});
+    }
+    if (style.superscript) {
+      msgs.push(
+          opt_end ? {'msg': 'superscript_end'} : {'msg': 'superscript_start'});
+    }
+    if (style.bold) {
+      msgs.push(opt_end ? {'msg': 'bold_end'} : {'msg': 'bold_start'});
+    }
+    if (style.italic) {
+      msgs.push(opt_end ? {'msg': 'italic_end'} : {'msg': 'italic_start'});
+    }
+    if (style.underline) {
+      msgs.push(
+          opt_end ? {'msg': 'underline_end'} : {'msg': 'underline_start'});
+    }
+    if (style.lineThrough) {
+      msgs.push(
+          opt_end ? {'msg': 'line_through_end'} :
+                    {'msg': 'line_through_start'});
+    }
+    if (fontFamily && (fontFamily !== this.fontFamily_)) {
+      this.fontFamily_ = fontFamily;
+      msg = opt_end ? 'font_family_end' : 'font_family_start';
+      msgs.push({'msg': msg, 'opt_subs': [this.fontFamily_]});
+    }
 
     if (msgs.length) {
-      msgs.forEach(function(msg) {
+      msgs.forEach(function(obj) {
         cvox.ChromeVox.tts.speak(
-            Msgs.getMsg(msg), cvox.QueueMode.QUEUE,
+            Msgs.getMsg(obj['msg'], obj['opt_subs']), cvox.QueueMode.QUEUE,
             cvox.AbstractTts.PERSONALITY_ANNOTATION);
       });
     }

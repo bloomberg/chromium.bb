@@ -1287,6 +1287,18 @@ chrome.automation.AutomationNode.prototype.underline;
 chrome.automation.AutomationNode.prototype.lineThrough;
 
 /**
+ * The font family of this node.
+ * @type {string|undefined}
+ */
+chrome.automation.AutomationNode.prototype.fontFamily;
+
+/**
+ * The font size of this node.
+ * @type {number|undefined}
+ */
+chrome.automation.AutomationNode.prototype.fontSize;
+
+/**
  * Indicates whether this node is selected, unselected, or neither.
  * @type {(boolean|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-selected
