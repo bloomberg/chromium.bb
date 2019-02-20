@@ -4020,18 +4020,15 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   assert(IMPLIES(is_lossless_requested(&cpi->oxcf),
                  cm->coded_lossless && cm->all_lossless));
 
-  const int no_loopfilter = cm->coded_lossless || cm->large_scale_tile;
-  const int no_cdef =
-      !cm->seq_params.enable_cdef || cm->coded_lossless || cm->large_scale_tile;
-  const int no_restoration = !cm->seq_params.enable_restoration ||
-                             cm->all_lossless || cm->large_scale_tile;
+  const int use_loopfilter = !cm->coded_lossless && !cm->large_scale_tile;
+  const int use_cdef = cm->seq_params.enable_cdef && !cm->coded_lossless &&
+                       !cm->large_scale_tile;
+  const int use_restoration = cm->seq_params.enable_restoration &&
+                              !cm->all_lossless && !cm->large_scale_tile;
 
   struct loopfilter *lf = &cm->lf;
 
-  if (no_loopfilter) {
-    lf->filter_level[0] = 0;
-    lf->filter_level[1] = 0;
-  } else {
+  if (use_loopfilter) {
     struct aom_usec_timer timer;
 
     aom_clear_system_state();
@@ -4042,6 +4039,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
     aom_usec_timer_mark(&timer);
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
+  } else {
+    lf->filter_level[0] = 0;
+    lf->filter_level[1] = 0;
   }
 
   if (lf->filter_level[0] || lf->filter_level[1]) {
@@ -4060,30 +4060,26 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
                             0, num_planes, 0);
   }
 
-  if (!no_restoration)
+  if (use_restoration)
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 0);
 
-  if (no_cdef) {
-    cm->cdef_info.cdef_bits = 0;
-    cm->cdef_info.cdef_strengths[0] = 0;
-    cm->cdef_info.nb_cdef_strengths = 1;
-    cm->cdef_info.cdef_uv_strengths[0] = 0;
-  } else {
+  if (use_cdef) {
     // Find CDEF parameters
     av1_cdef_search(&cm->cur_frame->buf, cpi->source, cm, xd,
                     cpi->sf.fast_cdef_search);
 
     // Apply the filter
     av1_cdef_frame(&cm->cur_frame->buf, cm, xd);
+  } else {
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
   }
 
   superres_post_encode(cpi);
 
-  if (no_restoration) {
-    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
-    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
-    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
-  } else {
+  if (use_restoration) {
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 1);
     av1_pick_filter_restoration(cpi->source, cpi);
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
@@ -4097,6 +4093,10 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
         av1_loop_restoration_filter_frame(&cm->cur_frame->buf, cm, 0,
                                           &cpi->lr_ctxt);
     }
+  } else {
+    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   }
 }
 
