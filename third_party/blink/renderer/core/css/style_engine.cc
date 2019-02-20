@@ -671,9 +671,9 @@ void StyleEngine::MarkTreeScopeDirty(TreeScope& scope) {
     return;
   }
 
-  TreeScopeStyleSheetCollection* collection = StyleSheetCollectionFor(scope);
-  DCHECK(collection);
-  collection->MarkSheetListDirty();
+  TreeScopeStyleSheetCollection& collection =
+      EnsureStyleSheetCollectionFor(scope);
+  collection.MarkSheetListDirty();
   dirty_tree_scopes_.insert(&scope);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
