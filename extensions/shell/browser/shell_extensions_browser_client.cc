@@ -294,7 +294,7 @@ ShellExtensionsBrowserClient::GetExtensionWebContentsObserver(
 ExtensionNavigationUIData*
 ShellExtensionsBrowserClient::GetExtensionNavigationUIData(
     net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!info)
     return nullptr;

@@ -489,7 +489,7 @@ bool GetDirectoryForExtensionURL(const GURL& url,
 }
 
 bool IsWebViewRequest(net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   // |info| can be null sometimes: http://crbug.com/370070.
   if (!info)
@@ -562,7 +562,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
   std::string extension_id = request->url().host();
   const Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   const bool enabled_in_incognito =
       extension_info_map_->IsIncognitoEnabled(extension_id);
 

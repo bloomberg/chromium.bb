@@ -1190,7 +1190,7 @@ void OfflinePageRequestJobBuilder::ReadCompletedOnIO(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   bool is_offline_page_set_in_navigation_data = false;
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_.get());
   ChromeNavigationUIData* navigation_data =
       static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());

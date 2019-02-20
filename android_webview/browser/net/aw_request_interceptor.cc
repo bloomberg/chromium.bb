@@ -129,7 +129,7 @@ std::unique_ptr<AwContentsIoThreadClient> GetCorrespondingIoThreadClient(
   }
 
   if (render_process_id == -1 || render_frame_id == -1) {
-    const content::ResourceRequestInfo* resourceRequestInfo =
+    content::ResourceRequestInfo* resourceRequestInfo =
         content::ResourceRequestInfo::ForRequest(request);
     if (resourceRequestInfo == nullptr) {
       return nullptr;

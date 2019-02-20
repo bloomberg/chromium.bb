@@ -133,7 +133,7 @@ ResourceRequestInfo ResourceRequestDetector::GetRequestInfo(
     const net::URLRequest* request) {
   ResourceRequestInfo info;
   info.url = request->url();
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   info.resource_type = request_info->GetResourceType();
   content::ResourceRequestInfo::GetRenderFrameForRequest(

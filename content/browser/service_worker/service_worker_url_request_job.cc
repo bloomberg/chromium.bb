@@ -457,7 +457,7 @@ ServiceWorkerURLRequestJob::CreateResourceRequest() {
   request->fetch_redirect_mode = redirect_mode_;
   request->fetch_request_context_type = static_cast<int>(request_context_type_);
   request->fetch_frame_type = frame_type_;
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info)
     request->transition_type = info->GetPageTransition();
   request->fetch_integrity = integrity_;

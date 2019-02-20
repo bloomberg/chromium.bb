@@ -587,8 +587,7 @@ bool MimeSniffingResourceHandler::MustDownload() {
              (response_->head.mime_type == "multipart/related" ||
               response_->head.mime_type == "message/rfc822")) {
     // It is OK to load the saved offline copy, in MHTML format.
-    const ResourceRequestInfo* info =
-        ResourceRequestInfo::ForRequest(request());
+    ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request());
     must_download_ =
         !GetContentClient()->browser()->AllowRenderingMhtmlOverHttp(
             info->GetNavigationUIData());

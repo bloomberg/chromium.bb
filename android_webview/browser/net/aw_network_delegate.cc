@@ -72,7 +72,7 @@ int AwNetworkDelegate::OnHeadersReceived(
     GURL* allowed_unsafe_redirect_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (original_response_headers->response_code() >= 400) {
-    const content::ResourceRequestInfo* request_info =
+    content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
     // A request info may not exist for requests not originating from content.
     if (request_info == nullptr)

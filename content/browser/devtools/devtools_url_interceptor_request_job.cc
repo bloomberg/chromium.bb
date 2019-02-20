@@ -135,10 +135,9 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
   request_->set_initiator(original_request->initiator());
 
   // Mimic the ResourceRequestInfoImpl of the original request.
-  const ResourceRequestInfoImpl* resource_request_info =
-      static_cast<const ResourceRequestInfoImpl*>(
-          ResourceRequestInfo::ForRequest(
-              devtools_interceptor_request_job->request()));
+  ResourceRequestInfoImpl* resource_request_info =
+      static_cast<ResourceRequestInfoImpl*>(ResourceRequestInfo::ForRequest(
+          devtools_interceptor_request_job->request()));
   ResourceRequestInfoImpl* extra_data = new ResourceRequestInfoImpl(
       resource_request_info->requester_info(),
       resource_request_info->GetRouteID(),

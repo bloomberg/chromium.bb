@@ -49,7 +49,7 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
   request_->GetMimeType(&mime_type);
   if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(request_->url(),
                                                                 mime_type)) {
-    const content::ResourceRequestInfo* info =
+    content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request_);
     if (!info)
       return;

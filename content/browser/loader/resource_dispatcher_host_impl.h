@@ -432,18 +432,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns the OustandingRequestsStats for |info|'s renderer, or an empty
   // struct if that renderer has no outstanding requests.
   OustandingRequestsStats GetOutstandingRequestsStats(
-      const ResourceRequestInfoImpl& info);
+      ResourceRequestInfoImpl* info);
 
   // Updates |outstanding_requests_stats_map_| with the specified |stats| for
   // the renderer that made the request in |info|.
-  void UpdateOutstandingRequestsStats(const ResourceRequestInfoImpl& info,
+  void UpdateOutstandingRequestsStats(ResourceRequestInfoImpl* info,
                                       const OustandingRequestsStats& stats);
 
   // Called every time an outstanding request is created or deleted. |count|
   // indicates whether the request is new or deleted. |count| must be 1 or -1.
   OustandingRequestsStats IncrementOutstandingRequestsMemory(
       int count,
-      const ResourceRequestInfoImpl& info);
+      ResourceRequestInfoImpl* info);
 
   // Called when an in flight request allocates or releases a shared memory
   // buffer. |count| indicates whether the request is issuing or finishing.

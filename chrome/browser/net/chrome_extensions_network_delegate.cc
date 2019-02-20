@@ -76,7 +76,7 @@ void NotifyEPMRequestStatus(RequestStatus status,
 
 void ForwardRequestStatus(
     RequestStatus status, net::URLRequest* request, void* profile_id) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (!info)
     return;
 

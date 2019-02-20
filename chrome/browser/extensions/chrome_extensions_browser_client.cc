@@ -493,7 +493,7 @@ bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(
 ExtensionNavigationUIData*
 ChromeExtensionsBrowserClient::GetExtensionNavigationUIData(
     net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!info)
     return nullptr;
