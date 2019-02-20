@@ -28,6 +28,14 @@ DrawImage::DrawImage()
       scale_(SkSize::Make(1.f, 1.f)),
       matrix_is_decomposable_(true) {}
 
+DrawImage::DrawImage(PaintImage image)
+    : paint_image_(std::move(image)),
+      src_rect_(
+          SkIRect::MakeXYWH(0, 0, paint_image_.width(), paint_image_.height())),
+      filter_quality_(kNone_SkFilterQuality),
+      scale_(SkSize::Make(1.f, 1.f)),
+      matrix_is_decomposable_(true) {}
+
 DrawImage::DrawImage(PaintImage image,
                      const SkIRect& src_rect,
                      SkFilterQuality filter_quality,

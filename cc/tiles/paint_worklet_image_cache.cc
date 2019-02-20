@@ -49,6 +49,8 @@ scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
 // Do check the cache first. If there is already a cache entry for this input,
 // then there is no need to call the Paint() function.
 void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
+  // TODO(xidachen): ensure that the canvas operations in the PaintRecord
+  // matches the PaintGeneratedImage::Draw.
   sk_sp<PaintRecord> record = painter_->Paint();
   records_[paint_image.paint_worklet_input()] =
       PaintWorkletImageCacheValue(std::move(record), 0);
