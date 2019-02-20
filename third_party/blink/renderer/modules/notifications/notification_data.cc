@@ -90,11 +90,11 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
     const ScriptValue& data = options->data();
     v8::Isolate* isolate = data.GetIsolate();
     DCHECK(isolate->InContext());
-    SerializedScriptValue::SerializeOptions options;
-    options.for_storage = SerializedScriptValue::kForStorage;
+    SerializedScriptValue::SerializeOptions serialize_options;
+    serialize_options.for_storage = SerializedScriptValue::kForStorage;
     scoped_refptr<SerializedScriptValue> serialized_script_value =
-        SerializedScriptValue::Serialize(isolate, data.V8Value(), options,
-                                         exception_state);
+        SerializedScriptValue::Serialize(isolate, data.V8Value(),
+                                         serialize_options, exception_state);
     if (exception_state.HadException())
       return nullptr;
 
