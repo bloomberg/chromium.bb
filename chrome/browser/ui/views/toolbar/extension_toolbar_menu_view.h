@@ -40,7 +40,7 @@ class ExtensionToolbarMenuView : public AppMenuButtonObserver,
 
   // Sets the time delay the app menu takes to close after a drag-and-drop
   // operation.
-  static void set_close_menu_delay_for_testing(int delay);
+  static void set_close_menu_delay_for_testing(base::TimeDelta delay);
 
  protected:
   // views::View:
