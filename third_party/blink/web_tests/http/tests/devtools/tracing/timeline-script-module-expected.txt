@@ -3,7 +3,11 @@ Tests the Timeline events for module compile & evaluate.
 v8.compileModule Properties:
 {
     data : {
-        fileName : .../devtools/resources/inspected-page.html
+        columnNumber : 1
+        lineNumber : 1
+        notStreamedReason : "module script"
+        streamed : <boolean>
+        url : .../devtools/resources/inspected-page.html
     }
     endTime : <number>
     startTime : <number>

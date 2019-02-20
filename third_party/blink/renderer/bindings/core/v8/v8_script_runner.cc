@@ -229,8 +229,9 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
     const ReferrerScriptInfo& referrer_info) {
-  TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
-               file_name.Utf8());
+  constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
+  TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compileModule", "fileName",
+                     file_name.Utf8());
 
   // |resource_is_shared_cross_origin| is always true and |resource_is_opaque|
   // is always false because CORS is enforced to module scripts.
@@ -248,12 +249,16 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
 
   v8::Local<v8::String> code = V8String(isolate, source_text);
 
+  v8::MaybeLocal<v8::Module> script;
+  inspector_compile_script_event::V8CacheResult cache_result;
+
   switch (compile_options) {
     case v8::ScriptCompiler::kNoCompileOptions:
     case v8::ScriptCompiler::kEagerCompile: {
       v8::ScriptCompiler::Source source(code, origin);
-      return v8::ScriptCompiler::CompileModule(
+      script = v8::ScriptCompiler::CompileModule(
           isolate, &source, compile_options, no_cache_reason);
+      break;
     }
 
     case v8::ScriptCompiler::kConsumeCodeCache: {
@@ -262,18 +267,25 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       v8::ScriptCompiler::CachedData* cached_data =
           V8CodeCache::CreateCachedData(cache_handler);
       v8::ScriptCompiler::Source source(code, origin, cached_data);
-      v8::MaybeLocal<v8::Module> script = v8::ScriptCompiler::CompileModule(
+      script = v8::ScriptCompiler::CompileModule(
           isolate, &source, compile_options, no_cache_reason);
       if (cached_data->rejected) {
         cache_handler->ClearCachedMetadata(
             CachedMetadataHandler::kSendToPlatform);
       }
-      return script;
+      cache_result.consume_result = base::make_optional(
+          inspector_compile_script_event::V8CacheResult::ConsumeResult(
+              compile_options, cached_data->length, cached_data->rejected));
+      break;
     }
   }
 
-  NOTREACHED();
-  return v8::MaybeLocal<v8::Module>();
+  TRACE_EVENT_END1(kTraceEventCategoryGroup, "v8.compileModule", "data",
+                   inspector_compile_script_event::Data(
+                       file_name, start_position, cache_result, false,
+                       ScriptStreamer::kModuleScript));
+
+  return script;
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
