@@ -67,6 +67,9 @@ class ReopenTabPromoController : public AppMenuButtonObserver,
   // flow ends.
   StepAtDismissal promo_step_ = StepAtDismissal::kBubbleShown;
 
+  // Whether we are showing the promo.
+  bool is_showing_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ReopenTabPromoController);
 };
 
