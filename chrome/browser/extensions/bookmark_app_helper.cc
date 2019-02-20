@@ -468,7 +468,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     return;
   }
 
-  BookmarkAppRecordAppBanner(contents_, web_app_info_);
+  web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
   if (create_shortcuts_)
     BookmarkAppCreateOsShortcuts(profile_, extension);

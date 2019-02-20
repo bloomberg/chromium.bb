@@ -4,17 +4,12 @@
 
 #include "chrome/browser/extensions/bookmark_app_extension_util.h"
 
-#include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/web_application_info.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_MACOSX)
@@ -29,16 +24,6 @@
 #endif
 
 namespace extensions {
-
-void BookmarkAppRecordAppBanner(content::WebContents* contents,
-                                const WebApplicationInfo& web_app_info) {
-  // Record an app banner added to homescreen event to ensure banners are not
-  // shown for this app.
-  AppBannerSettingsHelper::RecordBannerEvent(
-      contents, web_app_info.app_url, web_app_info.app_url.spec(),
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-      base::Time::Now());
-}
 
 void BookmarkAppCreateOsShortcuts(Profile* profile,
                                   const Extension* extension) {

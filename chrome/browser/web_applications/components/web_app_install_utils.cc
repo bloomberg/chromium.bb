@@ -7,6 +7,10 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/time/time.h"
+#include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
@@ -161,6 +165,13 @@ void ResizeDownloadedIconsGenerateMissing(
       &web_app_info->generated_icon_color);
 
   ReplaceWebAppIcons(size_to_icons, web_app_info);
+}
+
+void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
+  AppBannerSettingsHelper::RecordBannerEvent(
+      contents, app_url, app_url.spec(),
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      base::Time::Now());
 }
 
 }  // namespace web_app

@@ -8,7 +8,6 @@
 #include "extensions/common/constants.h"
 
 class Profile;
-struct WebApplicationInfo;
 
 namespace content {
 class WebContents;
@@ -17,9 +16,6 @@ class WebContents;
 namespace extensions {
 
 class Extension;
-
-void BookmarkAppRecordAppBanner(content::WebContents* contents,
-                                const WebApplicationInfo& web_app_info);
 
 void BookmarkAppCreateOsShortcuts(Profile* profile, const Extension* extension);
 
