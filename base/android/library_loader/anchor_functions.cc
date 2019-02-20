@@ -56,8 +56,12 @@ const size_t kStartOfOrderedText =
 const size_t kEndOfOrderedText =
     reinterpret_cast<size_t>(dummy_function_end_of_ordered_text);
 
-bool IsOrderingSane() {
+bool AreAnchorsSane() {
   size_t here = reinterpret_cast<size_t>(&IsOrderingSane);
+  return kStartOfText < here && here < kEndOfText;
+}
+
+bool IsOrderingSane() {
   // The symbols linker_script_start_of_text and linker_script_end_of_text
   // should cover all of .text, and dummy_function_start_of_ordered_text and
   // dummy_function_end_of_ordered_text should cover the ordered part of it.
@@ -68,8 +72,7 @@ bool IsOrderingSane() {
   // different, but linker-defined symbols have zero size and therefore the
   // start address could be the same as the address of
   // dummy_function_start_of_ordered_text.
-  return kStartOfText < here && here < kEndOfText &&
-         kStartOfOrderedText < kEndOfOrderedText &&
+  return AreAnchorsSane() && kStartOfOrderedText < kEndOfOrderedText &&
          kStartOfText <= kStartOfOrderedText && kEndOfOrderedText < kEndOfText;
 }
 
