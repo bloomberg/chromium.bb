@@ -168,11 +168,14 @@ void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
 
+  // Sends text input client data (if changed) before caret change because
+  // InputMethodChromeOS accesses the data in its OnCaretBoundsChanged.
+  OnTextInputClientDataChanged(client);
+
   if (input_method_)
     input_method_->OnCaretBoundsChanged(client->GetCaretBounds());
 
   NotifyTextInputCaretBoundsChanged(client);
-  OnTextInputClientDataChanged(client);
 }
 
 void InputMethodMus::CancelComposition(const ui::TextInputClient* client) {
