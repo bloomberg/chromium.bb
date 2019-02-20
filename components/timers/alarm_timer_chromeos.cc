@@ -12,11 +12,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/task_annotator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
+#include "base/task/common/task_annotator.h"
 #include "base/trace_event/trace_event.h"
 
 namespace timers {
@@ -111,8 +111,8 @@ void SimpleAlarmTimer::Reset() {
   } else {
     // Otherwise, if the delay is not zero, generate a tracing event to indicate
     // that the task was posted and watch |alarm_fd_|.
-    base::debug::TaskAnnotator().WillQueueTask("SimpleAlarmTimer::Reset",
-                                               pending_task_.get());
+    base::TaskAnnotator().WillQueueTask("SimpleAlarmTimer::Reset",
+                                        pending_task_.get());
     alarm_fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
         alarm_fd_.get(),
         base::BindRepeating(&SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking,
@@ -145,8 +145,8 @@ void SimpleAlarmTimer::OnTimerFired() {
 
   // Run the task.
   TRACE_TASK_EXECUTION("SimpleAlarmTimer::OnTimerFired", *pending_user_task);
-  base::debug::TaskAnnotator().RunTask("SimpleAlarmTimer::Reset",
-                                       pending_user_task.get());
+  base::TaskAnnotator().RunTask("SimpleAlarmTimer::Reset",
+                                pending_user_task.get());
 
   // If the timer wasn't deleted, stopped or reset by the callback, stop it.
   if (weak_ptr)

@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
-#include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/task/sequence_manager/work_deduplicator.h"
@@ -116,7 +116,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   RepeatingClosure delayed_do_work_closure_;
   CancelableClosure cancelable_delayed_do_work_closure_;
   SequencedTaskSource* sequence_ = nullptr;  // Not owned.
-  debug::TaskAnnotator task_annotator_;
+  TaskAnnotator task_annotator_;
   WorkDeduplicator work_deduplicator_;
 
 #if DCHECK_IS_ON()

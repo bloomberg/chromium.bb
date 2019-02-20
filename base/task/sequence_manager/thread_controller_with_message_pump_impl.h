@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#include "base/debug/task_annotator.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/run_loop.h"
+#include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
@@ -148,7 +148,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // allowed.
   std::unique_ptr<MessagePump> pump_;
 
-  debug::TaskAnnotator task_annotator_;
+  TaskAnnotator task_annotator_;
   const TickClock* time_source_;  // Not owned.
 
   // Non-null provider of id state for identifying distinct work items executed
