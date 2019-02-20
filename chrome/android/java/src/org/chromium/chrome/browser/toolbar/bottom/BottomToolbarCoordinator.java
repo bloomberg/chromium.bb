@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
@@ -82,13 +83,14 @@ public class BottomToolbarCoordinator {
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
      * @param incognitoStateProvider Notifies components when incognito mode is entered or exited.
+     * @param topToolbarRoot The root {@link ViewGroup} of the top toolbar.
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnClickListener newTabClickListener,
             OnClickListener closeTabsClickListener, AppMenuButtonHelper menuButtonHelper,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
             WindowAndroid windowAndroid, TabCountProvider tabCountProvider,
-            IncognitoStateProvider incognitoStateProvider) {
+            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot) {
         mBottomToolbarThemeColorProvider.setIncognitoStateProvider(incognitoStateProvider);
         mBottomToolbarThemeColorProvider.setOverviewModeBehavior(overviewModeBehavior);
 
@@ -96,9 +98,18 @@ public class BottomToolbarCoordinator {
                 tabSwitcherListener, menuButtonHelper, overviewModeBehavior, windowAndroid,
                 tabCountProvider, mBottomToolbarThemeColorProvider, tabModelSelector);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
-                incognitoStateProvider, mBottomToolbarThemeColorProvider, newTabClickListener,
-                closeTabsClickListener, menuButtonHelper, tabModelSelector, overviewModeBehavior,
-                tabCountProvider);
+                topToolbarRoot, incognitoStateProvider, mBottomToolbarThemeColorProvider,
+                newTabClickListener, closeTabsClickListener, menuButtonHelper, tabModelSelector,
+                overviewModeBehavior, tabCountProvider);
+    }
+
+    /**
+     * @param shouldHide Whether the bottom toolbar should be hidden.
+     */
+    public void setBottomToolbarHidden(boolean shouldHide) {
+        if (mTabSwitcherModeCoordinator != null) {
+            mTabSwitcherModeCoordinator.showToolbarOnTop(shouldHide);
+        }
     }
 
     /**

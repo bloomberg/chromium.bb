@@ -3,11 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_toolbar_tab_switcher"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:visibility="gone"
@@ -29,8 +30,7 @@
         android:layout_height="@dimen/bottom_toolbar_height"
         android:background="@color/modern_primary_color"
         android:paddingStart="@dimen/bottom_toolbar_start_padding"
-        android:paddingEnd="@dimen/bottom_toolbar_end_padding"
-        android:layout_marginTop="@dimen/toolbar_shadow_height" >
+        android:paddingEnd="@dimen/bottom_toolbar_end_padding" >
 
       <org.chromium.chrome.browser.toolbar.bottom.CloseAllTabsButton
           android:id="@+id/close_all_tabs_button"
@@ -56,4 +56,13 @@
 
     </LinearLayout>
 
-</FrameLayout>
+    <ImageView
+        android:id="@+id/bottom_toolbar_bottom_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_shadow_height"
+        android:src="@drawable/modern_toolbar_shadow"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
+
+</LinearLayout>

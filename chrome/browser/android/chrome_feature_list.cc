@@ -108,6 +108,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
     &kChromeDuetFeature,
+    &kChromeDuetAdaptive,
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
@@ -289,6 +290,9 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
 
 const base::Feature kChromeDuetFeature{"ChromeDuet",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeDuetAdaptive{"ChromeDuetAdaptive",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

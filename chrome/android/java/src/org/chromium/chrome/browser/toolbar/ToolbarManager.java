@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -976,7 +977,7 @@ public class ToolbarManager
                         wrapBottomToolbarClickListenerForIPH(newTabClickHandler),
                         closeTabsClickListener, mAppMenuButtonHelper, mTabModelSelector,
                         mOverviewModeBehavior, mActivity.getWindowAndroid(), mTabCountProvider,
-                        mIncognitoStateProvider);
+                        mIncognitoStateProvider, mActivity.findViewById(R.id.control_container));
 
                 // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
                 ApiCompatibilityUtils.setAccessibilityTraversalBefore(
@@ -1212,6 +1213,15 @@ public class ToolbarManager
     public void onOrientationChange() {
         if (mActionModeController == null) return;
         mActionModeController.showControlsOnOrientationChange();
+        if (mBottomToolbarCoordinator != null
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET_ADAPTIVE)) {
+            final boolean isLandscape = mActivity.getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_LANDSCAPE;
+            mBottomToolbarCoordinator.setBottomToolbarHidden(isLandscape);
+            if (mAppMenuButtonHelper != null) {
+                mAppMenuButtonHelper.setMenuShowsFromBottom(!isLandscape);
+            }
+        }
     }
 
     /**
