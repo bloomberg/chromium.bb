@@ -1360,11 +1360,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-md-incognito-ntp",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76

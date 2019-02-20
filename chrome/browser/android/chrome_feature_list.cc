@@ -72,7 +72,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kExperimentalUi,
     &features::kGenericSensorExtraClasses,
     &features::kIncognitoStrings,
-    &features::kMaterialDesignIncognitoNTP,
     &features::kOverscrollHistoryNavigation,
     &features::kPermissionDelegation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,

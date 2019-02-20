@@ -91,33 +91,14 @@ public class IncognitoNewTabPage
 
         boolean useAlternateIncognitoStrings =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
-        if (useMDIncognitoNTP()) {
-            TextView newTabIncognitoHeader =
-                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
-            newTabIncognitoHeader.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_title
-                            : R.string.new_tab_otr_title);
-        } else {
-            TextView newTabIncognitoHeader =
-                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.ntp_incognito_header);
-            newTabIncognitoHeader.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_header
-                            : R.string.new_tab_incognito_header);
-            TextView newTabIncognitoMessage = (TextView) mIncognitoNewTabPageView.findViewById(
-                    R.id.new_tab_incognito_message);
-            newTabIncognitoMessage.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_message
-                            : R.string.new_tab_incognito_message);
-        }
+        TextView newTabIncognitoHeader =
+                (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
+        newTabIncognitoHeader.setText(useAlternateIncognitoStrings ? R.string.new_tab_private_title
+                                                                   : R.string.new_tab_otr_title);
     }
 
     protected int getLayoutResource() {
-        return useMDIncognitoNTP() ? R.layout.new_tab_page_incognito_md
-                                   : R.layout.new_tab_page_incognito;
-    }
-
-    protected static boolean useMDIncognitoNTP() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.MATERIAL_DESIGN_INCOGNITO_NTP);
+        return R.layout.new_tab_page_incognito_md;
     }
 
     /**

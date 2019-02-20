@@ -381,10 +381,6 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// The material redesign of the Incognito NTP.
-const base::Feature kMaterialDesignIncognitoNTP{
-    "MaterialDesignIncognitoNTP", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

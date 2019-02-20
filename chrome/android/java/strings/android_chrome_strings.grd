@@ -3433,22 +3433,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_SCREEN_CAPTURE_INCOGNITO_NOTIFICATION_TEXT" desc="Text to be shown as a notification when screen capture is in progress in incognito mode.">
         A site is sharing your screen
       </message>
-      <message name="IDS_NEW_TAB_INCOGNITO_HEADER" desc="Header shown when a user opens an incognito tab explaining incognito mode">
-        You’ve gone incognito.
-      </message>
-      <message name="IDS_NEW_TAB_PRIVATE_HEADER" desc="Header shown when a user opens an incognito tab explaining private mode">
-        You’ve gone private.
-      </message>
-      <message name="IDS_NEW_TAB_INCOGNITO_MESSAGE" desc="Message shown when a user opens an incognito tab explaining incognito mode">
-        Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.
-
-However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
-      </message>
-      <message name="IDS_NEW_TAB_PRIVATE_MESSAGE" desc="Message shown when a user opens an incognito tab explaining private mode">
-        Pages you view in private tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your private tabs. Any files you download or bookmarks you create will be kept.
-
-However, you aren’t invisible. Going private doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
-      </message>
 
       <!-- Contextual Search -->
       <message name="IDS_CONTEXTUAL_SEARCH_NETWORK_UNAVAILABLE" desc="Tells the user the network is not accessible.">

@@ -773,18 +773,6 @@
     </style>
 
     <!-- Incognito New Tab Page -->
-    <style name="IncognitoNewTabMessage">
-        <item name="android:maxWidth">660dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.WhiteBodyIncognito</item>
-        <item name="android:lineSpacingMultiplier">1.2</item>
-    </style>
-    <style name="IncognitoNewTabLearnMoreLink">
-        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText1</item>
-        <item name="android:padding">16dp</item>
-      </style>
     <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
