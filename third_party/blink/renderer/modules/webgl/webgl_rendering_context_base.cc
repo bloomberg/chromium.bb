@@ -185,13 +185,15 @@ ScopedRGBEmulationColorMask::~ScopedRGBEmulationColorMask() {
 }
 
 void WebGLRenderingContextBase::InitializeWebGLContextLimits(
-    const DrawingBuffer::WebGLContextLimits& limits) {
+    WebGraphicsContext3DProvider* context_provider) {
   MutexLocker locker(WebGLContextLimitMutex());
   if (!webgl_context_limits_initialized_) {
     // These do not change over the lifetime of the browser.
-    max_active_webgl_contexts_ = limits.max_active_webgl_contexts;
+    auto webgl_preferences =
+        context_provider->GetGpuFeatureInfo().webgl_preferences;
+    max_active_webgl_contexts_ = webgl_preferences.max_active_webgl_contexts;
     max_active_webgl_contexts_on_worker_ =
-        limits.max_active_webgl_contexts_on_worker;
+        webgl_preferences.max_active_webgl_contexts_on_worker;
     webgl_context_limits_initialized_ = true;
   }
 }
@@ -1025,6 +1027,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   max_viewport_dims_[0] = max_viewport_dims_[1] = 0;
   context_provider->ContextGL()->GetIntegerv(GL_MAX_VIEWPORT_DIMS,
                                              max_viewport_dims_);
+  InitializeWebGLContextLimits(context_provider.get());
 
   scoped_refptr<DrawingBuffer> buffer;
   buffer =
@@ -1034,7 +1037,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     return;
   }
 
-  InitializeWebGLContextLimits(buffer->webgl_context_limits());
   drawing_buffer_ = std::move(buffer);
   GetDrawingBuffer()->Bind(GL_FRAMEBUFFER);
   SetupFlags();
