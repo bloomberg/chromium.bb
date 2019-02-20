@@ -16,6 +16,7 @@
 #include "net/third_party/quic/core/quic_alarm.h"
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
+#include "net/third_party/quic/platform/api/quic_macros.h"
 #include "net/third_party/quic/test_tools/quic_test_client.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
@@ -121,7 +122,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   }
 
   // Useful for reproducing very flaky issues.
-  void set_seed(uint64_t seed) { simple_random_.set_seed(seed); }
+  QUIC_UNUSED void set_seed(uint64_t seed) { simple_random_.set_seed(seed); }
 
  private:
   // Writes out the next packet to the contained writer and returns the time
