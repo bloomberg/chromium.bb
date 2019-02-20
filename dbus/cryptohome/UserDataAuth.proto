@@ -186,3 +186,128 @@ message RenameReply {
   // Indicate an error when |error| is not empty.
   CryptohomeErrorCode error = 1;
 }
+
+// Input parameters to ListKeys()
+message ListKeysRequest {
+  // The default behavior is by label so any extension here should honor that.
+
+  // List the key(s) that is/are used to protect the home directory whose
+  // owner is identified by account_id.
+  cryptohome.AccountIdentifier account_id = 1;
+  // Provide user authentication if necessary (currently not required).
+  cryptohome.AuthorizationRequest authorization_request = 2;
+}
+
+// Output parameters for ListKeys()
+message ListKeysReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+  // The labels of the Vault Keyset. This will be empty on error.
+  repeated string labels = 2;
+}
+
+// Input parameters to GetKeyData()
+message GetKeyDataRequest {
+  // The keys whose data to retrieve, is the key whose owner is identified
+  // by account_id.
+  cryptohome.AccountIdentifier account_id = 1;
+  // Provide user authentication if necessary (currently not required).
+  cryptohome.AuthorizationRequest authorization_request = 2;
+  // |key| must supply at least one attribute and all others will be treated as
+  // wildcards.  Currently only |key.data().label()| may be supplied.  Like
+  // AuthorizationRequest, support can be added for queries by
+  // |key.data().type()| to return all keys of a certain class, testing
+  // |key.secret()|, or |key.data().provider_data()| entries.
+  cryptohome.Key key = 3;
+}
+
+// Output parameters for GetKeyData()
+message GetKeyDataReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+  // The data associated with those keys.
+  repeated cryptohome.KeyData key_data = 2;
+}
+
+// Input parameters to CheckKey()
+message CheckKeyRequest {
+  // We only check against keys that belongs to the user identified by
+  // account_id.
+  cryptohome.AccountIdentifier account_id = 1;
+  // The authentication credentials to check against the keys
+  cryptohome.AuthorizationRequest authorization_request = 2;
+}
+
+// Output parameters for CheckKey()
+message CheckKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to AddKey()
+message AddKeyRequest {
+  // The owner of the new key.
+  cryptohome.AccountIdentifier account_id = 1;
+  // The authentication data of the new key.
+  cryptohome.AuthorizationRequest authorization_request = 2;
+  // The key to add.
+  cryptohome.Key key = 3;
+  // Do we delete the existing key if it already exists?
+  bool clobber_if_exists = 4;
+}
+
+// Output parameters for AddKey()
+message AddKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to UpdateKey()
+message UpdateKeyRequest {
+  // Whose key to update?
+  cryptohome.AccountIdentifier account_id = 1;
+  // The authentication data from user.
+  cryptohome.AuthorizationRequest authorization_request = 2;
+  // The changes to be made to the key.
+  cryptohome.Key changes = 3;
+  // Signature of the changes object above with the key itself.
+  bytes authorization_signature = 4;
+}
+
+// Output parameters for UpdateKey()
+message UpdateKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to RemoveKey()
+message RemoveKeyRequest {
+  // The owner of the key to remove
+  cryptohome.AccountIdentifier account_id = 1;
+  // Authorization from the user
+  cryptohome.AuthorizationRequest authorization_request = 2;
+  // Only key.data().label() is used at present.
+  cryptohome.Key key = 3;
+}
+
+// Output parameters for RemoveKey()
+message RemoveKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to MigrateKey()
+message MigrateKeyRequest {
+  // The owner whose key are going to migrate
+  cryptohome.AccountIdentifier account_id = 1;
+  // Authorization from the user
+  cryptohome.AuthorizationRequest authorization_request = 2;
+  // The new secret for the key.
+  bytes secret = 3;
+}
+
+// Output parameters for MigrateKey()
+message MigrateKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
