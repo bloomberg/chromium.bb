@@ -2496,6 +2496,7 @@ public class Tab
         return mInterceptNavigationDelegate;
     }
 
+    // TODO(jinsukkim): Remove this once the callsite is updated.
     @VisibleForTesting
     public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
         return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();

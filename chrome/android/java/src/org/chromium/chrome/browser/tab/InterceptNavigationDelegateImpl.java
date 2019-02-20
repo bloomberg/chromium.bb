@@ -214,7 +214,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         mShouldClearRedirectHistoryForTabClobbering = false;
     }
 
-    AuthenticatorNavigationInterceptor getAuthenticatorNavigationInterceptor() {
+    @VisibleForTesting
+    public AuthenticatorNavigationInterceptor getAuthenticatorNavigationInterceptor() {
         return mAuthenticatorHelper;
     }
 
