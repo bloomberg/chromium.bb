@@ -67,6 +67,10 @@ bool MediaControlPictureInPictureButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlPictureInPictureButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
     const {
   return IsOverflowElement() ? "PictureInPictureOverflowButton"

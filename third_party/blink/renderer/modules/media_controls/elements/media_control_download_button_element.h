@@ -25,6 +25,7 @@ class MediaControlDownloadButtonElement final
   // TODO(mlamouri): add WillRespondToMouseClickEvents
   WebLocalizedString::Name GetOverflowStringName() const final;
   bool HasOverflowButton() const final;
+  bool IsControlPanelButton() const final;
 
   void Trace(blink::Visitor*) override;
 
