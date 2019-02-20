@@ -364,6 +364,9 @@ GL_FUNCTIONS = [
                { 'name': 'glCoverStrokePathCHROMIUM',
                  'extensions': ['GL_CHROMIUM_path_rendering'] }],
   'arguments': 'GLuint name, GLenum coverMode' },
+{ 'return_type': 'void',
+  'names': [ 'glCreateMemoryObjectsEXT' ],
+  'arguments': 'GLsizei n, GLuint* memoryObjects', },
 { 'return_type': 'GLuint',
   'names': ['glCreateProgram'],
   'arguments': 'void', },
@@ -436,6 +439,9 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glDeleteSamplers',
                  'extensions': ['GL_ARB_sampler_objects'] }],
   'arguments': 'GLsizei n, const GLuint* samplers', },
+{ 'return_type': 'void',
+  'names': ['glDeleteSemaphoresEXT'],
+  'arguments': 'GLsizei n, const GLuint* semaphores', },
 { 'return_type': 'void',
   'names': ['glDeleteShader'],
   'arguments': 'GLuint shader', },
@@ -644,6 +650,9 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glGenSamplers',
                  'extensions': ['GL_ARB_sampler_objects'] }],
   'arguments': 'GLsizei n, GLuint* samplers', },
+{ 'return_type': 'void',
+  'names': ['glGenSemaphoresEXT'],
+  'arguments': 'GLsizei n, GLuint* semaphores', },
 { 'return_type': 'void',
   'names': ['glGenTextures'],
   'arguments': 'GLsizei n, GLuint* textures', },
@@ -1222,6 +1231,12 @@ GL_FUNCTIONS = [
   'names': ['glHint'],
   'arguments': 'GLenum target, GLenum mode', },
 { 'return_type': 'void',
+  'names': ['glImportMemoryFdEXT'],
+  'arguments': 'GLuint memory, GLuint64 size, GLenum handleType, GLint fd', },
+{ 'return_type': 'void',
+  'names': ['glImportSemaphoreFdEXT'],
+  'arguments': 'GLuint semaphore, GLenum handleType, GLint fd', },
+{ 'return_type': 'void',
   'names': ['glInsertEventMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
 { 'return_type': 'void',
@@ -1736,6 +1751,11 @@ GL_FUNCTIONS = [
   });
 """, },
 { 'return_type': 'void',
+  'names': ['glSignalSemaphoreEXT'],
+ 'arguments': 'GLuint semaphore, GLuint numBufferBarriers, '
+ 'const GLuint* buffers, GLuint numTextureBarriers, '
+ 'const GLuint* textures, const GLenum* dstLayouts', },
+{ 'return_type': 'void',
   'names': ['glStencilFillPathInstancedNV'],
   'versions': [{ 'name': 'glStencilFillPathInstancedNV',
                  'extensions': ['GL_NV_path_rendering'] },
@@ -1913,6 +1933,10 @@ GL_FUNCTIONS = [
                  'extensions': ['GL_ARB_texture_storage'] }],
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height, GLsizei depth', },
+{ 'return_type': 'void',
+ 'names': [ 'glTexStorageMem2DEXT'] ,
+  'arguments': 'GLenum target, GLsizei levels, GLenum internalFormat, '
+  'GLsizei width, GLsizei height, GLuint memory, GLuint64 offset'},
 { 'return_type': 'void',
   'names': ['glTexSubImage2D'],
   'arguments':
@@ -2140,6 +2164,11 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glViewport'],
   'arguments': 'GLint x, GLint y, GLsizei width, GLsizei height', },
+{ 'return_type': 'void',
+  'names': ['glWaitSemaphoreEXT'],
+  'arguments': 'GLuint semaphore, GLuint numBufferBarriers, '
+  'const GLuint* buffers, GLuint numTextureBarriers, const GLuint* textures, '
+  'const GLenum* srcLayouts', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glWaitSync',
                  'extensions': ['GL_ARB_sync'] }],

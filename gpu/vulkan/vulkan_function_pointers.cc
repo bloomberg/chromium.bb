@@ -32,16 +32,15 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   if (!vkGetInstanceProcAddrFn)
     return false;
 
-  vkCreateInstanceFn = reinterpret_cast<PFN_vkCreateInstance>(
-      vkGetInstanceProcAddrFn(nullptr, "vkCreateInstance"));
-  if (!vkCreateInstanceFn)
-    return false;
-
   vkEnumerateInstanceVersionFn =
       reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
           vkGetInstanceProcAddrFn(nullptr, "vkEnumerateInstanceVersion"));
   // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
   // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
+  vkCreateInstanceFn = reinterpret_cast<PFN_vkCreateInstance>(
+      vkGetInstanceProcAddrFn(nullptr, "vkCreateInstance"));
+  if (!vkCreateInstanceFn)
+    return false;
 
   vkEnumerateInstanceExtensionPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
@@ -274,6 +273,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetFenceStatusFn)
     return false;
 
+  vkGetImageMemoryRequirementsFn =
+      reinterpret_cast<PFN_vkGetImageMemoryRequirements>(
+          vkGetDeviceProcAddrFn(vk_device, "vkGetImageMemoryRequirements"));
+  if (!vkGetImageMemoryRequirementsFn)
+    return false;
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn)
@@ -291,11 +296,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
 #if defined(OS_ANDROID)
 
-  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
-  if (!vkImportSemaphoreFdKHRFn)
-    return false;
-
   vkGetAndroidHardwareBufferPropertiesANDROIDFn =
       reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
           vkGetDeviceProcAddrFn(vk_device,
@@ -303,9 +303,27 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
     return false;
 
+  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+  if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+
   vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
   if (!vkGetSemaphoreFdKHRFn)
+    return false;
+
+#endif
+
+#if defined(OS_LINUX)
+
+  vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
+  if (!vkGetMemoryFdKHRFn)
     return false;
 
 #endif

@@ -34,6 +34,8 @@ class ProgressReporter;
 
 namespace gpu {
 class DecoderContext;
+class ExternalVkImageBacking;
+class ExternalVkImageGlRepresentation;
 class ServiceDiscardableManager;
 class SharedImageBackingGLTexture;
 class SharedImageBackingFactoryGLTexture;
@@ -366,6 +368,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
+  friend class gpu::ExternalVkImageBacking;
+  friend class gpu::ExternalVkImageGlRepresentation;
   friend class gpu::SharedImageBackingGLTexture;
   friend class gpu::SharedImageBackingFactoryGLTexture;
   friend class gpu::SharedImageBackingAHB;

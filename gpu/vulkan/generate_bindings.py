@@ -14,6 +14,7 @@ from subprocess import call
 
 VULKAN_UNASSOCIATED_FUNCTIONS = [
 # vkGetInstanceProcAddr belongs here but is handled specially.
+# vkEnumerateInstanceVersion belongs here but is handled specially.
 { 'name': 'vkCreateInstance' },
 { 'name': 'vkEnumerateInstanceExtensionProperties' },
 { 'name': 'vkEnumerateInstanceLayerProperties' },
@@ -70,15 +71,23 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkFreeMemory' },
 { 'name': 'vkGetDeviceQueue' },
 { 'name': 'vkGetFenceStatus' },
+{ 'name': 'vkGetImageMemoryRequirements' },
 { 'name': 'vkResetFences' },
 { 'name': 'vkUpdateDescriptorSets' },
 { 'name': 'vkWaitForFences' },
 ]
 
 VULKAN_DEVICE_FUNCTIONS_ANDROID = [
-{ 'name': 'vkImportSemaphoreFdKHR' },
 { 'name': 'vkGetAndroidHardwareBufferPropertiesANDROID' },
+{ 'name': 'vkImportSemaphoreFdKHR' },
+]
+
+VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID = [
 { 'name': 'vkGetSemaphoreFdKHR' },
+]
+
+VULKAN_DEVICE_FUNCTIONS_LINUX = [
+{ 'name': 'vkGetMemoryFdKHR'},
 ]
 
 VULKAN_QUEUE_FUNCTIONS = [
@@ -133,7 +142,9 @@ def WriteMacros(file, functions):
 
 def GenerateHeaderFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
-                       device_functions_android, queue_functions,
+                       device_functions_android,
+                       device_functions_linux_or_android,
+                       device_functions_linux, queue_functions,
                        command_buffer_functions, swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.h"""
 
@@ -172,6 +183,7 @@ struct VulkanFunctionPointers {
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
   // Unassociated functions
+  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn = nullptr;
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
 """)
 
@@ -212,6 +224,30 @@ struct VulkanFunctionPointers {
 """)
 
   WriteFunctionDeclarations(file, device_functions_android)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+  // Device functions shared between Linux and Android.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+""")
+
+  WriteFunctionDeclarations(file, device_functions_linux_or_android)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+  // Linux-only device functions.
+#if defined(OS_LINUX)
+""")
+
+  WriteFunctionDeclarations(file, device_functions_linux)
 
   file.write("""\
 #endif
@@ -289,6 +325,28 @@ struct VulkanFunctionPointers {
 
   file.write("""\
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+""")
+
+  WriteMacros(file, device_functions_linux_or_android)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+#if defined(OS_LINUX)
+""")
+
+  WriteMacros(file, device_functions_linux)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
 // Queue functions
 """)
 
@@ -339,7 +397,9 @@ def WriteDeviceFunctionPointerInitialization(file, functions):
 
 def GenerateSourceFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
-                       device_functions_android, queue_functions,
+                       device_functions_android,
+                       device_functions_linux_or_android,
+                       device_functions_linux, queue_functions,
                        command_buffer_functions, swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.cc"""
 
@@ -370,6 +430,11 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   if (!vkGetInstanceProcAddrFn)
     return false;
 
+  vkEnumerateInstanceVersionFn =
+      reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
+          vkGetInstanceProcAddrFn(nullptr, "vkEnumerateInstanceVersion"));
+  // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
+  // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
 """)
 
   WriteUnassociatedFunctionPointerInitialization(file, unassociated_functions)
@@ -413,6 +478,32 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 """)
 
   WriteDeviceFunctionPointerInitialization(file, device_functions_android)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+
+""")
+
+  WriteDeviceFunctionPointerInitialization(file,
+                                           device_functions_linux_or_android)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+#if defined(OS_LINUX)
+
+""")
+
+  WriteDeviceFunctionPointerInitialization(file,
+                                           device_functions_linux)
 
   file.write("""\
 #endif
@@ -472,6 +563,8 @@ def main(argv):
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
+                     VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
+                     VULKAN_DEVICE_FUNCTIONS_LINUX,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   header_file.close()
@@ -483,6 +576,8 @@ def main(argv):
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
+                     VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
+                     VULKAN_DEVICE_FUNCTIONS_LINUX,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   source_file.close()
