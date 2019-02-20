@@ -364,8 +364,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->opener_frame_route_id = opener_frame_route_id;
   params->replicated_frame_state = replicated_frame_state;
   params->proxy_routing_id = proxy_route_id;
-  params->hidden = is_active() ? GetWidget()->is_hidden()
-                               : GetWidget()->delegate()->IsHidden();
+  params->hidden = GetWidget()->delegate()->IsHidden();
   params->never_visible = delegate_->IsNeverVisible();
   params->window_was_created_with_opener = window_was_created_with_opener;
   if (main_rfh) {
