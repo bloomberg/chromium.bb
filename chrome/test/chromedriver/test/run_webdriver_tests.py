@@ -159,7 +159,12 @@ if __name__ == '__main__':
     parser.error('Path given by --chromedriver is invalid.\n' +
                  'Please run "%s --help" for help' % __file__)
 
-  chromedriver_server = server.Server(options.chromedriver, options.log_path)
+  # Due to occasional timeout in starting ChromeDriver, retry once when needed.
+  try:
+    chromedriver_server = server.Server(options.chromedriver, options.log_path)
+  except RuntimeError as e:
+    _log.warn('Error starting ChromeDriver, retrying...')
+    chromedriver_server = server.Server(options.chromedriver, options.log_path)
 
   if not chromedriver_server.IsRunning():
     _log.error('ChromeDriver is not running.')
