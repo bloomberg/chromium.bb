@@ -148,11 +148,11 @@ void OAuthTokenGetterImpl::NotifyTokenCallbacks(
     const std::string& user_email,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::queue<TokenCallback> callbacks(pending_callbacks_);
-  pending_callbacks_ = base::queue<TokenCallback>();
+  base::queue<TokenCallback> callbacks;
+  callbacks.swap(pending_callbacks_);
 
   while (!callbacks.empty()) {
-    callbacks.front().Run(status, user_email, access_token);
+    std::move(callbacks.front()).Run(status, user_email, access_token);
     callbacks.pop();
   }
 }
@@ -189,10 +189,10 @@ void OAuthTokenGetterImpl::OnNetworkError(int response_code) {
                        std::string());
 }
 
-void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
+void OAuthTokenGetterImpl::CallWithToken(TokenCallback on_access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (intermediate_credentials_) {
-    pending_callbacks_.push(on_access_token);
+    pending_callbacks_.push(std::move(on_access_token));
     if (!response_pending_) {
       GetOauthTokensFromAuthCode();
     }
@@ -203,13 +203,13 @@ void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
         (!authorization_credentials_->is_service_account && !email_verified_);
 
     if (need_new_auth_token) {
-      pending_callbacks_.push(on_access_token);
+      pending_callbacks_.push(std::move(on_access_token));
       if (!response_pending_) {
         RefreshAccessToken();
       }
     } else {
-      on_access_token.Run(SUCCESS, authorization_credentials_->login,
-                          oauth_access_token_);
+      std::move(on_access_token)
+          .Run(SUCCESS, authorization_credentials_->login, oauth_access_token_);
     }
   }
 }
