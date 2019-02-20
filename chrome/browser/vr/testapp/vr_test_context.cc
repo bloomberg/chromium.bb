@@ -525,7 +525,6 @@ void VrTestContext::ToggleSplashScreen() {
     webvr_frames_received_ = false;
     UiInitialState state;
     state.in_web_vr = true;
-    state.web_vr_autopresentation_expected = true;
     ui_instance_->ReinitializeForTest(state);
   } else {
     ui_instance_->ReinitializeForTest(UiInitialState());

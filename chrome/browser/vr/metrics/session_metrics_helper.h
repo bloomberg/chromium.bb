@@ -155,8 +155,7 @@ class VR_BASE_EXPORT SessionMetricsHelper
   static SessionMetricsHelper* FromWebContents(content::WebContents* contents);
   static SessionMetricsHelper* CreateForWebContents(
       content::WebContents* contents,
-      Mode initial_mode,
-      bool started_with_autopresentation);
+      Mode initial_mode);
 
   ~SessionMetricsHelper() override;
 
@@ -170,9 +169,7 @@ class VR_BASE_EXPORT SessionMetricsHelper
   void ReportRequestPresent();
 
  private:
-  SessionMetricsHelper(content::WebContents* contents,
-                       Mode initial_mode,
-                       bool started_with_autopresentation);
+  SessionMetricsHelper(content::WebContents* contents, Mode initial_mode);
 
   // WebContentObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
@@ -215,7 +212,6 @@ class VR_BASE_EXPORT SessionMetricsHelper
   bool is_fullscreen_ = false;
   bool is_webvr_ = false;
   bool is_vr_enabled_ = false;
-  bool started_with_autopresentation_ = false;
 
   GURL last_requested_url_;
   NavigationMethod last_url_request_method_;

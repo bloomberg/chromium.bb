@@ -175,8 +175,8 @@ void XRDeviceImpl::ReportRequestPresent() {
   if (!metrics_helper) {
     // This will only happen if we are not already in VR, set start params
     // accordingly.
-    metrics_helper = SessionMetricsHelper::CreateForWebContents(
-        web_contents, Mode::kNoVr, false);
+    metrics_helper =
+        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
   }
   metrics_helper->ReportRequestPresent();
 }
