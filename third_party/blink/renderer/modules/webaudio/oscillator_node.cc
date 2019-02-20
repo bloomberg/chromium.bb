@@ -125,7 +125,7 @@ void OscillatorHandler::SetType(const String& type,
   }
 }
 
-bool OscillatorHandler::SetType(unsigned type) {
+bool OscillatorHandler::SetType(uint8_t type) {
   PeriodicWave* periodic_wave = nullptr;
 
   switch (type) {
