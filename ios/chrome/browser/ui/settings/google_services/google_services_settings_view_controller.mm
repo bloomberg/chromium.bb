@@ -122,6 +122,7 @@
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   [self.serviceDelegate didSelectItem:item];
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end
