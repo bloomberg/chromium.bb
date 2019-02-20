@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -90,38 +91,38 @@ public class AwWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
-    public void didFinishNavigation(final String url, boolean isInMainFrame, boolean isErrorPage,
-            boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-            boolean isRendererInitiated, boolean isDownload, Integer pageTransition, int errorCode,
-            String errorDescription, int httpStatusCode) {
-        if (errorCode != 0 && !isDownload) {
-            didFailLoad(isInMainFrame, errorCode, errorDescription, url);
+    public void didFinishNavigation(NavigationHandle navigation) {
+        String url = navigation.getUrl();
+        if (navigation.errorCode() != 0 && !navigation.isDownload()) {
+            didFailLoad(navigation.isInMainFrame(), navigation.errorCode(),
+                    navigation.errorDescription(), url);
         }
 
-        if (!hasCommitted) return;
+        if (!navigation.hasCommitted()) return;
 
         mCommittedNavigation = true;
 
-        if (!isInMainFrame) return;
+        if (!navigation.isInMainFrame()) return;
 
         AwContentsClient client = mAwContentsClient.get();
         if (client != null) {
             // OnPageStarted is not called for in-page navigations, which include fragment
             // navigations and navigation from history.push/replaceState.
             // Error page is handled by AwContentsClientBridge.onReceivedError.
-            if (!isSameDocument && !isErrorPage
-                    && AwFeatureList.pageStartedOnCommitEnabled(isRendererInitiated)) {
+            if (!navigation.isSameDocument() && !navigation.isErrorPage()
+                    && AwFeatureList.pageStartedOnCommitEnabled(navigation.isRendererInitiated())) {
                 client.getCallbackHelper().postOnPageStarted(url);
             }
 
-            boolean isReload = pageTransition != null
-                    && ((pageTransition & PageTransition.CORE_MASK) == PageTransition.RELOAD);
+            boolean isReload = navigation.pageTransition() != null
+                    && ((navigation.pageTransition() & PageTransition.CORE_MASK)
+                            == PageTransition.RELOAD);
             client.getCallbackHelper().postDoUpdateVisitedHistory(url, isReload);
         }
 
         // Only invoke the onPageCommitVisible callback when navigating to a different document,
         // but not when navigating to a different fragment within the same document.
-        if (!isSameDocument) {
+        if (!navigation.isSameDocument()) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 AwContents awContents = mAwContents.get();
                 if (awContents != null) {
@@ -138,7 +139,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
             });
         }
 
-        if (client != null && isFragmentNavigation) {
+        if (client != null && navigation.isFragmentNavigation()) {
             // Note fragment navigations do not have a matching onPageStarted.
             client.getCallbackHelper().postOnPageFinished(url);
         }

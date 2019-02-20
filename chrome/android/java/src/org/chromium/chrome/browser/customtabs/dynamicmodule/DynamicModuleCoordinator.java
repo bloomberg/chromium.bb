@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationHandleProxy;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
@@ -108,49 +108,43 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
     private final EmptyTabObserver mHeaderVisibilityObserver = new EmptyTabObserver() {
         @Override
-        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                                          boolean isErrorPage, boolean hasCommitted,
-                                          boolean isSameDocument, boolean isFragmentNavigation,
-                                          @Nullable Integer pageTransition, int errorCode,
-                                          int httpStatusCode) {
-            if (!isInMainFrame || !hasCommitted) return;
-            maybeCustomizeCctHeader(url);
+        public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+            if (!navigation.isInMainFrame() || !navigation.hasCommitted()) return;
+            maybeCustomizeCctHeader(navigation.getUrl());
         }
     };
 
     // Update the request's header on module managed URLs.
     private final EmptyTabObserver mCustomRequestHeaderModifier = new EmptyTabObserver() {
         @Override
-        public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-                boolean isSameDocument, long navigationHandleProxy) {
-            if (!isInMainFrame || isSameDocument) return;
-
-            updateCustomRequestHeader(url, navigationHandleProxy, false /* isRedirect */);
+        public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
+            updateCustomRequestHeader(navigation, /* isRedirect */ false);
         }
 
         @Override
-        public void onDidRedirectNavigation(
-                Tab tab, String url, boolean isInMainFrame, long navigationHandleProxy) {
-            if (!isInMainFrame) return;
-
-            updateCustomRequestHeader(url, navigationHandleProxy, true /* isRedirect */);
+        public void onDidRedirectNavigation(Tab tab, NavigationHandle navigation) {
+            updateCustomRequestHeader(navigation, /* is_redirect */ true);
         }
 
-        private void updateCustomRequestHeader(
-                String url, long navigationHandleProxy, boolean isRedirect) {
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_REQUEST_HEADER))
+        private void updateCustomRequestHeader(NavigationHandle navigation, boolean isRedirect) {
+            // Update an header only when the navigation emit a network request.²
+            if (!navigation.isInMainFrame() || navigation.isSameDocument()
+                    || navigation.isErrorPage()
+                    || !ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.CCT_MODULE_CUSTOM_REQUEST_HEADER)) {
                 return;
+            }
+
             try (TraceEvent e = TraceEvent.scoped(
                          "DynamicModuleCoordinator.updateCustomRequestHeader")) {
-                if (isModuleManagedUrl(url)) {
+                if (isModuleManagedUrl(navigation.getUrl())) {
                     String headerValue = mIntentDataProvider.getExtraModuleManagedUrlsHeaderValue();
                     if (headerValue != null) {
-                        NavigationHandleProxy.nativeSetRequestHeader(navigationHandleProxy,
+                        navigation.setRequestHeader(
                                 DynamicModuleConstants.MANAGED_URL_HEADER, headerValue);
                     }
                 } else if (isRedirect) {
-                    NavigationHandleProxy.nativeRemoveRequestHeader(
-                            navigationHandleProxy, DynamicModuleConstants.MANAGED_URL_HEADER);
+                    navigation.removeRequestHeader(DynamicModuleConstants.MANAGED_URL_HEADER);
                 }
             }
         }

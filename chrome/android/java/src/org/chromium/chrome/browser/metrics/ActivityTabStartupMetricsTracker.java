@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -14,6 +13,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -68,13 +68,12 @@ public class ActivityTabStartupMetricsTracker {
                     }
 
                     @Override
-                    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                            boolean isFragmentNavigation, @Nullable Integer pageTransition,
-                            int errorCode, int httpStatusCode) {
-                        boolean isTrackedPage = hasCommitted && isInMainFrame && !isErrorPage
-                                && !isSameDocument && !isFragmentNavigation
-                                && UrlUtilities.isHttpOrHttps(url);
+                    public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                        boolean isTrackedPage = navigation.hasCommitted()
+                                && navigation.isInMainFrame() && !navigation.isErrorPage()
+                                && !navigation.isSameDocument()
+                                && !navigation.isFragmentNavigation()
+                                && UrlUtilities.isHttpOrHttps(navigation.getUrl());
                         registerFinishNavigation(isTrackedPage);
                     }
                 };

@@ -16,6 +16,7 @@ import org.mockito.stubbing.Answer;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.MediaSession;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.media_session.MediaMetadata;
 
@@ -97,9 +98,14 @@ public class MediaNotificationTestTabHolder {
 
     public void simulateNavigation(String url, boolean isSameDocument) {
         mUrl = url;
-        mMediaSessionTabHelper.mTabObserver.onDidFinishNavigation(mTab, url,
-                true /* isInMainFrame */, false /* isErrorPage */, true /* hasCommitted */,
-                isSameDocument, false /* isFragmentNavigation */, 0 /* pageTransition */,
+
+        NavigationHandle navigation = new NavigationHandle(0 /* navigationHandleProxy */, url,
+                true /* isInMainFrame */, isSameDocument, false /* isRendererInitiated */);
+        mMediaSessionTabHelper.mTabObserver.onDidStartNavigation(mTab, navigation);
+
+        navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
+                false /* isFragmentNavigation */, false /* isDownload */, 0 /* pageTransition */,
                 0 /* errorCode */, 200 /* httpStatusCode */);
+        mMediaSessionTabHelper.mTabObserver.onDidFinishNavigation(mTab, navigation);
     }
 }

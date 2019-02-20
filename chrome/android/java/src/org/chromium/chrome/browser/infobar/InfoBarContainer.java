@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -115,11 +116,8 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
     /** Resets the state of the InfoBarContainer when the user navigates. */
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
-        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                int httpStatusCode) {
-            if (hasCommitted && isInMainFrame) {
+        public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+            if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                 setHidden(false);
             }
         }

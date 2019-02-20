@@ -9,6 +9,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
@@ -77,34 +78,23 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void didStartNavigation(
-            String url, boolean isInMainFrame, boolean isSameDocument, long navigationHandleProxy) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didStartNavigation(
-                    url, isInMainFrame, isSameDocument, navigationHandleProxy);
-        }
+    public void didStartNavigation(NavigationHandle navigation) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();)
+            mObserversIterator.next().didStartNavigation(navigation);
     }
 
     @Override
     @CalledByNative
-    public void didRedirectNavigation(
-            String url, boolean isInMainFrame, long navigationHandleProxy) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didRedirectNavigation(
-                    url, isInMainFrame, navigationHandleProxy);
-        }
+    public void didRedirectNavigation(NavigationHandle navigation) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();)
+            mObserversIterator.next().didRedirectNavigation(navigation);
     }
 
+    @Override
     @CalledByNative
-    private void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-            boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-            boolean isRendererInitiated, boolean isDownload, int transition, int errorCode,
-            String errorDescription, int httpStatusCode) {
-        Integer pageTransition = transition == -1 ? null : transition;
+    public void didFinishNavigation(NavigationHandle navigation) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didFinishNavigation(url, isInMainFrame, isErrorPage,
-                    hasCommitted, isSameDocument, isFragmentNavigation, isRendererInitiated,
-                    isDownload, pageTransition, errorCode, errorDescription, httpStatusCode);
+            mObserversIterator.next().didFinishNavigation(navigation);
         }
     }
 

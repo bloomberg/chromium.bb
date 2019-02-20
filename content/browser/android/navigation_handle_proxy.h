@@ -16,11 +16,25 @@ namespace content {
 
 class NavigationHandle;
 
-// JNI bridge for using a content::NavigationHandle from Java.
-class NavigationHandleProxy {
+// JNI Bridge in between:
+// - [C++] NavigationHandle
+// - [Java] NavigationHandle
+class NavigationHandleProxy final {
  public:
-  explicit NavigationHandleProxy(content::NavigationHandle* navigation_handle)
-      : navigation_handle_(navigation_handle) {}
+  explicit NavigationHandleProxy(NavigationHandle* cpp_navigation_handle);
+  ~NavigationHandleProxy();
+
+  NavigationHandle* cpp_navigation_handle() const {
+    return cpp_navigation_handle_;
+  }
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() const {
+    return java_navigation_handle_;
+  }
+
+  // |DidRedirect| and |DidFinish| updates the NavigationHandle on the java side
+  // with the state from the C++ side.
+  void DidRedirect();
+  void DidFinish();
 
   // Called from Java.
   void SetRequestHeader(JNIEnv* env,
@@ -33,10 +47,9 @@ class NavigationHandleProxy {
                            const base::android::JavaParamRef<jobject>& obj,
                            const base::android::JavaParamRef<jstring>& name);
 
-  jlong JavaThis() const { return reinterpret_cast<jlong>(this); }
-
  private:
-  content::NavigationHandle* navigation_handle_;
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle_;
+  NavigationHandle* cpp_navigation_handle_ = nullptr;
 };
 
 }  // namespace content

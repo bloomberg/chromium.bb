@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -186,13 +187,11 @@ public class CustomTabObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-            boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-            int httpStatusCode) {
+    public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
         boolean firstNavigation = mFirstCommitTimestamp == 0;
-        boolean isFirstMainFrameCommit = firstNavigation && hasCommitted && !isErrorPage
-                && isInMainFrame && !isSameDocument && !isFragmentNavigation;
+        boolean isFirstMainFrameCommit = firstNavigation && navigation.hasCommitted()
+                && !navigation.isErrorPage() && navigation.isInMainFrame()
+                && !navigation.isSameDocument() && !navigation.isFragmentNavigation();
         if (isFirstMainFrameCommit) mFirstCommitTimestamp = SystemClock.elapsedRealtime();
     }
 

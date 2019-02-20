@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
@@ -102,8 +103,7 @@ public class InfoBarAppearanceTest {
         CallbackHelper callbackHelper = new CallbackHelper();
         EmptyTabObserver navigationWaiter = new EmptyTabObserver() {
             @Override
-            public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isSameDocument, long navigationHandleProxy) {
+            public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
                 callbackHelper.notifyCalled();
             }
         };

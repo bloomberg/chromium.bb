@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaImage;
@@ -297,13 +298,12 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         }
 
         @Override
-        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                int httpStatusCode) {
+        public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
             assert tab == mTab;
 
-            if (!hasCommitted || !isInMainFrame || isSameDocument) return;
+            if (!navigation.hasCommitted() || !navigation.isInMainFrame()
+                    || navigation.isSameDocument())
+                return;
 
             String origin = mTab.getUrl();
             try {

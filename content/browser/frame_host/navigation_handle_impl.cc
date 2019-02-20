@@ -218,6 +218,10 @@ NavigationHandleImpl::NavigationHandleImpl(
     }
   }
 
+#if defined(OS_ANDROID)
+  navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
+#endif
+
   GetDelegate()->DidStartNavigation(this);
 
   if (IsInMainFrame()) {
@@ -244,6 +248,10 @@ NavigationHandleImpl::~NavigationHandleImpl() {
           process, site_url_);
     }
   }
+
+#if defined(OS_ANDROID)
+  navigation_handle_proxy_->DidFinish();
+#endif
 
   GetDelegate()->DidFinishNavigation(this);
 
@@ -458,6 +466,13 @@ void NavigationHandleImpl::RegisterThrottleForTesting(
     std::unique_ptr<NavigationThrottle> navigation_throttle) {
   throttle_runner_.AddThrottle(std::move(navigation_throttle));
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaGlobalRef<jobject>
+NavigationHandleImpl::java_navigation_handle() {
+  return navigation_handle_proxy_->java_navigation_handle();
+}
+#endif
 
 bool NavigationHandleImpl::IsDeferredForTesting() {
   return throttle_runner_.GetDeferringThrottle() != nullptr;
@@ -938,6 +953,10 @@ void NavigationHandleImpl::OnWillRedirectRequestProcessed(
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
   if (result.action() == NavigationThrottle::PROCEED) {
     state_ = WILL_REDIRECT_REQUEST;
+
+#if defined(OS_ANDROID)
+    navigation_handle_proxy_->DidRedirect();
+#endif
 
     // Notify the delegate that a redirect was encountered and will be followed.
     if (GetDelegate())
