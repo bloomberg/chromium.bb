@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -37,12 +40,13 @@ class TabGridViewBinder {
             holder.closeButton.setContentDescription(holder.itemView.getResources().getString(
                     R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
+            Resources res = holder.itemView.getResources();
+            Drawable drawable = new InsetDrawable(
+                    ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background,
+                            holder.itemView.getContext().getTheme()),
+                    (int) res.getDimension(R.dimen.tab_list_selected_inset));
             ((FrameLayout) holder.itemView)
-                    .setForeground(item.get(TabProperties.IS_SELECTED)
-                                    ? ResourcesCompat.getDrawable(holder.itemView.getResources(),
-                                            R.drawable.selected_tab_background,
-                                            holder.itemView.getContext().getTheme())
-                                    : null);
+                    .setForeground(item.get(TabProperties.IS_SELECTED) ? drawable : null);
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
             holder.itemView.setOnClickListener(view -> {
                 item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
