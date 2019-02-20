@@ -276,23 +276,23 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
       const mojom::blink::FetchAPIRequestPtr& request,
       const mojom::blink::FetchAPIResponsePtr& response) {
     DCHECK_GT(num_responses_left_, 0);
-    RequestResponse& request_response =
+    RequestResponse& next_request_response =
         responses_.at(responses_.size() - num_responses_left_);
 
-    request_response.request_url = request->url.GetString();
-    request_response.request_method = request->method;
+    next_request_response.request_url = request->url.GetString();
+    next_request_response.request_method = request->method;
     for (const auto& header : request->headers) {
-      request_response.request_headers.Set(AtomicString(header.key),
-                                           AtomicString(header.value));
+      next_request_response.request_headers.Set(AtomicString(header.key),
+                                                AtomicString(header.value));
     }
 
-    request_response.response_status = response->status_code;
-    request_response.response_status_text = response->status_text;
-    request_response.response_time = response->response_time.ToDoubleT();
-    request_response.response_type = response->response_type;
+    next_request_response.response_status = response->status_code;
+    next_request_response.response_status_text = response->status_text;
+    next_request_response.response_time = response->response_time.ToDoubleT();
+    next_request_response.response_type = response->response_type;
     for (const auto& header : response->headers) {
-      request_response.response_headers.Set(AtomicString(header.key),
-                                            AtomicString(header.value));
+      next_request_response.response_headers.Set(AtomicString(header.key),
+                                                 AtomicString(header.value));
     }
 
     if (--num_responses_left_ != 0)
