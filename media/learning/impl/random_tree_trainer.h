@@ -160,15 +160,20 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
 
   // Fill in |nats_remaining| for |split| for a nominal target.  |total_weight|
   // is the total weight of all instances coming into this split.
-  void ComputeNominalSplitScore(Split* split, double total_weight);
+  void ComputeSplitScore_Nominal(Split* split, double total_weight);
 
   // Fill in |nats_remaining| for |split| for a numeric target.
-  void ComputeNumericSplitScore(Split* split, double total_weight);
+  void ComputeSplitScore_Numeric(Split* split, double total_weight);
+
+  // Compute the split point for |training_data| for a nominal feature.
+  FeatureValue FindSplitPoint_Nominal(size_t index,
+                                      const TrainingData& training_data,
+                                      const std::vector<size_t>& training_idx);
 
   // Compute the split point for |training_data| for a numeric feature.
-  FeatureValue FindNumericSplitPoint(size_t index,
-                                     const TrainingData& training_data,
-                                     const std::vector<size_t>& training_idx);
+  FeatureValue FindSplitPoint_Numeric(size_t index,
+                                      const TrainingData& training_data,
+                                      const std::vector<size_t>& training_idx);
 
   DISALLOW_COPY_AND_ASSIGN(RandomTreeTrainer);
 };

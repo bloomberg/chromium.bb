@@ -36,7 +36,6 @@ struct InteriorNode : public Model {
                int split_index,
                FeatureValue split_point)
       : split_index_(split_index),
-        rt_unknown_value_handling_(task.rt_unknown_value_handling),
         ordering_(task.feature_descriptions[split_index].ordering),
         split_point_(split_point) {}
 
@@ -47,8 +46,8 @@ struct InteriorNode : public Model {
     FeatureValue f;
     switch (ordering_) {
       case LearningTask::Ordering::kUnordered:
-        // Use the nominal value directly.
-        f = features[split_index_];
+        // Use 0 for "!=" and 1 for "==".
+        f = FeatureValue(features[split_index_] == split_point_);
         break;
       case LearningTask::Ordering::kNumeric:
         // Use 0 for "<=" and 1 for ">".
@@ -58,18 +57,9 @@ struct InteriorNode : public Model {
 
     auto iter = children_.find(f);
 
-    // If we've never seen this feature value, then average all our branches.
-    // This is an attempt to mimic one-hot encoding, where we'll take the zero
-    // branch but it depends on the tree structure which of the one-hot values
-    // we're choosing.
-    if (iter == children_.end()) {
-      switch (rt_unknown_value_handling_) {
-        case LearningTask::RTUnknownValueHandling::kEmptyDistribution:
-          return TargetDistribution();
-        case LearningTask::RTUnknownValueHandling::kUseAllSplits:
-          return PredictDistributionWithMissingValues(features);
-      }
-    }
+    // If we've never seen this feature value, then return nothing.
+    if (iter == children_.end())
+      return TargetDistribution();
 
     return iter->second->PredictDistribution(features);
   }
@@ -97,9 +87,6 @@ struct InteriorNode : public Model {
   // Feature value that we split on.
   int split_index_ = -1;
   base::flat_map<FeatureValue, std::unique_ptr<Model>> children_;
-
-  // How we handle unknown values.
-  LearningTask::RTUnknownValueHandling rt_unknown_value_handling_;
 
   // How is our feature value ordered?
   LearningTask::Ordering ordering_;
@@ -227,6 +214,11 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   }
 
   // Select the feature subset to consider at this leaf.
+  // TODO(liberato): For nominals, with one-hot encoding, we'd give an equal
+  // chance to each feature's value.  For example, if F1 has {A, B} and F2 has
+  // {C,D,E,F}, then we would pick uniformly over {A,B,C,D,E,F}.  However, now
+  // we pick between {F1, F2} then pick between either {A,B} or {C,D,E,F}.  We
+  // do this because it's simpler and doesn't seem to hurt anything.
   FeatureSet feature_candidates = new_unused_set;
   // TODO(liberato): Let our caller override this.
   const size_t features_per_split =
@@ -267,17 +259,6 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   std::unique_ptr<InteriorNode> node = std::make_unique<InteriorNode>(
       task, best_potential_split.split_index, best_potential_split.split_point);
 
-  // Don't let the subtree use this feature if this is nominal split, since
-  // there's nothing left to split.  For numeric splits, we might want to split
-  // it further.  Note that if there is only one branch for this split, then
-  // we returned a leaf anyway.
-  if (task.feature_descriptions[best_potential_split.split_index].ordering ==
-      LearningTask::Ordering::kUnordered) {
-    DCHECK(new_unused_set.find(best_potential_split.split_index) !=
-           new_unused_set.end());
-    new_unused_set.erase(best_potential_split.split_index);
-  }
-
   for (auto& branch_iter : best_potential_split.branch_infos) {
     node->AddChild(branch_iter.first,
                    Build(task, training_data, branch_iter.second.training_idx,
@@ -297,18 +278,21 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   DCHECK_GT(training_idx.size(), 0u);
 
   Split split(split_index);
-  base::Optional<FeatureValue> split_point;
+
+  bool is_numeric = task.feature_descriptions[split_index].ordering ==
+                    LearningTask::Ordering::kNumeric;
 
   // TODO(liberato): Consider removing nominal feature support and RF.  That
   // would make this code somewhat simpler.
 
   // For a numeric split, find the split point.  Otherwise, we'll split on every
   // nominal value that this feature has in |training_data|.
-  if (task.feature_descriptions[split_index].ordering ==
-      LearningTask::Ordering::kNumeric) {
-    split_point =
-        FindNumericSplitPoint(split.split_index, training_data, training_idx);
-    split.split_point = *split_point;
+  if (is_numeric) {
+    split.split_point =
+        FindSplitPoint_Numeric(split.split_index, training_data, training_idx);
+  } else {
+    split.split_point =
+        FindSplitPoint_Nominal(split.split_index, training_data, training_idx);
   }
 
   // Find the split's feature values and construct the training set for each.
@@ -323,13 +307,14 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     FeatureValue v_i = example.features[split.split_index];
 
     // Figure out what value this example would use for splitting.  For nominal,
-    // it's just |v_i|.  For numeric, it's whether |v_i| is <= the split point
-    // or not (0 for <=, 1 for >).
+    // it's 1 or 0, based on whether |v_i| is equal to the split or not.  For
+    // numeric, it's whether |v_i| is <= the split point or not (0 for <=, and 1
+    // for >).
     FeatureValue split_feature;
-    if (split_point)
-      split_feature = FeatureValue(v_i > *split_point);
+    if (is_numeric)
+      split_feature = FeatureValue(v_i > split.split_point);
     else
-      split_feature = v_i;
+      split_feature = FeatureValue(v_i == split.split_point);
 
     // Add |v_i| to the right training set.  Remember that emplace will do
     // nothing if the key already exists.
@@ -345,18 +330,18 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   // Figure out how good / bad this split is.
   switch (task.target_description.ordering) {
     case LearningTask::Ordering::kUnordered:
-      ComputeNominalSplitScore(&split, total_weight);
+      ComputeSplitScore_Nominal(&split, total_weight);
       break;
     case LearningTask::Ordering::kNumeric:
-      ComputeNumericSplitScore(&split, total_weight);
+      ComputeSplitScore_Numeric(&split, total_weight);
       break;
   }
 
   return split;
 }
 
-void RandomTreeTrainer::ComputeNominalSplitScore(Split* split,
-                                                 double total_weight) {
+void RandomTreeTrainer::ComputeSplitScore_Nominal(Split* split,
+                                                  double total_weight) {
   // Compute the nats given that we're at this node.
   split->nats_remaining = 0;
   for (auto& info_iter : split->branch_infos) {
@@ -374,8 +359,8 @@ void RandomTreeTrainer::ComputeNominalSplitScore(Split* split,
   }
 }
 
-void RandomTreeTrainer::ComputeNumericSplitScore(Split* split,
-                                                 double total_weight) {
+void RandomTreeTrainer::ComputeSplitScore_Numeric(Split* split,
+                                                  double total_weight) {
   // Compute the nats given that we're at this node.
   split->nats_remaining = 0;
   for (auto& info_iter : split->branch_infos) {
@@ -402,7 +387,7 @@ void RandomTreeTrainer::ComputeNumericSplitScore(Split* split,
   }
 }
 
-FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
+FeatureValue RandomTreeTrainer::FindSplitPoint_Numeric(
     size_t split_index,
     const TrainingData& training_data,
     const std::vector<size_t>& training_idx) {
@@ -442,6 +427,43 @@ FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
   }
 
   return v_split;
+}
+
+FeatureValue RandomTreeTrainer::FindSplitPoint_Nominal(
+    size_t split_index,
+    const TrainingData& training_data,
+    const std::vector<size_t>& training_idx) {
+  // We should not be given a training set of size 0, since there's no need to
+  // check an empty split.
+  DCHECK_GT(training_idx.size(), 0u);
+
+  // Construct a set of all values for |training_idx|.  We don't care about
+  // their relative frequency, since one-hot encoding doesn't.
+  // For example, if a feature has 10 "yes" instances and 1 "no" instance, then
+  // there's a 50% chance for each to be chosen here.  This is because one-hot
+  // encoding would do roughly the same thing: when choosing features, the
+  // "is_yes" and "is_no" features that come out of one-hot encoding would be
+  // equally likely to be chosen.
+  //
+  // Important but subtle note: we can't choose a value that's been chosen
+  // before for this feature, since that would be like splitting on the same
+  // one-hot feature more than once.  Luckily, we won't be asked to do that.  If
+  // we choose "Yes" at some level in the tree, then the "==" branch will have
+  // trivial features which will be removed from consideration early (we never
+  // consider features with only one value), and the != branch won't have any
+  // "Yes" values for us to pick at a lower level.
+  std::set<FeatureValue> values;
+  for (size_t idx : training_idx) {
+    const LabelledExample& example = training_data[idx];
+    values.insert(example.features[split_index]);
+  }
+
+  // Select one uniformly at random.
+  size_t which = rng()->Generate(values.size());
+  auto it = values.begin();
+  for (; which > 0; it++, which--)
+    ;
+  return *it;
 }
 
 }  // namespace learning
