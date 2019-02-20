@@ -79,6 +79,10 @@ class CONTENT_EXPORT RtpReceiverState {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() const;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner() const;
   scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver() const;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport()
+      const;
+  webrtc::DtlsTransportInformation webrtc_dtls_transport_information() const;
+
   const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
   track_ref() const;
   const std::vector<std::string>& stream_ids() const;
@@ -87,6 +91,8 @@ class CONTENT_EXPORT RtpReceiverState {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver_;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport_;
+  webrtc::DtlsTransportInformation webrtc_dtls_transport_information_;
   bool is_initialized_;
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref_;
   std::vector<std::string> stream_ids_;
@@ -113,6 +119,9 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
 
   std::unique_ptr<blink::WebRTCRtpReceiver> ShallowCopy() const override;
   uintptr_t Id() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override;
+
   const blink::WebMediaStreamTrack& Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()

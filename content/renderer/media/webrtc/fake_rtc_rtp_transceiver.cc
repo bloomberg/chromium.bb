@@ -43,6 +43,19 @@ uintptr_t FakeRTCRtpSender::Id() const {
   return 0;
 }
 
+rtc::scoped_refptr<webrtc::DtlsTransportInterface>
+FakeRTCRtpSender::DtlsTransport() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+webrtc::DtlsTransportInformation FakeRTCRtpSender::DtlsTransportInformation() {
+  NOTIMPLEMENTED();
+  static webrtc::DtlsTransportInformation dummy(
+      webrtc::DtlsTransportState::kNew);
+  return dummy;
+}
+
 blink::WebMediaStreamTrack FakeRTCRtpSender::Track() const {
   return track_id_ ? CreateWebMediaStreamTrack(*track_id_)
                    : blink::WebMediaStreamTrack();  // null
@@ -105,6 +118,20 @@ std::unique_ptr<blink::WebRTCRtpReceiver> FakeRTCRtpReceiver::ShallowCopy()
 uintptr_t FakeRTCRtpReceiver::Id() const {
   NOTIMPLEMENTED();
   return 0;
+}
+
+rtc::scoped_refptr<webrtc::DtlsTransportInterface>
+FakeRTCRtpReceiver::DtlsTransport() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+webrtc::DtlsTransportInformation
+FakeRTCRtpReceiver::DtlsTransportInformation() {
+  NOTIMPLEMENTED();
+  static webrtc::DtlsTransportInformation dummy(
+      webrtc::DtlsTransportState::kNew);
+  return dummy;
 }
 
 const blink::WebMediaStreamTrack& FakeRTCRtpReceiver::Track() const {

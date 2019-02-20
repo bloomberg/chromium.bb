@@ -404,6 +404,12 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCRtpTransceiver* CreateOrUpdateTransceiver(
       std::unique_ptr<WebRTCRtpTransceiver>);
 
+  // Creates or updates the RTCDtlsTransport object corresponding to the
+  // given webrtc::DtlsTransportInterface object.
+  RTCDtlsTransport* CreateOrUpdateDtlsTransport(
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface>,
+      const webrtc::DtlsTransportInformation& info);
+
   // Update the |receiver->streams()| to the streams indicated by |stream_ids|,
   // adding to |remove_list| and |add_list| accordingly.
   // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
@@ -481,10 +487,11 @@ class MODULES_EXPORT RTCPeerConnection final
   HeapVector<Member<RTCRtpReceiver>> rtp_receivers_;
   HeapVector<Member<RTCRtpTransceiver>> transceivers_;
 
-  // A map of all transports that have been looked up by MID.
-  // A transport may be referenced by more than one mid, so may
-  // be present multiple times in the table.
-  HeapHashMap<String, Member<RTCDtlsTransport>> dtls_transports_by_mid_;
+  // A map of all webrtc::DtlsTransports that have a corresponding
+  // RTCDtlsTransport object. Garbage collection will remove map entries
+  // when they are no longer in use.
+  HeapHashMap<webrtc::DtlsTransportInterface*, WeakMember<RTCDtlsTransport>>
+      dtls_transports_by_native_transport_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 

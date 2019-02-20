@@ -262,7 +262,7 @@ class WebRtcSetDescriptionObserverHandlerTest
         track_adapter_map_->GetOrCreateLocalTrackAdapter(web_local_track);
     scoped_refptr<webrtc::MediaStreamTrackInterface> local_track =
         local_track_adapter->webrtc_track();
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender(
+    rtc::scoped_refptr<FakeRtpSender> sender(
         new rtc::RefCountedObject<FakeRtpSender>(
             local_track.get(), std::vector<std::string>({"local_stream"})));
     // A requirement of WebRtcSet[Local/Remote]DescriptionObserverHandler is
@@ -275,7 +275,7 @@ class WebRtcSetDescriptionObserverHandlerTest
         MockWebRtcAudioTrack::Create("remote_track");
     scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
         new rtc::RefCountedObject<MockMediaStream>("remote_stream"));
-    rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver(
+    rtc::scoped_refptr<FakeRtpReceiver> receiver(
         new rtc::RefCountedObject<FakeRtpReceiver>(
             remote_track.get(),
             std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>(

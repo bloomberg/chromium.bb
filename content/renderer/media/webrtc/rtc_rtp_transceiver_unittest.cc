@@ -105,8 +105,8 @@ class RTCRtpTransceiverTest : public ::testing::Test {
   }
 
   rtc::scoped_refptr<FakeRtpTransceiver> CreateWebRtcTransceiver(
-      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-      rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver,
+      rtc::scoped_refptr<FakeRtpSender> sender,
+      rtc::scoped_refptr<FakeRtpReceiver> receiver,
       base::Optional<std::string> mid,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,

@@ -64,6 +64,7 @@ class RTCRtpSender final : public ScriptWrappable {
   MediaStreamVector streams() const;
   void set_streams(MediaStreamVector streams);
   void set_transceiver(RTCRtpTransceiver*);
+  void set_transport(RTCDtlsTransport*);
 
   void Trace(blink::Visitor*) override;
 
@@ -74,6 +75,7 @@ class RTCRtpSender final : public ScriptWrappable {
   // a copy here as long as we support Plan B.
   String kind_;
   Member<MediaStreamTrack> track_;
+  Member<RTCDtlsTransport> transport_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
   Member<RTCRtpSendParameters> last_returned_parameters_;

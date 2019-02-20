@@ -1171,49 +1171,6 @@ bool RTCPeerConnection::HasDocumentMedia() const {
          user_media_controller->HasRequestedUserMedia();
 }
 
-RTCDtlsTransport* RTCPeerConnection::LookupDtlsTransportByMid(String mid) {
-  if (mid.IsNull())
-    return nullptr;
-  webrtc::PeerConnectionInterface* native_pc =
-      peer_handler_->NativePeerConnection();
-  if (!native_pc)
-    return nullptr;
-  auto native_transport =
-      native_pc->LookupDtlsTransportByMid(std::string(mid.Utf8().data()));
-  if (!native_transport)
-    return nullptr;
-  // Check for previously created RTCDtlsTransport objects referencing
-  // this transport.
-  auto transport_lookup_result = dtls_transports_by_mid_.find(mid);
-  if (transport_lookup_result != dtls_transports_by_mid_.end()) {
-    if (transport_lookup_result->value->native_transport() !=
-        native_transport.get()) {
-      // The mid's transport has changed. Erase the reference to
-      // the old transport, and continue.
-      dtls_transports_by_mid_.erase(transport_lookup_result);
-    } else {
-      return transport_lookup_result->value;
-    }
-  }
-
-  // Check if the same transport has been returned for another mid.
-  for (auto const& transport_iterator : dtls_transports_by_mid_) {
-    if (transport_iterator.value->native_transport() ==
-        native_transport.get()) {
-      // insert might invalidate the iterator (or not), so be safe.
-      RTCDtlsTransport* transport = transport_iterator.value;
-      dtls_transports_by_mid_.insert(mid, transport);
-      return transport;
-    }
-  }
-  // The transport is previously unseen. Create object and hold on to
-  // a reference to it.
-  RTCDtlsTransport* transport = MakeGarbageCollected<RTCDtlsTransport>(
-      GetExecutionContext(), native_transport);
-  dtls_transports_by_mid_.insert(mid, transport);
-  return transport;
-}
-
 void RTCPeerConnection::ReportSetSdpUsage(
     SetSdpOperationType operation_type,
     const RTCSessionDescriptionInit* session_description_init) const {
@@ -2346,7 +2303,7 @@ HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
 HeapVector<Member<RTCRtpReceiver>>::iterator RTCPeerConnection::FindReceiver(
     const WebRTCRtpReceiver& web_receiver) {
   for (auto* it = rtp_receivers_.begin(); it != rtp_receivers_.end(); ++it) {
-    if ((*it)->web_receiver().Id() == web_receiver.Id())
+    if ((*it)->web_receiver()->Id() == web_receiver.Id())
       return it;
   }
   return rtp_receivers_.end();
@@ -2391,6 +2348,9 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
     DCHECK_EQ(sender->web_sender()->Id(), web_sender->Id());
     sender->SetTrack(track);
   }
+  sender->set_transport(CreateOrUpdateDtlsTransport(
+      sender->web_sender()->DtlsTransport(),
+      sender->web_sender()->DtlsTransportInformation()));
   return sender;
 }
 
@@ -2425,9 +2385,12 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   } else {
     // Update existing receiver is a no-op.
     receiver = *receiver_it;
-    DCHECK_EQ(receiver->web_receiver().Id(), web_receiver->Id());
+    DCHECK_EQ(receiver->web_receiver()->Id(), web_receiver->Id());
     DCHECK_EQ(receiver->track(), track);  // Its track should never change.
   }
+  receiver->set_transport(CreateOrUpdateDtlsTransport(
+      receiver->web_receiver()->DtlsTransport(),
+      receiver->web_receiver()->DtlsTransportInformation()));
   return receiver;
 }
 
@@ -2457,6 +2420,27 @@ RTCRtpTransceiver* RTCPeerConnection::CreateOrUpdateTransceiver(
     transceiver->UpdateMembers();
   }
   return transceiver;
+}
+
+RTCDtlsTransport* RTCPeerConnection::CreateOrUpdateDtlsTransport(
+    rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport,
+    const webrtc::DtlsTransportInformation& information) {
+  if (!native_transport.get()) {
+    return nullptr;
+  }
+  auto transport_locator =
+      dtls_transports_by_native_transport_.find(native_transport);
+  if (transport_locator != dtls_transports_by_native_transport_.end()) {
+    auto transport = transport_locator->value;
+    transport->ChangeState(information);
+    return transport;
+  }
+  RTCDtlsTransport* transport = MakeGarbageCollected<RTCDtlsTransport>(
+      GetExecutionContext(), native_transport);
+  dtls_transports_by_native_transport_.insert(native_transport.get(),
+                                              transport);
+  transport->ChangeState(information);
+  return transport;
 }
 
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(
@@ -3076,7 +3060,7 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(rtp_receivers_);
   visitor->Trace(transceivers_);
   visitor->Trace(scheduled_events_);
-  visitor->Trace(dtls_transports_by_mid_);
+  visitor->Trace(dtls_transports_by_native_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);

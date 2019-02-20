@@ -30,6 +30,8 @@ class FakeRtpSender : public webrtc::RtpSenderInterface {
 
   bool SetTrack(webrtc::MediaStreamTrackInterface* track) override;
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> dtls_transport()
+      const override;
   uint32_t ssrc() const override;
   cricket::MediaType media_type() const override;
   std::string id() const override;
@@ -41,9 +43,14 @@ class FakeRtpSender : public webrtc::RtpSenderInterface {
       const webrtc::RtpParameters& parameters) override;
   rtc::scoped_refptr<webrtc::DtmfSenderInterface> GetDtmfSender()
       const override;
+  void SetTransport(
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport) {
+    transport_ = transport;
+  }
 
  private:
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport_;
   std::vector<std::string> stream_ids_;
 };
 
@@ -55,6 +62,8 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   ~FakeRtpReceiver() override;
 
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> dtls_transport()
+      const override;
   std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams()
       const override;
   std::vector<std::string> stream_ids() const override;
@@ -64,9 +73,14 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   bool SetParameters(const webrtc::RtpParameters& parameters) override;
   void SetObserver(webrtc::RtpReceiverObserverInterface* observer) override;
   std::vector<webrtc::RtpSource> GetSources() const override;
+  void SetTransport(
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport) {
+    transport_ = transport;
+  }
 
  private:
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport_;
   std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams_;
 };
 
@@ -74,8 +88,8 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
  public:
   FakeRtpTransceiver(
       cricket::MediaType media_type,
-      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-      rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver,
+      rtc::scoped_refptr<FakeRtpSender> sender,
+      rtc::scoped_refptr<FakeRtpReceiver> receiver,
       base::Optional<std::string> mid,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,
@@ -94,15 +108,27 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
   absl::optional<webrtc::RtpTransceiverDirection> current_direction()
       const override;
   void Stop() override;
+  void SetTransport(
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport);
 
  private:
   cricket::MediaType media_type_;
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> sender_;
-  rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver_;
+  rtc::scoped_refptr<FakeRtpSender> sender_;
+  rtc::scoped_refptr<FakeRtpReceiver> receiver_;
   absl::optional<std::string> mid_;
   bool stopped_;
   webrtc::RtpTransceiverDirection direction_;
   absl::optional<webrtc::RtpTransceiverDirection> current_direction_;
+};
+
+class FakeDtlsTransport : public webrtc::DtlsTransportInterface {
+ public:
+  FakeDtlsTransport();
+  rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport() override;
+  webrtc::DtlsTransportInformation Information() override;
+  void RegisterObserver(
+      webrtc::DtlsTransportObserverInterface* observer) override {}
+  void UnregisterObserver() override {}
 };
 
 // TODO(hbos): The use of fakes and mocks is the wrong approach for testing of

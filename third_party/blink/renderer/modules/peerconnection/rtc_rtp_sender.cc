@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
@@ -311,9 +312,7 @@ MediaStreamTrack* RTCRtpSender::track() {
 }
 
 RTCDtlsTransport* RTCRtpSender::transport() {
-  if (!transceiver_)
-    return nullptr;
-  return pc_->LookupDtlsTransportByMid(transceiver_->mid());
+  return transport_;
 }
 
 RTCDtlsTransport* RTCRtpSender::rtcp_transport() {
@@ -477,6 +476,10 @@ void RTCRtpSender::set_transceiver(RTCRtpTransceiver* transceiver) {
   transceiver_ = transceiver;
 }
 
+void RTCRtpSender::set_transport(RTCDtlsTransport* transport) {
+  transport_ = transport;
+}
+
 RTCDTMFSender* RTCRtpSender::dtmf() {
   // Lazy initialization of dtmf_ to avoid overhead when not used.
   if (!dtmf_ && kind_ == "audio") {
@@ -494,6 +497,7 @@ RTCDTMFSender* RTCRtpSender::dtmf() {
 void RTCRtpSender::Trace(blink::Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);
+  visitor->Trace(transport_);
   visitor->Trace(dtmf_);
   visitor->Trace(streams_);
   visitor->Trace(last_returned_parameters_);

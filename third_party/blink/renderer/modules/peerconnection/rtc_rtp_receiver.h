@@ -48,10 +48,11 @@ class RTCRtpReceiver final : public ScriptWrappable {
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
   ScriptPromise getStats(ScriptState*);
 
-  const WebRTCRtpReceiver& web_receiver() const;
+  WebRTCRtpReceiver* web_receiver();
   MediaStreamVector streams() const;
   void set_streams(MediaStreamVector streams);
   void set_transceiver(RTCRtpTransceiver*);
+  void set_transport(RTCDtlsTransport*);
   void UpdateSourcesIfNeeded();
 
   void Trace(blink::Visitor*) override;
@@ -62,6 +63,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   std::unique_ptr<WebRTCRtpReceiver> receiver_;
   Member<MediaStreamTrack> track_;
+  Member<RTCDtlsTransport> transport_;
   MediaStreamVector streams_;
 
   // The current SSRCs and CSRCs. getSynchronizationSources() returns the SSRCs
