@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -50,36 +51,73 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
   return ToLayoutBlockFlow(box).MultiColumnFlowThread();
 }
 
-#define WITH_ALGORITHM(ret, func, argdecl, args)                             \
-  ret func##WithAlgorithm(NGBlockNode node, const NGConstraintSpace& space,  \
-                          const NGBreakToken* break_token, argdecl) {        \
-    const auto* token = ToNGBlockBreakToken(break_token);                    \
-    const ComputedStyle& style = node.Style();                               \
-    if (node.GetLayoutBox()->IsLayoutNGFlexibleBox())                        \
-      return NGFlexLayoutAlgorithm(node, space, token).func args;            \
-    if (node.GetLayoutBox()->IsLayoutNGFieldset())                           \
-      return NGFieldsetLayoutAlgorithm(node, space, token).func args;        \
-    /* If there's a legacy layout box, we can only do block fragmentation if \
-     * we would have done block fragmentation with the legacy engine.        \
-     * Otherwise writing data back into the legacy tree will fail. Look for  \
-     * the flow thread. */                                                   \
-    if (GetFlowThread(*node.GetLayoutBox())) {                               \
-      if (style.IsOverflowPaged())                                           \
-        return NGPageLayoutAlgorithm(node, space, token).func args;          \
-      if (style.SpecifiesColumns())                                          \
-        return NGColumnLayoutAlgorithm(node, space, token).func args;        \
-      NOTREACHED();                                                          \
-    }                                                                        \
-    return NGBlockLayoutAlgorithm(node, space, token).func args;             \
+// Parameters to pass when creating a layout algorithm for a block node.
+struct NGLayoutAlgorithmParams {
+  STACK_ALLOCATED();
+
+ public:
+  NGLayoutAlgorithmParams(NGBlockNode node,
+                          const NGConstraintSpace& space,
+                          const NGBlockBreakToken* break_token = nullptr)
+      : node(node), space(space), break_token(break_token) {}
+
+  NGBlockNode node;
+  const NGConstraintSpace& space;
+  const NGBlockBreakToken* break_token;
+};
+
+template <typename Algorithm, typename Callback>
+void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
+                           Callback callback) {
+  Algorithm algorithm(params.node, params.space, params.break_token);
+  callback(&algorithm);
+}
+
+inline void DetermineAlgorithmAndRun(
+    const NGLayoutAlgorithmParams& params,
+    std::function<void(NGLayoutAlgorithmOperations*)> callback) {
+  const ComputedStyle& style = params.node.Style();
+  const LayoutBox& box = *params.node.GetLayoutBox();
+  if (box.IsLayoutNGFlexibleBox()) {
+    CreateAlgorithmAndRun<NGFlexLayoutAlgorithm>(params, callback);
+  } else if (box.IsLayoutNGFieldset()) {
+    CreateAlgorithmAndRun<NGFieldsetLayoutAlgorithm>(params, callback);
+    // If there's a legacy layout box, we can only do block fragmentation if
+    // we would have done block fragmentation with the legacy engine.
+    // Otherwise writing data back into the legacy tree will fail. Look for
+    // the flow thread.
+  } else if (GetFlowThread(box)) {
+    if (style.IsOverflowPaged())
+      CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
+    else if (style.SpecifiesColumns())
+      CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
+    else
+      NOTREACHED();
+  } else {
+    CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
   }
+}
 
-WITH_ALGORITHM(scoped_refptr<NGLayoutResult>, Layout, void*, ())
-WITH_ALGORITHM(base::Optional<MinMaxSize>,
-               ComputeMinMaxSize,
-               MinMaxSizeInput input,
-               (input))
+inline scoped_refptr<NGLayoutResult> LayoutWithAlgorithm(
+    const NGLayoutAlgorithmParams& params) {
+  scoped_refptr<NGLayoutResult> result;
+  DetermineAlgorithmAndRun(params,
+                           [&result](NGLayoutAlgorithmOperations* algorithm) {
+                             result = algorithm->Layout();
+                           });
+  return result;
+}
 
-#undef WITH_ALGORITHM
+inline base::Optional<MinMaxSize> ComputeMinMaxSizeWithAlgorithm(
+    const NGLayoutAlgorithmParams& params,
+    const MinMaxSizeInput& input) {
+  base::Optional<MinMaxSize> minmax;
+  DetermineAlgorithmAndRun(
+      params, [&minmax, &input](NGLayoutAlgorithmOperations* algorithm) {
+        minmax = algorithm->ComputeMinMaxSize(input);
+      });
+  return minmax;
+}
 
 bool IsFloatFragment(const NGPhysicalFragment& fragment) {
   const LayoutObject* layout_object = fragment.GetLayoutObject();
@@ -248,8 +286,10 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   PrepareForLayout();
 
   NGBoxStrut old_scrollbars = GetScrollbarSizes();
-  layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
-                                      /* ignored */ nullptr);
+
+  NGLayoutAlgorithmParams params(*this, constraint_space,
+                                 ToNGBlockBreakToken(break_token));
+  layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
   if (old_scrollbars != GetScrollbarSizes()) {
@@ -269,8 +309,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
                          kMarkOnlyThis);
 
-    layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
-                                        /* ignored */ nullptr);
+    layout_result = LayoutWithAlgorithm(params);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);
   }
 
@@ -388,9 +427,9 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return sizes;
   }
 
-  base::Optional<MinMaxSize> maybe_sizes =
-      ComputeMinMaxSizeWithAlgorithm(*this, *constraint_space,
-                                     /* break token */ nullptr, input);
+  base::Optional<MinMaxSize> maybe_sizes = ComputeMinMaxSizeWithAlgorithm(
+      NGLayoutAlgorithmParams(*this, *constraint_space), input);
+
   if (maybe_sizes.has_value()) {
     if (UNLIKELY(IsHTMLMarqueeElement(box_->GetNode()) &&
                  ToHTMLMarqueeElement(box_->GetNode())->IsHorizontal()))
