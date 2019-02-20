@@ -18,6 +18,7 @@ body {
 
 #tabs {
   min-height: 1em;
+  overflow-wrap: break-word;
   width: 100%;
 }
 
