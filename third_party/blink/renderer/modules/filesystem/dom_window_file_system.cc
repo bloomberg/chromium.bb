@@ -228,31 +228,32 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     accepts = ConvertAccepts(options->accepts());
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise result = resolver->Promise();
+  ScriptPromise resolver_result = resolver->Promise();
   FileSystemDispatcher::From(document).GetFileSystemManager().ChooseEntry(
       ConvertChooserType(options->type(), options->multiple()),
       std::move(accepts), !options->excludeAcceptAllOption(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              const ChooseFileSystemEntriesOptions* options,
-             base::File::Error result,
+             base::File::Error file_operation_result,
              Vector<mojom::blink::FileSystemEntryPtr> entries) {
-            if (result != base::File::FILE_OK) {
-              resolver->Reject(file_error::CreateDOMException(result));
+            if (file_operation_result != base::File::FILE_OK) {
+              resolver->Reject(
+                  file_error::CreateDOMException(file_operation_result));
               return;
             }
             bool is_directory = options->type() == "openDirectory";
             ScriptState* script_state = resolver->GetScriptState();
             ScriptState::Scope scope(script_state);
             if (options->multiple()) {
-              Vector<ScriptPromise> result;
-              result.ReserveInitialCapacity(entries.size());
+              Vector<ScriptPromise> results;
+              results.ReserveInitialCapacity(entries.size());
               for (const auto& entry : entries) {
-                result.emplace_back(
+                results.emplace_back(
                     CreateFileHandle(script_state, entry, is_directory));
               }
               resolver->Resolve(
-                  ScriptPromise::All(script_state, result).GetScriptValue());
+                  ScriptPromise::All(script_state, results).GetScriptValue());
             } else {
               DCHECK_EQ(1u, entries.size());
               resolver->Resolve(
@@ -261,7 +262,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
             }
           },
           WrapPersistent(resolver), WrapPersistent(options)));
-  return result;
+  return resolver_result;
 }
 
 }  // namespace blink
