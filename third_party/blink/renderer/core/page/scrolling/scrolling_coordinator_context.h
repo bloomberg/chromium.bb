@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace cc {
@@ -20,6 +21,8 @@ class PaintLayer;
 // TODO(kenrb): This class could be temporary depending on how
 // https://crbug.com/680606 is resolved.
 class CORE_EXPORT ScrollingCoordinatorContext final {
+  USING_FAST_MALLOC(ScrollingCoordinatorContext);
+
  public:
   ScrollingCoordinatorContext() {}
   virtual ~ScrollingCoordinatorContext() {}
