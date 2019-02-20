@@ -3179,11 +3179,6 @@ const char kEnableDriveFsName[] = "Enable DriveFS";
 const char kEnableDriveFsDescription[] =
     "Enables use of the new DriveFS-based Drive sync client.";
 
-const char kEnableEhvInputName[] =
-    "Emoji, handwriting and voice input on opt-in IME menu";
-const char kEnableEhvInputDescription[] =
-    "Enable access to emoji, handwriting and voice input form opt-in IME menu.";
-
 const char kEnableExplicitDmaFencesName[] = "Enable explicit dma-fences";
 const char kEnableExplicitDmaFencesDescription[] =
     "Use dma-fences explicitly for synchronization between GPU and display "
@@ -3222,10 +3217,6 @@ const char kEnableGoogleAssistantStereoInputDescription[] =
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
-
-const char kEnableImeMenuName[] = "Enable opt-in IME menu";
-const char kEnableImeMenuDescription[] =
-    "Enable access to the new IME menu in the Language Settings page.";
 
 const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
 const char kEnableMyFilesVolumeDescription[] =
@@ -3352,10 +3343,6 @@ const char kNetworkPortalNotificationName[] =
 const char kNetworkPortalNotificationDescription[] =
     "If enabled, notification is displayed when device is connected to a "
     "network behind captive portal.";
-
-const char kNewKoreanImeName[] = "New Korean IME";
-const char kNewKoreanImeDescription[] =
-    "New Korean IME, which is based on Google Input Tools' HMM engine.";
 
 const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =

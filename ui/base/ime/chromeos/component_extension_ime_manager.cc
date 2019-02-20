@@ -179,9 +179,6 @@ bool ComponentExtensionIMEManager::IsWhitelistedExtension(
 
 input_method::InputMethodDescriptors
     ComponentExtensionIMEManager::GetAllIMEAsInputMethodDescriptor() {
-  bool enable_new_korean_ime =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewKoreanIme);
   input_method::InputMethodDescriptors result;
   for (std::map<std::string, ComponentExtensionIME>::const_iterator it =
           component_extension_imes_.begin();
@@ -189,9 +186,6 @@ input_method::InputMethodDescriptors
     const ComponentExtensionIME& ext = it->second;
     for (size_t j = 0; j < ext.engines.size(); ++j) {
       const ComponentExtensionEngine& ime = ext.engines[j];
-      // Filter out new Korean IME if the experimental flag is OFF.
-      if (!enable_new_korean_ime && ime.engine_id == "ko-t-i0-und")
-        continue;
       const std::string input_method_id =
           extension_ime_util::GetComponentInputMethodID(
               ext.id, ime.engine_id);

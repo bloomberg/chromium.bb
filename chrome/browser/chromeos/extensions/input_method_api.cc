@@ -91,10 +91,9 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
   output->SetBoolean("isImeMenuActivated",
-                     base::FeatureList::IsEnabled(features::kOptInImeMenu) &&
-                         Profile::FromBrowserContext(browser_context())
-                             ->GetPrefs()
-                             ->GetBoolean(prefs::kLanguageImeMenuActivated));
+                     Profile::FromBrowserContext(browser_context())
+                         ->GetPrefs()
+                         ->GetBoolean(prefs::kLanguageImeMenuActivated));
   return RespondNow(OneArgument(std::move(output)));
 #endif
 }

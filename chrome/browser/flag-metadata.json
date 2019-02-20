@@ -579,11 +579,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-new-korean-ime",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-new-zip-unpacker",
     "owners": [ "chromeos-files-syd@google.com" ],
     "expiry_milestone": 76
@@ -1098,11 +1093,6 @@
   },
   {
     "name": "enable-embedded-extension-options",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-emoji-handwriting-voice-on-ime-menu",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2614,11 +2604,6 @@
   {
     "name": "openvr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "opt-in-ime-menu",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {

@@ -242,9 +242,6 @@ const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
-// Disables the new Korean IME in chrome://settings/languages.
-const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
-
 // Disables the new File System Provider API based ZIP unpacker.
 const char kDisableNewZIPUnpacker[] = "disable-new-zip-unpacker";
 

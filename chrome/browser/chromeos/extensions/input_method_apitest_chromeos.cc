@@ -78,10 +78,7 @@ class TestListener : public content::NotificationObserver {
 
 class ExtensionInputMethodApiTest : public extensions::ExtensionApiTest {
  public:
-  ExtensionInputMethodApiTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kOptInImeMenu);
-  }
-
+  ExtensionInputMethodApiTest() {}
   ~ExtensionInputMethodApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

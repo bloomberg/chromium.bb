@@ -1905,9 +1905,6 @@ extern const char kEnableDragTabsInTabletModeDescription[];
 extern const char kEnableDriveFsName[];
 extern const char kEnableDriveFsDescription[];
 
-extern const char kEnableEhvInputName[];
-extern const char kEnableEhvInputDescription[];
-
 extern const char kEnableExplicitDmaFencesName[];
 extern const char kEnableExplicitDmaFencesDescription[];
 
@@ -1928,9 +1925,6 @@ extern const char kEnableGoogleAssistantStereoInputDescription[];
 
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
-
-extern const char kEnableImeMenuName[];
-extern const char kEnableImeMenuDescription[];
 
 extern const char kEnableMyFilesVolumeName[];
 extern const char kEnableMyFilesVolumeDescription[];
@@ -2007,9 +2001,6 @@ extern const char kMtpWriteSupportDescription[];
 
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
-
-extern const char kNewKoreanImeName[];
-extern const char kNewKoreanImeDescription[];
 
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
