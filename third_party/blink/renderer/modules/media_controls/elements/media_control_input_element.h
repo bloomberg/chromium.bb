@@ -75,6 +75,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
 
   virtual void UpdateDisplayType();
 
+  // Returns whether element is a button on the control panel.
+  virtual bool IsControlPanelButton() const { return false; }
+
  private:
   friend class MediaControlInputElementTest;
 

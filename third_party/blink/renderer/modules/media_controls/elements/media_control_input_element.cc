@@ -273,9 +273,7 @@ void MediaControlInputElement::UpdateDisplayType() {
 }
 
 WebSize MediaControlInputElement::GetSizeOrDefault() const {
-  if (HasOverflowButton() || DisplayType() == kMediaOverflowButton) {
-    // If this has an overflow button then it is a button control and therefore
-    // has a default size of kDefaultButtonSize.
+  if (IsControlPanelButton()) {
     return MediaControlElementsHelper::GetSizeOrDefault(
         *this, WebSize(kDefaultButtonSize, kDefaultButtonSize));
   }

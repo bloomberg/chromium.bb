@@ -50,6 +50,10 @@ bool MediaControlMuteButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlMuteButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 const char* MediaControlMuteButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "MuteOverflowButton" : "MuteButton";
 }

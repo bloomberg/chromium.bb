@@ -60,7 +60,6 @@ AXObject* AccessibilityMediaControl::Create(
 
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaOverflowButton:
     case kMediaOverflowList:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
@@ -102,8 +101,6 @@ String AccessibilityMediaControl::TextAlternative(
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
-    case kMediaOverflowButton:
-      return QueryString(WebLocalizedString::kAXMediaOverflowButton);
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
     case kMediaOverflowList:
@@ -124,8 +121,6 @@ String AccessibilityMediaControl::Description(
     ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   switch (ControlType()) {
-    case kMediaOverflowButton:
-      return QueryString(WebLocalizedString::kAXMediaOverflowButtonHelp);
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
     case kMediaOverflowList:
@@ -153,9 +148,6 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
 
 ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
-    case kMediaOverflowButton:
-      return ax::mojom::Role::kButton;
-
     case kMediaTimelineContainer:
     case kMediaOverflowList:
       return ax::mojom::Role::kGroup;

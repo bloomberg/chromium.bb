@@ -21,6 +21,7 @@ class MediaControlOverflowMenuButtonElement final
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
+  bool IsControlPanelButton() const final;
 
  protected:
   const char* GetNameForHistograms() const override;

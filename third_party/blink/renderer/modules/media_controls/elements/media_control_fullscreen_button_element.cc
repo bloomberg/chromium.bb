@@ -52,6 +52,10 @@ bool MediaControlFullscreenButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlFullscreenButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 const char* MediaControlFullscreenButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "FullscreenOverflowButton" : "FullscreenButton";
 }

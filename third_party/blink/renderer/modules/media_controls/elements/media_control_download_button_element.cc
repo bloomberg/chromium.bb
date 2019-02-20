@@ -55,6 +55,10 @@ bool MediaControlDownloadButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlDownloadButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 void MediaControlDownloadButtonElement::Trace(blink::Visitor* visitor) {
   MediaControlInputElement::Trace(visitor);
 }
