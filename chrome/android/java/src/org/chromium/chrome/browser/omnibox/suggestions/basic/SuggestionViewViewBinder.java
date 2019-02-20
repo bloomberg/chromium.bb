@@ -83,42 +83,6 @@ public class SuggestionViewViewBinder {
                     allowTint = false;
                     drawableId = R.drawable.ic_equals_sign_round;
                     break;
-                case SuggestionIcon.DICTIONARY:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_book_round;
-                    break;
-                case SuggestionIcon.FINANCE:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_swap_vert_round;
-                    break;
-                case SuggestionIcon.KNOWLEDGE:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_google_round;
-                    break;
-                case SuggestionIcon.SUNRISE:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_wb_sunny_round;
-                    break;
-                case SuggestionIcon.TRANSLATION:
-                    allowTint = false;
-                    drawableId = R.drawable.logo_translate_round;
-                    break;
-                case SuggestionIcon.WEATHER:
-                    allowTint = false;
-                    drawableId = R.drawable.logo_partly_cloudy_light;
-                    break;
-                case SuggestionIcon.EVENT:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_event_round;
-                    break;
-                case SuggestionIcon.CURRENCY:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_loop_round;
-                    break;
-                case SuggestionIcon.SPORTS:
-                    allowTint = false;
-                    drawableId = R.drawable.ic_google_round;
-                    break;
                 default:
                     break;
             }
