@@ -39,7 +39,7 @@ struct LoadUrlParams {
   bool user_activated = false;
 
   /// Custom HTTP headers.
-  vector<vector<uint8>> headers;
+  vector<bytes> headers;
 };
 
 /// Characterizes the origin of a LoadUrl request.
