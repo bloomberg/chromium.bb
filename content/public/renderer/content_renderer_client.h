@@ -46,6 +46,7 @@ class WebPlugin;
 class WebPrescientNetworking;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
+class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
@@ -60,7 +61,6 @@ class KeySystemProperties;
 
 namespace content {
 class BrowserPluginDelegate;
-class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
 struct WebPluginInfo;
@@ -259,8 +259,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // language.
   virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
 
-  // Allows an embedder to provide a MediaStreamRendererFactory.
-  virtual std::unique_ptr<MediaStreamRendererFactory>
+  // Allows an embedder to provide a blink::WebMediaStreamRendererFactory.
+  virtual std::unique_ptr<blink::WebMediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
 
   // Allows embedder to register the key system(s) it supports by populating

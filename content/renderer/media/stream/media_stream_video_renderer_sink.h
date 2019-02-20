@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/renderer/media_stream_video_sink.h"
 #include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -22,8 +22,8 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-// MediaStreamVideoRendererSink is a MediaStreamVideoRenderer designed for
-// rendering Video MediaStreamTracks [1], MediaStreamVideoRendererSink
+// MediaStreamVideoRendererSink is a blink::WebMediaStreamVideoRenderer designed
+// for rendering Video MediaStreamTracks [1], MediaStreamVideoRendererSink
 // implements MediaStreamVideoSink in order to render video frames provided from
 // a MediaStreamVideoTrack, to which it connects itself when the
 // MediaStreamVideoRenderer is Start()ed, and disconnects itself when the latter
@@ -35,17 +35,18 @@ namespace content {
 // https://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_
 // video_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT MediaStreamVideoRendererSink
-    : public MediaStreamVideoRenderer,
+    : public blink::WebMediaStreamVideoRenderer,
       public MediaStreamVideoSink {
  public:
   MediaStreamVideoRendererSink(
       const blink::WebMediaStreamTrack& video_track,
       const base::Closure& error_cb,
-      const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner);
 
-  // MediaStreamVideoRenderer implementation. Called on the main thread.
+  // blink::WebMediaStreamVideoRenderer implementation. Called on the main
+  // thread.
   void Start() override;
   void Stop() override;
   void Resume() override;

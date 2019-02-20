@@ -94,9 +94,9 @@ WebThemeEngine* WebTestContentRendererClient::OverrideThemeEngine() {
       ->ThemeEngine();
 }
 
-std::unique_ptr<MediaStreamRendererFactory>
+std::unique_ptr<blink::WebMediaStreamRendererFactory>
 WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
-  return std::unique_ptr<MediaStreamRendererFactory>(
+  return std::unique_ptr<blink::WebMediaStreamRendererFactory>(
       new TestMediaStreamRendererFactory());
 }
 

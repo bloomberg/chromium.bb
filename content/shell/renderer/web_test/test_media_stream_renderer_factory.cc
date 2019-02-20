@@ -34,11 +34,11 @@ TestMediaStreamRendererFactory::TestMediaStreamRendererFactory() {}
 
 TestMediaStreamRendererFactory::~TestMediaStreamRendererFactory() {}
 
-scoped_refptr<MediaStreamVideoRenderer>
+scoped_refptr<blink::WebMediaStreamVideoRenderer>
 TestMediaStreamRendererFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!IsMockMediaStreamWithVideo(web_stream))
@@ -51,7 +51,7 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
       repaint_cb);
 }
 
-scoped_refptr<MediaStreamAudioRenderer>
+scoped_refptr<blink::WebMediaStreamAudioRenderer>
 TestMediaStreamRendererFactory::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
     int render_frame_id,

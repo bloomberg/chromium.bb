@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
-#include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "content/renderer/render_frame_impl.h"
@@ -26,6 +25,7 @@
 #include "media/base/video_frame.h"
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -197,13 +197,13 @@ class ReusableMessageLoopEvent {
 };
 
 // The class is used mainly to inject VideoFrames into WebMediaPlayerMS.
-class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
+class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
  public:
   MockMediaStreamVideoRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ReusableMessageLoopEvent* message_loop_controller,
       const base::Closure& error_cb,
-      const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
+      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb)
       : started_(false),
         standard_size_(kStandardWidth, kStandardHeight),
         task_runner_(task_runner),
@@ -213,7 +213,7 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
         delay_till_next_generated_frame_(
             base::TimeDelta::FromSecondsD(1.0 / 30.0)) {}
 
-  // Implementation of MediaStreamVideoRenderer
+  // Implementation of blink::WebMediaStreamVideoRenderer
   void Start() override;
   void Stop() override;
   void Resume() override;
@@ -248,13 +248,13 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReusableMessageLoopEvent* const message_loop_controller_;
   const base::Closure error_cb_;
-  const MediaStreamVideoRenderer::RepaintCB repaint_cb_;
+  const blink::WebMediaStreamVideoRenderer::RepaintCB repaint_cb_;
 
   base::circular_deque<TestFrame> frames_;
   base::TimeDelta delay_till_next_generated_frame_;
 };
 
-class MockMediaStreamAudioRenderer : public MediaStreamAudioRenderer {
+class MockMediaStreamAudioRenderer : public blink::WebMediaStreamAudioRenderer {
  public:
   MockMediaStreamAudioRenderer() {}
 
@@ -425,7 +425,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
 
 // The class is used to generate a MockVideoProvider in
 // WebMediaPlayerMS::load().
-class MockRenderFactory : public MediaStreamRendererFactory {
+class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
  public:
   MockRenderFactory(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -433,10 +433,10 @@ class MockRenderFactory : public MediaStreamRendererFactory {
       : task_runner_(task_runner),
         message_loop_controller_(message_loop_controller) {}
 
-  scoped_refptr<MediaStreamVideoRenderer> GetVideoRenderer(
+  scoped_refptr<blink::WebMediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
-      const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
       override;
@@ -445,14 +445,15 @@ class MockRenderFactory : public MediaStreamRendererFactory {
     return static_cast<MockMediaStreamVideoRenderer*>(provider_.get());
   }
 
-  scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
+  scoped_refptr<blink::WebMediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       int render_frame_id,
       const std::string& device_id) override {
     return audio_renderer_;
   }
 
-  void set_audio_renderer(scoped_refptr<MediaStreamAudioRenderer> renderer) {
+  void set_audio_renderer(
+      scoped_refptr<blink::WebMediaStreamAudioRenderer> renderer) {
     audio_renderer_ = std::move(renderer);
   }
 
@@ -465,16 +466,17 @@ class MockRenderFactory : public MediaStreamRendererFactory {
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<MediaStreamVideoRenderer> provider_;
+  scoped_refptr<blink::WebMediaStreamVideoRenderer> provider_;
   ReusableMessageLoopEvent* const message_loop_controller_;
   bool support_video_renderer_ = true;
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
+  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer_;
 };
 
-scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
+scoped_refptr<blink::WebMediaStreamVideoRenderer>
+MockRenderFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!support_video_renderer_)
@@ -489,8 +491,8 @@ scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
 // This is the main class coordinating the tests.
 // Basic workflow:
 // 1. WebMediaPlayerMS::Load will generate and start
-// content::MediaStreamVideoRenderer.
-// 2. content::MediaStreamVideoRenderer will start pushing frames into
+// blink::WebMediaStreamVideoRenderer.
+// 2. blink::WebMediaStreamVideoRenderer will start pushing frames into
 //    WebMediaPlayerMS repeatedly.
 // 3. On WebMediaPlayerMS receiving the first frame, a cc::Layer will be
 //    created.
@@ -501,7 +503,7 @@ scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
 //    WebMediaPlayerMSCompositor::UpdateCurrentFrame, GetCurrentFrame for
 //    rendering repeatedly.
 // 6. When WebMediaPlayerMS::pause gets called, it should trigger
-//    content::MediaStreamVideoRenderer::Pause, and then the provider will stop
+//    blink::WebMediaStreamVideoRenderer::Pause, and then the provider will stop
 //    pushing frames into WebMediaPlayerMS, but instead digesting them;
 //    simultanously, it should call cc::VideoFrameProviderClient::StopRendering,
 //    so cc::VideoFrameProviderClient will stop asking frames from
@@ -663,7 +665,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
           : blink::WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
-      std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
+      std::unique_ptr<blink::WebMediaStreamRendererFactory>(render_factory_),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
@@ -818,7 +820,7 @@ TEST_P(WebMediaPlayerMSTest, NoDataDuringLoadForVideo) {
 TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
   InitializeWebMediaPlayerMS();
   is_audio_element_ = true;
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer(
+  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer(
       new MockMediaStreamAudioRenderer());
   render_factory_->set_audio_renderer(audio_renderer);
   EXPECT_CALL(*this, DoNetworkStateChanged(
@@ -845,7 +847,7 @@ TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
 TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudioOnly) {
   InitializeWebMediaPlayerMS();
   render_factory_->set_support_video_renderer(false);
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer(
+  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer(
       new MockMediaStreamAudioRenderer());
   render_factory_->set_audio_renderer(audio_renderer);
   EXPECT_CALL(*this, DoReadyStateChanged(

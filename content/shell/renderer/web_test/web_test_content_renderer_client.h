@@ -23,8 +23,8 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   void RenderFrameCreated(RenderFrame* render_frame) override;
   void RenderViewCreated(RenderView* render_view) override;
   blink::WebThemeEngine* OverrideThemeEngine() override;
-  std::unique_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
-      override;
+  std::unique_ptr<blink::WebMediaStreamRendererFactory>
+  CreateMediaStreamRendererFactory() override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
   void DidInitializeWorkerContextOnWorkerThread(
