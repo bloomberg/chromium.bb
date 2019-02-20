@@ -249,7 +249,7 @@ class V8ValueConverterImplTest : public testing::Test {
 };
 
 TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
-  std::unique_ptr<base::Value> original_root = base::test::ParseJson(
+  std::unique_ptr<base::Value> original_root = base::test::ParseJsonDeprecated(
       "{ \n"
       "  \"null\": null, \n"
       "  \"true\": true, \n"
@@ -389,7 +389,7 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
 
 TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   std::unique_ptr<base::Value> original =
-      base::test::ParseJson("{ \"foo.bar\": \"baz\" }");
+      base::test::ParseJsonDeprecated("{ \"foo.bar\": \"baz\" }");
 
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
@@ -480,7 +480,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   // because the setters/getters are defined on the array instance, not
   // on the Array's prototype.
   converted.reset(static_cast<base::ListValue*>(
-      base::test::ParseJson("[ \"foo\", \"bar\" ]").release()));
+      base::test::ParseJsonDeprecated("[ \"foo\", \"bar\" ]").release()));
   v8::Local<v8::Array> copy =
       converter.ToV8Value(converted.get(), context).As<v8::Array>();
   ASSERT_FALSE(copy.IsEmpty());
@@ -547,7 +547,7 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
 
 TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
   std::unique_ptr<base::Value> original =
-      base::test::ParseJson("{ \"foo\": \"good value\" }");
+      base::test::ParseJsonDeprecated("{ \"foo\": \"good value\" }");
 
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
@@ -615,7 +615,7 @@ TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
 
 TEST_F(V8ValueConverterImplTest, ArrayPrototypeSetter) {
   std::unique_ptr<base::Value> original =
-      base::test::ParseJson("[100, 200, 300]");
+      base::test::ParseJsonDeprecated("[100, 200, 300]");
 
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
@@ -776,7 +776,7 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   V8ValueConverterImpl converter;
   std::unique_ptr<base::Value> actual(converter.FromV8Value(object, context));
 
-  std::unique_ptr<base::Value> expected = base::test::ParseJson(
+  std::unique_ptr<base::Value> expected = base::test::ParseJsonDeprecated(
       "{ \n"
       "  \"1\": \"foo\", \n"
       "  \"2\": \"bar\", \n"
@@ -848,16 +848,18 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
   std::unique_ptr<base::Value> actual_object(
       converter.FromV8Value(object, context));
-  EXPECT_EQ(*base::test::ParseJson("{ \"bar\": null }"), *actual_object);
+  EXPECT_EQ(*base::test::ParseJsonDeprecated("{ \"bar\": null }"),
+            *actual_object);
 
   // Everything is null because JSON stringification preserves array length.
   std::unique_ptr<base::Value> actual_array(
       converter.FromV8Value(array, context));
-  EXPECT_EQ(*base::test::ParseJson("[ null, null, null ]"), *actual_array);
+  EXPECT_EQ(*base::test::ParseJsonDeprecated("[ null, null, null ]"),
+            *actual_array);
 
   std::unique_ptr<base::Value> actual_sparse_array(
       converter.FromV8Value(sparse_array, context));
-  EXPECT_EQ(*base::test::ParseJson("[ null, null, null ]"),
+  EXPECT_EQ(*base::test::ParseJsonDeprecated("[ null, null, null ]"),
             *actual_sparse_array);
 }
 
@@ -885,7 +887,7 @@ TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
 
   // The expected base::Value result.
   std::unique_ptr<base::Value> expected =
-      base::test::ParseJson("[{},{},[],[]]");
+      base::test::ParseJsonDeprecated("[{},{},[],[]]");
   ASSERT_TRUE(expected.get());
 
   // The actual result.
@@ -1212,7 +1214,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
       converter.FromV8Value(object, context));
   ASSERT_TRUE(object_value);
   std::unique_ptr<base::Value> reference_object_value(
-      base::test::ParseJson("{}"));
+      base::test::ParseJsonDeprecated("{}"));
   EXPECT_EQ(*reference_object_value, *object_value);
 
   v8::Local<v8::Array> array(v8::Array::New(isolate_));
@@ -1220,7 +1222,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
       converter.FromV8Value(array, context));
   ASSERT_TRUE(array_value);
   std::unique_ptr<base::Value> reference_array_value(
-      base::test::ParseJson("[]"));
+      base::test::ParseJsonDeprecated("[]"));
   EXPECT_EQ(*reference_array_value, *array_value);
 
   const char kExampleData[] = {1, 2, 3, 4, 5};
@@ -1249,7 +1251,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
       converter.FromV8Value(number, context));
   ASSERT_TRUE(number_value);
   std::unique_ptr<base::Value> reference_number_value(
-      base::test::ParseJson("0"));
+      base::test::ParseJsonDeprecated("0"));
   EXPECT_EQ(*reference_number_value, *number_value);
 
   v8::Local<v8::Primitive> undefined(v8::Undefined(isolate_));

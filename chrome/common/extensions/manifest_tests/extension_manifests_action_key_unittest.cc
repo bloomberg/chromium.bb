@@ -16,11 +16,12 @@ class ActionKeyTest : public ManifestTest {
  protected:
   ManifestData CreateManifest(const std::string& action_json) {
     std::unique_ptr<base::DictionaryValue> manifest =
-        base::DictionaryValue::From(base::test::ParseJson(R"json({
+        base::DictionaryValue::From(
+            base::test::ParseJsonDeprecated(R"json({
                                     "name": "test",
                                     "version": "1",
                                     "manifest_version": 2, )json" +
-                                                          action_json + "}"));
+                                            action_json + "}"));
     EXPECT_TRUE(manifest);
     return ManifestData(std::move(manifest), "test");
   }

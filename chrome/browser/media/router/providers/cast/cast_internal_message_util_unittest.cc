@@ -40,14 +40,14 @@ std::unique_ptr<base::Value> ReceiverStatus() {
 void ExpectNoCastSession(const MediaSinkInternal& sink,
                          const std::string& receiver_status_str,
                          const std::string& reason) {
-  auto session = CastSession::From(sink, *ParseJson(receiver_status_str));
+  auto session = CastSession::From(sink, ParseJson(receiver_status_str));
   EXPECT_FALSE(session) << "Shouldn't have created session because of "
                         << reason;
 }
 
 void ExpectInvalidCastInternalMessage(const std::string& message_str,
                                       const std::string& invalid_reason) {
-  EXPECT_FALSE(CastInternalMessage::From(std::move(*ParseJson(message_str))))
+  EXPECT_FALSE(CastInternalMessage::From(ParseJson(message_str)))
       << "message expected to be invlaid: " << invalid_reason;
 }
 
@@ -73,7 +73,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
     }
   })";
 
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
+  auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kAppMessage, message->type);
   EXPECT_EQ("12345", message->client_id);
@@ -101,7 +101,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
     }
   })";
 
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
+  auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kV2Message, message->type);
   EXPECT_EQ("12345", message->client_id);
@@ -113,7 +113,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
       "sessionId": "sessionId",
       "foo": "bar"
     })");
-  EXPECT_EQ(*v2_body, message->v2_message_body());
+  EXPECT_EQ(v2_body, message->v2_message_body());
 
   EXPECT_DCHECK_DEATH(message->app_message_namespace());
   EXPECT_DCHECK_DEATH(message->app_message_body());
@@ -127,7 +127,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
       "message": {}
     })";
 
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
+  auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kClientConnect, message->type);
   EXPECT_EQ("12345", message->client_id);
@@ -211,7 +211,7 @@ TEST(CastInternalMessageUtilTest, CastSessionFromReceiverStatusNoStatusText) {
         "transportId":"transportId"
       }]
   })";
-  auto session = CastSession::From(sink, *ParseJson(receiver_status_str));
+  auto session = CastSession::From(sink, ParseJson(receiver_status_str));
   ASSERT_TRUE(session);
   EXPECT_EQ("sessionId", session->session_id());
   EXPECT_EQ("ABCDEFGH", session->app_id());

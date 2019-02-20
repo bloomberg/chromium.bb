@@ -15,7 +15,7 @@ class ProductIconManifestTest : public ManifestTest {
 
  protected:
   std::unique_ptr<base::Value> CreateManifest(const std::string& extra_icons) {
-    std::unique_ptr<base::Value> manifest = base::test::ParseJson(
+    std::unique_ptr<base::Value> manifest = base::test::ParseJsonDeprecated(
         "{ \n"
         "  \"name\": \"test\", \n"
         "  \"version\": \"0.1\", \n"

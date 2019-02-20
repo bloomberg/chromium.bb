@@ -32,10 +32,6 @@ namespace cronet {
 
 namespace {
 
-base::Value ParseJson(base::StringPiece json) {
-  return std::move(*base::test::ParseJson(json));
-}
-
 std::string WrapJsonHeader(base::StringPiece value) {
   std::string result;
   result.reserve(value.size() + 2);
@@ -48,8 +44,8 @@ std::string WrapJsonHeader(base::StringPiece value) {
 // Returns whether two JSON-encoded headers contain the same content, ignoring
 // irrelevant encoding issues like whitespace and map element ordering.
 bool JsonHeaderEquals(base::StringPiece expected, base::StringPiece actual) {
-  return ParseJson(WrapJsonHeader(expected)) ==
-         ParseJson(WrapJsonHeader(actual));
+  return base::test::ParseJson(WrapJsonHeader(expected)) ==
+         base::test::ParseJson(WrapJsonHeader(actual));
 }
 
 }  // namespace
@@ -71,7 +67,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "preloaded_report_to_headers"},
-                  ParseJson(R"json(
+                  base::test::ParseJson(R"json(
                   [
                     {
                       "origin": "https://test-origin/",
@@ -119,7 +115,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
                   ]
                   )json"));
   options.SetPath({"NetworkErrorLogging", "preloaded_nel_headers"},
-                  ParseJson(R"json(
+                  base::test::ParseJson(R"json(
                   [
                     {
                       "origin": "https://test-origin/",

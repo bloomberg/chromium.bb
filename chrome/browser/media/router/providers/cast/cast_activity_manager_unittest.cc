@@ -26,7 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::IsJson;
-using base::test::ParseJson;
+using base::test::ParseJsonDeprecated;
 using testing::_;
 using testing::IsEmpty;
 using testing::Not;
@@ -198,7 +198,7 @@ class CastActivityManagerTest : public testing::Test {
   }
 
   cast_channel::LaunchSessionResponse GetSuccessLaunchResponse() {
-    auto receiver_status = ParseJson(kReceiverStatus);
+    auto receiver_status = ParseJsonDeprecated(kReceiverStatus);
     cast_channel::LaunchSessionResponse response;
     response.result = cast_channel::LaunchSessionResponse::Result::kOk;
     response.receiver_status = std::move(*receiver_status);
@@ -404,7 +404,8 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
 }
 
 TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {
-  auto session = CastSession::From(sink_, *ParseJson(kReceiverStatus));
+  auto session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus));
   ASSERT_TRUE(session);
 
   MediaRoute route;
@@ -422,7 +423,8 @@ TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
   LaunchSession();
   LaunchSessionResponseSuccess();
 
-  auto session = CastSession::From(sink_, *ParseJson(kReceiverStatus));
+  auto session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus));
   ASSERT_TRUE(session);
 
   MediaRoute route;
@@ -438,7 +440,8 @@ TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
 
 TEST_F(CastActivityManagerTest, UpdateExistingSession) {
   // Create and add the session to be updated, and verify it was added.
-  auto session = CastSession::From(sink_, *ParseJson(kReceiverStatus));
+  auto session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus));
   ASSERT_TRUE(session);
   MediaRoute route;
   ExpectSingleRouteUpdate(&route);
@@ -448,7 +451,8 @@ TEST_F(CastActivityManagerTest, UpdateExistingSession) {
   auto old_route_id = route.media_route_id();
 
   // Description change should be reflect in route update.
-  auto updated_session = CastSession::From(sink_, *ParseJson(kReceiverStatus2));
+  auto updated_session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus2));
   ASSERT_TRUE(updated_session);
 
   ExpectSingleRouteUpdate(&route);
@@ -462,7 +466,8 @@ TEST_F(CastActivityManagerTest, UpdateExistingSession) {
 
 TEST_F(CastActivityManagerTest, ReplaceExistingSession) {
   // Create and add the session to be replaced, and verify it was added.
-  auto session = CastSession::From(sink_, *ParseJson(kReceiverStatus));
+  auto session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus));
   ASSERT_TRUE(session);
   MediaRoute route;
   ExpectSingleRouteUpdate(&route);
@@ -472,7 +477,8 @@ TEST_F(CastActivityManagerTest, ReplaceExistingSession) {
   EXPECT_EQ(route.description(), session->GetRouteDescription());
 
   // Different session.
-  auto new_session = CastSession::From(sink_, *ParseJson(kReceiverStatus3));
+  auto new_session =
+      CastSession::From(sink_, *ParseJsonDeprecated(kReceiverStatus3));
   ASSERT_TRUE(new_session);
 
   ExpectSingleRouteUpdate(&route);
@@ -590,7 +596,8 @@ TEST_F(CastActivityManagerTest, OnMediaStatusUpdated) {
     "timeoutMillis": 0,
     "type": "v2_message"
   })")));
-  manager_->OnMediaStatusUpdated(sink_, *ParseJson(R"({"foo": "bar"})"), 345);
+  manager_->OnMediaStatusUpdated(
+      sink_, *ParseJsonDeprecated(R"({"foo": "bar"})"), 345);
 }
 
 TEST_F(CastActivityManagerTest, OnMediaStatusUpdatedWithPendingRequest) {
@@ -619,7 +626,8 @@ TEST_F(CastActivityManagerTest, OnMediaStatusUpdatedWithPendingRequest) {
     "timeoutMillis": 0,
     "type": "v2_message"
   })")));
-  manager_->OnMediaStatusUpdated(sink_, *ParseJson(R"({"foo": "bar"})"), 345);
+  manager_->OnMediaStatusUpdated(
+      sink_, *ParseJsonDeprecated(R"({"foo": "bar"})"), 345);
 }
 
 TEST_F(CastActivityManagerTest, SendVolumeCommandToReceiver) {

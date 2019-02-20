@@ -286,7 +286,8 @@ TEST_F(ReportingCacheTest, GetReportsAsValue) {
   cache()->RemoveReports({report2}, ReportingReport::Outcome::UNKNOWN);
 
   base::Value actual = cache()->GetReportsAsValue();
-  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+  std::unique_ptr<base::Value> expected =
+      base::test::ParseJsonDeprecated(R"json(
       [
         {
           "url": "https://origin1/path",
@@ -429,7 +430,8 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
   cache()->IncrementEndpointDeliveries(kOrigin2_, kEndpoint2_, 1, false);
 
   base::Value actual = cache()->GetClientsAsValue();
-  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+  std::unique_ptr<base::Value> expected =
+      base::test::ParseJsonDeprecated(R"json(
       [
         {
           "origin": "https://origin1",

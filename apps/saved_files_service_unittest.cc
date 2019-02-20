@@ -38,7 +38,7 @@ class SavedFilesServiceUnitTest : public testing::Test {
  protected:
   void SetUp() override {
     testing::Test::SetUp();
-    extension_ = env_.MakeExtension(*base::test::ParseJson(
+    extension_ = env_.MakeExtension(*base::test::ParseJsonDeprecated(
         "{"
         "  \"app\": {"
         "    \"background\": {"
@@ -147,7 +147,7 @@ TEST_F(SavedFilesServiceUnitTest, RetainTwoFilesTest) {
 }
 
 TEST_F(SavedFilesServiceUnitTest, NoRetainEntriesPermissionTest) {
-  extension_ = env_.MakeExtension(*base::test::ParseJson(
+  extension_ = env_.MakeExtension(*base::test::ParseJsonDeprecated(
       "{\"app\": {\"background\": {\"scripts\": [\"background.js\"]}},"
       "\"permissions\": [\"fileSystem\"]}"));
   service_->RegisterFileEntry(extension_->id(), GenerateId(1), path_, true);

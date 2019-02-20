@@ -4,7 +4,6 @@
 
 #include "base/test/values_test_util.h"
 
-#include <memory>
 #include <ostream>
 #include <utility>
 
@@ -63,7 +62,7 @@ void ExpectStringValue(const std::string& expected_str, const Value& actual) {
 namespace test {
 
 IsJsonMatcher::IsJsonMatcher(base::StringPiece json)
-    : expected_value_(std::move(*test::ParseJson(json))) {}
+    : expected_value_(test::ParseJson(json)) {}
 
 IsJsonMatcher::IsJsonMatcher(const base::Value& value)
     : expected_value_(value.Clone()) {}
@@ -102,16 +101,19 @@ void IsJsonMatcher::DescribeNegationTo(std::ostream* os) const {
   *os << "is not the JSON value " << expected_value_;
 }
 
-std::unique_ptr<Value> ParseJson(base::StringPiece json) {
-  std::string error_msg;
-  std::unique_ptr<Value> result =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error_msg);
-  if (!result) {
-    ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;
-    result = std::make_unique<Value>();
+Value ParseJson(StringPiece json) {
+  JSONReader::ValueWithError result =
+      JSONReader::ReadAndReturnValueWithError(json, JSON_ALLOW_TRAILING_COMMAS);
+  if (!result.value) {
+    ADD_FAILURE() << "Failed to parse \"" << json
+                  << "\": " << result.error_message;
+    return Value();
   }
-  return result;
+  return std::move(result.value.value());
+}
+
+std::unique_ptr<Value> ParseJsonDeprecated(StringPiece json) {
+  return Value::ToUniquePtrValue(ParseJson(json));
 }
 
 }  // namespace test

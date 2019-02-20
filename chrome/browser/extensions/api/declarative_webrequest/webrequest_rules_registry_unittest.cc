@@ -206,7 +206,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     json_description += attributes;
     json_description += "}";
 
-    return base::test::ParseJson(json_description);
+    return base::test::ParseJsonDeprecated(json_description);
   }
 
   // Create a rule with the ID |rule_id| and with conditions created from the

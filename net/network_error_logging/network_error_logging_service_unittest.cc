@@ -838,7 +838,8 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
       kServerIP_, kHeaderWrongTypes);
 
   base::Value actual = service()->StatusAsValue();
-  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+  std::unique_ptr<base::Value> expected =
+      base::test::ParseJsonDeprecated(R"json(
       {
         "originPolicies": [
           {
