@@ -134,6 +134,8 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
       [(id<FullscreenUIElement>)view updateForFullscreenProgress:progress];
     }
   }
+  [self.view setNeedsLayout];
+  [self.view layoutIfNeeded];
 }
 
 #pragma mark - Private Methods
