@@ -23,7 +23,7 @@ namespace {
 
 // A property key containing a boolean set to true if na aura surface object is
 // associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false)
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_surface_interface:

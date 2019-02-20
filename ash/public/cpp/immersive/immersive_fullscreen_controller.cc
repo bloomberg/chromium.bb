@@ -27,13 +27,13 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ImmersiveFullscreenController*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ImmersiveFullscreenController*)
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ImmersiveFullscreenController*,
                              kImmersiveFullscreenControllerKey,
-                             nullptr);
+                             nullptr)
 
 namespace {
 

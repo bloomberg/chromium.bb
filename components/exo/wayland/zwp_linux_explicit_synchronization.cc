@@ -19,7 +19,7 @@ namespace {
 // associated with the surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*,
                              kSurfaceSynchronizationResource,
-                             nullptr);
+                             nullptr)
 
 ////////////////////////////////////////////////////////////////////////////////
 // linux_surface_synchronization_v1 interface:

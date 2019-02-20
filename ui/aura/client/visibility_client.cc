@@ -16,7 +16,7 @@ namespace client {
 // A property key to store a client that handles window visibility changes.
 DEFINE_UI_CLASS_PROPERTY_KEY(VisibilityClient*,
                              kWindowVisibilityClientKey,
-                             nullptr);
+                             nullptr)
 
 void SetVisibilityClient(Window* window, VisibilityClient* client) {
   window->SetProperty(kWindowVisibilityClientKey, client);

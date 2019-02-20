@@ -106,11 +106,11 @@ class DeletionTestProperty {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DeletionTestProperty,
                                    kDeletionTestPropertyKey,
-                                   nullptr);
+                                   nullptr)
 
 }  // namespace
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*)
 
 namespace aura {
 namespace test {

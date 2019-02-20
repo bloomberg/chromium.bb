@@ -8,7 +8,7 @@
 
 namespace wm {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(int, kShadowElevationKey, kShadowElevationDefault);
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kShadowElevationKey, kShadowElevationDefault)
 
 void SetShadowElevation(aura::Window* window, int elevation) {
   window->SetProperty(kShadowElevationKey, elevation);

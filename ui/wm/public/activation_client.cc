@@ -11,9 +11,10 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(wm::ActivationClient*)
 
 namespace wm {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    ActivationClient*, kRootWindowActivationClientKey, NULL);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideOnDeactivate, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(ActivationClient*,
+                             kRootWindowActivationClientKey,
+                             NULL)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideOnDeactivate, false)
 
 void SetActivationClient(aura::Window* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);

@@ -32,14 +32,13 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/stub/stub_window.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*)
 
 namespace aura {
 
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr)
 
 // Start at the max and decrease as in SingleProcessMash these values must not
 // overlap with values assigned by Ozone's PlatformWindow (which starts at 1

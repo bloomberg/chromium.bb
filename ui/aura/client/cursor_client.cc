@@ -13,7 +13,7 @@ namespace aura {
 namespace client {
 
 // A property key to store a client that handles window moves.
-DEFINE_UI_CLASS_PROPERTY_KEY(CursorClient*, kCursorClientKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(CursorClient*, kCursorClientKey, nullptr)
 
 void SetCursorClient(Window* window, CursorClient* client) {
   window->SetProperty(kCursorClientKey, client);

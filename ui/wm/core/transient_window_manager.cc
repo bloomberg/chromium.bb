@@ -21,12 +21,12 @@
 
 using aura::Window;
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::TransientWindowManager*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::TransientWindowManager*)
 
 namespace wm {
 namespace {
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TransientWindowManager, kPropertyKey, NULL);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TransientWindowManager, kPropertyKey, NULL)
 
 }  // namespace
 

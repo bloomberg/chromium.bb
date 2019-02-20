@@ -7,13 +7,13 @@
 #include "ui/base/class_property.h"
 #include "ui/platform_window/platform_window.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(WmMoveResizeHandler*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(WmMoveResizeHandler*)
 
 namespace ui {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(WmMoveResizeHandler*,
                              kWmMoveResizeHandlerKey,
-                             nullptr);
+                             nullptr)
 
 void SetWmMoveResizeHandler(PlatformWindow* platform_window,
                             WmMoveResizeHandler* move_resize_handler) {

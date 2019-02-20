@@ -9,13 +9,13 @@
 #include "ui/base/class_property.h"
 #include "ui/display/types/display_constants.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::RootWindowSettings*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::RootWindowSettings*)
 
 namespace ash {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(RootWindowSettings,
                                    kRootWindowSettingsKey,
-                                   NULL);
+                                   NULL)
 
 RootWindowSettings::RootWindowSettings()
     : display_id(display::kInvalidDisplayId), controller(NULL) {}

@@ -27,11 +27,11 @@
 //  namespace foo {
 //    // Use this to define an exported property that is primitive,
 //    // or a pointer you don't want automatically deleted.
-//    DEFINE_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault);
+//    DEFINE_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault)
 //
 //    // Use this to define an exported property whose value is a heap
 //    // allocated object, and has to be owned and freed by the class.
-//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
+//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr)
 //
 //  }  // foo namespace
 //
@@ -46,7 +46,7 @@
 //
 // If the properties are used outside the file where they are defined
 // their accessor methods should also be declared in a suitable header
-// using DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType);
+// using DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType)
 
 namespace ui {
 

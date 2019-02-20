@@ -22,13 +22,13 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ArcNotificationView*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ArcNotificationView*)
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ArcNotificationView*,
                              kArcNotificationViewPropertyKey,
-                             nullptr);
+                             nullptr)
 
 // static
 ArcNotificationView* ArcNotificationView::FromView(views::View* view) {

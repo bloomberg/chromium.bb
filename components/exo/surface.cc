@@ -49,21 +49,21 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*)
 
 namespace exo {
 namespace {
 
 // A property key containing the surface that is associated with
 // window. If unset, no surface is associated with window.
-DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr)
 
 // A property key to store whether the surface should only consume
 // stylus input events.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false)
 
 // Surface Id set by the client.
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.

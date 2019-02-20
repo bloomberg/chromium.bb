@@ -72,10 +72,10 @@ namespace aura {
 
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
-DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey3, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestPropertyKey4, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0)
+DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey3, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestPropertyKey4, nullptr)
 
 const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";

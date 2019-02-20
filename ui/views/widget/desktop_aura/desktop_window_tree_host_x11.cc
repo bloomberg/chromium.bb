@@ -64,7 +64,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
 
 namespace views {
 
@@ -72,11 +72,11 @@ DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =
     NULL;
 std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = NULL;
 
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    aura::Window*, kViewsWindowForRootWindow, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kViewsWindowForRootWindow, NULL)
 
-DEFINE_UI_CLASS_PROPERTY_KEY(
-    DesktopWindowTreeHostX11*, kHostForRootWindow, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostX11*,
+                             kHostForRootWindow,
+                             NULL)
 
 namespace {
 

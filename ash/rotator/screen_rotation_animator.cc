@@ -41,7 +41,7 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/window_util.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*)
 
 namespace ash {
 
@@ -61,7 +61,7 @@ const int kClockWiseRotationFactor = -1;
 // screen rotation.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ScreenRotationAnimator,
                                    kScreenRotationAnimatorKey,
-                                   nullptr);
+                                   nullptr)
 
 display::Display::Rotation GetCurrentScreenRotation(int64_t display_id) {
   return Shell::Get()

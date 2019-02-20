@@ -37,13 +37,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*)
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
                              kNonClientFrameViewAshKey,
-                             nullptr);
+                             nullptr)
 
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAshWindowStateDelegate

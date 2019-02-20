@@ -24,6 +24,6 @@ VIEWS_EXPORT extern const aura::WindowProperty<View*>* const kHostViewKey;
 // the specialization before the first template instance use. Using a
 // template instance before its specialization is declared in a
 // translation unit is a C++ error.
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::View*);
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::View*)
 
 #endif  // UI_VIEWS_VIEW_CONSTANTS_AURA_H_

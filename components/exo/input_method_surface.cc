@@ -14,8 +14,8 @@
 
 DEFINE_UI_CLASS_PROPERTY_KEY(exo::InputMethodSurface*,
                              kInputMethodSurface,
-                             nullptr);
-DEFINE_UI_CLASS_PROPERTY_TYPE(exo::InputMethodSurface*);
+                             nullptr)
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::InputMethodSurface*)
 
 namespace exo {
 

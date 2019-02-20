@@ -56,8 +56,8 @@ VIEWS_EXPORT extern const ui::ClassProperty<SkPath*>* const kHighlightPathKey;
 // the specialization before the first template instance use. Using a
 // template instance before its specialization is declared in a
 // translation unit is a C++ error.
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
-                                        views::BubbleDialogDelegateView*);
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*);
+                                        views::BubbleDialogDelegateView*)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*)
 #endif  // UI_VIEWS_VIEW_PROPERTIES_H_
