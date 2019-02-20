@@ -76,9 +76,20 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
 void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
                                 const GURL& url,
                                 RegisterCallback callback) {
-  if (!url.SchemeIsBlob() || !delegate_->CanCommitURL(url) ||
-      BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage("Invalid Blob URL passed to BlobURLStore::Register");
+  if (!url.SchemeIsBlob()) {
+    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Register");
+    std::move(callback).Run();
+    return;
+  }
+  if (!delegate_->CanCommitURL(url)) {
+    mojo::ReportBadMessage(
+        "Non committable URL passed to BlobURLStore::Register");
+    std::move(callback).Run();
+    return;
+  }
+  if (BlobUrlUtils::UrlHasFragment(url)) {
+    mojo::ReportBadMessage(
+        "URL with fragment passed to BlobURLStore::Register");
     std::move(callback).Run();
     return;
   }
@@ -90,11 +101,20 @@ void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
 }
 
 void BlobURLStoreImpl::Revoke(const GURL& url) {
-  if (!url.SchemeIsBlob() || !delegate_->CanCommitURL(url) ||
-      BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage("Invalid Blob URL passed to BlobURLStore::Revoke");
+  if (!url.SchemeIsBlob()) {
+    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Revoke");
     return;
   }
+  if (!delegate_->CanCommitURL(url)) {
+    mojo::ReportBadMessage(
+        "Non committable URL passed to BlobURLStore::Revoke");
+    return;
+  }
+  if (BlobUrlUtils::UrlHasFragment(url)) {
+    mojo::ReportBadMessage("URL with fragment passed to BlobURLStore::Revoke");
+    return;
+  }
+
   if (context_)
     context_->RevokePublicBlobURL(url);
   urls_.erase(url);
