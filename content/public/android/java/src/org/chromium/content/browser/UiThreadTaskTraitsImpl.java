@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.base.task.TaskTraitsExtensionDescriptor;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.BrowserTaskType;
 
@@ -13,20 +14,49 @@ import org.chromium.content_public.browser.BrowserTaskType;
  * Provides the implementation needed in UiThreadTaskTraits.
  */
 public class UiThreadTaskTraitsImpl {
-    private UiThreadTaskTraitsImpl() {}
+    private static class Descriptor
+            implements TaskTraitsExtensionDescriptor<UiThreadTaskTraitsImpl> {
+        // Corresponds to content::BrowserTaskTraitsExtension.
+        private static final byte EXTENSION_ID = 1;
 
-    // Corresponds to content::BrowserTaskTraitsExtension.
-    public static final byte EXTENSION_ID = 1;
+        // Keep in sync with content::BrowserTaskTraitsExtension::Serialize.
+        private static final byte TASK_TYPE = 1;
+        private static final byte NESTING_INDEX = 2;
 
-    // Keep in sync with content::BrowserTaskTraitsExtension::Serialize.
-    private static final byte TASK_TYPE = 1;
-    private static final byte NESTING_INDEX = 2;
+        @Override
+        public int getId() {
+            return EXTENSION_ID;
+        }
 
-    private static final byte[] sDefaultExtensionData = getDefaultExtensionData();
+        @Override
+        public UiThreadTaskTraitsImpl fromSerializedData(byte[] data) {
+            int taskType = data[TASK_TYPE];
+            return new UiThreadTaskTraitsImpl().setTaskType(taskType);
+        }
 
-    public static final TaskTraits DEFAULT = new TaskTraits(EXTENSION_ID, sDefaultExtensionData);
-    public static final TaskTraits BOOTSTRAP = new TaskTraits(
-            EXTENSION_ID, getExtensionDataForBrowserTaskType(BrowserTaskType.BOOTSTRAP));
+        @Override
+        public byte[] toSerializedData(UiThreadTaskTraitsImpl extension) {
+            byte extensionData[] = new byte[TaskTraits.EXTENSION_STORAGE_SIZE];
+
+            // Note we don't specify the UI thread directly here because it's ID 0 and the array is
+            // initialized to zero.
+
+            // Similarly we don't specify BrowserTaskType.Default its ID is also 0.
+
+            // TODO(crbug.com/876272) Remove this if possible.
+            extensionData[NESTING_INDEX] = 1; // Allow the task to run in a nested RunLoop.
+            extensionData[TASK_TYPE] = (byte) extension.mTaskType;
+            return extensionData;
+        }
+    }
+
+    public static final TaskTraitsExtensionDescriptor<UiThreadTaskTraitsImpl> DESCRIPTOR =
+            new Descriptor();
+
+    public static final TaskTraits DEFAULT =
+            TaskTraits.USER_VISIBLE.withExtension(DESCRIPTOR, new UiThreadTaskTraitsImpl());
+    public static final TaskTraits BOOTSTRAP = TaskTraits.USER_VISIBLE.withExtension(
+            DESCRIPTOR, new UiThreadTaskTraitsImpl().setTaskType(BrowserTaskType.BOOTSTRAP));
     public static final TaskTraits BEST_EFFORT = DEFAULT.taskPriority(TaskPriority.BEST_EFFORT);
     public static final TaskTraits USER_VISIBLE = DEFAULT.taskPriority(TaskPriority.USER_VISIBLE);
     public static final TaskTraits USER_BLOCKING = DEFAULT.taskPriority(TaskPriority.USER_BLOCKING);
@@ -35,22 +65,19 @@ public class UiThreadTaskTraitsImpl {
         BrowserTaskExecutor.register();
     }
 
-    private static byte[] getDefaultExtensionData() {
-        byte extensionData[] = new byte[TaskTraits.EXTENSION_STORAGE_SIZE];
+    private @BrowserTaskType int mTaskType;
 
-        // Note we don't specify the UI thread directly here because it's ID 0 and the array is
-        // initialized to zero.
-
-        // Similarly we don't specify BrowserTaskType.Default its ID is also 0.
-
-        // TODO(crbug.com/876272) Remove this if possible.
-        extensionData[NESTING_INDEX] = 1; // Allow the task to run in a nested RunLoop.
-        return extensionData;
+    private UiThreadTaskTraitsImpl() {
+        mTaskType = BrowserTaskType.DEFAULT;
     }
 
-    private static byte[] getExtensionDataForBrowserTaskType(int browserTaskType) {
-        byte extensionData[] = getDefaultExtensionData();
-        extensionData[TASK_TYPE] = (byte) browserTaskType;
-        return extensionData;
+    @BrowserTaskType
+    public int getTaskType() {
+        return mTaskType;
+    }
+
+    private UiThreadTaskTraitsImpl setTaskType(@BrowserTaskType int taskType) {
+        mTaskType = taskType;
+        return this;
     }
 }
