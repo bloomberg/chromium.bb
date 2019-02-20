@@ -352,7 +352,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
   return {inline_offset, LayoutUnit()};
 }
 
-scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   border_padding_ = borders + padding;
@@ -969,7 +969,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                           !child_margin_got_separated &&
                           child_determined_bfc_offset;
   NGLayoutOpportunity opportunity;
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
   std::tie(layout_result, opportunity) = LayoutNewFormattingContext(
       child, child_break_token, child_data,
       {child_origin_line_offset, child_bfc_offset_estimate}, abort_if_cleared);
@@ -1094,7 +1094,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   return true;
 }
 
-std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
+std::pair<scoped_refptr<const NGLayoutResult>, NGLayoutOpportunity>
 NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token,
@@ -1170,7 +1170,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // exclusion space.
     DCHECK(child_space.ExclusionSpace().IsEmpty());
 
-    scoped_refptr<NGLayoutResult> layout_result =
+    scoped_refptr<const NGLayoutResult> layout_result =
         ToNGBlockNode(child).Layout(child_space, child_break_token);
 
     // Since this child establishes a new formatting context, no exclusion space
@@ -1239,22 +1239,22 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       has_clearance_past_adjoining_floats, /* is_new_fc */ false);
   NGConstraintSpace child_space =
       CreateConstraintSpaceForChild(child, child_data, child_available_size_);
-  scoped_refptr<NGLayoutResult> layout_result = child.Layout(
+  scoped_refptr<const NGLayoutResult> layout_result = child.Layout(
       child_space, child_break_token, &inline_child_layout_context_);
 
   // To save space of the stack when we recurse into |NGBlockNode::Layout|
   // above, the rest of this function is continued within |FinishInflow|.
   // However it should be read as one function.
-  return FinishInflow(child, child_break_token, child_space, layout_result,
-                      &child_data, previous_inflow_position,
-                      previous_inline_break_token);
+  return FinishInflow(child, child_break_token, child_space,
+                      std::move(layout_result), &child_data,
+                      previous_inflow_position, previous_inline_break_token);
 }
 
 bool NGBlockLayoutAlgorithm::FinishInflow(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token,
     const NGConstraintSpace& child_space,
-    scoped_refptr<NGLayoutResult> layout_result,
+    scoped_refptr<const NGLayoutResult> layout_result,
     NGInflowChildData* child_data,
     NGPreviousInflowPosition* previous_inflow_position,
     scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token) {

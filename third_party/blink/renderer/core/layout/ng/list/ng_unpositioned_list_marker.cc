@@ -38,13 +38,13 @@ LayoutUnit NGUnpositionedListMarker::InlineOffset(
   return margins.first;
 }
 
-scoped_refptr<NGLayoutResult> NGUnpositionedListMarker::Layout(
+scoped_refptr<const NGLayoutResult> NGUnpositionedListMarker::Layout(
     const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
     FontBaseline baseline_type) const {
   DCHECK(marker_layout_object_);
   NGBlockNode marker_node(marker_layout_object_);
-  scoped_refptr<NGLayoutResult> marker_layout_result =
+  scoped_refptr<const NGLayoutResult> marker_layout_result =
       marker_node.LayoutAtomicInline(parent_space, parent_style, baseline_type,
                                      parent_space.UseFirstLineStyle());
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
@@ -89,7 +89,7 @@ bool NGUnpositionedListMarker::AddToBox(
   }
 
   // Layout the list marker.
-  scoped_refptr<NGLayoutResult> marker_layout_result =
+  scoped_refptr<const NGLayoutResult> marker_layout_result =
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
@@ -128,7 +128,7 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
     FontBaseline baseline_type,
     NGBoxFragmentBuilder* container_builder) const {
   // Layout the list marker.
-  scoped_refptr<NGLayoutResult> marker_layout_result =
+  scoped_refptr<const NGLayoutResult> marker_layout_result =
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =

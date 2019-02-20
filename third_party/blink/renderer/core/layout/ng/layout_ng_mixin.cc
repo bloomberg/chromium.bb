@@ -264,7 +264,7 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
 }
 
 template <typename Base>
-scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
+scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBreakToken* break_token) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())

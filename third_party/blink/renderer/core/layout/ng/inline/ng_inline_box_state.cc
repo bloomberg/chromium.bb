@@ -550,7 +550,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     DCHECK_GT(end, start);
     NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
 
-    scoped_refptr<NGLayoutResult> box_fragment =
+    scoped_refptr<const NGLayoutResult> box_fragment =
         box_data.CreateBoxFragment(line_box);
     if (!start_child.HasFragment()) {
       start_child.layout_result = std::move(box_fragment);
@@ -566,7 +566,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   box_data_list_.clear();
 }
 
-scoped_refptr<NGLayoutResult>
+scoped_refptr<const NGLayoutResult>
 NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   DCHECK(item);

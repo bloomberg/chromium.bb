@@ -26,7 +26,7 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
-scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // TODO(mstensho): Support block fragmentation.
   DCHECK(!BreakToken());
 

@@ -140,7 +140,7 @@ class FlexItem {
   bool frozen;
 
   NGBlockNode ng_input_node;
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
 };
 
 class FlexItemVectorView {

@@ -231,7 +231,7 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);
 }
 
-scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
+scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
   if (node_ && has_block_fragmentation_) {
     if (!inline_break_tokens_.IsEmpty()) {
@@ -255,7 +255,7 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
   return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
 }
 
-scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::Abort(
+scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   return base::AdoptRef(new NGLayoutResult(status, this));
 }

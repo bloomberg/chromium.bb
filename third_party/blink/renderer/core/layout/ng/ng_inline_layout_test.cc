@@ -48,7 +48,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGConstraintSpace constraint_space = ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraint_space).Layout();
   EXPECT_TRUE(result);
 
@@ -73,7 +73,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGConstraintSpace constraint_space = ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraint_space).Layout();
   EXPECT_TRUE(result);
 

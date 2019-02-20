@@ -49,7 +49,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                   NGLineInfo*,
                   NGExclusionSpace*);
 
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
   unsigned PositionLeadingFloats(NGExclusionSpace*, NGPositionedFloatVector*);

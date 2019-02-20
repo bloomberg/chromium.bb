@@ -40,9 +40,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return GetDocument().InLineHeightQuirksMode();
   }
 
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
-                                       const NGBreakToken*,
-                                       NGInlineChildLayoutContext* context);
+  scoped_refptr<const NGLayoutResult> Layout(
+      const NGConstraintSpace&,
+      const NGBreakToken*,
+      NGInlineChildLayoutContext* context);
 
   // Prepare to reuse fragments. Returns false if reuse is not possible.
   bool PrepareReuseFragments(const NGConstraintSpace&);

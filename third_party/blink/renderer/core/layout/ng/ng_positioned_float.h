@@ -16,7 +16,7 @@ class NGLayoutResult;
 
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
-  NGPositionedFloat(scoped_refptr<NGLayoutResult> layout_result,
+  NGPositionedFloat(scoped_refptr<const NGLayoutResult> layout_result,
                     const NGBfcOffset& bfc_offset)
       : layout_result(layout_result), bfc_offset(bfc_offset) {}
   NGPositionedFloat(NGPositionedFloat&&) noexcept = default;
@@ -24,7 +24,7 @@ struct CORE_EXPORT NGPositionedFloat {
   NGPositionedFloat& operator=(NGPositionedFloat&&) = default;
   NGPositionedFloat& operator=(const NGPositionedFloat&) = default;
 
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
   NGBfcOffset bfc_offset;
 };
 

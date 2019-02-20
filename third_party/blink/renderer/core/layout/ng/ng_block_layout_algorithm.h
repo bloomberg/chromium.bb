@@ -65,7 +65,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
   // Return the BFC block offset of this block.
@@ -169,7 +169,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
-  std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
+  std::pair<scoped_refptr<const NGLayoutResult>, NGLayoutOpportunity>
   LayoutNewFormattingContext(NGLayoutInputNode child,
                              const NGBreakToken* child_break_token,
                              const NGInflowChildData&,
@@ -189,7 +189,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       const NGConstraintSpace&,
-      scoped_refptr<NGLayoutResult>,
+      scoped_refptr<const NGLayoutResult>,
       NGInflowChildData*,
       NGPreviousInflowPosition*,
       scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
