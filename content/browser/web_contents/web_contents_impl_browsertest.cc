@@ -3242,4 +3242,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, CtrlClickSubframeLink) {
   EXPECT_EQ(new_web_contents1, new_web_contents2);
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetVisibilityBeforeLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/hello.html"));
+
+  WebContents* attached_web_contents = shell()->web_contents();
+
+  // Create a WebContents detached from native windows so that visibility of
+  // the WebContents is fully controlled by the app.
+  WebContents::CreateParams create_params(
+      attached_web_contents->GetBrowserContext(), nullptr /* site_instance */);
+  create_params.initial_size = gfx::Size(100, 100);
+  std::unique_ptr<WebContents> web_contents =
+      WebContents::Create(create_params);
+  EXPECT_EQ(Visibility::VISIBLE, web_contents->GetVisibility());
+
+  web_contents->WasHidden();
+  EXPECT_EQ(Visibility::HIDDEN, web_contents->GetVisibility());
+
+  EXPECT_TRUE(NavigateToURL(web_contents.get(), url));
+  EXPECT_TRUE(EvalJs(web_contents.get(), "document.hidden").ExtractBool());
+}
+
 }  // namespace content
