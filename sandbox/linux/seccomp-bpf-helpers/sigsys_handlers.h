@@ -25,8 +25,8 @@ struct arch_seccomp_data;
 SANDBOX_EXPORT intptr_t
     CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux);
 
-// The following three handlers are suitable to report failures with the
-// clone(), prctl() and ioctl() system calls respectively.
+// The following seven handlers are suitable to report failures for specific
+// system calls with additional information.
 
 // The crashing address will be (clone_flags & 0xFFFFFF), where clone_flags is
 // the clone(2) argument, extracted from |args|.
@@ -48,6 +48,10 @@ SANDBOX_EXPORT intptr_t
 // argument.
 SANDBOX_EXPORT intptr_t
     SIGSYSFutexFailure(const struct arch_seccomp_data& args, void* aux);
+// The crashing address will be (op & 0xFFF), where op is the second
+// argument.
+SANDBOX_EXPORT intptr_t
+SIGSYSPtraceFailure(const struct arch_seccomp_data& args, void* aux);
 // If the syscall is not being called on the current tid, crashes in the same
 // way as CrashSIGSYS_Handler.  Otherwise, returns the result of calling the
 // syscall with the pid argument set to 0 (which for these calls means the
@@ -66,6 +70,7 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSPrctl();
 SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSIoctl();
 SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSKill();
 SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSFutex();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSPtrace();
 SANDBOX_EXPORT bpf_dsl::ResultExpr RewriteSchedSIGSYS();
 
 // Allocates a crash key so that Seccomp information can be recorded.
@@ -79,6 +84,7 @@ SANDBOX_EXPORT const char* GetPrctlErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetIoctlErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetKillErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetFutexErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetPtraceErrorMessageContentForTests();
 
 }  // namespace sandbox.
 
