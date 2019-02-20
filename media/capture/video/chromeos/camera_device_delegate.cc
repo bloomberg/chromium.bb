@@ -22,6 +22,7 @@
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/request_manager.h"
 
 namespace media {
@@ -148,11 +149,13 @@ class CameraDeviceDelegate::StreamCaptureInterfaceImpl final
 CameraDeviceDelegate::CameraDeviceDelegate(
     VideoCaptureDeviceDescriptor device_descriptor,
     scoped_refptr<CameraHalDelegate> camera_hal_delegate,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+    ReprocessManager* reprocess_manager)
     : device_descriptor_(device_descriptor),
       camera_id_(std::stoi(device_descriptor.device_id)),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       ipc_task_runner_(std::move(ipc_task_runner)),
+      reprocess_manager_(reprocess_manager),
       weak_ptr_factory_(this) {}
 
 CameraDeviceDelegate::~CameraDeviceDelegate() = default;

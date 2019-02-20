@@ -20,6 +20,7 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 
 namespace media {
@@ -124,7 +125,8 @@ void CameraHalDelegate::Reset() {
 
 std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
-    const VideoCaptureDeviceDescriptor& device_descriptor) {
+    const VideoCaptureDeviceDescriptor& device_descriptor,
+    ReprocessManager* reprocess_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<VideoCaptureDevice> capture_device;
   if (!UpdateBuiltInCameraInfo()) {
@@ -136,7 +138,8 @@ std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
     return capture_device;
   }
   capture_device.reset(new VideoCaptureDeviceChromeOSHalv3(
-      std::move(task_runner_for_screen_observer), device_descriptor, this));
+      std::move(task_runner_for_screen_observer), device_descriptor, this,
+      reprocess_manager));
   return capture_device;
 }
 

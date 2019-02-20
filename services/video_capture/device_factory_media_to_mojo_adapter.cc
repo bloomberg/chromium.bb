@@ -5,6 +5,7 @@
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -193,5 +194,14 @@ void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
   active_devices_by_id_[device_id].device->Stop(base::DoNothing());
   active_devices_by_id_.erase(device_id);
 }
+
+#if defined(OS_CHROMEOS)
+void DeviceFactoryMediaToMojoAdapter::BindCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  CHECK(capture_system_);
+
+  capture_system_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace video_capture

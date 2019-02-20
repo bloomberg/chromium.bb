@@ -19,6 +19,7 @@
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
+#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,11 +121,13 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     hal_delegate_thread_.Start();
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
+    reprocess_manager_ = std::make_unique<ReprocessManager>();
     camera_hal_delegate_->SetCameraModule(
         mock_camera_module_.GetInterfacePtrInfo());
   }
 
   void TearDown() override {
+    reprocess_manager_.reset();
     camera_hal_delegate_->Reset();
     hal_delegate_thread_.Stop();
   }
@@ -134,8 +137,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     ASSERT_FALSE(camera_device_delegate_);
     device_delegate_thread_.Start();
     camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
-        descriptor, camera_hal_delegate_,
-        device_delegate_thread_.task_runner());
+        descriptor, camera_hal_delegate_, device_delegate_thread_.task_runner(),
+        reprocess_manager_.get());
     num_streams_ = 0;
   }
 
@@ -432,6 +435,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   testing::StrictMock<MockCameraDevice> mock_camera_device_;
   mojo::Binding<cros::mojom::Camera3DeviceOps> mock_camera_device_binding_;
   cros::mojom::Camera3CallbackOpsPtr callback_ops_;
+
+  std::unique_ptr<ReprocessManager> reprocess_manager_;
 
   base::Thread device_delegate_thread_;
 

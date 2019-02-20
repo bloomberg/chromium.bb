@@ -62,6 +62,7 @@ specific_include_rules = {
     "+components/translate/content/common",
     "+extensions/buildflags",
     "+extensions/common",
+    "+media/capture/video/chromeos/mojo",
     "+services/identity",
     "+services/image_annotation/public",
     "+services/resource_coordinator/public",

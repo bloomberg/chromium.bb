@@ -59,6 +59,7 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "services/ws/common/switches.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"  // nogncheck
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
@@ -178,6 +179,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("unzip", "unzip_file")
             .RequireCapability("util_win", "util_win")
             .RequireCapability("wifi_util_win", "wifi_credentials")
+            .RequireCapability("video_capture", "capture")
             .RequireCapability("xr_device_service", "xr_device_provider")
             .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
@@ -206,6 +208,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
                     chromeos::ime::mojom::InputEngineManager,
                     chromeos::media_perception::mojom::MediaPerception,
+                    cros::mojom::CrosImageCapture,
 #endif
                     contextual_search::mojom::ContextualSearchJsApiService,
                     dom_distiller::mojom::DistillabilityService,

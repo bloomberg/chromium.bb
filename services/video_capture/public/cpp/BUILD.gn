@@ -34,6 +34,9 @@ source_set("manifest") {
     "//services/video_capture/public/mojom",
     "//services/video_capture/public/mojom:constants",
   ]
+  if (is_chromeos) {
+    deps += [ "//media/capture/video/chromeos/mojo:cros_camera" ]
+  }
 }
 
 source_set("mocks") {

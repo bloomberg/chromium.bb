@@ -13,6 +13,10 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace video_capture {
 
 class DeviceMediaToMojoAdapter;
@@ -47,6 +51,11 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
+
+#if defined(OS_CHROMEOS)
+  void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request) override;
+#endif  // defined(OS_CHROMEOS)
 
  private:
   struct ActiveDeviceEntry {

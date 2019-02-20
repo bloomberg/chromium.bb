@@ -4,8 +4,12 @@
 
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/cros_image_capture_impl.h"
+#include "media/capture/video/chromeos/reprocess_manager.h"
 
 namespace media {
 
@@ -19,6 +23,8 @@ VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer)
     : task_runner_for_screen_observer_(task_runner_for_screen_observer),
       camera_hal_ipc_thread_("CameraHalIpcThread"),
+      reprocess_manager_(new ReprocessManager),
+      cros_image_capture_(new CrosImageCaptureImpl(reprocess_manager_.get())),
       initialized_(Init()) {}
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
@@ -34,7 +40,8 @@ VideoCaptureDeviceFactoryChromeOS::CreateDevice(
     return std::unique_ptr<VideoCaptureDevice>();
   }
   return camera_hal_delegate_->CreateDevice(task_runner_for_screen_observer_,
-                                            device_descriptor);
+                                            device_descriptor,
+                                            reprocess_manager_.get());
 }
 
 void VideoCaptureDeviceFactoryChromeOS::GetSupportedFormats(
@@ -81,6 +88,11 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
       new CameraHalDelegate(camera_hal_ipc_thread_.task_runner());
   camera_hal_delegate_->RegisterCameraClient();
   return true;
+}
+
+void VideoCaptureDeviceFactoryChromeOS::BindCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  cros_image_capture_->BindRequest(std::move(request));
 }
 
 }  // namespace media

@@ -459,6 +459,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
+      "//media/capture/video/chromeos/mojo:cros_camera",
       "//ui/accessibility/mojom",
     ]
 
