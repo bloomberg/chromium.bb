@@ -2286,6 +2286,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "manual-password-generation-android",
+    "owners": [ "ioanap" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "mash",
     "owners": [ "mustash-team@google.com" ],
     "expiry_milestone": 79
