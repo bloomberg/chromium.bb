@@ -2762,10 +2762,6 @@ if (enable_java_templates) {
   #  additional_jar_files: Optional list of files to copy into the resulting
   #    .jar file (by default, only .class files are put there). Each entry
   #    has the 'srcPath:dstPath' format.
-  #  enable_incremental_javac_override: Optional. If provided, determines
-  #    whether incremental javac compilation (based on jmake) is enabled.
-  #    Otherwise, decision is based on the global enable_incremental_javac
-  #    build arg variable.
   #  enable_errorprone: Optional. If True, use the errorprone compiler to
   #    check for error-prone constructs in the language. If not provided,
   #    whether this is enabled depends on chromium_code and the global
@@ -2801,14 +2797,6 @@ if (enable_java_templates) {
     _additional_jar_files = []
     if (defined(invoker.additional_jar_files)) {
       _additional_jar_files = invoker.additional_jar_files
-    }
-
-    if (defined(invoker.enable_incremental_javac_override)) {
-      # Use invoker-specified override.
-      _enable_incremental_javac = invoker.enable_incremental_javac_override
-    } else {
-      # Default to build arg if not overridden.
-      _enable_incremental_javac = enable_incremental_javac
     }
 
     _srcjar_deps = []
@@ -2866,12 +2854,6 @@ if (enable_java_templates) {
       ]
       if (defined(invoker.srcjar_filearg)) {
         args += [ "--java-srcjars=${invoker.srcjar_filearg}" ]
-      }
-      if (_enable_incremental_javac) {
-        args += [ "--incremental" ]
-        deps += [ "//third_party/jmake($default_toolchain)" ]
-        inputs += [ "$root_build_dir/bin/jmake" ]
-        outputs += [ "${invoker.javac_jar_path}.pdb" ]
       }
       if (invoker.requires_android) {
         args += [ "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_interface_jars)" ]
@@ -3407,7 +3389,6 @@ if (enable_java_templates) {
       _compile_java_forward_variables = [
         "additional_jar_files",
         "apk_name",
-        "enable_incremental_javac_override",
         "processor_args_javac",
         "provider_configurations",
         "javac_args",

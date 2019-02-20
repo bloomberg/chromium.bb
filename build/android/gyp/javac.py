@@ -183,22 +183,6 @@ def _ExtractClassFiles(jar_path, dest_dir, java_files):
     shutil.copystat(jar_path, path)
 
 
-def _ConvertToJMakeArgs(javac_cmd, pdb_path):
-  new_args = ['bin/jmake', '-pdb', pdb_path, '-jcexec', javac_cmd[0]]
-  if md5_check.PRINT_EXPLANATIONS:
-    new_args.append('-Xtiming')
-
-  do_not_prefix = ('-classpath', '-bootclasspath')
-  skip_next = False
-  for arg in javac_cmd[1:]:
-    if not skip_next and arg not in do_not_prefix:
-      arg = '-C' + arg
-    new_args.append(arg)
-    skip_next = arg in do_not_prefix
-
-  return new_args
-
-
 def _ParsePackageAndClassNames(java_file):
   package_name = ''
   class_names = []
@@ -257,7 +241,7 @@ def _ProcessInfo(java_file, package_name, class_names, source, chromium_code):
     assert not chromium_code or len(class_names) == 1, (
         'Chromium java files must only have one class: {}'.format(source))
     if chromium_code:
-      # This check is necessary to ensure JMake works.
+      # This check is not necessary but nice to check this somewhere.
       _CheckPathMatchesClassName(java_file, package_name, class_names[0])
 
 
@@ -307,11 +291,8 @@ def _CreateJarFile(jar_path, provider_configurations, additional_jar_files,
   logging.info('Completed jar file: %s', jar_path)
 
 
-def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
-                classpath):
+def _OnStaleMd5(options, javac_cmd, java_files, classpath):
   logging.info('Starting _OnStaleMd5')
-  # Don't bother enabling incremental compilation for non-chromium code.
-  incremental = options.incremental and options.chromium_code
 
   # Compiles with Error Prone take twice as long to run as pure javac. Thus GN
   # rules run both in parallel, with Error Prone only used for checks.
@@ -323,42 +304,12 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
     classes_dir = os.path.join(temp_dir, 'classes')
     os.makedirs(classes_dir)
 
-    changed_paths = None
-    # jmake can handle deleted files, but it's a rare case and it would
-    # complicate this script's logic.
-    if incremental and changes.AddedOrModifiedOnly():
-      changed_paths = set(changes.IterChangedPaths())
-      # Do a full compile if classpath has changed.
-      # jmake doesn't seem to do this on its own... Might be that ijars mess up
-      # its change-detection logic.
-      if any(p in changed_paths for p in classpath_inputs):
-        changed_paths = None
-
-    if options.incremental:
-      pdb_path = options.jar_path + '.pdb'
-
-    if incremental:
-      # jmake is a compiler wrapper that figures out the minimal set of .java
-      # files that need to be rebuilt given a set of .java files that have
-      # changed.
-      # jmake determines what files are stale based on timestamps between .java
-      # and .class files. Since we use .jars, .srcjars, and md5 checks,
-      # timestamp info isn't accurate for this purpose. Rather than use jmake's
-      # programatic interface (like we eventually should), we ensure that all
-      # .class files are newer than their .java files, and convey to jmake which
-      # sources are stale by having their .class files be missing entirely
-      # (by not extracting them).
-      javac_cmd = _ConvertToJMakeArgs(javac_cmd, pdb_path)
-
     if save_outputs:
       generated_java_dir = options.generated_dir
     else:
       generated_java_dir = os.path.join(temp_dir, 'gen')
 
-    # Incremental means not all files will be extracted, so don't bother
-    # clearing out stale generated files.
-    if not incremental:
-      shutil.rmtree(generated_java_dir, True)
+    shutil.rmtree(generated_java_dir, True)
 
     srcjar_files = {}
     if srcjars:
@@ -366,12 +317,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       build_utils.MakeDirectory(generated_java_dir)
       jar_srcs = []
       for srcjar in options.java_srcjars:
-        if changed_paths:
-          changed_paths.update(os.path.join(generated_java_dir, f)
-                               for f in changes.IterChangedSubpaths(srcjar))
         extracted_files = build_utils.ExtractAll(
-            srcjar, no_clobber=not incremental, path=generated_java_dir,
-            pattern='*.java')
+            srcjar, no_clobber=True, path=generated_java_dir, pattern='*.java')
         for path in extracted_files:
           # We want the path inside the srcjar so the viewer can have a tree
           # structure.
@@ -380,28 +327,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         jar_srcs.extend(extracted_files)
       logging.info('Done extracting srcjars')
       java_files.extend(jar_srcs)
-      if changed_paths:
-        # Set the mtime of all sources to 0 since we use the absence of .class
-        # files to tell jmake which files are stale.
-        for path in jar_srcs:
-          os.utime(path, (0, 0))
 
     if java_files:
-      if changed_paths:
-        changed_java_files = [p for p in java_files if p in changed_paths]
-        if os.path.exists(options.jar_path):
-          _ExtractClassFiles(options.jar_path, classes_dir, changed_java_files)
-        # Add the extracted files to the classpath. This is required because
-        # when compiling only a subset of files, classes that haven't changed
-        # need to be findable.
-        classpath.append(classes_dir)
-
-      # Can happen when a target goes from having no sources, to having sources.
-      # It's created by the call to build_utils.Touch() below.
-      if incremental:
-        if os.path.exists(pdb_path) and not os.path.getsize(pdb_path):
-          os.unlink(pdb_path)
-
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
       cmd = javac_cmd + ['-d', classes_dir]
@@ -416,33 +343,14 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         f.write(' '.join(java_files))
       cmd += ['@' + java_files_rsp_path]
 
-      # JMake prints out some diagnostic logs that we want to ignore.
-      # This assumes that all compiler output goes through stderr.
-      stdout_filter = lambda s: ''
-      if md5_check.PRINT_EXPLANATIONS:
-        stdout_filter = None
-
       logging.debug('Build command %s', cmd)
-      attempt_build = lambda: build_utils.CheckOutput(
+      build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
-          stdout_filter=stdout_filter,
           stderr_filter=ProcessJavacOutput)
-      try:
-        attempt_build()
-      except build_utils.CalledProcessError as e:
-        # Work-around for a bug in jmake (http://crbug.com/551449).
-        if ('project database corrupted' not in e.output
-            and 'jmake: internal Java exception' not in e.output):
-          raise
-        logging.error(
-            'Applying work-around for jmake project database corrupted '
-            '(http://crbug.com/551449).')
-        os.unlink(pdb_path)
-        attempt_build()
       logging.info('Finished build command')
 
-    if options.incremental or save_outputs:
+    if save_outputs:
       # Creating the jar file takes the longest, start it first on a separate
       # process to unblock the rest of the post-processing steps.
       jar_file_worker = multiprocessing.Process(
@@ -459,10 +367,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
                       srcjar_files, classes_dir, generated_java_dir)
     else:
       build_utils.Touch(options.jar_path + '.info')
-
-    if options.incremental and (not java_files or not incremental):
-      # Make sure output exists.
-      build_utils.Touch(pdb_path)
 
     if jar_file_worker:
       jar_file_worker.join()
@@ -499,11 +403,6 @@ def _ParseOptions(argv):
       '--interface-classpath',
       action='append',
       help='Classpath to use when no annotation processors are present.')
-  parser.add_option(
-      '--incremental',
-      action='store_true',
-      help='Whether to re-use .class files rather than recompiling them '
-           '(when possible).')
   parser.add_option(
       '--processors',
       action='append',
@@ -668,6 +567,7 @@ def main(argv):
 
   classpath_inputs = (options.bootclasspath + options.interface_classpath +
                       options.processorpath)
+
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
   depfile_deps = [javac_path] + classpath_inputs + options.java_srcjars
@@ -677,25 +577,16 @@ def main(argv):
       options.jar_path,
       options.jar_path + '.info',
   ]
-  if options.incremental:
-    output_paths.append(options.jar_path + '.pdb')
-
-  # An escape hatch to be able to check if incremental compiles are causing
-  # problems.
-  force = int(os.environ.get('DISABLE_INCREMENTAL_JAVAC', 0))
 
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
   build_utils.CallAndWriteDepfileIfStale(
-      lambda changes: _OnStaleMd5(changes, options, javac_cmd, java_files,
-                                  classpath_inputs, classpath),
+      lambda: _OnStaleMd5(options, javac_cmd, java_files, classpath),
       options,
       depfile_deps=depfile_deps,
       input_paths=input_paths,
       input_strings=javac_cmd + classpath,
       output_paths=output_paths,
-      force=force,
-      pass_changes=True,
       add_pydeps=False)
   logging.info('Script complete: %s', __file__)
 

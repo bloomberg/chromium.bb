@@ -466,9 +466,6 @@ java_library("shadows_core_java") {
   # here which requires_android.
   bypass_platform_checks = true
 
-  # TODO(mikecase): Remove this once crbug.com/638875 is fixed.
-  enable_incremental_javac_override = false
-
   testonly = true
   processor_args_javac =
       [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric" ]

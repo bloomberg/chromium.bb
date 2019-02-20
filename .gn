@@ -440,7 +440,6 @@ check_targets = [
   "//third_party/isimpledom/*",
   "//third_party/javax_inject/*",
   "//third_party/jinja2/*",
-  "//third_party/jmake/*",
   "//third_party/jsoncpp/*",
   "//third_party/jsr-305/*",
   "//third_party/jstemplate/*",
