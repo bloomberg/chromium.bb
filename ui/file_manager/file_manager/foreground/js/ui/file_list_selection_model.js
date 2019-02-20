@@ -7,6 +7,14 @@ class FileListSelectionModel extends cr.ui.ListSelectionModel {
   constructor(opt_length) {
     super(opt_length);
 
+    /**
+     * Overwrite ListSelectionModel to allow lead item to be independent of the
+     * current selected item(s).
+     * @private {boolean}
+     * @override
+     */
+    this.independentLeadItem_ = true;
+
     /** @private {boolean} */
     this.isCheckSelectMode_ = false;
 
