@@ -322,7 +322,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
 
     /** A means of providing the theme color to different features. */
-    private final TabThemeColorProvider mTabThemeColorProvider = new TabThemeColorProvider();
+    private TabThemeColorProvider mTabThemeColorProvider;
 
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
@@ -673,6 +673,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         mTabModelSelector = createTabModelSelector();
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
+        mTabThemeColorProvider = new TabThemeColorProvider(this);
         mTabThemeColorProvider.setActivityTabProvider(mActivityTabProvider);
 
         if (mTabModelSelector == null) {

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.content.res.AppCompatResources;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -57,10 +56,12 @@ public abstract class ThemeColorProvider {
     /** List of {@link TintObserver}s. These are used to broadcast events to listeners. */
     private final ObserverList<TintObserver> mTintObservers;
 
-    public ThemeColorProvider() {
+    /**
+     * @param context The {@link Context} that is used to retrieve color related resources.
+     */
+    public ThemeColorProvider(Context context) {
         mThemeColorObservers = new ObserverList<ThemeColorObserver>();
         mTintObservers = new ObserverList<TintObserver>();
-        final Context context = ContextUtils.getApplicationContext();
         mLightModeTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
         mDarkModeTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
     }
