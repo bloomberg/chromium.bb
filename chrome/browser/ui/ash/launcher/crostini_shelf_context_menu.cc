@@ -61,11 +61,16 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
           controller()->profile());
   base::Optional<crostini::CrostiniRegistryService::Registration> registration =
       registry_service->GetRegistration(item().id.app_id);
-  if (registration)
-    AddPinMenu(menu_model);
 
-  AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
-                       IDS_APP_LIST_NEW_WINDOW);
+  // For apps which Crostini knows about (i.e. those with .desktop files), we
+  // allow the user to pin them and open new windows. Otherwise this window is
+  // not associated with an app.
+  if (registration) {
+    AddPinMenu(menu_model);
+    AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
+                         IDS_APP_LIST_NEW_WINDOW);
+  }
+
   if (item().id.app_id == crostini::kCrostiniTerminalId &&
       crostini::IsCrostiniRunning(controller()->profile())) {
     AddContextMenuOption(menu_model, ash::STOP_APP,
