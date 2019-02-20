@@ -32,6 +32,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -243,6 +244,8 @@ class PLATFORM_EXPORT ResourceFetcher
   using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();
 
+  mojom::blink::BlobRegistry* GetBlobRegistry();
+
  private:
   friend class ResourceCacheValidationSuppressor;
   class DetachableProperties;
@@ -377,6 +380,8 @@ class PLATFORM_EXPORT ResourceFetcher
   TaskHandle keepalive_loaders_task_handle_;
 
   uint32_t inflight_keepalive_bytes_ = 0;
+
+  mojom::blink::BlobRegistryPtr blob_registry_ptr_;
 
   // 27 bits left
   bool auto_load_images_ : 1;

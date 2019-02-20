@@ -1051,9 +1051,7 @@ void ResourceLoader::DidStartLoadingResponseBody(
 
     // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
     // ResourceFetcher as long as we still care about the result of the load.
-    mojom::blink::BlobRegistry* blob_registry =
-        BlobDataHandle::GetBlobRegistry();
-    blob_registry->RegisterFromStream(
+    fetcher_->GetBlobRegistry()->RegisterFromStream(
         mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
         std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
         std::move(body), std::move(progress_client_ptr),
