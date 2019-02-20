@@ -75,7 +75,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
-          "%23fragment#fragment",
+          "#fragment",
           "",
       },
       {

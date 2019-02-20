@@ -86,6 +86,10 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::DEVICE_OFFLINE:
       return want_inverse_description ? "Device is online"
                                       : "Device is offline";
+    case PreviewsEligibilityReason::URL_HAS_BASIC_AUTH:
+      return want_inverse_description
+                 ? "URL did not contain basic authentication"
+                 : "URL contained basic authentication";
   }
   NOTREACHED();
   return "";

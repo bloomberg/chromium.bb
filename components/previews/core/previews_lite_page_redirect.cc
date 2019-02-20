@@ -54,8 +54,11 @@ bool ExtractOriginalURLFromLitePageRedirectURL(const GURL& url,
   if (!net::GetValueForKeyInQuery(url, "u", &original_url_query_param))
     return false;
 
-  if (original_url)
+  if (original_url) {
+    if (url.has_ref())
+      original_url_query_param += "#" + url.ref();
     *original_url = original_url_query_param;
+  }
   return true;
 }
 

@@ -43801,6 +43801,9 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="14" label="Network is not slow per session threshold."/>
   <int value="15" label="Device was reported as offline."/>
+  <int value="16"
+      label="URL contained Basic Authentication, i.e.: a username or
+             password."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">

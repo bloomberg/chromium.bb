@@ -69,6 +69,8 @@ enum class PreviewsEligibilityReason {
   NETWORK_NOT_SLOW_FOR_SESSION = 14,
   // Device is offline.
   DEVICE_OFFLINE = 15,
+  // URL contained Basic Authentication, i.e.: a username or password.
+  URL_HAS_BASIC_AUTH = 16,
   LAST,
 };
 
