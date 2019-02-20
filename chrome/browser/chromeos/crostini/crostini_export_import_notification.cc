@@ -8,7 +8,7 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/platform_util_chromeos.cc"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
