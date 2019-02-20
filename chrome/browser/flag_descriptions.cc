@@ -1224,11 +1224,6 @@ const char kLookalikeUrlNavigationSuggestionsDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
-const char kMaterialDesignIncognitoNTPName[] = "Material Design Incognito NTP.";
-const char kMaterialDesignIncognitoNTPDescription[] =
-    "If enabled, the Incognito New Tab page uses the new material design with "
-    "a better readable text.";
-
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =

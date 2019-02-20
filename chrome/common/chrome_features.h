@@ -256,9 +256,6 @@ extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kMaterialDesignIncognitoNTP;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kModalPermissionPrompts;
 
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)

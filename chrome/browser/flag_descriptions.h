@@ -744,9 +744,6 @@ extern const char kMarkHttpAsWarning[];
 extern const char kMarkHttpAsWarningAndDangerousOnFormEdits[];
 extern const char kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards[];
 
-extern const char kMaterialDesignIncognitoNTPName[];
-extern const char kMaterialDesignIncognitoNTPDescription[];
-
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
