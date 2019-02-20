@@ -6,6 +6,9 @@
 
 (function() {
 
+/** @type {number} */
+const MS_PER_SECOND = 1000;
+
 /** @enum {string} */
 const LaunchError = {
   GENERIC_ERROR: 'genericError',
@@ -37,18 +40,26 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * Countdown displayed to the user, number of seconds until launching. If 0
+     * or less, doesn't get displayed at all.
+     * @private
+     */
+    secondCounter_: {
+      type: Number,
+      value: 0,
+    },
   },
 
   /** @override */
   attached: function() {
-    const proxy = browser_switcher.BrowserSwitcherProxyImpl.getInstance();
-
     // If '?done=...' is specified in the URL, this tab was-reopened, or the
     // entire browser was closed by LBS and re-opened. In that case, go to NTP
     // instead.
     const done = (new URLSearchParams(window.location.search)).has('done');
     if (done) {
-      proxy.gotoNewTabPage();
+      getProxy().gotoNewTabPage();
       return;
     }
 
@@ -60,13 +71,34 @@ Polymer({
       return;
     }
 
+    const milliseconds = loadTimeData.getInteger('launchDelay');
+    setTimeout(this.launchAndCloseTab_.bind(this), milliseconds);
+    this.startCountdown_(Math.floor(milliseconds / 1000));
+  },
+
+  /** @private */
+  launchAndCloseTab_: function() {
     // Mark this page with '?done=...' so that restoring the tab doesn't
     // immediately re-trigger LBS.
     history.pushState({}, '', '/?done=true');
 
-    proxy.launchAlternativeBrowserAndCloseTab(this.url_).catch(() => {
+    getProxy().launchAlternativeBrowserAndCloseTab(this.url_).catch(() => {
       this.error_ = LaunchError.GENERIC_ERROR;
     });
+  },
+
+  /**
+   * @param {number} seconds
+   * @private
+   */
+  startCountdown_: function(seconds) {
+    this.secondCounter_ = seconds;
+    const intervalId = setInterval(() => {
+      this.secondCounter_--;
+      if (this.secondCounter_ <= 0) {
+        clearInterval(intervalId);
+      }
+    }, 1 * MS_PER_SECOND);
   },
 
   /**
@@ -76,6 +108,9 @@ Polymer({
   computeTitle_: function() {
     if (this.error_) {
       return this.i18n('errorTitle');
+    }
+    if (this.secondCounter_ > 0) {
+      return this.i18n('countdownTitle', this.secondCounter_);
     }
     return this.i18n('openingTitle');
   },
@@ -97,5 +132,9 @@ function getUrlHostname(url) {
   anchor.href = url;
   // Return entire url if parsing failed (which means the URL is bogus).
   return anchor.hostname || url;
+}
+
+function getProxy() {
+  return browser_switcher.BrowserSwitcherProxyImpl.getInstance();
 }
 })();

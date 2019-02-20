@@ -70,6 +70,9 @@ class BrowserSwitcherPrefs : public KeyedService,
   // Returns true if Chrome should keep at least one tab open after switching.
   bool KeepLastTab() const;
 
+  // Returns the delay before switching, in milliseconds.
+  int GetDelay() const;
+
   // Returns the sitelist + greylist configured directly through Chrome
   // policies. If the pref is not managed, returns an empty vector.
   const RuleSet& GetRules() const;
@@ -141,6 +144,7 @@ class BrowserSwitcherPrefs : public KeyedService,
 namespace prefs {
 
 extern const char kEnabled[];
+extern const char kDelay[];
 extern const char kAlternativeBrowserPath[];
 extern const char kAlternativeBrowserParameters[];
 extern const char kKeepLastTab[];

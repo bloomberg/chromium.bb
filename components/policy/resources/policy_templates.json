@@ -710,6 +710,7 @@
       'policies': [
         'AlternativeBrowserPath',
         'AlternativeBrowserParameters',
+        'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
         'BrowserSwitcherUrlList',
@@ -14332,6 +14333,26 @@
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
     {
+      'id': 524,
+      'name': 'BrowserSwitcherDelay',
+      'future': True,
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'example_value': 10000,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:74-'],
+      'caption': '''Delay before launching alternative browser (milliseconds)''',
+      'tags': [],
+      'desc': '''This policy controls how long to wait before launching an alternative browser, in milliseconds.
+
+      When this policy is left unset, or set to 0, navigating to a designated URL immediately opens it in an alternative browser.
+
+      When this policy is set to a number, Chrome shows a message for that many milliseconds, and then opens the alternative browser.''',
+    },
+    {
       'id': 517,
       'name': 'BrowserSwitcherEnabled',
       'future': True,
@@ -14837,5 +14858,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  523
+  'highest_id_currently_used':  524
 }
