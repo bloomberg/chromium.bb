@@ -18,7 +18,7 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSnapshotDrawView{"SnapshotDrawView",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCopiedContentBehavior{"CopiedContentBehavior",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

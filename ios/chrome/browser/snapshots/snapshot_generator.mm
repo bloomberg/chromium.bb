@@ -225,9 +225,14 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   // internet" or "Site can't be reached".
   BOOL useDrawViewHierarchy = ViewHierarchyContainsWKWebView(baseView) ||
                               base::FeatureList::IsEnabled(kSnapshotDrawView);
-  if (useDrawViewHierarchy) {
+  // |drawViewHierarchyInRect:| has undefined behavior when the view is not
+  // in the visible view hierarchy. In practice, when this method is called
+  // on a view that is part of view controller containment and not in the view
+  // hierarchy, an UIViewControllerHierarchyInconsistency exception will be
+  // thrown.
+  if (useDrawViewHierarchy && baseView.window) {
     snapshotSuccess = [baseView drawViewHierarchyInRect:baseView.bounds
-                                     afterScreenUpdates:NO];
+                                     afterScreenUpdates:YES];
   } else {
     [[baseView layer] renderInContext:context];
   }
