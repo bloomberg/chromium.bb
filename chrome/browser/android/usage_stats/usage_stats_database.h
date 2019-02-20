@@ -10,17 +10,21 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/usage_stats/website_event.pb.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
+class Profile;
+
 namespace usage_stats {
+
+class WebsiteEvent;
+class Suspension;
+class TokenMapping;
 
 using leveldb_proto::ProtoDatabase;
 
