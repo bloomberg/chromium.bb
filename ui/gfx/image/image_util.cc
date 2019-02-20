@@ -15,6 +15,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/resize_image_dimensions.h"
 
 namespace {
 

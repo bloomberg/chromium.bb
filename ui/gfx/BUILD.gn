@@ -253,6 +253,7 @@ jumbo_component("gfx") {
   ]
   deps += [
     ":gfx_export",
+    ":resize_image_dimensions",
     "//base",
     "//base:base_static",
     "//base:i18n",
@@ -403,6 +404,14 @@ jumbo_component("color_space") {
     configs += [ "//build/config/linux:x11" ]
   }
   defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
+}
+
+# Depend on this to use image/resize_image_dimensions.h without pulling in
+# all of gfx.
+source_set("resize_image_dimensions") {
+  sources = [
+    "image/resize_image_dimensions.h",
+  ]
 }
 
 # Depend on this to use native_widget_types.h without pulling in all of gfx.

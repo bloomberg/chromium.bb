@@ -18,11 +18,6 @@ class ImageSkia;
 
 namespace gfx {
 
-// Dimensions to use when downsizing an image for search-by-image.
-const int kSearchByImageMaxImageArea = 90000;
-const int kSearchByImageMaxImageWidth = 600;
-const int kSearchByImageMaxImageHeight = 400;
-
 // Creates an image from the given JPEG-encoded input. If there was an error
 // creating the image, returns an IsEmpty() Image.
 GFX_EXPORT Image ImageFrom1xJPEGEncodedData(const unsigned char* input,

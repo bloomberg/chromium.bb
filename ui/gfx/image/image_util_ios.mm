@@ -7,6 +7,7 @@
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMUIImage+Resize.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
+#include "ui/gfx/image/resize_image_dimensions.h"
 
 #include "base/logging.h"
 
