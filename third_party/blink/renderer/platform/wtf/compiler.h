@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_COMPILER_H_
 
 #include "base/compiler_specific.h"
-#include "build/build_config.h"
 
 /* ==== Compiler features ==== */
 
@@ -51,12 +50,6 @@
 #else
 #define NO_SANITIZE_UNRELATED_CAST
 #define NO_SANITIZE_CFI_ICALL
-#endif
-
-#if defined(COMPILER_MSVC)
-#define WTF_NOINLINE __declspec(noinline)
-#else
-#define WTF_NOINLINE __attribute__((noinline))
 #endif
 
 #endif /* WTF_Compiler_h */
