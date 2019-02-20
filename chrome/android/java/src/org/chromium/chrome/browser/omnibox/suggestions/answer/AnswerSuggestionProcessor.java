@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions.basic;
+package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,7 +16,10 @@ import org.chromium.chrome.browser.omnibox.suggestions.AnswersImageFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewProperties.AnswerIcon;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.components.omnibox.AnswerType;
@@ -72,13 +75,10 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         maybeFetchAnswerIcon(suggestion, model);
+        SuggestionViewDelegate delegate =
+                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE,
-                SuggestionViewProperties.SuggestionIcon.UNDEFINED);
-        model.set(SuggestionViewProperties.DELEGATE,
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position));
-
-        setStateForSuggestion(model, suggestion.getAnswer());
+        setStateForClassicSuggestion(model, suggestion.getAnswer(), delegate);
     }
 
     @Override
@@ -126,21 +126,20 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
     }
 
     /**
-     * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
+     * Sets both lines of the Omnibox suggestion in a basic Suggestion result.
      */
-    private void setStateForSuggestion(PropertyModel model, SuggestionAnswer answer) {
+    private void setStateForClassicSuggestion(
+            PropertyModel model, SuggestionAnswer answer, SuggestionViewDelegate delegate) {
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
         int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
         if (numAnswerLines == -1) numAnswerLines = 1;
+
         model.set(SuggestionViewProperties.IS_ANSWER, true);
 
-        AnswerText[] details;
-        if (mEnableNewAnswerLayout) {
-            details = AnswerTextNewLayout.from(mContext, answer);
-        } else {
-            details = AnswerTextClassic.from(mContext, answer);
-        }
+        AnswerText[] details = AnswerTextClassic.from(mContext, answer);
+
+        model.set(SuggestionViewProperties.DELEGATE, delegate);
 
         model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
                 Pair.create(TypedValue.COMPLEX_UNIT_SP, details[0].mHeightSp));
@@ -155,55 +154,71 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
         model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
 
-        // TODO(ender): The color setting here is likely redundant; details include attributes.
-        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR,
-                SuggestionViewViewBinder.getStandardFontColor(
-                        mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
-                SuggestionViewViewBinder.getStandardFontColor(
-                        mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
-
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION, View.TEXT_DIRECTION_INHERIT);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, View.TEXT_DIRECTION_INHERIT);
 
         model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
+        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.MAGNIFIER);
 
         model.set(SuggestionViewProperties.REFINABLE, true);
+    }
 
-        @SuggestionIcon
-        int icon = SuggestionIcon.MAGNIFIER;
-        if (mEnableNewAnswerLayout) {
-            switch (answer.getType()) {
-                case AnswerType.DICTIONARY:
-                    icon = SuggestionIcon.DICTIONARY;
-                    break;
-                case AnswerType.FINANCE:
-                    icon = SuggestionIcon.FINANCE;
-                    break;
-                case AnswerType.KNOWLEDGE_GRAPH:
-                    icon = SuggestionIcon.KNOWLEDGE;
-                    break;
-                case AnswerType.SUNRISE:
-                    icon = SuggestionIcon.SUNRISE;
-                    break;
-                case AnswerType.TRANSLATION:
-                    icon = SuggestionIcon.TRANSLATION;
-                    break;
-                case AnswerType.WEATHER:
-                    icon = SuggestionIcon.WEATHER;
-                    break;
-                case AnswerType.WHEN_IS:
-                    icon = SuggestionIcon.EVENT;
-                    break;
-                case AnswerType.CURRENCY:
-                    icon = SuggestionIcon.CURRENCY;
-                    break;
-                case AnswerType.SPORTS:
-                    icon = SuggestionIcon.SPORTS;
-            }
+    /**
+     * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
+     */
+    private void setStateForNewSuggestion(
+            PropertyModel model, SuggestionAnswer answer, SuggestionViewDelegate delegate) {
+        SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
+        SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
+        int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
+        if (numAnswerLines == -1) numAnswerLines = 1;
+
+        AnswerText[] details = AnswerTextNewLayout.from(mContext, answer);
+
+        model.set(AnswerSuggestionViewProperties.DELEGATE, delegate);
+
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_SIZE, details[0].mHeightSp);
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_SIZE, details[1].mHeightSp);
+
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT, details[0].mText);
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT, details[1].mText);
+
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
+
+        @AnswerIcon
+        int icon = AnswerIcon.UNDEFINED;
+
+        switch (answer.getType()) {
+            case AnswerType.DICTIONARY:
+                icon = AnswerIcon.DICTIONARY;
+                break;
+            case AnswerType.FINANCE:
+                icon = AnswerIcon.FINANCE;
+                break;
+            case AnswerType.KNOWLEDGE_GRAPH:
+                icon = AnswerIcon.KNOWLEDGE;
+                break;
+            case AnswerType.SUNRISE:
+                icon = AnswerIcon.SUNRISE;
+                break;
+            case AnswerType.TRANSLATION:
+                icon = AnswerIcon.TRANSLATION;
+                break;
+            case AnswerType.WEATHER:
+                icon = AnswerIcon.WEATHER;
+                break;
+            case AnswerType.WHEN_IS:
+                icon = AnswerIcon.EVENT;
+                break;
+            case AnswerType.CURRENCY:
+                icon = AnswerIcon.CURRENCY;
+                break;
+            case AnswerType.SPORTS:
+                icon = AnswerIcon.SPORTS;
         }
 
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, icon);
+        model.set(AnswerSuggestionViewProperties.ANSWER_ICON_TYPE, icon);
     }
 
     private static int parseNumAnswerLines(List<SuggestionAnswer.TextField> textFields) {

@@ -24,13 +24,10 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * The properties associated with rendering the suggestion view.
  */
-class SuggestionViewProperties {
+public class SuggestionViewProperties {
     @IntDef({SuggestionIcon.UNDEFINED, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
             SuggestionIcon.GLOBE, SuggestionIcon.MAGNIFIER, SuggestionIcon.VOICE,
-            SuggestionIcon.CALCULATOR, SuggestionIcon.DICTIONARY, SuggestionIcon.FINANCE,
-            SuggestionIcon.KNOWLEDGE, SuggestionIcon.SUNRISE, SuggestionIcon.TRANSLATION,
-            SuggestionIcon.WEATHER, SuggestionIcon.EVENT, SuggestionIcon.CURRENCY,
-            SuggestionIcon.SPORTS})
+            SuggestionIcon.CALCULATOR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SuggestionIcon {
         int UNDEFINED = -1;
@@ -40,21 +37,12 @@ class SuggestionViewProperties {
         int MAGNIFIER = 3;
         int VOICE = 4;
         int CALCULATOR = 5;
-        int DICTIONARY = 6;
-        int FINANCE = 7;
-        int KNOWLEDGE = 8;
-        int SUNRISE = 9;
-        int TRANSLATION = 10;
-        int WEATHER = 11;
-        int EVENT = 12;
-        int CURRENCY = 13;
-        int SPORTS = 14;
     }
 
     /**
      * Container for suggestion text that prevents updates when the text/spans has not changed.
      */
-    static class SuggestionTextContainer {
+    public static class SuggestionTextContainer {
         public final Spannable text;
 
         public SuggestionTextContainer(Spannable text) {

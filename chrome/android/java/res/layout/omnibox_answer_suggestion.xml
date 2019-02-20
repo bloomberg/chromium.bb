@@ -2,7 +2,7 @@
 <!-- Copyright 2019 The Chromium Authors. All rights reserved.
     Use of this source code is governed by a BSD-style license that can be
     found in the LICENSE file. -->
-<org.chromium.chrome.browser.omnibox.suggestions.basic.AnswerSuggestionView
+<org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="false"
@@ -72,4 +72,4 @@
         android:scaleType="center"
         android:src="@drawable/btn_suggestion_refine" />
 
-</org.chromium.chrome.browser.omnibox.suggestions.basic.AnswerSuggestionView>
+</org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionView>

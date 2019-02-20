@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions.basic;
+package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 
 /**
  * Container view for omnibox answer suggestions.
