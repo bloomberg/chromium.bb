@@ -5,39 +5,21 @@
 #ifndef CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 #define CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 
-#include "base/debug/stack_trace.h"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/remoting/remote_test_helper.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/browser_test_utils.h"
-#include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
-
-namespace {
-// Command line arguments specific to the chromoting browser tests.
-const char kOverrideUserDataDir[] = "override-user-data-dir";
-const char kNoCleanup[] = "no-cleanup";
-const char kNoInstall[] = "no-install";
-const char kWebAppCrx[] = "webapp-crx";
-const char kWebAppUnpacked[] = "webapp-unpacked";
-const char kUserName[] = "username";
-const char kUserPassword[] = "password";
-const char kAccountsFile[] = "accounts-file";
-const char kAccountType[] = "account-type";
-const char kMe2MePin[] = "me2me-pin";
-const char kRemoteHostName[] = "remote-host-name";
-const char kExtensionName[] = "extension-name";
-const char kHttpServer[] = "http-server";
-
-}  // namespace
-
-using extensions::Extension;
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace remoting {
+
+class RemoteTestHelper;
 
 class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
  public:
@@ -82,7 +64,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // to set up appropriate mocks.
   // |window_open_disposition| controls where the app will be launched.  For v2
   // app, the value of |window_open_disposition| will always be NEW_WINDOW.
-  // Returns the content::Webconetns of the launched app. The lifetime of the
+  // Returns the content::WebContents of the launched app. The lifetime of the
   // returned value is managed by LaunchChromotingApp().
   content::WebContents* LaunchChromotingApp(bool defer_start);
   content::WebContents* LaunchChromotingApp(
@@ -256,24 +238,15 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the boolean result.
-  bool ExecuteScriptAndExtractBool(const std::string& script) {
-    return RemoteTestHelper::ExecuteScriptAndExtractBool(
-        active_web_contents(), script);
-  }
+  bool ExecuteScriptAndExtractBool(const std::string& script);
 
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the int result.
-  int ExecuteScriptAndExtractInt(const std::string& script) {
-    return RemoteTestHelper::ExecuteScriptAndExtractInt(
-        active_web_contents(), script);
-  }
+  int ExecuteScriptAndExtractInt(const std::string& script);
 
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the string result.
-  std::string ExecuteScriptAndExtractString(const std::string& script) {
-    return RemoteTestHelper::ExecuteScriptAndExtractString(
-        active_web_contents(), script);
-  }
+  std::string ExecuteScriptAndExtractString(const std::string& script);
 
   // Helper to load a JavaScript file from |path| and inject it to
   // current web_content.  The variable |path| is relative to the directory of
@@ -390,7 +363,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   bool no_cleanup_;
   bool no_install_;
-  const Extension* extension_;
+  const extensions::Extension* extension_;
   base::FilePath webapp_crx_;
   base::FilePath webapp_unpacked_;
   std::string username_;
