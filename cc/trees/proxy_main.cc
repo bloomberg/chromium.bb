@@ -236,6 +236,8 @@ void ProxyMain::BeginMainFrame(
   skip_commit |= defer_main_frame_update_ || defer_commits_;
 
   if (skip_commit) {
+    current_pipeline_stage_ = NO_PIPELINE_STAGE;
+    layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
@@ -246,10 +248,8 @@ void ProxyMain::BeginMainFrame(
                                   CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
                                   begin_main_frame_start_time,
                                   base::Passed(&empty_swap_promises)));
-    current_pipeline_stage_ = NO_PIPELINE_STAGE;
     // We intentionally don't report CommitComplete() here since it was aborted
     // prematurely and we're waiting to do another commit in the future.
-    layer_tree_host_->DidBeginMainFrame();
     // When we stop deferring commits, we should resume any previously requested
     // pipeline stages.
     deferred_final_pipeline_stage_ = final_pipeline_stage_;
@@ -284,6 +284,8 @@ void ProxyMain::BeginMainFrame(
 
   current_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
   if (final_pipeline_stage_ < COMMIT_PIPELINE_STAGE) {
+    current_pipeline_stage_ = NO_PIPELINE_STAGE;
+    layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
@@ -298,9 +300,7 @@ void ProxyMain::BeginMainFrame(
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
-    current_pipeline_stage_ = NO_PIPELINE_STAGE;
     layer_tree_host_->CommitComplete();
-    layer_tree_host_->DidBeginMainFrame();
     return;
   }
 
@@ -313,6 +313,9 @@ void ProxyMain::BeginMainFrame(
       begin_main_frame_state->begin_frame_args.frame_time, 1);
   layer_tree_host_->QueueSwapPromise(
       std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
+
+  current_pipeline_stage_ = NO_PIPELINE_STAGE;
+  layer_tree_host_->DidBeginMainFrame();
 
   // Notify the impl thread that the main thread is ready to commit. This will
   // begin the commit process, which is blocking from the main thread's
@@ -336,9 +339,7 @@ void ProxyMain::BeginMainFrame(
     completion.Wait();
   }
 
-  current_pipeline_stage_ = NO_PIPELINE_STAGE;
   layer_tree_host_->CommitComplete();
-  layer_tree_host_->DidBeginMainFrame();
 }
 
 void ProxyMain::DidPresentCompositorFrame(

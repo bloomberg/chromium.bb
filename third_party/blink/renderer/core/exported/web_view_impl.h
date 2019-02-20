@@ -432,6 +432,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
+  void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
   void RecordStartOfFrameMetrics() override;
@@ -484,6 +485,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   friend class WebView;  // So WebView::Create can call our constructor
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
+  friend class SimCompositor;
 
   WebViewImpl(WebViewClient*,
               bool is_hidden,

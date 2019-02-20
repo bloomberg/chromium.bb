@@ -370,6 +370,12 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean();
 
+  // This for doing work that needs to run synchronously at the end of lifecyle
+  // updates, but needs to happen outside of the lifecycle code. It's OK to
+  // schedule another animation frame here, but the layout tree should not be
+  // invalidated.
+  void RunPostLifecycleSteps();
+
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   bool InvalidateViewportConstrainedObjects();
@@ -810,6 +816,8 @@ class CORE_EXPORT LocalFrameView final
   void PerformPostLayoutTasks();
 
   DocumentLifecycle& Lifecycle() const;
+
+  void RunIntersectionObserverSteps();
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.

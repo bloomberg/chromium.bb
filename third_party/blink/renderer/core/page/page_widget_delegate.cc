@@ -74,6 +74,11 @@ void PageWidgetDelegate::UpdateLifecycle(
   }
 }
 
+void PageWidgetDelegate::DidBeginFrame(LocalFrame& root) {
+  if (LocalFrameView* frame_view = root.View())
+    frame_view->RunPostLifecycleSteps();
+}
+
 void PageWidgetDelegate::PaintContent(cc::PaintCanvas* canvas,
                                       const WebRect& rect,
                                       LocalFrame& root) {
