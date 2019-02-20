@@ -1,0 +1,95 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting.ftl;
+
+// This is exactly google.protobuf.Duration. The Chromium proto_library
+// template has trouble importing protobuf outside the current directory.
+message Duration {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message ApiVersion {
+  enum Value {
+    UNKNOWN = 0;
+    V4 = 4;
+  }
+}
+
+message Platform {
+  // Added the FTL_ prefix because OS names are polluted by Chromium macros.
+  enum Type {
+    UNKNOWN = 0;
+    FTL_ANDROID = 1;
+    FTL_IOS = 2;
+    FTL_TEST = 4;
+    FTL_DESKTOP = 6;
+    FTL_WEB = 7;
+  }
+}
+
+message IdType {
+  enum Type {
+    UNKNOWN = 0;
+    EMAIL = 16;
+  }
+}
+
+message ClientInfo {
+  // Renamed from major, minor, point because they are defined in glibc macros.
+  int32 version_major = 3;
+  int32 version_minor = 4;
+  int32 version_point = 5;
+  ApiVersion.Value api_version = 7;
+  Platform.Type platform_type = 9;
+}
+
+message Id {
+  IdType.Type type = 1;
+  string id = 2;
+  string app = 3;
+}
+
+message RequestHeader {
+  string request_id = 1;
+  string app = 3;
+  bytes auth_token_payload = 6;
+  ClientInfo client_info = 7;
+  Id requester_id = 10;
+}
+
+message ResponseHeader {
+  uint64 rpc_global_id = 2;
+  int64 txn_timestamp_usec = 4;
+}
+
+message ICEServerList {
+  repeated string urls = 1;
+  string username = 2;
+  string credential = 3;
+  string hostname = 5;
+  int64 max_rate_kbps = 10;
+}
+
+message ICEConfiguration {
+  Duration lifetime_duration = 1;
+  repeated ICEServerList ice_servers = 2;
+  string ice_transport_policy = 6;
+}
+
+message GetICEServerRequest {
+  RequestHeader header = 1;
+  bool unblock_me = 2;
+  string ice_config_preference = 3;
+}
+
+message GetICEServerResponse {
+  ResponseHeader header = 1;
+  ICEConfiguration ice_config = 4;
+}
