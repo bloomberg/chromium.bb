@@ -216,6 +216,8 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
   // Start rendering and return the promise.
   is_rendering_started_ = true;
   SetContextState(kRunning);
+  static_cast<OfflineAudioDestinationNode*>(destination())
+      ->SetDestinationBuffer(render_target);
   DestinationHandler().InitializeOfflineRenderThread(render_target);
   DestinationHandler().StartRendering();
 
@@ -359,8 +361,9 @@ void OfflineAudioContext::FireCompletionEvent() {
 
   // Avoid firing the event if the document has already gone away.
   if (GetExecutionContext()) {
-    AudioBuffer* rendered_buffer = DestinationHandler().RenderTarget();
-
+    AudioBuffer* rendered_buffer =
+        static_cast<OfflineAudioDestinationNode*>(destination())
+            ->DestinationBuffer();
     DCHECK(rendered_buffer);
     if (!rendered_buffer)
       return;

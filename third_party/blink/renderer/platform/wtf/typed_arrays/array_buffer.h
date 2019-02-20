@@ -81,6 +81,8 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 
   bool Transfer(ArrayBufferContents&);
   bool ShareContentsWith(ArrayBufferContents&);
+  // Documentation see DOMArrayBuffer.
+  bool ShareNonSharedForInternalUse(ArrayBufferContents&);
   bool IsNeutered() const { return is_neutered_; }
   bool IsShared() const { return contents_.IsShared(); }
 

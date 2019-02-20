@@ -41,6 +41,7 @@ namespace blink {
 class AudioBus;
 class AudioBufferOptions;
 class ExceptionState;
+class SharedAudioBuffer;
 
 class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -116,6 +117,8 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
+  std::unique_ptr<SharedAudioBuffer> CreateSharedAudioBuffer();
+
  private:
   static DOMFloat32Array* CreateFloat32ArrayOrNull(
       uint32_t length,
@@ -127,6 +130,28 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   uint32_t length_;
 
   HeapVector<Member<DOMFloat32Array>> channels_;
+};
+
+// Shared data that audio threads can hold onto.
+class SharedAudioBuffer final {
+ public:
+  explicit SharedAudioBuffer(AudioBuffer*);
+
+  unsigned numberOfChannels() const { return channels_.size(); }
+  uint32_t length() const { return length_; }
+  double duration() const {
+    return length() / static_cast<double>(sampleRate());
+  }
+  float sampleRate() const { return sample_rate_; }
+
+  const Vector<WTF::ArrayBufferContents>& channels() { return channels_; }
+
+  void Zero();
+
+ private:
+  float sample_rate_;
+  uint32_t length_;
+  Vector<WTF::ArrayBufferContents> channels_;
 };
 
 }  // namespace blink

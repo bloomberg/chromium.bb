@@ -47,7 +47,6 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     uint32_t frames_to_process,
     float sample_rate)
     : AudioDestinationHandler(node),
-      render_target_(nullptr),
       frames_processed_(0),
       frames_to_process_(frames_to_process),
       is_rendering_started_(false),
@@ -109,7 +108,7 @@ uint32_t OfflineAudioDestinationHandler::MaxChannelCount() const {
 
 void OfflineAudioDestinationHandler::StartRendering() {
   DCHECK(IsMainThread());
-  DCHECK(render_target_);
+  DCHECK(shared_render_target_);
   DCHECK(render_thread_task_runner_);
 
   // Rendering was not started. Starting now.
@@ -147,7 +146,7 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
     AudioBuffer* render_target) {
   DCHECK(IsMainThread());
 
-  render_target_ = render_target;
+  shared_render_target_ = render_target->CreateSharedAudioBuffer();
   render_bus_ = AudioBus::Create(render_target->numberOfChannels(),
                                  audio_utilities::kRenderQuantumFrames);
   DCHECK(render_bus_);
@@ -167,8 +166,8 @@ void OfflineAudioDestinationHandler::StartOfflineRendering() {
   if (!is_audio_context_initialized)
     return;
 
-  bool channels_match =
-      render_bus_->NumberOfChannels() == render_target_->numberOfChannels();
+  bool channels_match = render_bus_->NumberOfChannels() ==
+                        shared_render_target_->numberOfChannels();
   DCHECK(channels_match);
   if (!channels_match)
     return;
@@ -203,10 +202,12 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
       return;
     }
 
-    number_of_channels = render_target_->numberOfChannels();
+    number_of_channels = shared_render_target_->numberOfChannels();
     destinations.ReserveInitialCapacity(number_of_channels);
-    for (unsigned i = 0; i < number_of_channels; ++i)
-      destinations.push_back(render_target_->getChannelData(i).View()->Data());
+    for (unsigned i = 0; i < number_of_channels; ++i) {
+      destinations.push_back(
+          static_cast<float*>(shared_render_target_->channels()[i].Data()));
+    }
     ProcessHeap::CrossThreadPersistentMutex().unlock();
   }
 
@@ -415,6 +416,11 @@ OfflineAudioDestinationNode* OfflineAudioDestinationNode::Create(
     float sample_rate) {
   return MakeGarbageCollected<OfflineAudioDestinationNode>(
       *context, number_of_channels, frames_to_process, sample_rate);
+}
+
+void OfflineAudioDestinationNode::Trace(Visitor* visitor) {
+  visitor->Trace(destination_buffer_);
+  AudioDestinationNode::Trace(visitor);
 }
 
 }  // namespace blink
