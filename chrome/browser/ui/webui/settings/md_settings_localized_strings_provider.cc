@@ -60,6 +60,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -2183,7 +2184,7 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if defined(OS_CHROMEOS)
   const bool is_assistant_allowed =
-      arc::IsAssistantAllowedForProfile(profile) ==
+      assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED;
 #endif
 

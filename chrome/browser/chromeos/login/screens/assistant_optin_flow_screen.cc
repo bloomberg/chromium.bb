@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,7 +40,7 @@ void AssistantOptInFlowScreen::Show() {
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (chromeos::switches::IsAssistantEnabled() &&
-      arc::IsAssistantAllowedForProfile(
+      assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) ==
           ash::mojom::AssistantAllowedState::ALLOWED) {
     view_->Show();

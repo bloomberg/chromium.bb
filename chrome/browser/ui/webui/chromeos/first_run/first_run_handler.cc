@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
@@ -18,7 +18,7 @@ namespace {
 
 bool IsAssistantAllowed() {
   return ash::mojom::AssistantAllowedState::ALLOWED ==
-         arc::IsAssistantAllowedForProfile(
+         assistant::IsAssistantAllowedForProfile(
              ProfileManager::GetActiveUserProfile());
 }
 
