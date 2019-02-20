@@ -33,9 +33,9 @@ class ContainedHomeBridge {
   }
 
   /** @override */
-  getAccessToken() {
+  getAccessToken(scopes) {
     return new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({'scopes': []}, token => {
+      chrome.identity.getAuthToken({'scopes': scopes}, token => {
         if (token) {
           resolve(token);
         } else {

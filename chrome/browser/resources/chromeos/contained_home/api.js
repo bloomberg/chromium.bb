@@ -25,10 +25,12 @@ containedHome.Bridge = class {
   addListener(listener) {}
 
   /**
-   * Returns an access token with scope for the contained home experience.
+   * Returns an access token with the requested scopes.
+   * @param {!Array<string>} scopes List of scopes to use when obtaining access
+   *     token.
    * @return {!Promise<string>} Promise for the access token.
    */
-  getAccessToken() {}
+  getAccessToken(scopes) {}
 
   /**
    * Returns a list of apps installed in the user session.
