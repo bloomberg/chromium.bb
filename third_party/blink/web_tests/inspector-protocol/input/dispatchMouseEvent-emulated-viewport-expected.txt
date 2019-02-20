@@ -1,3 +1,10 @@
 Tests Input.dispatchMouseEvent method after emulating a viewport.
+Emulate mobile viewport and click
+Clicked
+
+Click with viewport tag
+Clicked
+
+Click after adding a blank frame
 Clicked
 

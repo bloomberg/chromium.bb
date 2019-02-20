@@ -452,6 +452,9 @@ void InputHandler::SetRenderer(int process_host_id,
   WebContents* new_web_contents = WebContents::FromRenderFrameHost(frame_host);
 
   host_ = frame_host;
+  // TODO(crbug.com/929806) The new renderer might have a different page scale.
+  // It emits a changed event iff the new page scale is not 1 .
+  page_scale_factor_ = 1.0;
 
   if (ignore_input_events_ && old_web_contents != new_web_contents) {
     if (old_web_contents)
