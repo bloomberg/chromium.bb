@@ -14,7 +14,7 @@ cr.define('usb_internals', function() {
 
       const pageHandler = mojom.UsbInternalsPageHandler.getProxy();
       this.usbManagerTest = new device.mojom.UsbDeviceManagerTestProxy;
-      pageHandler.bindTestInterface(this.usbManagerTest.createRequest());
+      pageHandler.bindTestInterface(this.usbManagerTest.$.createRequest());
 
       cr.ui.decorate('tabbox', cr.ui.TabBox);
       $('add-test-device-form').addEventListener('submit', (event) => {
