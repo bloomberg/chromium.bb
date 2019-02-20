@@ -6,6 +6,7 @@
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_CONTENT_TRANSLATE_DRIVER_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +16,7 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 class NavigationController;
@@ -122,6 +124,13 @@ class ContentTranslateDriver : public TranslateDriver,
 
   bool IsDefaultSearchEngineOriginator(
       const url::Origin& originating_origin) const;
+
+  // Creates a URLLoaderFactory that may be used by the translate scripts that
+  // get injected into isolated worlds within the page to be translated.  Such
+  // scripts (or rather, their isolated worlds) are associated with a
+  // translate-specific origin like https://translate.googleapis.com and use
+  // this origin as |request_initiator| of http requests.
+  network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory();
 
   // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;
