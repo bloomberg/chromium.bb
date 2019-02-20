@@ -3,8 +3,11 @@
       await testRunner.startBlank('Target.setAutoAttach should report all workers before returning.');
 
   await session.evaluate(`
-    window.w1 = new Worker('${testRunner.url('../resources/worker-with-throw.js')}');
-    window.w2 = new Worker('${testRunner.url('../resources/worker-with-throw.js')}');
+    const w1 = new Worker('${testRunner.url('../resources/worker-console-worker.js')}');
+    const promise1 = new Promise(x => w1.onmessage = x);
+    const w2 = new Worker('${testRunner.url('../resources/worker-console-worker.js')}');
+    const promise2 = new Promise(x => w2.onmessage = x);
+    Promise.all([promise1, promise2]);
   `);
 
   let resolved = false;
