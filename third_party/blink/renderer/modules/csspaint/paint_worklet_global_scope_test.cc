@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -76,15 +77,15 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     return thread;
   }
 
-  using TestCalback = void (PaintWorkletGlobalScopeTest::*)(WorkerThread*,
-                                                            WaitableEvent*);
+  using TestCalback = void (
+      PaintWorkletGlobalScopeTest::*)(WorkerThread*, base::WaitableEvent*);
 
   // Create a new paint worklet and run the callback task on it. Terminate the
   // worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
         CreateAnimationAndPaintWorkletThread(nullptr);
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(callback, CrossThreadUnretained(this),
@@ -98,7 +99,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
   void RunScriptOnWorklet(String source_code,
                           WorkerThread* thread,
-                          WaitableEvent* waitable_event) {
+                          base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<PaintWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =
@@ -112,7 +113,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunBasicParsingTestOnWorklet(WorkerThread* thread,
-                                    WaitableEvent* waitable_event) {
+                                    base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<PaintWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =

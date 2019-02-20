@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -55,8 +54,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
 
   // Attempts to run some simple script for |thread|.
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
-    std::unique_ptr<WaitableEvent> wait_event =
-        std::make_unique<WaitableEvent>();
+    std::unique_ptr<base::WaitableEvent> wait_event =
+        std::make_unique<base::WaitableEvent>();
     thread->GetWorkerBackingThread().BackingThread().PostTask(
         FROM_HERE,
         CrossThreadBind(
@@ -69,7 +68,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 
  private:
-  void ExecuteScriptInWorklet(WorkerThread* thread, WaitableEvent* wait_event) {
+  void ExecuteScriptInWorklet(WorkerThread* thread,
+                              base::WaitableEvent* wait_event) {
     ScriptState* script_state =
         thread->GlobalScope()->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);

@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/database_task.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_context.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
@@ -35,7 +36,8 @@
 
 namespace blink {
 
-DatabaseTask::DatabaseTask(Database* database, WaitableEvent* complete_event)
+DatabaseTask::DatabaseTask(Database* database,
+                           base::WaitableEvent* complete_event)
     : database_(database),
       complete_event_(complete_event)
 #if DCHECK_IS_ON()
@@ -85,12 +87,13 @@ void DatabaseTask::Run() {
 // Opens the database file and verifies the version matches the expected
 // version.
 
-Database::DatabaseOpenTask::DatabaseOpenTask(Database* database,
-                                             bool set_version_in_new_database,
-                                             WaitableEvent* complete_event,
-                                             DatabaseError& error,
-                                             String& error_message,
-                                             bool& success)
+Database::DatabaseOpenTask::DatabaseOpenTask(
+    Database* database,
+    bool set_version_in_new_database,
+    base::WaitableEvent* complete_event,
+    DatabaseError& error,
+    String& error_message,
+    bool& success)
     : DatabaseTask(database, complete_event),
       set_version_in_new_database_(set_version_in_new_database),
       error_(error),
@@ -117,8 +120,9 @@ const char* Database::DatabaseOpenTask::DebugTaskName() const {
 // *** DatabaseCloseTask ***
 // Closes the database.
 
-Database::DatabaseCloseTask::DatabaseCloseTask(Database* database,
-                                               WaitableEvent* complete_event)
+Database::DatabaseCloseTask::DatabaseCloseTask(
+    Database* database,
+    base::WaitableEvent* complete_event)
     : DatabaseTask(database, complete_event) {}
 
 void Database::DatabaseCloseTask::DoPerformTask() {
@@ -168,7 +172,7 @@ const char* Database::DatabaseTransactionTask::DebugTaskName() const {
 
 Database::DatabaseTableNamesTask::DatabaseTableNamesTask(
     Database* database,
-    WaitableEvent* complete_event,
+    base::WaitableEvent* complete_event,
     Vector<String>& names)
     : DatabaseTask(database, complete_event), table_names_(names) {
   DCHECK(complete_event);  // A task with output parameters is supposed to be

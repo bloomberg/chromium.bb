@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 
@@ -233,8 +232,8 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
       } else {
         // If this node is in the offline audio context, use the
         // waitable event to synchronize to the offline rendering thread.
-        std::unique_ptr<WaitableEvent> waitable_event =
-            std::make_unique<WaitableEvent>();
+        std::unique_ptr<base::WaitableEvent> waitable_event =
+            std::make_unique<base::WaitableEvent>();
 
         PostCrossThreadTask(
             *task_runner_, FROM_HERE,
@@ -289,7 +288,7 @@ void ScriptProcessorHandler::FireProcessEvent(uint32_t double_buffer_index) {
 
 void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
     uint32_t double_buffer_index,
-    WaitableEvent* waitable_event) {
+    base::WaitableEvent* waitable_event) {
   DCHECK(IsMainThread());
 
   if (!Context() || !Context()->GetExecutionContext())

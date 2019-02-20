@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
@@ -64,14 +65,14 @@ WorkerBackingThread& AnimationAndPaintWorkletThread::GetWorkerBackingThread() {
               ->GetThread();
 }
 
-static void CollectAllGarbageOnThread(WaitableEvent* done_event) {
+static void CollectAllGarbageOnThread(base::WaitableEvent* done_event) {
   blink::ThreadState::Current()->CollectAllGarbage();
   done_event->Signal();
 }
 
 void AnimationAndPaintWorkletThread::CollectAllGarbage() {
   DCHECK(IsMainThread());
-  WaitableEvent done_event;
+  base::WaitableEvent done_event;
   auto* holder =
       WorkletThreadHolder<AnimationAndPaintWorkletThread>::GetInstance();
   if (!holder)

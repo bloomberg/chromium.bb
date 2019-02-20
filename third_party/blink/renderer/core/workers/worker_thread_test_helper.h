@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -115,9 +115,9 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
   void WaitForInit() {
-    WaitableEvent completion_event;
+    base::WaitableEvent completion_event;
     GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(&WaitableEvent::Signal,
+        FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
                                    CrossThreadUnretained(&completion_event)));
     completion_event.Wait();
   }
@@ -160,7 +160,7 @@ class MockWorkerReportingProxy final : public WorkerReportingProxy {
   void WaitUntilScriptEvaluation() { script_evaluation_event_.Wait(); }
 
  private:
-  WaitableEvent script_evaluation_event_;
+  base::WaitableEvent script_evaluation_event_;
 };
 
 }  // namespace blink

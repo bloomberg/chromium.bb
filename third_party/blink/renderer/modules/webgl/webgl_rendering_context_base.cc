@@ -104,7 +104,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -622,7 +621,7 @@ struct ContextProviderCreationInfo {
 
 static void CreateContextProviderOnMainThread(
     ContextProviderCreationInfo* creation_info,
-    WaitableEvent* waitable_event) {
+    base::WaitableEvent* waitable_event) {
   DCHECK(IsMainThread());
   // Ask for gpu compositing mode when making the context. The context will be
   // lost if the mode changes.
@@ -641,7 +640,7 @@ CreateContextProviderOnWorkerThread(
     Platform::GraphicsInfo* gl_info,
     bool* using_gpu_compositing,
     const KURL& url) {
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   ContextProviderCreationInfo creation_info;
   creation_info.context_attributes = context_attributes;
   creation_info.gl_info = gl_info;
