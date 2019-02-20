@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//build/toolchain/toolchain.gni")
@@ -1684,7 +1685,7 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
     ]
   }
 
-  if (is_debug) {
+  if (is_debug || dcheck_always_on) {
     deps += [ "//components/crash/core/common:crash_key" ]
   }
 }
