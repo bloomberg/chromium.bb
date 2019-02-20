@@ -10,12 +10,26 @@
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
+namespace {
+
+const char kInactiveFrame[] =
+    "XRFrame access outside the callback that produced it is invalid.";
+}
+
 XRFrame::XRFrame(XRSession* session) : session_(session) {}
 
-XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space) const {
+XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
+                                     ExceptionState& exception_state) const {
+  if (!active_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInactiveFrame);
+    return nullptr;
+  }
+
   session_->LogGetPose();
 
   // Must use a reference space created from the same session.
@@ -46,7 +60,14 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space) const {
 }
 
 XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
-                                   XRReferenceSpace* reference_space) const {
+                                   XRReferenceSpace* reference_space,
+                                   ExceptionState& exception_state) const {
+  if (!active_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInactiveFrame);
+    return nullptr;
+  }
+
   if (!input_source || !reference_space) {
     return nullptr;
   }
@@ -121,6 +142,10 @@ XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
 
 void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {
   base_pose_matrix_ = TransformationMatrix::Create(base_pose_matrix);
+}
+
+void XRFrame::Deactivate() {
+  active_ = false;
 }
 
 void XRFrame::Trace(blink::Visitor* visitor) {

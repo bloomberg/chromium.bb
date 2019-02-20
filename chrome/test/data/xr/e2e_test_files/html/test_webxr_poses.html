@@ -17,6 +17,7 @@ test can query for whether each submitted frame used the correct pose.
     <script>
       var frame_id = 0;
       var frame_data_array = {};
+      var pose_array = {};
       // We exit presentation before checking stuff that needs the frame of
       // reference, so we need to cache its value.
       var cached_frame_of_ref = null;
@@ -42,13 +43,12 @@ test can query for whether each submitted frame used the correct pose.
 
       function checkFrameView(frame_id, eye, expected) {
         let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getViewerPose(cached_frame_of_ref);
+        let pose = pose_array[frame_id];
         return MatrixCompare(pose.views[eye].viewMatrix, expected);
       }
 
       function checkFramePose(frame_id, expected) {
-        let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getViewerPose(cached_frame_of_ref);
+        let pose = pose_array[frame_id];
         if (!pose) {
           console.log("unexpected - null pose");
           return false;
@@ -63,6 +63,7 @@ test can query for whether each submitted frame used the correct pose.
         frame_id++;
         frame_data_array[frame_id] = frame;
         cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentRefSpace;
+        pose_array[frame_id] = frame.getViewerPose(cached_frame_of_ref);
 
         var encoded_frame_id = {};
         encoded_frame_id.r = frame_id % 256;
