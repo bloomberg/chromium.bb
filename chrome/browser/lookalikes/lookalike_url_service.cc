@@ -77,20 +77,20 @@ LookalikeUrlService* LookalikeUrlService::Get(Profile* profile) {
   return LookalikeUrlServiceFactory::GetForProfile(profile);
 }
 
-void LookalikeUrlService::GetEngagedSites(EngagedSitesCallback callback) {
+bool LookalikeUrlService::UpdateEngagedSites(EngagedSitesCallback callback) {
   const base::Time now = clock_->Now();
 
   if (!last_engagement_fetch_time_.is_null()) {
     const base::TimeDelta elapsed = now - last_engagement_fetch_time_;
     if (elapsed <
         base::TimeDelta::FromSeconds(kEngagedSiteUpdateIntervalInSeconds)) {
-      std::move(callback).Run(engaged_sites_);
-      return;
+      return false;
     }
   }
+
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &SiteEngagementService::GetAllDetailsInBackground, now,
@@ -98,15 +98,15 @@ void LookalikeUrlService::GetEngagedSites(EngagedSitesCallback callback) {
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&LookalikeUrlService::OnFetchEngagedSites,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
+  return true;
+}
+
+const std::set<GURL> LookalikeUrlService::GetLatestEngagedSites() const {
+  return engaged_sites_;
 }
 
 void LookalikeUrlService::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
-}
-
-void LookalikeUrlService::ClearEngagedSitesForTesting() {
-  engaged_sites_.clear();
-  last_engagement_fetch_time_ = clock_->Now();
 }
 
 void LookalikeUrlService::OnFetchEngagedSites(
@@ -120,7 +120,7 @@ void LookalikeUrlService::OnFetchEngagedSites(
                                       blink::mojom::EngagementLevel::MEDIUM)) {
       continue;
     }
-    engaged_sites_.push_back(detail.origin);
+    engaged_sites_.insert(detail.origin);
   }
 
   last_engagement_fetch_time_ = clock_->Now();

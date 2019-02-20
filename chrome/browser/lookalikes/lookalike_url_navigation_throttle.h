@@ -1,36 +1,35 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
-#define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_THROTTLE_H_
+#define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_THROTTLE_H_
 
+#include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
+#include "content/public/browser/navigation_throttle.h"
 
 namespace content {
 class NavigationHandle;
-}
+}  // namespace content
 
 class Profile;
 
-// Observes navigations and shows an infobar if the navigated domain name
+// Observes navigations and shows an interstitial if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
-class LookalikeUrlNavigationObserver
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<LookalikeUrlNavigationObserver> {
+class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
  public:
   // Used for metrics. Multiple events can occur per navigation.
   enum class NavigationSuggestionEvent {
     kNone = 0,
-    kInfobarShown = 1,
-    kLinkClicked = 2,
+    // Interstitial results recorded using security_interstitials::MetricsHelper
+    // kInfobarShown = 1,
+    // kLinkClicked = 2,
     kMatchTopSite = 3,
     kMatchSiteEngagement = 4,
     kMatchEditDistance = 5,
@@ -65,27 +64,35 @@ class LookalikeUrlNavigationObserver
 
   static const char kHistogramName[];
 
-  static void CreateForWebContents(content::WebContents* web_contents);
+  explicit LookalikeUrlNavigationThrottle(content::NavigationHandle* handle);
+  ~LookalikeUrlNavigationThrottle() override;
 
-  explicit LookalikeUrlNavigationObserver(content::WebContents* web_contents);
-  ~LookalikeUrlNavigationObserver() override;
+  // content::NavigationThrottle:
+  ThrottleCheckResult WillProcessResponse() override;
+  ThrottleCheckResult WillRedirectRequest() override;
+  const char* GetNameForLogging() override;
 
-  // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  static std::unique_ptr<LookalikeUrlNavigationThrottle>
+  MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
  private:
-  friend class content::WebContentsUserData<LookalikeUrlNavigationObserver>;
-  FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationObserverTest,
+  FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationThrottleTest,
                            IsEditDistanceAtMostOne);
 
-  DomainInfo GetDomainInfo(const GURL& url);
+  ThrottleCheckResult HandleThrottleRequest(const GURL& url);
 
-  // Performs top domain and engaged site checks on the navigated |url|. Uses
-  // |engaged_sites| for the engaged site checks.
-  void PerformChecks(const GURL& url,
-                     const DomainInfo& navigated_domain,
-                     const std::vector<GURL>& engaged_sites);
+  static DomainInfo GetDomainInfo(const GURL& url);
+
+  // Performs synchronous top domain and engaged site checks on the navigated
+  // |url|. Uses |engaged_sites| for the engaged site checks.
+  ThrottleCheckResult PerformChecks(const GURL& url,
+                                    const DomainInfo& navigated_domain,
+                                    const std::set<GURL>& engaged_sites);
+
+  // A void-returning variant, only used with deferred throttle results.
+  void PerformChecksDeferred(const GURL& url,
+                             const DomainInfo& navigated_domain,
+                             const std::set<GURL>& engaged_sites);
 
   // Returns true if a domain is visually similar to the hostname of |url|. The
   // matching domain can be a top domain or an engaged site. Similarity check
@@ -93,7 +100,7 @@ class LookalikeUrlNavigationObserver
   // returns true, match details will be written into |matched_domain| and
   // |match_type|. They cannot be nullptr.
   bool GetMatchingDomain(const DomainInfo& navigated_domain,
-                         const std::vector<GURL>& engaged_sites,
+                         const std::set<GURL>& engaged_sites,
                          std::string* matched_domain,
                          MatchType* match_type);
 
@@ -107,10 +114,13 @@ class LookalikeUrlNavigationObserver
   // to |domain_and_registry|.
   static std::string GetSimilarDomainFromTop500(const DomainInfo& domain_info);
 
-  Profile* profile_;
-  base::WeakPtrFactory<LookalikeUrlNavigationObserver> weak_factory_;
+  ThrottleCheckResult ShowInterstitial(const GURL& safe_domain,
+                                       const GURL& url);
 
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  bool interstitials_enabled_;
+
+  Profile* profile_;
+  base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_;
 };
 
-#endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
+#endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_THROTTLE_H_

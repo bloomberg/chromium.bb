@@ -34,23 +34,7 @@ void AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
       base::WrapUnique(new AlternateNavInfoBarDelegate(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
           std::make_unique<AutocompleteMatch>(match), match.destination_url,
-          search_url, base::OnceClosure()))));
-}
-
-// static
-void AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
-    content::WebContents* web_contents,
-    const base::string16& text,
-    const GURL& destination_url,
-    const GURL& original_url,
-    base::OnceClosure link_clicked_callback) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
-      base::WrapUnique(new AlternateNavInfoBarDelegate(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
-          nullptr, destination_url, original_url,
-          std::move(link_clicked_callback)))));
+          search_url))));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
@@ -58,15 +42,13 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     const base::string16& text,
     std::unique_ptr<AutocompleteMatch> match,
     const GURL& destination_url,
-    const GURL& original_url,
-    base::OnceClosure link_clicked_callback)
+    const GURL& original_url)
     : infobars::InfoBarDelegate(),
       profile_(profile),
       text_(text),
       match_(std::move(match)),
       destination_url_(destination_url),
-      original_url_(original_url),
-      link_clicked_callback_(std::move(link_clicked_callback)) {
+      original_url_(original_url) {
   if (match_)
     DCHECK_EQ(destination_url_, match_->destination_url);
 
@@ -98,28 +80,19 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
       HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::IMPLICIT_ACCESS);
 
-  if (match_) {
-    // If there is an autocomplete match, this is an omnibox navigation. Tell
-    // the shortcuts backend to remove the shortcut it added for the
-    // original search and instead add one reflecting this navigation.
-    scoped_refptr<ShortcutsBackend> shortcuts_backend(
-        ShortcutsBackendFactory::GetForProfile(profile_));
-    if (shortcuts_backend.get()) {  // May be NULL in incognito.
-      shortcuts_backend->DeleteShortcutsWithURL(original_url_);
-      shortcuts_backend->AddOrUpdateShortcut(text_, *match_);
-    }
-
-    // Tell the history system to remove any saved search term for the search.
-    if (history_service)
-      history_service->DeleteKeywordSearchTermForURL(original_url_);
-  } else {
-    // This is a lookalike URL navigation suggestion. Remove the current entry.
-    if (history_service)
-      history_service->DeleteURL(original_url_);
+  // Tell the shortcuts backend to remove the shortcut it added for the
+  // original search and instead add one reflecting this navigation.
+  scoped_refptr<ShortcutsBackend> shortcuts_backend(
+      ShortcutsBackendFactory::GetForProfile(profile_));
+  if (shortcuts_backend.get()) {  // May be NULL in incognito.
+    shortcuts_backend->DeleteShortcutsWithURL(original_url_);
+    shortcuts_backend->AddOrUpdateShortcut(text_, *match_);
   }
 
-  if (!link_clicked_callback_.is_null())
-    std::move(link_clicked_callback_).Run();
+  // Tell the history system to remove any saved search term for the search.
+  if (history_service)
+    history_service->DeleteKeywordSearchTermForURL(original_url_);
+
   // Pretend the user typed this URL, so that navigating to it will be the
   // default action when it's typed again in the future.
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(

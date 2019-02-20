@@ -1,22 +1,29 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/lookalike_url_navigation_observer.h"
+#include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
+
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_allowlist.h"
+#include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
+#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/common/chrome_features.h"
-#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
-#include "components/url_formatter/idn_spoof_checker.h"
 #include "components/url_formatter/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -27,13 +34,14 @@ namespace {
 
 #include "components/url_formatter/top_domains/top500-domains-inc.cc"
 
-using MatchType = LookalikeUrlNavigationObserver::MatchType;
+using MatchType = LookalikeUrlNavigationThrottle::MatchType;
 using NavigationSuggestionEvent =
-    LookalikeUrlNavigationObserver::NavigationSuggestionEvent;
+    LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
+typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
 
 void RecordEvent(
-    LookalikeUrlNavigationObserver::NavigationSuggestionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(LookalikeUrlNavigationObserver::kHistogramName,
+    LookalikeUrlNavigationThrottle::NavigationSuggestionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(LookalikeUrlNavigationThrottle::kHistogramName,
                             event);
 }
 
@@ -42,15 +50,16 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   DCHECK(!skeletons1.empty());
   DCHECK(!skeletons2.empty());
   for (const std::string& skeleton1 : skeletons1) {
-    if (base::ContainsKey(skeletons2, skeleton1))
+    if (base::ContainsKey(skeletons2, skeleton1)) {
       return true;
+    }
   }
   return false;
 }
 
 // Returns true if the domain given by |domain_info| is a top domain.
 bool IsTopDomain(
-    const LookalikeUrlNavigationObserver::DomainInfo& domain_info) {
+    const LookalikeUrlNavigationThrottle::DomainInfo& domain_info) {
   // Top domains are only accessible through their skeletons, so query the top
   // domains trie for each skeleton of this domain.
   for (const std::string& skeleton : domain_info.skeletons) {
@@ -77,8 +86,8 @@ std::string GetETLDPlusOne(const GURL& url) {
 // |domain_and_registry| may be attempting to spoof, based on skeleton
 // comparison.
 std::string GetMatchingSiteEngagementDomain(
-    const std::vector<GURL>& engaged_sites,
-    const LookalikeUrlNavigationObserver::DomainInfo& navigated_domain) {
+    const std::set<GURL>& engaged_sites,
+    const LookalikeUrlNavigationThrottle::DomainInfo& navigated_domain) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
   std::map<std::string, url_formatter::Skeletons>
       domain_and_registry_to_skeleton;
@@ -93,11 +102,13 @@ std::string GetMatchingSiteEngagementDomain(
     const std::string engaged_domain_and_registry =
         GetETLDPlusOne(engaged_site);
     // eTLD+1 can be empty for private domains (e.g. http://test).
-    if (engaged_domain_and_registry.empty())
+    if (engaged_domain_and_registry.empty()) {
       continue;
+    }
 
-    if (navigated_domain.domain_and_registry == engaged_domain_and_registry)
+    if (navigated_domain.domain_and_registry == engaged_domain_and_registry) {
       return std::string();
+    }
 
     // Multiple domains can map to the same eTLD+1, avoid skeleton generation
     // when possible.
@@ -118,8 +129,9 @@ std::string GetMatchingSiteEngagementDomain(
       skeletons = it->second;
     }
 
-    if (SkeletonsMatch(navigated_domain.skeletons, skeletons))
+    if (SkeletonsMatch(navigated_domain.skeletons, skeletons)) {
       return engaged_site.host();
+    }
   }
   return std::string();
 }
@@ -127,10 +139,10 @@ std::string GetMatchingSiteEngagementDomain(
 }  // namespace
 
 // static
-const char LookalikeUrlNavigationObserver::kHistogramName[] =
+const char LookalikeUrlNavigationThrottle::kHistogramName[] =
     "NavigationSuggestion.Event";
 
-LookalikeUrlNavigationObserver::DomainInfo::DomainInfo(
+LookalikeUrlNavigationThrottle::DomainInfo::DomainInfo(
     const std::string& arg_domain_and_registry,
     const url_formatter::IDNConversionResult& arg_idn_result,
     const url_formatter::Skeletons& arg_skeletons)
@@ -138,56 +150,122 @@ LookalikeUrlNavigationObserver::DomainInfo::DomainInfo(
       idn_result(arg_idn_result),
       skeletons(arg_skeletons) {}
 
-LookalikeUrlNavigationObserver::DomainInfo::~DomainInfo() = default;
+LookalikeUrlNavigationThrottle::DomainInfo::~DomainInfo() = default;
 
-LookalikeUrlNavigationObserver::DomainInfo::DomainInfo(const DomainInfo&) =
+LookalikeUrlNavigationThrottle::DomainInfo::DomainInfo(const DomainInfo&) =
     default;
 
-LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
+    content::NavigationHandle* navigation_handle)
+    : content::NavigationThrottle(navigation_handle),
+      interstitials_enabled_(base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI)),
+      profile_(Profile::FromBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext())),
       weak_factory_(this) {}
 
-LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
+LookalikeUrlNavigationThrottle::~LookalikeUrlNavigationThrottle() {}
 
-void LookalikeUrlNavigationObserver::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
+ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
+    const GURL& url) {
+  content::NavigationHandle* handle = navigation_handle();
+  content::WebContents* web_contents = handle->GetWebContents();
+
   // Ignore subframe and same document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
+  if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
-  // If the navigation was not committed, it means either the page was a
-  // download or error 204/205, or the navigation never left the previous
-  // URL. Basically, this isn't a problem since we stayed at the existing URL.
-  // Also ignore any navigation errors.
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->GetNetErrorCode() != net::OK)
-    return;
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
-  const GURL url = navigation_handle->GetURL();
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  // If the user has engaged with this site, don't show any lookalike
-  // navigation suggestions.
-  if (SiteEngagementService::Get(profile_)->IsEngagementAtLeast(
-          url, blink::mojom::EngagementLevel::MEDIUM))
-    return;
+  // If the URL is in the allowlist, don't show any warning.
+  LookalikeUrlAllowlist* allowlist =
+      LookalikeUrlAllowlist::GetOrCreateAllowlist(web_contents);
+  if (allowlist->IsDomainInList(url.host())) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
   const DomainInfo navigated_domain = GetDomainInfo(url);
   if (navigated_domain.domain_and_registry.empty() ||
-      IsTopDomain(navigated_domain))
-    return;
+      IsTopDomain(navigated_domain)) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
-  LookalikeUrlService::Get(profile_)->GetEngagedSites(
-      base::BindOnce(&LookalikeUrlNavigationObserver::PerformChecks,
-                     weak_factory_.GetWeakPtr(), url, navigated_domain));
+  LookalikeUrlService* service = LookalikeUrlService::Get(profile_);
+  if (service->UpdateEngagedSites(
+          base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
+                         weak_factory_.GetWeakPtr(), url, navigated_domain))) {
+    // If we're not going to show an interstitial, there's no reason to delay
+    // the navigation any further.
+    if (!interstitials_enabled_) {
+      return content::NavigationThrottle::PROCEED;
+    }
+    return content::NavigationThrottle::DEFER;
+  }
+
+  return PerformChecks(url, navigated_domain, service->GetLatestEngagedSites());
 }
 
-LookalikeUrlNavigationObserver::DomainInfo
-LookalikeUrlNavigationObserver::GetDomainInfo(const GURL& url) {
+ThrottleCheckResult LookalikeUrlNavigationThrottle::WillProcessResponse() {
+  if (navigation_handle()->GetNetErrorCode() != net::OK) {
+    return content::NavigationThrottle::PROCEED;
+  }
+  return HandleThrottleRequest(navigation_handle()->GetURL());
+}
+
+ThrottleCheckResult LookalikeUrlNavigationThrottle::WillRedirectRequest() {
+  const std::vector<GURL>& chain = navigation_handle()->GetRedirectChain();
+
+  // WillRedirectRequest is called after a redirect occurs, so the end of the
+  // chain is the URL that was redirected to. We need to check the preceding URL
+  // that caused the redirection. The final URL in the chain is checked either:
+  //  - after the next redirection (when there is a longer chain), or
+  //  - by WillProcessResponse (before content is rendered).
+  if (chain.size() < 2) {
+    return content::NavigationThrottle::PROCEED;
+  }
+  return HandleThrottleRequest(chain[chain.size() - 2]);
+}
+
+const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {
+  return "LookalikeUrlNavigationThrottle";
+}
+
+ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
+    const GURL& safe_url,
+    const GURL& url) {
+  content::NavigationHandle* handle = navigation_handle();
+  content::WebContents* web_contents = handle->GetWebContents();
+
+  auto controller = std::make_unique<LookalikeUrlControllerClient>(
+      web_contents, url, safe_url);
+
+  std::unique_ptr<LookalikeUrlInterstitialPage> blocking_page(
+      new LookalikeUrlInterstitialPage(web_contents, safe_url,
+                                       std::move(controller)));
+
+  base::Optional<std::string> error_page_contents =
+      blocking_page->GetHTMLContents();
+
+  security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
+      web_contents, handle->GetNavigationId(), std::move(blocking_page));
+
+  return ThrottleCheckResult(content::NavigationThrottle::CANCEL,
+                             net::ERR_BLOCKED_BY_CLIENT, error_page_contents);
+}
+
+std::unique_ptr<LookalikeUrlNavigationThrottle>
+LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
+    content::NavigationHandle* navigation_handle) {
+  // For metrics, we always insert the throttle
+  return std::make_unique<LookalikeUrlNavigationThrottle>(navigation_handle);
+}
+
+// static
+LookalikeUrlNavigationThrottle::DomainInfo
+LookalikeUrlNavigationThrottle::GetDomainInfo(const GURL& url) {
   // Perform all computations on eTLD+1.
   const std::string domain_and_registry = GetETLDPlusOne(url);
   // eTLD+1 can be empty for private domains.
@@ -203,15 +281,42 @@ LookalikeUrlNavigationObserver::GetDomainInfo(const GURL& url) {
   return DomainInfo(domain_and_registry, idn_result, skeletons);
 }
 
-void LookalikeUrlNavigationObserver::PerformChecks(
+void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
     const GURL& url,
     const DomainInfo& navigated_domain,
-    const std::vector<GURL>& engaged_sites) {
+    const std::set<GURL>& engaged_sites) {
+  ThrottleCheckResult result = LookalikeUrlNavigationThrottle::PerformChecks(
+      url, navigated_domain, engaged_sites);
+
+  if (!interstitials_enabled_) {
+    return;
+  }
+
+  if (result.action() == content::NavigationThrottle::PROCEED) {
+    Resume();
+    return;
+  }
+
+  CancelDeferredNavigation(result);
+}
+
+ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
+    const GURL& url,
+    const DomainInfo& navigated_domain,
+    const std::set<GURL>& engaged_sites) {
   std::string matched_domain;
   MatchType match_type;
+
+  // Ensure that this URL is not already engaged. We can't use the synchronous
+  // SiteEngagementService::IsEngagementAtLeast as it has side effects. We check
+  // in PerformChecks to ensure we have up-to-date engaged_sites.
+  if (base::ContainsKey(engaged_sites, url.GetOrigin())) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
                          &match_type)) {
-    return;
+    return content::NavigationThrottle::PROCEED;
   }
 
   DCHECK(!matched_domain.empty());
@@ -222,24 +327,22 @@ void LookalikeUrlNavigationObserver::PerformChecks(
 
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   CHECK(ukm_recorder);
-  ukm::SourceId source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents());
+  ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::LookalikeUrl_NavigationSuggestion(source_id)
       .SetMatchType(static_cast<int>(match_type))
       .Record(ukm_recorder);
 
-  if (base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestionsUI)) {
-    RecordEvent(NavigationSuggestionEvent::kInfobarShown);
-    AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
-        web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
-        base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
+  if (interstitials_enabled_) {
+    return ShowInterstitial(suggested_url, url);
   }
+
+  return content::NavigationThrottle::PROCEED;
 }
 
-bool LookalikeUrlNavigationObserver::GetMatchingDomain(
+bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
     const DomainInfo& navigated_domain,
-    const std::vector<GURL>& engaged_sites,
+    const std::set<GURL>& engaged_sites,
     std::string* matched_domain,
     MatchType* match_type) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
@@ -286,7 +389,7 @@ bool LookalikeUrlNavigationObserver::GetMatchingDomain(
 }
 
 // static
-bool LookalikeUrlNavigationObserver::IsEditDistanceAtMostOne(
+bool LookalikeUrlNavigationThrottle::IsEditDistanceAtMostOne(
     const base::string16& str1,
     const base::string16& str2) {
   if (str1.size() > str2.size() + 1 || str2.size() > str1.size() + 1) {
@@ -329,7 +432,7 @@ bool LookalikeUrlNavigationObserver::IsEditDistanceAtMostOne(
 }
 
 // static
-std::string LookalikeUrlNavigationObserver::GetSimilarDomainFromTop500(
+std::string LookalikeUrlNavigationThrottle::GetSimilarDomainFromTop500(
     const DomainInfo& navigated_domain) {
   if (!url_formatter::top_domains::IsEditDistanceCandidate(
           navigated_domain.domain_and_registry)) {
@@ -361,16 +464,3 @@ std::string LookalikeUrlNavigationObserver::GetSimilarDomainFromTop500(
   }
   return std::string();
 }
-
-// static
-void LookalikeUrlNavigationObserver::CreateForWebContents(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(),
-        std::make_unique<LookalikeUrlNavigationObserver>(web_contents));
-  }
-}
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(LookalikeUrlNavigationObserver)
