@@ -227,6 +227,11 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
       this.reader_.stop();
   }
 
+  /** @export */
+  close() {
+    this.cleanupAndFlushPendingResponses_('Message pipe closed.');
+  }
+
   /**
    * @return {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter}
    * @export
@@ -251,7 +256,7 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
 
     // The pipe has already been closed, so just drop the message.
     if (!this.reader_ || this.reader_.isStopped())
-      return Promise.reject();
+      return Promise.reject(new Error('The pipe has already been closed.'));
 
     const requestId = this.nextRequestId_++;
     const value = {};
@@ -319,12 +324,20 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
    * @private
    */
   onError_(opt_reason) {
+    this.cleanupAndFlushPendingResponses_(opt_reason);
+    this.connectionErrorEventRouter_.dispatchErrorEvent();
+  }
+
+  /**
+   * @param {string=} opt_reason
+   * @private
+   */
+  cleanupAndFlushPendingResponses_(opt_reason) {
     this.reader_.stopAndCloseHandle();
     this.reader_ = null;
     for (const id of this.pendingResponses_.keys())
       this.pendingResponses_.get(id).reject(new Error(opt_reason));
     this.pendingResponses_ = new Map;
-    this.connectionErrorEventRouter_.dispatchErrorEvent();
   }
 };
 
@@ -351,6 +364,11 @@ mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper = class {
    */
   createRequest() {
     return this.proxy_.createRequest();
+  }
+
+  /** @export */
+  close() {
+    this.proxy_.close();
   }
 
   /**
