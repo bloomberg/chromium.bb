@@ -176,7 +176,7 @@ class ASH_EXPORT WindowTreeHostManager
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) override;
+      DispatchKeyEventPostIMECallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);

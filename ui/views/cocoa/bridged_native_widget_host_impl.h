@@ -353,7 +353,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key,
-      base::OnceCallback<void(bool)> ack_callback) override;
+      DispatchKeyEventPostIMECallback callback) override;
 
   // ui::AccessibilityFocusOverrider::Client:
   id GetAccessibilityFocusedUIElement() override;

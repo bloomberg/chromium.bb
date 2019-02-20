@@ -834,7 +834,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
    public:
     explicit KeyDispatcherApi(KeyEvent* event) : event_(event) {}
 
-    void set_async_callback(base::OnceCallback<void(bool)> callback) {
+    void set_async_callback(base::OnceCallback<void(bool, bool)> callback) {
       event_->async_callback_ = std::move(callback);
     }
 
@@ -955,7 +955,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Called if the event is handled asynchronously. If the returned callback is
   // non-null, it *must* be run once async handling is complete. The argument
   // to the callback indicates if the event was handled or not.
-  base::OnceCallback<void(bool)> WillHandleAsync();
+  base::OnceCallback<void(bool, bool)> WillHandleAsync();
   bool HasAsyncCallback() const { return !async_callback_.is_null(); }
 
  protected:
@@ -996,7 +996,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // it may be set only if and when GetCharacter() or GetDomKey() is called.
   mutable DomKey key_ = DomKey::NONE;
 
-  base::OnceCallback<void(bool)> async_callback_;
+  base::OnceCallback<void(bool, bool)> async_callback_;
 
   static KeyEvent* last_key_event_;
 #if defined(USE_X11)

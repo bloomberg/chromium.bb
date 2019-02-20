@@ -22,10 +22,10 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
 
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key_event,
-      base::OnceCallback<void(bool)> ack_callback) override {
+      DispatchKeyEventPostIMECallback callback) override {
     if (!propagation_post_ime_)
       key_event->StopPropagation();
-    CallDispatchKeyEventPostIMEAck(key_event, std::move(ack_callback));
+    RunDispatchKeyEventPostIMECallback(key_event, std::move(callback));
     return ui::EventDispatchDetails();
   }
 

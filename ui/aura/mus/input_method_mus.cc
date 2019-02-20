@@ -37,6 +37,12 @@ void CallEventResultCallback(InputMethodMus::EventResultCallback ack_callback,
       .Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
 }
 
+void OnDispatchKeyEventPostIME(InputMethodMus::EventResultCallback callback,
+                               bool handled,
+                               bool stopped_propagation) {
+  CallEventResultCallback(std::move(callback), handled);
+}
+
 ws::mojom::TextInputClientDataPtr GetTextInputClientData(
     const ui::TextInputClient* client) {
   auto data = ws::mojom::TextInputClientData::New();
@@ -112,7 +118,7 @@ ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(
   if (!GetTextInputClient() || (event->flags() & ui::EF_IS_SYNTHESIZED)) {
     return DispatchKeyEventPostIME(
         event,
-        base::BindOnce(&CallEventResultCallback, std::move(ack_callback)));
+        base::BindOnce(&OnDispatchKeyEventPostIME, std::move(ack_callback)));
   }
 
   return SendKeyEventToInputMethod(*event, std::move(ack_callback));

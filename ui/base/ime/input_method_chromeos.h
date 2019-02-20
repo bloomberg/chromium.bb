@@ -56,9 +56,10 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   // Process a key returned from the input method.
   virtual ui::EventDispatchDetails ProcessKeyEventPostIME(
       ui::KeyEvent* event,
-      AckCallback ack_callback,
+      ResultCallback result_callback,
       bool skip_process_filtered,
-      bool handled) WARN_UNUSED_RESULT;
+      bool handled,
+      bool stopped_propagation) WARN_UNUSED_RESULT;
 
   // Resets context and abandon all pending results and key events.
   void ResetContext();
@@ -79,23 +80,25 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   // when dispatching post IME.
   ui::EventDispatchDetails ProcessFilteredKeyPressEvent(
       ui::KeyEvent* event,
-      AckCallback ack_callback) WARN_UNUSED_RESULT;
+      ResultCallback result_callback) WARN_UNUSED_RESULT;
 
   // Post processes a key event that was already filtered by the input method.
   void PostProcessFilteredKeyPressEvent(ui::KeyEvent* event,
                                         TextInputClient* prev_client,
-                                        AckCallback ack_callback,
+                                        ResultCallback result_callback,
+                                        bool handled,
                                         bool stopped_propagation);
 
   // Processes a key event that was not filtered by the input method.
   ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(
       ui::KeyEvent* event,
-      AckCallback ack_callback) WARN_UNUSED_RESULT;
+      ResultCallback result_callback) WARN_UNUSED_RESULT;
 
   // Post processes a key event that was unfiltered by the input method.
   void PostProcessUnfilteredKeyPressEvent(ui::KeyEvent* event,
                                           TextInputClient* prev_client,
-                                          AckCallback ack_callback,
+                                          ResultCallback result_callback,
+                                          bool handled,
                                           bool stopped_propagation);
 
   // Sends input method result caused by the given key event to the focused text
@@ -125,10 +128,10 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
 
   // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
   void KeyEventDoneCallback(ui::KeyEvent* event,
-                            AckCallback ack_callback,
+                            ResultCallback result_callback,
                             bool is_handled);
   ui::EventDispatchDetails ProcessKeyEventDone(ui::KeyEvent* event,
-                                               AckCallback ack_callback,
+                                               ResultCallback result_callback,
                                                bool is_handled)
       WARN_UNUSED_RESULT;
 

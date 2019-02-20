@@ -22,19 +22,22 @@ class UI_BASE_IME_EXPORT InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 
+  using DispatchKeyEventPostIMECallback = base::OnceCallback<void(bool, bool)>;
   // Dispatch a key event already processed by the input method. Returns the
-  // status of processing, as well as running the callback |ack_callback| with
-  // the result of processing. |ack_callback| may be run asynchronously (if the
-  // delegate does processing async). |ack_callback| may not be null.
-  // Subclasses can use CallDispatchKeyEventPostIMEAck() to run the callback.
+  // status of processing, as well as running the callback |callback| with the
+  // result of processing. |callback| may be run asynchronously (if the
+  // delegate does processing async). Subclasses can use
+  // RunDispatchKeyEventPostIMECallback() to run the callback. |callback| is
+  // supplied two booleans that correspond to event->handled() and
+  // event->stopped_propagation().
   virtual EventDispatchDetails DispatchKeyEventPostIME(
       KeyEvent* key_event,
-      base::OnceCallback<void(bool)> ack_callback) = 0;
+      DispatchKeyEventPostIMECallback callback) = 0;
 
  protected:
-  static void CallDispatchKeyEventPostIMEAck(
+  static void RunDispatchKeyEventPostIMECallback(
       KeyEvent* key_event,
-      base::OnceCallback<void(bool)> ack_callback);
+      DispatchKeyEventPostIMECallback callback);
 };
 
 }  // namespace internal
