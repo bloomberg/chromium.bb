@@ -39,7 +39,8 @@ class IdentityManagerDependenciesOwner {
   IdentityManagerDependenciesOwner(
       network::TestURLLoaderFactory* test_url_loader_factory,
       sync_preferences::TestingPrefServiceSyncable* pref_service,
-      signin::AccountConsistencyMethod account_consistency);
+      signin::AccountConsistencyMethod account_consistency,
+      TestSigninClient* test_signin_client);
   ~IdentityManagerDependenciesOwner();
 
   AccountTrackerService* account_tracker_service();
@@ -54,6 +55,8 @@ class IdentityManagerDependenciesOwner {
 
   sync_preferences::TestingPrefServiceSyncable* pref_service();
 
+  TestSigninClient* signin_client();
+
  private:
   // Depending on whether a |pref_service| instance is passed in
   // the constructor, exactly one of these will be non-null.
@@ -61,9 +64,11 @@ class IdentityManagerDependenciesOwner {
       owned_pref_service_;
   sync_preferences::TestingPrefServiceSyncable* raw_pref_service_ = nullptr;
 
+  std::unique_ptr<TestSigninClient> owned_signin_client_;
+  TestSigninClient* raw_signin_client_ = nullptr;
+
   AccountTrackerService account_tracker_;
   FakeAccountFetcherService account_fetcher_;
-  TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   SigninManagerForTest signin_manager_;
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
@@ -74,19 +79,24 @@ class IdentityManagerDependenciesOwner {
 IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
     network::TestURLLoaderFactory* test_url_loader_factory,
     sync_preferences::TestingPrefServiceSyncable* pref_service_param,
-    signin::AccountConsistencyMethod account_consistency)
+    signin::AccountConsistencyMethod account_consistency,
+    TestSigninClient* signin_client_param)
     : owned_pref_service_(
           pref_service_param
               ? nullptr
               : std::make_unique<
                     sync_preferences::TestingPrefServiceSyncable>()),
       raw_pref_service_(pref_service_param),
-      signin_client_(pref_service()),
+      owned_signin_client_(
+          signin_client_param
+              ? nullptr
+              : std::make_unique<TestSigninClient>(pref_service())),
+      raw_signin_client_(signin_client_param),
       token_service_(pref_service()),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &token_service_, &account_tracker_) {
+      signin_manager_(signin_client(), &token_service_, &account_tracker_) {
 #else
-      signin_manager_(&signin_client_,
+      signin_manager_(signin_client(),
                       &token_service_,
                       &account_tracker_,
                       nullptr,
@@ -94,7 +104,7 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
 #endif
   if (test_url_loader_factory != nullptr) {
     gaia_cookie_manager_service_ = std::make_unique<GaiaCookieManagerService>(
-        &token_service_, &signin_client_,
+        &token_service_, signin_client(),
         base::BindRepeating(
             [](network::TestURLLoaderFactory* test_url_loader_factory)
                 -> scoped_refptr<network::SharedURLLoaderFactory> {
@@ -103,7 +113,7 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
             test_url_loader_factory));
   } else {
     gaia_cookie_manager_service_ = std::make_unique<GaiaCookieManagerService>(
-        &token_service_, &signin_client_);
+        &token_service_, signin_client());
   }
   AccountTrackerService::RegisterPrefs(pref_service()->registry());
   AccountFetcherService::RegisterPrefs(pref_service()->registry());
@@ -112,7 +122,7 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
   SigninManagerBase::RegisterPrefs(pref_service()->registry());
 
   account_tracker_.Initialize(pref_service(), base::FilePath());
-  account_fetcher_.Initialize(&signin_client_, &token_service_,
+  account_fetcher_.Initialize(signin_client(), &token_service_,
                               &account_tracker_,
                               std::make_unique<TestImageDecoder>());
   signin_manager_.Initialize(pref_service());
@@ -156,10 +166,18 @@ IdentityManagerDependenciesOwner::pref_service() {
   return raw_pref_service_ ? raw_pref_service_ : owned_pref_service_.get();
 }
 
+TestSigninClient* IdentityManagerDependenciesOwner::signin_client() {
+  DCHECK(raw_signin_client_ || owned_signin_client_);
+  DCHECK(!(raw_signin_client_ && owned_signin_client_));
+
+  return raw_signin_client_ ? raw_signin_client_ : owned_signin_client_.get();
+}
+
 IdentityTestEnvironment::IdentityTestEnvironment(
     network::TestURLLoaderFactory* test_url_loader_factory,
     sync_preferences::TestingPrefServiceSyncable* pref_service,
-    signin::AccountConsistencyMethod account_consistency)
+    signin::AccountConsistencyMethod account_consistency,
+    TestSigninClient* test_signin_client)
     : IdentityTestEnvironment(
           /*pref_service=*/nullptr,
           /*account_tracker_service=*/nullptr,
@@ -171,7 +189,8 @@ IdentityTestEnvironment::IdentityTestEnvironment(
           std::make_unique<IdentityManagerDependenciesOwner>(
               test_url_loader_factory,
               pref_service,
-              account_consistency),
+              account_consistency,
+              test_signin_client),
           /*identity_manager=*/nullptr) {}
 
 IdentityTestEnvironment::IdentityTestEnvironment(
