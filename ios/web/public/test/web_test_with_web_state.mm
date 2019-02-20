@@ -128,32 +128,6 @@ bool WebTestWithWebState::LoadHtmlWithoutSubresources(const std::string& html) {
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
-  // Sets MIME type to "text/html" once navigation is committed.
-  class MimeTypeUpdater : public WebStateObserver {
-   public:
-    MimeTypeUpdater() = default;
-
-    // WebStateObserver overrides:
-    void DidFinishNavigation(WebState* web_state,
-                             NavigationContext* context) override {
-      // loadHTML:forURL: does not notify web view delegate about received
-      // response, so web controller does not get a chance to properly update
-      // MIME type and it should be set manually after navigation is committed
-      // but before WebState signal load completion and clients will start
-      // checking if MIME type is in fact HTML.
-      static_cast<WebStateImpl*>(web_state)->SetContentsMimeType("text/html");
-    }
-    void WebStateDestroyed(WebState* web_state) override { NOTREACHED(); }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MimeTypeUpdater);
-  };
-
-  MimeTypeUpdater mime_type_updater;
-  ScopedObserver<WebState, WebStateObserver> scoped_observer(
-      &mime_type_updater);
-  scoped_observer.Add(web_state());
-
   // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
   ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);

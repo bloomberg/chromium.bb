@@ -179,6 +179,14 @@ void NavigationContextImpl::SetPlaceholderNavigation(bool flag) {
   is_placeholder_navigation_ = flag;
 }
 
+void NavigationContextImpl::SetMimeType(NSString* mime_type) {
+  mime_type_ = mime_type;
+}
+
+NSString* NavigationContextImpl::GetMimeType() const {
+  return mime_type_;
+}
+
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              bool has_user_gesture,
