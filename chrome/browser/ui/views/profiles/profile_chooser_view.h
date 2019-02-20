@@ -95,7 +95,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   base::string16 GetAccessibleWindowTitle() const override;
 
   // content::WebContentsDelegate:
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

@@ -17,6 +17,7 @@
 class GURL;
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 class WebUI;
@@ -116,7 +117,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // customized menu.
   // Returns true iff you do NOT want the standard context menu to be
   // shown (because you want to handle it yourself).
-  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
+  virtual bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                                 const content::ContextMenuParams& params);
 
   // A callback to allow the delegate to open a new URL inside |source|.
   // On return |out_new_contents| should contain the WebContents the URL

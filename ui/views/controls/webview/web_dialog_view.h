@@ -93,7 +93,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
   // Overridden from content::WebContentsDelegate:
   void SetContentsBounds(content::WebContents* source,

@@ -117,7 +117,9 @@ AppViewGuest::AppViewGuest(WebContents* owner_web_contents)
 AppViewGuest::~AppViewGuest() {
 }
 
-bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
+bool AppViewGuest::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
   if (app_view_guest_delegate_) {
     return app_view_guest_delegate_->HandleContextMenu(web_contents(), params);
   }
