@@ -129,10 +129,7 @@ void CheckRestrictedUrls(const Extension* extension,
             extension->permissions_data()->IsRestrictedUrl(invalid_url, &error))
       << name;
   if (!allow_on_other_schemes) {
-    EXPECT_EQ(ErrorUtils::FormatErrorMessage(
-                  manifest_errors::kCannotAccessPage,
-                  invalid_url.spec()),
-              error) << name;
+    EXPECT_EQ(manifest_errors::kCannotAccessPage, error) << name;
   } else {
     EXPECT_TRUE(error.empty());
   }
