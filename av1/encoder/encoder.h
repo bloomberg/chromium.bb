@@ -638,25 +638,61 @@ typedef struct PartitionStats {
 #include "aom_ports/aom_timer.h"
 // Adjust the following to add new components.
 enum {
+  encode_frame_to_data_rate_time,
+  encode_with_recode_loop_time,
+  loop_filter_time,
+  cdef_time,
+  loop_restoration_time,
+  av1_pack_bitstream_final_time,
+  av1_encode_frame_time,
+  av1_compute_global_motion_time,
+  av1_setup_motion_field_time,
   encode_sb_time,
+  first_partition_search_pass_time,
   rd_pick_partition_time,
   rd_pick_sb_modes_time,
   av1_rd_pick_intra_mode_sb_time,
   av1_rd_pick_inter_mode_sb_time,
+  handle_intra_mode_time,
   handle_inter_mode_time,
+  do_tx_search_time,
+  handle_newmv_time,
+  compound_type_rd_time,
+  interpolation_filter_search_time,
   motion_mode_rd_time,
   kTimingComponents,
 } UENUM1BYTE(TIMING_COMPONENT);
 
 static INLINE char const *get_component_name(int index) {
   switch (index) {
-    case 0: return "encode_sb_time";
-    case 1: return "rd_pick_partition_time";
-    case 2: return "rd_pick_sb_modes_time";
-    case 3: return "av1_rd_pick_intra_mode_sb_time";
-    case 4: return "av1_rd_pick_inter_mode_sb_time";
-    case 5: return "handle_inter_mode_time";
-    case 6: return "motion_mode_rd_time";
+    case encode_frame_to_data_rate_time:
+      return "encode_frame_to_data_rate_time";
+    case encode_with_recode_loop_time: return "encode_with_recode_loop_time";
+    case loop_filter_time: return "loop_filter_time";
+    case cdef_time: return "cdef_time";
+    case loop_restoration_time: return "loop_restoration_time";
+    case av1_pack_bitstream_final_time: return "av1_pack_bitstream_final_time";
+    case av1_encode_frame_time: return "av1_encode_frame_time";
+    case av1_compute_global_motion_time:
+      return "av1_compute_global_motion_time";
+    case av1_setup_motion_field_time: return "av1_setup_motion_field_time";
+    case encode_sb_time: return "encode_sb_time";
+    case first_partition_search_pass_time:
+      return "first_partition_search_pass_time";
+    case rd_pick_partition_time: return "rd_pick_partition_time";
+    case rd_pick_sb_modes_time: return "rd_pick_sb_modes_time";
+    case av1_rd_pick_intra_mode_sb_time:
+      return "av1_rd_pick_intra_mode_sb_time";
+    case av1_rd_pick_inter_mode_sb_time:
+      return "av1_rd_pick_inter_mode_sb_time";
+    case handle_intra_mode_time: return "handle_intra_mode_time";
+    case handle_inter_mode_time: return "handle_inter_mode_time";
+    case do_tx_search_time: return "do_tx_search_time";
+    case handle_newmv_time: return "handle_newmv_time";
+    case compound_type_rd_time: return "compound_type_rd_time";
+    case interpolation_filter_search_time:
+      return "interpolation_filter_search_time";
+    case motion_mode_rd_time: return "motion_mode_rd_time";
     default: assert(0);
   }
   return "error";
@@ -795,9 +831,11 @@ typedef struct AV1_COMP {
   fractional_mv_step_fp *find_fractional_mv_step;
   av1_diamond_search_fn_t diamond_search_sad;
   aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
+
+#if CONFIG_INTERNAL_STATS
   uint64_t time_receive_data;
   uint64_t time_compress_data;
-  uint64_t time_pick_lpf;
+#endif
 
 #if CONFIG_FP_MB_STATS
   int use_fp_mb_stats;

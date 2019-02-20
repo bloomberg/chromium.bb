@@ -5722,6 +5722,10 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   const int mib_size_log2 = cm->seq_params.mib_size_log2;
   const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, encode_sb_time);
+#endif
+
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
 
@@ -5737,9 +5741,6 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-#if CONFIG_COLLECT_COMPONENT_TIMING
-    start_timing(cpi, encode_sb_time);
-#endif
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
@@ -5873,6 +5874,9 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
       reset_partition(pc_root, sb_size);
       x->use_cb_search_range = 0;
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      start_timing(cpi, first_partition_search_pass_time);
+#endif
       init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       // Do the first pass if we need two pass partition search
       if (cpi->sf.two_pass_partition_search &&
@@ -5882,6 +5886,10 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
           cm->current_frame.frame_type != KEY_FRAME) {
         first_partition_search_pass(cpi, td, tile_data, mi_row, mi_col, tp);
       }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      end_timing(cpi, first_partition_search_pass_time);
+#endif
+
 #if CONFIG_COLLECT_COMPONENT_TIMING
       start_timing(cpi, rd_pick_partition_time);
 #endif
@@ -5907,10 +5915,10 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     }
     (*(cpi->row_mt_sync_write_ptr))(&tile_data->row_mt_sync, sb_row,
                                     sb_col_in_tile, sb_cols_in_tile);
-#if CONFIG_COLLECT_COMPONENT_TIMING
-    end_timing(cpi, encode_sb_time);
-#endif
   }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, encode_sb_time);
+#endif
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {
@@ -6513,6 +6521,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   x->tx_search_count = 0;
 #endif  // CONFIG_SPEED_STATS
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, av1_compute_global_motion_time);
+#endif
   av1_zero(rdc->global_motion_used);
   av1_zero(cpi->gmparams_cost);
   if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
@@ -6645,8 +6656,17 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   }
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
          REF_FRAMES * sizeof(WarpedMotionParams));
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, av1_compute_global_motion_time);
+#endif
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, av1_setup_motion_field_time);
+#endif
   av1_setup_motion_field(cm);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, av1_setup_motion_field_time);
+#endif
 
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
@@ -6781,20 +6801,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   } else {
     encode_frame_internal(cpi);
   }
-
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  int i;
-  fprintf(stderr, "\n Frame number: %d, Frame type: %s,\n",
-          cm->current_frame.frame_number,
-          get_frame_type_enum(cm->current_frame.frame_type));
-  for (i = 0; i < kTimingComponents; i++) {
-    cpi->component_time[i] += cpi->frame_component_time[i];
-    fprintf(stderr, " %s:  %" PRId64 " us (total: %" PRId64 " us)\n",
-            get_component_name(i), cpi->frame_component_time[i],
-            cpi->component_time[i]);
-    cpi->frame_component_time[i] = 0;
-  }
-#endif
 }
 
 static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,

@@ -4028,17 +4028,12 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   struct loopfilter *lf = &cm->lf;
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, loop_filter_time);
+#endif
   if (use_loopfilter) {
-    struct aom_usec_timer timer;
-
     aom_clear_system_state();
-
-    aom_usec_timer_start(&timer);
-
     av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_pick);
-
-    aom_usec_timer_mark(&timer);
-    cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
   } else {
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;
@@ -4059,17 +4054,26 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
                             0, num_planes, 0);
   }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, loop_filter_time);
+#endif
 
   if (use_restoration)
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 0);
 
   if (use_cdef) {
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    start_timing(cpi, cdef_time);
+#endif
     // Find CDEF parameters
     av1_cdef_search(&cm->cur_frame->buf, cpi->source, cm, xd,
                     cpi->sf.fast_cdef_search);
 
     // Apply the filter
     av1_cdef_frame(&cm->cur_frame->buf, cm, xd);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    end_timing(cpi, cdef_time);
+#endif
   } else {
     cm->cdef_info.cdef_bits = 0;
     cm->cdef_info.cdef_strengths[0] = 0;
@@ -4079,6 +4083,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   superres_post_encode(cpi);
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, loop_restoration_time);
+#endif
   if (use_restoration) {
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 1);
     av1_pick_filter_restoration(cpi->source, cpi);
@@ -4098,6 +4105,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, loop_restoration_time);
+#endif
 }
 
 static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
@@ -4398,6 +4408,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   int loop = 0;
   int overshoot_seen = 0;
   int undershoot_seen = 0;
+
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  printf("\n Encoding a frame:");
+#endif
   do {
     aom_clear_system_state();
 
@@ -4462,9 +4476,14 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
 
     if (allow_recode) save_coding_context(cpi);
-
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    start_timing(cpi, av1_encode_frame_time);
+#endif
     // transform / motion compensation build reconstruction frame
     av1_encode_frame(cpi);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    end_timing(cpi, av1_encode_frame_time);
+#endif
 
     // Update some stats from cyclic refresh, and check if we should not update
     // golden reference, for 1 pass CBR.
@@ -4516,6 +4535,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       ++cpi->tot_recode_hits;
 #endif
     }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    if (loop) printf("\n Recoding:");
+#endif
   } while (loop);
 
   return AOM_CODEC_OK;
@@ -4815,6 +4837,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, encode_frame_to_data_rate_time);
+#endif
+
   // frame type has been decided outside of this function call
   cm->cur_frame->frame_type = current_frame->frame_type;
 
@@ -4987,8 +5013,14 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
   cm->timing_info_present &= !seq_params->reduced_still_picture_hdr;
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, encode_with_recode_loop_time);
+#endif
   if (encode_with_recode_loop(cpi, size, dest) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, encode_with_recode_loop_time);
+#endif
 
 #ifdef OUTPUT_YUV_SKINMAP
   if (cpi->common.current_frame.frame_number > 1) {
@@ -5047,8 +5079,14 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   finalize_encoded_frame(cpi);
   // Build the bitstream
   int largest_tile_id = 0;  // Output from pack_bitstream
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, av1_pack_bitstream_final_time);
+#endif
   if (av1_pack_bitstream(cpi, dest, size, &largest_tile_id) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, av1_pack_bitstream_final_time);
+#endif
 
   cpi->seq_params_locked = 1;
 
@@ -5108,6 +5146,23 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 #endif  // EXT_TILE_DEBUG
 #undef EXT_TILE_DEBUG
+
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, encode_frame_to_data_rate_time);
+
+  // Print out timing information.
+  int i;
+  fprintf(stderr, "\n Frame number: %d, Frame type: %s,\n",
+          cm->current_frame.frame_number,
+          get_frame_type_enum(cm->current_frame.frame_type));
+  for (i = 0; i < kTimingComponents; i++) {
+    cpi->component_time[i] += cpi->frame_component_time[i];
+    fprintf(stderr, " %s:  %" PRId64 " us (total: %" PRId64 " us)\n",
+            get_component_name(i), cpi->frame_component_time[i],
+            cpi->component_time[i]);
+    cpi->frame_component_time[i] = 0;
+  }
+#endif
 
   cm->last_frame_type = current_frame->frame_type;
 
@@ -5234,7 +5289,6 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
                           int64_t end_time) {
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
-  struct aom_usec_timer timer;
   int res = 0;
   const int subsampling_x = sd->subsampling_x;
   const int subsampling_y = sd->subsampling_y;
@@ -5242,8 +5296,10 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
 
   check_initial_width(cpi, use_highbitdepth, subsampling_x, subsampling_y);
 
+#if CONFIG_INTERNAL_STATS
+  struct aom_usec_timer timer;
   aom_usec_timer_start(&timer);
-
+#endif
 #if CONFIG_DENOISE
   if (cpi->oxcf.noise_level > 0)
     if (apply_denoise_2d(cpi, sd, cpi->oxcf.noise_block_size,
@@ -5254,9 +5310,10 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   if (av1_lookahead_push(cpi->lookahead, sd, time_stamp, end_time,
                          use_highbitdepth, frame_flags))
     res = -1;
+#if CONFIG_INTERNAL_STATS
   aom_usec_timer_mark(&timer);
   cpi->time_receive_data += aom_usec_timer_elapsed(&timer);
-
+#endif
   if ((seq_params->profile == PROFILE_0) && !seq_params->monochrome &&
       (subsampling_x != 1 || subsampling_y != 1)) {
     aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
@@ -5393,7 +5450,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             const aom_rational_t *timebase) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
-  struct aom_usec_timer cmptimer;
 
 #if CONFIG_BITSTREAM_DEBUG
   assert(cpi->oxcf.max_threads == 0 &&
@@ -5409,8 +5465,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   cm->showable_frame = 0;
   *size = 0;
+#if CONFIG_INTERNAL_STATS
+  struct aom_usec_timer cmptimer;
   aom_usec_timer_start(&cmptimer);
-
+#endif
   set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV, 0);
 
   // Normal defaults
@@ -5433,10 +5491,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // Returning -1 indicates no frame encoded; more input is required
     return -1;
   }
-
+#if CONFIG_INTERNAL_STATS
   aom_usec_timer_mark(&cmptimer);
   cpi->time_compress_data += aom_usec_timer_elapsed(&cmptimer);
-
+#endif
   if (cpi->b_calculate_psnr) {
     if (cm->show_existing_frame || (oxcf->pass != 1 && cm->show_frame)) {
       generate_psnr_packet(cpi);

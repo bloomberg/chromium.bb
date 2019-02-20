@@ -10200,6 +10200,9 @@ static int64_t handle_inter_mode(
           rate_mv = backup_rate_mv;
         }
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        start_timing(cpi, handle_newmv_time);
+#endif
         if (cpi->sf.prune_single_motion_modes_by_simple_trans &&
             args->single_ref_first_pass == 0 && !is_comp_pred) {
           const int ref0 = mbmi->ref_frame[0];
@@ -10216,6 +10219,9 @@ static int64_t handle_inter_mode(
           backup_mv[1] = cur_mv[1];
           backup_rate_mv = rate_mv;
         }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        end_timing(cpi, handle_newmv_time);
+#endif
 
         if (newmv_ret_val != 0) {
           continue;
@@ -10310,6 +10316,9 @@ static int64_t handle_inter_mode(
         continue;
       }
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      start_timing(cpi, compound_type_rd_time);
+#endif
       int skip_build_pred = 0;
       if (is_comp_pred) {
         if (mode_search_mask[comp_loop_idx] == (1 << COMPOUND_AVERAGE)) {
@@ -10377,11 +10386,20 @@ static int64_t handle_inter_mode(
           }
         }
       }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      end_timing(cpi, compound_type_rd_time);
+#endif
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      start_timing(cpi, interpolation_filter_search_time);
+#endif
       ret_val = interpolation_filter_search(
           x, cpi, tile_data, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
           args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb,
           &skip_build_pred, args, ref_best_rd);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+      end_timing(cpi, interpolation_filter_search_time);
+#endif
       if (args->modelled_rd != NULL && !is_comp_pred) {
         args->modelled_rd[this_mode][ref_mv_idx][refs[0]] = rd;
       }
@@ -12772,6 +12790,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   release_compound_type_rd_buffers(&rd_buffers);
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, do_tx_search_time);
+#endif
   if (!do_tx_search) {
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = INT64_MAX;
@@ -12844,7 +12865,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
     }
   }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, do_tx_search_time);
+#endif
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, handle_intra_mode_time);
+#endif
   for (int j = 0; j < intra_mode_num; ++j) {
     const int mode_index = intra_mode_idx_ls[j];
     const MV_REFERENCE_FRAME ref_frame =
@@ -12887,6 +12914,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
     }
   }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, handle_intra_mode_time);
+#endif
+
   // In effect only when speed >= 2.
   sf_refine_fast_tx_type_search(
       cpi, x, mi_row, mi_col, rd_cost, bsize, ctx, search_state.best_mode_index,
