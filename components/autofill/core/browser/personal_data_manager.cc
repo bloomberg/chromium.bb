@@ -2358,12 +2358,9 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
     if (!wallet_address->has_converted()) {
       // Try to merge the server address into a similar local profile, or create
       // a new local profile if no similar profile is found.
-      // TODO(crbug.com/864519): Use GetAccountInfoForPaymentsServer instead of
-      // going to IdentityManager directly. This will be necessary to properly
-      // support Wallet addresses with Butter.
       std::string address_guid = MergeServerAddressesIntoProfiles(
           *wallet_address, local_profiles, app_locale_,
-          identity_manager_->GetPrimaryAccountInfo().email);
+          GetAccountInfoForPaymentsServer().email);
 
       // Update the map to transfer the billing address relationship from the
       // server address to the converted/merged local profile.
