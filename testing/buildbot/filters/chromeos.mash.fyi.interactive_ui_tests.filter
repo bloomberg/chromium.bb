@@ -95,6 +95,10 @@
 # MouseEventsTest
 -MouseEventsTest.ClickAndDoubleClick
 -MouseEventsTest.ContextMenu
+-MouseEventsTest.MouseOver
 
 # CrashInFlightChange::ChangeFailed()
 -FlashFullscreenInteractiveBrowserTest.FullscreenWithinTab_EscapeKeyExitsFullscreen
+
+#Flaky https://crbug.com/933847
+-LocationIconViewTest.HideOnSecondClick
