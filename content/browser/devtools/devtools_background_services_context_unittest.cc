@@ -107,6 +107,11 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
     ASSERT_TRUE(context_);
   }
 
+  bool IsRecording() {
+    return context_->IsRecording(
+        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+  }
+
   base::Time GetExpirationTime() {
     return context_->expiration_times_
         [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE];
@@ -148,6 +153,11 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
 
     // Wait for the messages to propagate to the browser client.
     thread_bundle_.RunUntilIdle();
+  }
+
+  void ClearLoggedBackgroundServiceEvents() {
+    context_->ClearLoggedBackgroundServiceEvents(
+        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
   }
 
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
@@ -223,7 +233,7 @@ TEST_F(DevToolsBackgroundServicesContextTest,
   EXPECT_TRUE(GetLoggedBackgroundServiceEvents().empty());
 }
 
-TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedFeatures) {
+TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedEvents) {
   StartRecording();
 
   // "Log" some events and wait for them to finish.
@@ -266,20 +276,43 @@ TEST_F(DevToolsBackgroundServicesContextTest, StopRecording) {
 TEST_F(DevToolsBackgroundServicesContextTest, DelegateExpirationTimes) {
   // Initially expiration time is null.
   EXPECT_TRUE(GetExpirationTime().is_null());
+  EXPECT_FALSE(IsRecording());
 
   // Toggle Recording mode, and now this should be non-null.
   StartRecording();
   EXPECT_FALSE(GetExpirationTime().is_null());
+  EXPECT_TRUE(IsRecording());
 
-  // The value should still be  there on browser restarts.
+  // The value should still be there on browser restarts.
   SimulateBrowserRestart();
   EXPECT_FALSE(GetExpirationTime().is_null());
+  EXPECT_TRUE(IsRecording());
 
   // Stopping Recording mode should clear the value.
   StopRecording();
   EXPECT_TRUE(GetExpirationTime().is_null());
+  EXPECT_FALSE(IsRecording());
   SimulateBrowserRestart();
   EXPECT_TRUE(GetExpirationTime().is_null());
+  EXPECT_FALSE(IsRecording());
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, ClearLoggedEvents) {
+  StartRecording();
+
+  // "Log" some events and wait for them to finish.
+  LogTestBackgroundServiceEvent("f1");
+  LogTestBackgroundServiceEvent("f2");
+
+  // Check the values.
+  auto feature_events = GetLoggedBackgroundServiceEvents();
+  ASSERT_EQ(feature_events.size(), 2u);
+
+  ClearLoggedBackgroundServiceEvents();
+
+  // Should be empty now.
+  feature_events = GetLoggedBackgroundServiceEvents();
+  EXPECT_TRUE(feature_events.empty());
 }
 
 }  // namespace content

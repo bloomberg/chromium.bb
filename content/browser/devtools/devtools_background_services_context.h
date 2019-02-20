@@ -45,6 +45,16 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
+  // Enables recording mode for |service|. This is capped at 3 days in case
+  // developers forget to switch it off.
+  void StartRecording(devtools::proto::BackgroundService service);
+
+  // Disables recording mode for |service|.
+  void StopRecording(devtools::proto::BackgroundService service);
+
+  // Whether events related to |service| should be recorded.
+  bool IsRecording(devtools::proto::BackgroundService service);
+
   // Queries all logged events for |service| and returns them in sorted order
   // (by timestamp). |callback| is called with an empty vector if there was an
   // error. Must be called from the IO thread.
@@ -52,12 +62,10 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
       devtools::proto::BackgroundService service,
       GetLoggedBackgroundServiceEventsCallback callback);
 
-  // Enables recording mode for |service|. This is capped at 3 days in case
-  // developers forget to switch it off.
-  void StartRecording(devtools::proto::BackgroundService service);
-
-  // Disables recording mode for |service|.
-  void StopRecording(devtools::proto::BackgroundService service);
+  // Clears all logged events related to |service|.
+  // Must be called from the IO thread.
+  void ClearLoggedBackgroundServiceEvents(
+      devtools::proto::BackgroundService service);
 
  private:
   friend class DevToolsBackgroundServicesContextTest;
