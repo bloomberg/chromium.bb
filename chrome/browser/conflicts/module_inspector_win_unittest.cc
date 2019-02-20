@@ -14,7 +14,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "chrome/services/util_win/util_win_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -115,5 +118,31 @@ TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
   module_inspector.IncreaseInspectionPriority();
   RunUntilIdle();
 
+  EXPECT_EQ(2u, inspected_modules().size());
+}
+
+TEST_F(ModuleInspectorTest, OOPInspectModule) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      ModuleInspector::kWinOOPInspectModuleFeature);
+
+  service_manager::TestConnectorFactory test_connector_factory_;
+  UtilWinService util_win_service(test_connector_factory_.RegisterInstance(
+      chrome::mojom::kUtilWinServiceName));
+
+  ModuleInfoKey kTestCases[] = {
+      {base::FilePath(), 0, 0},
+      {base::FilePath(), 0, 0},
+  };
+
+  ModuleInspector module_inspector(base::Bind(
+      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  module_inspector.SetConnectorForTesting(
+      test_connector_factory_.GetDefaultConnector());
+
+  for (const auto& module : kTestCases)
+    module_inspector.AddModule(module);
+
+  RunUntilIdle();
   EXPECT_EQ(2u, inspected_modules().size());
 }
