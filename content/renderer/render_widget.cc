@@ -971,19 +971,10 @@ void RenderWidget::OnRequestSetBoundsAck() {
 }
 
 void RenderWidget::OnForceRedraw(int snapshot_id) {
-  RequestPresentation(base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     snapshot_id));
-}
-
-void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
   layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-      std::move(callback));
+      base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
+                     weak_ptr_factory_.GetWeakPtr(), snapshot_id));
   layer_tree_view_->SetNeedsForcedRedraw();
-
-  // Need this since single thread mode doesn't have a scheduler so the above
-  // call won't cause us to generate a new frame.
-  ScheduleAnimation();
 }
 
 void RenderWidget::DidPresentForceDrawFrame(
@@ -2501,11 +2492,6 @@ void RenderWidget::SetHidden(bool hidden) {
 
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
-
-  // If the renderer was hidden, resolve any pending synthetic gestures so they
-  // aren't blocked waiting for a compositor frame to be generated.
-  if (is_hidden_)
-    widget_input_handler_manager_->InvokeInputProcessedCallback();
 
   StartStopCompositor();
 }
