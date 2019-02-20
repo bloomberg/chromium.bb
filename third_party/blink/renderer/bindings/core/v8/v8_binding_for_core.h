@@ -177,6 +177,19 @@ inline void V8SetReturnValueFast(const CallbackInfo& callbackInfo,
   V8SetReturnValueFast(callbackInfo, notShared.View(), wrappable);
 }
 
+template <typename CallbackInfo, typename T>
+inline void V8SetReturnValue(const CallbackInfo& callback_info,
+                             MaybeShared<T> maybe_shared) {
+  V8SetReturnValue(callback_info, maybe_shared.View());
+}
+
+template <typename CallbackInfo, typename T>
+inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
+                                 MaybeShared<T> maybe_shared,
+                                 const ScriptWrappable* wrappable) {
+  V8SetReturnValueFast(callback_info, maybe_shared.View(), wrappable);
+}
+
 // Specialized overload, used by interface indexed property handlers in their
 // descriptor callbacks, which need an actual V8 Object with the properties of
 // a property descriptor.
