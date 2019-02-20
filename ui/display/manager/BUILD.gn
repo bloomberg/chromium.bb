@@ -62,7 +62,6 @@ jumbo_component("manager") {
     "//base",
     "//third_party/re2",
     "//ui/base",
-    "//ui/base/user_activity",
     "//ui/display/mojo:interfaces",
     "//ui/display/util",
     "//ui/events:platform_event",

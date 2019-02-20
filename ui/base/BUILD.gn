@@ -247,6 +247,9 @@ jumbo_component("base") {
     "ui_base_switches_util.h",
     "ui_base_types.cc",
     "ui_base_types.h",
+    "user_activity/user_activity_detector.cc",
+    "user_activity/user_activity_detector.h",
+    "user_activity/user_activity_observer.h",
     "view_prop.cc",
     "view_prop.h",
     "webui/i18n_source_stream.cc",
@@ -883,7 +886,9 @@ test("ui_base_unittests") {
       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
     }
     if (is_chromeos || use_ozone) {
-      sources += [ "ime/character_composer_unittest.cc" ]
+      sources += [
+        "ime/character_composer_unittest.cc",
+      ]
     }
   }
 
@@ -904,7 +909,6 @@ test("ui_base_unittests") {
     "//ui/base:ui_data_pack",
     "//ui/base/clipboard:clipboard_test",
     "//ui/base/clipboard:clipboard_types",
-    "//ui/base/user_activity",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/events:test_support",
