@@ -216,6 +216,10 @@ const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
       return blank;
+    case ash::STOP_APP:
+      // TODO(crbug.com/930869) This is a placeholder, the real icon has not
+      // been approved yet.
+      return blank;
     case ash::LAUNCH_APP_SHORTCUT_FIRST:
     case ash::LAUNCH_APP_SHORTCUT_LAST:
     case ash::COMMAND_ID_COUNT:

@@ -64,8 +64,8 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (registration)
     AddPinMenu(menu_model);
 
-  menu_model->AddItemWithStringId(ash::MENU_NEW_WINDOW,
-                                  IDS_APP_LIST_NEW_WINDOW);
+  AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
+                       IDS_APP_LIST_NEW_WINDOW);
   if (item().id.app_id == crostini::kCrostiniTerminalId &&
       crostini::IsCrostiniRunning(controller()->profile())) {
     AddContextMenuOption(menu_model, ash::STOP_APP,
@@ -73,11 +73,11 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   }
 
   if (controller()->IsOpen(item().id)) {
-    menu_model->AddItemWithStringId(ash::MENU_CLOSE,
-                                    IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    AddContextMenuOption(menu_model, ash::MENU_CLOSE,
+                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   } else {
-    menu_model->AddItemWithStringId(ash::MENU_OPEN_NEW,
-                                    IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
+                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
   }
 
   // Offer users the ability to toggle per-application UI scaling.
@@ -86,11 +86,11 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // look better when scaled to match the display density.
   if (ShouldShowDisplayDensityMenuItem(registration, display_id())) {
     if (registration->IsScaled()) {
-      menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_HIGH_DENSITY,
-                                           IDS_CROSTINI_USE_HIGH_DENSITY);
+      AddContextMenuOption(menu_model, ash::CROSTINI_USE_HIGH_DENSITY,
+                           IDS_CROSTINI_USE_HIGH_DENSITY);
     } else {
-      menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_LOW_DENSITY,
-                                           IDS_CROSTINI_USE_LOW_DENSITY);
+      AddContextMenuOption(menu_model, ash::CROSTINI_USE_LOW_DENSITY,
+                           IDS_CROSTINI_USE_LOW_DENSITY);
     }
   }
 }
