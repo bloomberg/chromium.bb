@@ -1856,6 +1856,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//services/viz/public/interfaces:interfaces_blink",
     "//skia",
     "//skia:skcms",
+    "//skia:test_fonts",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party:freetype_harfbuzz",
@@ -1963,6 +1964,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 test("blink_fuzzer_unittests") {
   deps = [
     ":test_support",
+    "//skia:test_fonts",
     "//third_party/blink/public:test_support",
   ]
 
