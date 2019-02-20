@@ -5,6 +5,7 @@
 #include "content/public/browser/media_session.h"
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -16,19 +17,67 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 
 namespace content {
 
 namespace {
+
+const char kMediaSessionImageTestURL[] = "/media/session/image_test_page.html";
+const char kMediaSessionImageTestPageVideoElement[] = "video";
+
+const char kMediaSessionTestImagePath[] = "/media/session/test_image.jpg";
+
+class MediaImageGetterHelper {
+ public:
+  MediaImageGetterHelper(content::MediaSession* media_session,
+                         const media_session::MediaImage& image,
+                         int min_size,
+                         int desired_size) {
+    media_session->GetMediaImageBitmap(
+        image, min_size, desired_size,
+        base::BindOnce(&MediaImageGetterHelper::OnComplete,
+                       base::Unretained(this)));
+  }
+
+  void Wait() {
+    if (bitmap_.has_value())
+      return;
+
+    run_loop_.Run();
+  }
+
+  const SkBitmap& bitmap() { return *bitmap_; }
+
+ private:
+  void OnComplete(const SkBitmap& bitmap) {
+    bitmap_ = bitmap;
+    run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+  base::Optional<SkBitmap> bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaImageGetterHelper);
+};
 
 // Integration tests for content::MediaSession that do not take into
 // consideration the implementation details contrary to
 // MediaSessionImplBrowserTest.
 class MediaSessionBrowserTest : public ContentBrowserTest {
  public:
-  MediaSessionBrowserTest() = default;
+  MediaSessionBrowserTest() {
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &MediaSessionBrowserTest::OnServerRequest, base::Unretained(this)));
+  }
+
+  void SetUp() override {
+    ContentBrowserTest::SetUp();
+    visited_urls_.clear();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
@@ -79,6 +128,40 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     return result;
   }
 
+  bool WasURLVisited(const GURL& url) {
+    return base::ContainsKey(visited_urls_, url);
+  }
+
+  MediaSession* SetupMediaImageTest() {
+    NavigateToURL(shell(),
+                  embedded_test_server()->GetURL(kMediaSessionImageTestURL));
+    StartPlaybackAndWait(shell(), kMediaSessionImageTestPageVideoElement);
+
+    MediaSession* media_session = MediaSession::Get(shell()->web_contents());
+
+    std::vector<media_session::MediaImage> expected_images;
+    expected_images.push_back(CreateTestImageWithSize(1));
+    expected_images.push_back(CreateTestImageWithSize(10));
+
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session);
+    observer.WaitForExpectedImagesOfType(
+        media_session::mojom::MediaSessionImageType::kArtwork, expected_images);
+
+    return media_session;
+  }
+
+  media_session::MediaImage CreateTestImageWithSize(int size) const {
+    media_session::MediaImage image;
+    image.src = GetTestImageURL();
+    image.type = base::ASCIIToUTF16("image/jpeg");
+    image.sizes.push_back(gfx::Size(size, size));
+    return image;
+  }
+
+  GURL GetTestImageURL() const {
+    return embedded_test_server()->GetURL(kMediaSessionTestImagePath);
+  }
+
  private:
   class MediaStartStopObserver : public WebContentsObserver {
    public:
@@ -113,6 +196,12 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
 
     DISALLOW_COPY_AND_ASSIGN(MediaStartStopObserver);
   };
+
+  void OnServerRequest(const net::test_server::HttpRequest& request) {
+    visited_urls_.insert(request.GetURL());
+  }
+
+  std::set<GURL> visited_urls_;
 
   base::test::ScopedFeatureList disabled_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -238,5 +327,81 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {
   EXPECT_TRUE(IsPlaying(other_shell, "long-video"));
 }
 #endif  // defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, GetMediaImageBitmap) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  MediaSession* media_session = SetupMediaImageTest();
+  ASSERT_NE(nullptr, media_session);
+
+  media_session::MediaImage image;
+  image.src = embedded_test_server()->GetURL("/media/session/test_image.jpg");
+  image.type = base::ASCIIToUTF16("image/jpeg");
+  image.sizes.push_back(gfx::Size(1, 1));
+
+  MediaImageGetterHelper helper(media_session, CreateTestImageWithSize(1), 0,
+                                10);
+  helper.Wait();
+
+  // The test image is a 1x1 test image.
+  EXPECT_EQ(1, helper.bitmap().width());
+  EXPECT_EQ(1, helper.bitmap().height());
+  EXPECT_EQ(kRGBA_8888_SkColorType, helper.bitmap().colorType());
+
+  EXPECT_TRUE(WasURLVisited(GetTestImageURL()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       GetMediaImageBitmap_ImageTooSmall) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  MediaSession* media_session = SetupMediaImageTest();
+  ASSERT_NE(nullptr, media_session);
+
+  MediaImageGetterHelper helper(media_session, CreateTestImageWithSize(10), 10,
+                                10);
+  helper.Wait();
+
+  // The |image| is too small but we do not know that until after we have
+  // downloaded it. We should still receive a null image though.
+  EXPECT_TRUE(helper.bitmap().isNull());
+  EXPECT_TRUE(WasURLVisited(GetTestImageURL()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       GetMediaImageBitmap_ImageTooSmall_BeforeDownload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  MediaSession* media_session = SetupMediaImageTest();
+  ASSERT_NE(nullptr, media_session);
+
+  MediaImageGetterHelper helper(media_session, CreateTestImageWithSize(1), 10,
+                                10);
+  helper.Wait();
+
+  // Since |image| is too small but we know this in advance we should not
+  // download it and instead we should receive a null image.
+  EXPECT_TRUE(helper.bitmap().isNull());
+  EXPECT_FALSE(WasURLVisited(GetTestImageURL()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       GetMediaImageBitmap_InvalidImage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  MediaSession* media_session = SetupMediaImageTest();
+  ASSERT_NE(nullptr, media_session);
+
+  media_session::MediaImage image = CreateTestImageWithSize(1);
+  image.src = embedded_test_server()->GetURL("/blank.jpg");
+
+  MediaImageGetterHelper helper(media_session, image, 0, 10);
+  helper.Wait();
+
+  // Since |image| is not an image that is associated with the test page we
+  // should not download it and instead we should receive a null image.
+  EXPECT_TRUE(helper.bitmap().isNull());
+  EXPECT_FALSE(WasURLVisited(image.src));
+}
 
 }  // namespace content

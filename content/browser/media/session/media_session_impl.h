@@ -236,6 +236,15 @@ class MediaSessionImpl : public MediaSession,
   // Skip ad.
   CONTENT_EXPORT void SkipAd() override;
 
+  // Downloads the bitmap version of a MediaImage at least |minimum_size_px|
+  // and closest to |desired_size_px|. If the download failed, was too small or
+  // the image did not come from the media session then returns a null image.
+  CONTENT_EXPORT void GetMediaImageBitmap(
+      const media_session::MediaImage& image,
+      int minimum_size_px,
+      int desired_size_px,
+      GetMediaImageBitmapCallback callback) override;
+
   const base::UnguessableToken& audio_focus_group_id() const {
     return audio_focus_group_id_;
   }
@@ -283,6 +292,16 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);
 
   void Initialize();
+
+  // Called when we have finished downloading an image.
+  void OnImageDownloadComplete(GetMediaImageBitmapCallback callback,
+                               int minimum_size_px,
+                               int desired_size_px,
+                               int id,
+                               int http_status_code,
+                               const GURL& image_url,
+                               const std::vector<SkBitmap>& bitmaps,
+                               const std::vector<gfx::Size>& sizes);
 
   // Called when system audio focus has been requested and whether the request
   // was granted.

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace mojo {
@@ -56,6 +57,19 @@ struct StructTraits<media_session::mojom::MediaMetadataDataView,
 
   static bool Read(media_session::mojom::MediaMetadataDataView data,
                    media_session::MediaMetadata* out);
+};
+
+// TODO(beccahughes): de-dupe this with ArcBitmap.
+template <>
+struct StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap> {
+  static const base::span<const uint8_t> pixel_data(const SkBitmap& r);
+  static int width(const SkBitmap& r) { return r.width(); }
+  static int height(const SkBitmap& r) { return r.height(); }
+
+  static bool Read(media_session::mojom::MediaImageBitmapDataView data,
+                   SkBitmap* out);
+
+  static bool IsNull(const SkBitmap& r) { return r.isNull(); }
 };
 
 }  // namespace mojo

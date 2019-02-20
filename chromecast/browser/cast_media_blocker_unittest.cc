@@ -45,6 +45,11 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD0(NextTrack, void());
   MOCK_METHOD0(SkipAd, void());
   MOCK_METHOD1(SetAudioFocusGroupId, void(const base::UnguessableToken&));
+  MOCK_METHOD4(GetMediaImageBitmap,
+               void(const media_session::MediaImage&,
+                    int minimum_size_px,
+                    int desired_size_px,
+                    GetMediaImageBitmapCallback callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
