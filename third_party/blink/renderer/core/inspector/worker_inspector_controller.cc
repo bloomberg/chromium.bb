@@ -53,18 +53,20 @@ namespace blink {
 // static
 WorkerInspectorController* WorkerInspectorController::Create(
     WorkerThread* thread,
+    const KURL& url,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(thread->GetIsolate());
   return debugger ? MakeGarbageCollected<WorkerInspectorController>(
-                        thread, debugger, std::move(inspector_task_runner),
+                        thread, url, debugger, std::move(inspector_task_runner),
                         std::move(devtools_params))
                   : nullptr;
 }
 
 WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
+    const KURL& url,
     WorkerThreadDebugger* debugger,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
     std::unique_ptr<WorkerDevToolsParams> devtools_params)
@@ -77,7 +79,7 @@ WorkerInspectorController::WorkerInspectorController(
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
     worker_devtools_token_ = devtools_params->devtools_worker_token;
     parent_devtools_token_ = scope->GetParentDevToolsToken();
-    url_ = scope->Url();
+    url_ = url;
     worker_thread_id_ = thread->GetPlatformThreadId();
   }
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
