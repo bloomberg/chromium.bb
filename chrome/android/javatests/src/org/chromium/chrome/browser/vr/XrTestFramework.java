@@ -15,6 +15,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -536,5 +537,13 @@ public abstract class XrTestFramework {
 
         CriteriaHelper.pollUiThread(
                 () -> SadTab.isShowing(tab), "Renderer killed, but sad tab not shown");
+    }
+
+    public void openIncognitoTab(final String url) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mRule.getActivity()
+                    .getTabCreator(true /* incognito */)
+                    .launchUrl(url, TabLaunchType.FROM_LINK);
+        });
     }
 }

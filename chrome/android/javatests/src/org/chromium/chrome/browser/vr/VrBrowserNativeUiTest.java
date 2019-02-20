@@ -409,4 +409,123 @@ public class VrBrowserNativeUiTest {
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "reposition_bar_keyboard_open", mRenderTestRule);
     }
+
+    /*
+     * Tests that hovering over various elements in the URL bar looks as expected.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testUrlBarHovering() throws InterruptedException, TimeoutException, IOException {
+        testUrlBarHoveringImpl(false);
+    }
+
+    /**
+     * Tests that hovering over various elements in the URL bar looks as expected while in Incognito
+     * mode.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testUrlBarHoveringIncognito()
+            throws InterruptedException, TimeoutException, IOException {
+        mVrBrowserTestFramework.openIncognitoTab("about:blank");
+        testUrlBarHoveringImpl(true);
+    }
+
+    private void testUrlBarHoveringImpl(boolean incognito)
+            throws InterruptedException, TimeoutException, IOException {
+        // Back button hovering doesn't do anything unless the back button is actually active. so
+        // navigate to do that.
+        mVrTestRule.loadUrl("chrome://version/", PAGE_LOAD_TIMEOUT_S);
+        // Back button.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.BACK_BUTTON, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("back_button_hover", incognito), mRenderTestRule);
+        // Security icon.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.PAGE_INFO_BUTTON, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("security_icon_hover", incognito), mRenderTestRule);
+        // URL bar.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.URL, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("url_bar_hover", incognito), mRenderTestRule);
+        // Overflow menu.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("overflow_menu_hover", incognito), mRenderTestRule);
+    }
+
+    /**
+     * Tests that hovering over various elements in the overflow menu looks as expected.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testOverflowMenuHovering()
+            throws InterruptedException, TimeoutException, IOException {
+        testOverflowMenuHoveringImpl(false);
+    }
+
+    /**
+     * Tests that hovering over various elements in the overflow menu looks as expected while in
+     * Incognito mode.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testOverflowMenuHoveringIncognito()
+            throws InterruptedException, TimeoutException, IOException {
+        mVrBrowserTestFramework.openIncognitoTab("about:blank");
+        testOverflowMenuHoveringImpl(true);
+    }
+
+    private void testOverflowMenuHoveringImpl(boolean incognito)
+            throws InterruptedException, TimeoutException, IOException {
+        // TODO(https://crbug.com/930840): Remove this when the weird gradient behavior is fixed.
+        mRenderTestRule.setPixelDiffThreshold(2);
+        // The forward button only has a hover state if the button is actually active, so navigate
+        // a bit.
+        mVrTestRule.loadUrl("chrome://version/", PAGE_LOAD_TIMEOUT_S);
+        VrBrowserTransitionUtils.navigateBack();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mVrTestRule.getActivity().getActivityTab(), "about:blank");
+        // Make the overflow menu appear.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.RELOAD_BUTTON, true /* visible */, () -> {
+                    NativeUiUtils.clickElement(UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+                });
+        // Reload button.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.RELOAD_BUTTON, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("reload_button_hover", incognito), mRenderTestRule);
+        // Forward Button.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.FORWARD_BUTTON, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                generateRenderTestIdentifier("forward_button_hover", incognito), mRenderTestRule);
+        // New Incognito tab button/close Incognito tabs button.
+        if (incognito) {
+            NativeUiUtils.hoverElement(UserFriendlyElementName.CLOSE_INCOGNITO_TABS, new PointF());
+            NativeUiUtils.waitForUiQuiescence();
+            RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                    generateRenderTestIdentifier("close_incognito_tabs_hover", incognito),
+                    mRenderTestRule);
+        } else {
+            NativeUiUtils.hoverElement(UserFriendlyElementName.NEW_INCOGNITO_TAB, new PointF());
+            NativeUiUtils.waitForUiQuiescence();
+            RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                    generateRenderTestIdentifier("new_incognito_tab_hover", incognito),
+                    mRenderTestRule);
+        }
+    }
+
+    private String generateRenderTestIdentifier(String name, boolean incognito) {
+        return name + (incognito ? "_incognito" : "") + "_browser_ui";
+    }
 }
