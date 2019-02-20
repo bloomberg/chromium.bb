@@ -2217,13 +2217,6 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2231,7 +2224,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -2309,13 +2302,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2333,7 +2319,7 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2440,13 +2426,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2464,7 +2443,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2584,13 +2563,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2608,7 +2580,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2725,13 +2697,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2745,7 +2710,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2851,13 +2816,6 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2871,7 +2829,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2982,13 +2940,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3003,7 +2954,7 @@ TEST_P(QuicNetworkTransactionTest,
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
-  rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3061,13 +3012,6 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -3075,7 +3019,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3192,13 +3136,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3212,7 +3149,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3334,13 +3271,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3354,7 +3284,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3488,13 +3418,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3508,7 +3431,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3641,13 +3564,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3661,7 +3577,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3783,13 +3699,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3804,7 +3713,7 @@ TEST_P(QuicNetworkTransactionTest,
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
-  rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3879,13 +3788,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -3893,7 +3795,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3978,13 +3880,6 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -3992,7 +3887,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -5018,13 +4913,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
@@ -5056,13 +4944,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   request_.url = GURL("http://mail.example.org/");
   CreateSession();
@@ -5105,13 +4986,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -5119,7 +4993,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5194,11 +5068,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                         CompletionOnceCallback(), &request, net_log_.bound());
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
@@ -5291,11 +5160,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                         CompletionOnceCallback(), &request, net_log_.bound());
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
@@ -5361,13 +5225,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -5375,7 +5232,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5428,13 +5285,6 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -5442,7 +5292,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5490,13 +5340,6 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -5504,7 +5347,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5555,13 +5398,6 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -5569,7 +5405,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5930,13 +5766,6 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // TODO(rch): Check if we need a 0RTT version of ConnectionCloseDuringConnect
@@ -6011,13 +5840,6 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("myproxy.org", "192.168.0.1", "");
-  HostResolver::RequestInfo info(HostPortPair("myproxy.org", 443));
-  AddressList address;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                                  CompletionOnceCallback(), &request,
-                                  net_log_.bound());
-  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   crypto_client_stream_factory_.set_handshake_mode(
