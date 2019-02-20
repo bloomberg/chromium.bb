@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 
 namespace blink {
 
