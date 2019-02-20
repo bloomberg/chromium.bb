@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
+import android.graphics.PointF;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
 
@@ -105,8 +106,9 @@ public class VrBrowserDialogTest {
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             NativeUiUtils.performActionAndWaitForVisibilityStatus(
                     UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
-                        mVrBrowserTestFramework.runJavaScriptOrFail(
-                                promptCommand, POLL_TIMEOUT_LONG_MS);
+                        VrBrowserTestFramework.runJavaScriptOrFail(promptCommand,
+                                POLL_TIMEOUT_LONG_MS,
+                                mVrTestRule.getActivity().getActivityTab().getWebContents());
                     });
         });
     }
@@ -150,12 +152,17 @@ public class VrBrowserDialogTest {
         // Special case location because the callbacks never fire on swarming, likely because
         // location is disabled at the system level during device provisioning.
         if (!nameBase.equals("location_permission_prompt")) {
-            mVrBrowserTestFramework.waitOnJavaScriptStep();
+            // We specify the web contents here so that it works in both regular and incognito mode.
+            // This can be removed as part of https://crbug.com/931420
+            VrBrowserTestFramework.waitOnJavaScriptStep(
+                    mVrTestRule.getActivity().getActivityTab().getWebContents());
             Assert.assertEquals("Last permission interaction did not have expected grant result",
                     grant,
-                    Boolean.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
-                            "lastPermissionGranted", POLL_TIMEOUT_SHORT_MS)));
-            mVrBrowserTestFramework.assertNoJavaScriptErrors();
+                    Boolean.valueOf(VrBrowserTestFramework.runJavaScriptOrFail(
+                            "lastPermissionGranted", POLL_TIMEOUT_SHORT_MS,
+                            mVrTestRule.getActivity().getActivityTab().getWebContents())));
+            VrBrowserTestFramework.assertNoJavaScriptErrors(
+                    mVrTestRule.getActivity().getActivityTab().getWebContents());
         }
     }
 
@@ -167,9 +174,35 @@ public class VrBrowserDialogTest {
     @Feature({"Browser", "RenderTest"})
     public void testMicrophonePermissionPrompt()
             throws InterruptedException, TimeoutException, IOException {
+        testMicrophonePermissionPromptImpl(false);
+    }
+
+    /**
+     * Test navigating to a 2D page and requesting microphone permissions while in Incognito mode.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testMicrophonePermissionPromptIncognito()
+            throws InterruptedException, TimeoutException, IOException {
+        // Create an incognito tab
+        mVrBrowserTestFramework.openIncognitoTab("about:blank");
+        testMicrophonePermissionPromptImpl(true);
+    }
+
+    private void testMicrophonePermissionPromptImpl(boolean incognito)
+            throws InterruptedException, TimeoutException, IOException {
         permissionPromptTestImpl("navigator.getUserMedia({audio: true}, onGranted, onDenied)",
-                "microphone_permission_prompt",
+                "microphone_permission_prompt" + (incognito ? "_incognito" : ""),
                 UserFriendlyElementName.MICROPHONE_PERMISSION_INDICATOR, true /* grant */);
+        // Additionally, make sure that the permission indicator reacts properly to a hover.
+        NativeUiUtils.hoverElement(
+                UserFriendlyElementName.MICROPHONE_PERMISSION_INDICATOR, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "microphone_permission_indicator_hover" + (incognito ? "_incognito" : "")
+                        + "_browser_ui",
+                mRenderTestRule);
     }
 
     /**
