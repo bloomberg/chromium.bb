@@ -1185,7 +1185,7 @@ const FeaturePolicy::FeatureState& LocalFrameClientImpl::GetOpenerFeatureState()
     const {
   DCHECK(web_frame_->GetFrame()->IsMainFrame());
   return web_frame_->OpenerFeatureState();
-};
+}
 
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
                    WebLocalFrameClient::CrossOriginRedirects::kFollow);

@@ -83,7 +83,7 @@ void FakeFileOperations::FakeFileWriter::Open(const base::FilePath& filename,
       FROM_HERE,
       base::BindOnce(&FakeFileWriter::DoOpen, weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));
-};
+}
 
 void FakeFileOperations::FakeFileWriter::WriteChunk(std::string data,
                                                     Callback callback) {
