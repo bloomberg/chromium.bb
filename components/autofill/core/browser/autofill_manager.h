@@ -435,9 +435,10 @@ class AutofillManager : public AutofillHandler,
   // |FieldTypeGroup|.
   bool FormHasAddressField(const FormData& form) WARN_UNUSED_RESULT;
 
-  // Returns a list of values from the stored profiles that match |type| and the
-  // value of |field| and returns the labels of the matching profiles. |labels|
-  // is filled with the Profile label.
+  // Returns Suggestions corresponding to both the |autofill_field| type and
+  // stored profiles whose values match the contents of |field|. |form| stores
+  // data about the form with which the user is interacting, e.g. the number and
+  // types of form fields.
   std::vector<Suggestion> GetProfileSuggestions(
       const FormStructure& form,
       const FormFieldData& field,
