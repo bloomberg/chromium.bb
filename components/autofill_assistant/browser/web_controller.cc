@@ -34,12 +34,12 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
-// Time between two periodic box model checks.
-static constexpr base::TimeDelta kPeriodicBoxModelCheckInterval =
+// Time between two periodic box model and document ready state checks.
+static constexpr base::TimeDelta kPeriodicCheckInterval =
     base::TimeDelta::FromMilliseconds(200);
 
 // Timeout after roughly 10 seconds (50*200ms).
-constexpr int kPeriodicBoxModelCheckRounds = 50;
+constexpr int kPeriodicCheckRounds = 50;
 
 // Expiration time for the Autofill Assistant cookie.
 constexpr int kCookieExpiresSeconds = 600;
@@ -153,6 +153,13 @@ const char* const kQuerySelectorAll =
       return undefined;
     })";
 
+// Javascript code to query whether the document is ready for interact.
+const char* const kIsDocumentReadyForInteract =
+    R"(function () {
+      return document.readyState == 'interactive'
+          || document.readyState == 'complete';
+    })";
+
 bool ConvertPseudoType(const PseudoType pseudo_type,
                        dom::PseudoType* pseudo_type_output) {
   switch (pseudo_type) {
@@ -220,7 +227,7 @@ void WebController::ElementPositionGetter::Start(
   devtools_client_ = devtools_client;
   object_id_ = element_object_id;
   callback_ = std::move(callback);
-  remaining_rounds_ = kPeriodicBoxModelCheckRounds;
+  remaining_rounds_ = kPeriodicCheckRounds;
 
   // Wait for a roundtrips through the renderer and compositor pipeline,
   // otherwise touch event may be dropped because of missing handler.
@@ -268,17 +275,15 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
       round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
 
   // Wait for at least three rounds (~600ms =
-  // 3*kPeriodicBoxModelCheckInterval) for visual state update callback since
+  // 3*kPeriodicCheckInterval) for visual state update callback since
   // it might take longer time to return or never return if no updates.
-  DCHECK(kPeriodicBoxModelCheckRounds > 2 &&
-         kPeriodicBoxModelCheckRounds >= remaining_rounds_);
+  DCHECK(kPeriodicCheckRounds > 2 && kPeriodicCheckRounds >= remaining_rounds_);
   if (has_point_ && new_point_x == point_x_ && new_point_y == point_y_ &&
-      (visual_state_updated_ ||
-       remaining_rounds_ + 2 < kPeriodicBoxModelCheckRounds)) {
+      (visual_state_updated_ || remaining_rounds_ + 2 < kPeriodicCheckRounds)) {
     // Note that there is still a chance that the element's position has been
     // changed after the last call of GetBoxModel, however, it might be safe
     // to assume the element's position will not be changed before issuing
-    // click or tap event after stable for kPeriodicBoxModelCheckInterval. In
+    // click or tap event after stable for kPeriodicCheckInterval. In
     // addition, checking again after issuing click or tap event doesn't help
     // since the change may be expected.
     OnResult(new_point_x, new_point_y);
@@ -319,7 +324,7 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
           weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicBoxModelCheckInterval);
+      kPeriodicCheckInterval);
 }
 
 void WebController::ElementPositionGetter::OnScrollIntoView(
@@ -336,7 +341,7 @@ void WebController::ElementPositionGetter::OnScrollIntoView(
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
           weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicBoxModelCheckInterval);
+      kPeriodicCheckInterval);
 }
 
 void WebController::ElementPositionGetter::OnResult(int x, int y) {
@@ -423,7 +428,26 @@ void WebController::OnFindElementForClickOrTap(
     return;
   }
 
-  ClickOrTapElement(std::move(result), is_a_click, std::move(callback));
+  std::string element_object_id = result->object_id;
+  WaitForDocumentToBecomeInteractive(
+      kPeriodicCheckRounds, element_object_id,
+      base::BindOnce(
+          &WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), is_a_click,
+          std::move(result)));
+}
+
+void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
+    base::OnceCallback<void(bool)> callback,
+    bool is_a_click,
+    std::unique_ptr<FindElementResult> target_element,
+    bool result) {
+  if (!result) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  ClickOrTapElement(std::move(target_element), is_a_click, std::move(callback));
 }
 
 void WebController::ClickOrTapElement(
@@ -1551,6 +1575,50 @@ void WebController::ClearCookie() {
   DVLOG(3) << __func__;
   devtools_client_->GetNetwork()->DeleteCookies(kAutofillAssistantCookieName,
                                                 base::DoNothing());
+}
+
+void WebController::WaitForDocumentToBecomeInteractive(
+    int remaining_rounds,
+    std::string object_id,
+    base::OnceCallback<void(bool)> callback) {
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetFunctionDeclaration(std::string(kIsDocumentReadyForInteract))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnWaitForDocumentToBecomeInteractive,
+                     weak_ptr_factory_.GetWeakPtr(), remaining_rounds,
+                     object_id, std::move(callback)));
+}
+
+void WebController::OnWaitForDocumentToBecomeInteractive(
+    int remaining_rounds,
+    std::string object_id,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || !result->GetResult() || result->HasExceptionDetails() ||
+      remaining_rounds <= 0) {
+    DVLOG(1) << __func__
+             << " Failed to wait for the document to become interactive with "
+                "remaining_rounds: "
+             << remaining_rounds;
+    std::move(callback).Run(false);
+    return;
+  }
+
+  DCHECK(result->GetResult()->GetValue()->is_bool());
+  if (result->GetResult()->GetValue()->GetBool()) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebController::WaitForDocumentToBecomeInteractive,
+                     weak_ptr_factory_.GetWeakPtr(), --remaining_rounds,
+                     object_id, std::move(callback)),
+      kPeriodicCheckInterval);
 }
 
 }  // namespace autofill_assistant

@@ -267,6 +267,11 @@ class WebController {
   void OnFindElementForClickOrTap(base::OnceCallback<void(bool)> callback,
                                   bool is_a_click,
                                   std::unique_ptr<FindElementResult> result);
+  void OnWaitDocumentToBecomeInteractiveForClickOrTap(
+      base::OnceCallback<void(bool)> callback,
+      bool is_a_click,
+      std::unique_ptr<FindElementResult> target_element,
+      bool result);
   void OnFindElementForTap(base::OnceCallback<void(bool)> callback,
                            std::unique_ptr<FindElementResult> result);
   void ClickOrTapElement(std::unique_ptr<FindElementResult> target_element,
@@ -435,11 +440,9 @@ class WebController {
   void OnGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-
   void OnFindElementForPosition(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<FindElementResult> result);
-
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -456,6 +459,17 @@ class WebController {
                    std::unique_ptr<network::SetCookieResult> result);
   void OnHasCookie(base::OnceCallback<void(bool)> callback,
                    std::unique_ptr<network::GetCookiesResult> result);
+
+  // Waits for the document.readyState to be 'interactive' or 'complete'.
+  void WaitForDocumentToBecomeInteractive(
+      int remaining_rounds,
+      std::string object_id,
+      base::OnceCallback<void(bool)> callback);
+  void OnWaitForDocumentToBecomeInteractive(
+      int remaining_rounds,
+      std::string object_id,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
