@@ -53,7 +53,7 @@ public final class FeedConfiguration {
 
     private static final String NON_CACHED_PAGE_SIZE = "non_cached_page_size";
     /** Default value for non cached page size. */
-    public static final int NON_CACHED_PAGE_SIZE_DEFAULT = 20;
+    public static final int NON_CACHED_PAGE_SIZE_DEFAULT = 25;
 
     private static final String SESSION_LIFETIME_MS = "session_lifetime_ms";
     /** Default value for session lifetime. */
