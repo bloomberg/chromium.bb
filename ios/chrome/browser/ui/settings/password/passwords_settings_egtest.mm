@@ -1581,8 +1581,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                             UIAccessibilityTraitNotEnabled))];
 }
 
-// Test that user can type text in search field and that it filters out the
-// passwords and blacklisted items.
+// Test that when user types text in search field, passwords and blacklisted
+// items are filtered out and "save passwords" switch is removed.
 - (void)testSearchPasswords {
   SaveExamplePasswordForms();
   SaveExampleBlacklistedForms();
@@ -1598,11 +1598,13 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"exclude2.com")
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[EarlGrey selectElementWithMatcher:SearchTextField()]
       performAction:grey_typeText(@"2")];
+
+  // Check that the "Save Passwords" switch is hidden.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"savePasswordsItem_switch", YES)]
+      assertWithMatcher:grey_nil()];
 
   [GetInteractionForPasswordEntry(@"example11.com, user1")
       assertWithMatcher:grey_nil()];

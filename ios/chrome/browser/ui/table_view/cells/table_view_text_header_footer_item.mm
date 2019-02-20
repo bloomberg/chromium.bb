@@ -91,12 +91,12 @@
     // beyond the margins.
     heightConstraint.priority = UILayoutPriorityDefaultHigh + 1;
     NSLayoutConstraint* topAnchorConstraint = [containerView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                    constant:kTableViewVerticalSpacing];
+        constraintEqualToAnchor:self.contentView.topAnchor
+                       constant:kTableViewVerticalSpacing];
     topAnchorConstraint.priority = UILayoutPriorityDefaultHigh;
     NSLayoutConstraint* bottomAnchorConstraint = [containerView.bottomAnchor
-        constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                 constant:-kTableViewVerticalSpacing];
+        constraintEqualToAnchor:self.contentView.bottomAnchor
+                       constant:-kTableViewVerticalSpacing];
     bottomAnchorConstraint.priority = UILayoutPriorityDefaultHigh;
     NSLayoutConstraint* leadingAnchorConstraint = [containerView.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
