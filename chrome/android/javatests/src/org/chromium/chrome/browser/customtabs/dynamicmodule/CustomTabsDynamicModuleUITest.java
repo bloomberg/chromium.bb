@@ -318,7 +318,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_moduleLoadingFailed_noTopBar() throws Exception {
+    public void testSetTopBarContentView_moduleLoadingFailed_cctHeaderVisible() throws Exception {
         Intent intent = new IntentBuilder(mTestPage).setModuleFailToLoadComponentName().build();
 
         mActivityRule.startCustomTabActivityWithIntent(intent);
@@ -327,9 +327,13 @@ public class CustomTabsDynamicModuleUITest {
         runOnUiThreadBlocking(() -> {
             View anyView = new View(getActivity());
             getModuleCoordinator().setTopBarContentView(anyView);
+            ViewGroup topBar = getActivity().findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
+            assertEquals(View.GONE, anyView.getVisibility());
         });
 
-        assertNoTopBar();
+        assertCCTHeaderIsVisible();
     }
 
     @Test
