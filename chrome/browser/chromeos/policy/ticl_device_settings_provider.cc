@@ -16,8 +16,7 @@ TiclDeviceSettingsProvider::~TiclDeviceSettingsProvider() {
 }
 
 bool TiclDeviceSettingsProvider::UseGCMChannel() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      invalidation::switches::kInvalidationUseGCMChannel);
+  return true;
 }
 
 }  // namespace policy
