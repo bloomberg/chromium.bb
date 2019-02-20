@@ -14,6 +14,8 @@ using AnimationWorkletOutput = cc::AnimationWorkletOutput;
 using AnimationWorkletDispatcherInput = cc::MutatorInputState;
 using AnimationWorkletDispatcherOutput = cc::MutatorOutputState;
 using WorkletAnimationId = cc::WorkletAnimationId;
+using MutateQueuingStrategy = cc::MutateQueuingStrategy;
+using MutateStatus = cc::MutateStatus;
 
 }  // namespace blink
 

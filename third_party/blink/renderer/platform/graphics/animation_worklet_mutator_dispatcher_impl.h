@@ -51,8 +51,9 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   void MutateSynchronously(
       std::unique_ptr<AnimationWorkletDispatcherInput>) override;
 
-  void MutateAsynchronously(
-      std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+  bool MutateAsynchronously(std::unique_ptr<AnimationWorkletDispatcherInput>,
+                            MutateQueuingStrategy,
+                            AsyncMutationCompleteCallback) override;
 
   // TODO(majidvp): Remove when timeline inputs are known.
   bool HasMutators() override;
@@ -91,10 +92,12 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   InputMap CreateInputMap(AnimationWorkletDispatcherInput& mutator_input) const;
 
-  // Dispatches mutation update requests.  The callback is triggered once
-  // all mutation updates have been computed on the animation worklet thread
-  // associated with the last mutation to complete.
+  // Dispatches mutation update requests. The callback is triggered once all
+  // mutation updates have been computed and it runs on the animation worklet
+  // thread associated with the last mutation to complete.
   void RequestMutations(WTF::CrossThreadClosure done_callback);
+
+  void MutateAsynchronouslyInternal(AsyncMutationCompleteCallback);
 
   void AsyncMutationsDone(int async_mutation_id);
 
@@ -130,6 +133,20 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // empty. For this reason, it is important to clear the output at the end of
   // the mutation cycle.
   scoped_refptr<OutputVectorRef> outputs_;
+
+  // Input queued for the next mutation cycle, which will automatically be
+  // triggered at the completion of the current cycle. Only one collection of
+  // inputs can be queued at any point in time. In a typical frame, we expect
+  // one request for the active tree, and one for the pending tree. The active
+  // tree mutation is best effort will be dropped when busy. A pending tree
+  // mutation is queued to ensure initial values are resolved. The pending tree
+  // activation is blocked until the previous request completes preventing the
+  // need to queue multiple requests.
+  std::unique_ptr<AnimationWorkletDispatcherInput> queued_mutator_input_;
+
+  // Active and queued callbacks for the completion of an async mutation cycle.
+  AsyncMutationCompleteCallback on_async_mutation_complete_;
+  AsyncMutationCompleteCallback queued_on_async_mutation_complete_;
 
   base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 

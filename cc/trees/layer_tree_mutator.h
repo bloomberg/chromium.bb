@@ -18,6 +18,17 @@
 
 namespace cc {
 
+enum class MutateQueuingStrategy {
+  kDrop,            // Discard request if busy.
+  kQueueAndReplace  // Queue request if busy replacing previously queued
+                    // request.
+};
+
+enum class MutateStatus {
+  kCompleted,  // Mutation cycle successfully ran to completion.
+  kCanceled    // Mutation cycle dropped from the input queue.
+};
+
 struct CC_EXPORT WorkletAnimationId {
   // Uniquely identifies the animation worklet with which this animation is
   // associated.

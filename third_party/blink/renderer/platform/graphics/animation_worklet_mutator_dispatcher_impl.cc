@@ -122,25 +122,41 @@ void AnimationWorkletMutatorDispatcherImpl::MutateSynchronously(
       base::TimeDelta::FromMilliseconds(100), 50);
 }
 
-void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronously(
-    std::unique_ptr<AnimationWorkletDispatcherInput> mutator_input) {
-  if (mutator_map_.IsEmpty() || !mutator_input)
-    return;
+bool AnimationWorkletMutatorDispatcherImpl::MutateAsynchronously(
+    std::unique_ptr<AnimationWorkletDispatcherInput> mutator_input,
+    MutateQueuingStrategy queuing_strategy,
+    AsyncMutationCompleteCallback done_callback) {
   DCHECK(client_);
   DCHECK(host_queue_->BelongsToCurrentThread());
+  if (mutator_map_.IsEmpty() || !mutator_input)
+    return false;
+
   if (!mutator_input_map_.IsEmpty()) {
-    // Still running mutations from a previous frame. Skip this frame to avoid
-    // lagging behind.
-    // TODO(kevers): Consider queuing pending mutation cycle. A pending tree
-    // mutation should likely be queued an active tree mutation cycle is still
-    // running.
-    return;
+    // Still running mutations from a previous frame.
+    if (queuing_strategy == MutateQueuingStrategy::kDrop) {
+      // Skip this frame to avoid lagging behind.
+      return false;
+    }
+    DCHECK(queuing_strategy == MutateQueuingStrategy::kQueueAndReplace);
+    DCHECK(!queued_mutator_input_);
+    // Preemptive queue.
+    queued_mutator_input_.reset(mutator_input.release());
+    queued_on_async_mutation_complete_ = std::move(done_callback);
+    return true;
   }
 
   mutator_input_map_ = CreateInputMap(*mutator_input);
   if (mutator_input_map_.IsEmpty())
-    return;
+    return false;
 
+  MutateAsynchronouslyInternal(std::move(done_callback));
+  return true;
+}
+
+void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronouslyInternal(
+    AsyncMutationCompleteCallback done_callback) {
+  DCHECK(host_queue_->BelongsToCurrentThread());
+  on_async_mutation_complete_ = std::move(done_callback);
   int next_async_mutation_id = GetNextAsyncMutationId();
   TRACE_EVENT_ASYNC_BEGIN0("cc",
                            "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
@@ -158,7 +174,6 @@ void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronously(
       },
       host_queue_, weak_factory_.GetWeakPtr(), next_async_mutation_id);
 
-  client_->NotifyAnimationsPending();
   RequestMutations(std::move(on_done));
 }
 
@@ -167,10 +182,17 @@ void AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone(
   DCHECK(client_);
   DCHECK(host_queue_->BelongsToCurrentThread());
   ApplyMutationsOnHostThread();
-  client_->NotifyAnimationsReady();
+  auto done_callback = std::move(on_async_mutation_complete_);
+  if (queued_mutator_input_.get()) {
+    mutator_input_map_ = CreateInputMap(*queued_mutator_input_);
+    queued_mutator_input_.reset();
+    // Trigger queued mutation request.
+    MutateAsynchronouslyInternal(std::move(queued_on_async_mutation_complete_));
+  }
   TRACE_EVENT_ASYNC_END0("cc",
                          "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
                          async_mutation_id);
+  std::move(done_callback).Run(MutateStatus::kCompleted);
   // TODO(kevers): Add UMA metric to track the asynchronous mutate duration.
 }
 
@@ -229,6 +251,11 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
   DCHECK(outputs_->get().IsEmpty());
 
   int num_requests = mutator_map_.size();
+  if (num_requests == 0) {
+    std::move(done_callback).Run();
+    return;
+  }
+
   int next_request_index = 0;
   outputs_->get().Grow(num_requests);
   base::RepeatingClosure on_mutator_done = base::BarrierClosure(
