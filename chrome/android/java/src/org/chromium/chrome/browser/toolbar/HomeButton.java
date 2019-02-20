@@ -31,14 +31,18 @@ import org.chromium.ui.widget.ChromeImageButton;
  * The home button.
  */
 public class HomeButton extends ChromeImageButton
-        implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
+        implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener,
+                   HomepageManager.HomepageStateListener {
     private static final int ID_REMOVE = 0;
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
-    /** The {@link sActivityTabTabObserver} used to know when the active page changed. */
+    /** The {@link ActivityTabTabObserver} used to know when the active page changed. */
     private ActivityTabTabObserver mActivityTabTabObserver;
+
+    /** The {@link ActivityTabProvider} used to know if the active tab is on the NTP. */
+    private ActivityTabProvider mActivityTabProvider;
 
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -51,6 +55,8 @@ public class HomeButton extends ChromeImageButton
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             setOnCreateContextMenuListener(this);
         }
+
+        HomepageManager.getInstance().addListener(this);
     }
 
     public void destroy() {
@@ -58,10 +64,13 @@ public class HomeButton extends ChromeImageButton
             mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
+
         if (mActivityTabTabObserver != null) {
             mActivityTabTabObserver.destroy();
             mActivityTabTabObserver = null;
         }
+
+        HomepageManager.getInstance().removeListener(this);
     }
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -86,23 +95,37 @@ public class HomeButton extends ChromeImageButton
         return true;
     }
 
+    @Override
+    public void onHomepageStateUpdated() {
+        updateButtonEnabledState();
+    }
+
     public void setActivityTabProvider(ActivityTabProvider activityTabProvider) {
+        mActivityTabProvider = activityTabProvider;
         mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
             public void onObservingDifferentTab(Tab tab) {
                 if (tab == null) return;
-                setEnabled(shouldEnableHome(tab.getUrl()));
+                updateButtonEnabledState();
             }
 
             @Override
             public void onUpdateUrl(Tab tab, String url) {
-                setEnabled(shouldEnableHome(url));
+                updateButtonEnabledState();
             }
         };
     }
 
-    private static boolean shouldEnableHome(String url) {
-        if (!FeatureUtilities.isBottomToolbarEnabled()) return true;
-        return !NewTabPage.isNTPUrl(url);
+    private void updateButtonEnabledState() {
+        if (FeatureUtilities.isNewTabPageButtonEnabled() || !HomepageManager.isHomepageEnabled()) {
+            setEnabled(!isActiveTabNTP());
+        } else {
+            setEnabled(true);
+        }
+    }
+
+    private boolean isActiveTabNTP() {
+        if (mActivityTabProvider == null) return false;
+        return NewTabPage.isNTPUrl(mActivityTabProvider.getActivityTab().getUrl());
     }
 }
