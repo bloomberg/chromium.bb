@@ -310,6 +310,7 @@ void WebContentsViewAndroid::ShowContextMenu(
     RenderFrameHost* render_frame_host, const ContextMenuParams& params) {
   auto* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
       web_contents_->GetRenderWidgetHostView());
+
   // See if context menu is handled by SelectionController as a selection menu.
   // If not, use the delegate to show it.
   if (rwhv && rwhv->ShowSelectionMenu(params))

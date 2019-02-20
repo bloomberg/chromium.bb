@@ -53,7 +53,8 @@ class SigninViewControllerDelegateViews
   content::WebContents* GetWebContents() override;
 
   // content::WebContentsDelegate:
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
   bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

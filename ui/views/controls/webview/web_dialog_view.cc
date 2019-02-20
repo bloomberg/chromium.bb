@@ -268,10 +268,12 @@ bool WebDialogView::ShouldShowDialogTitle() const {
 }
 
 bool WebDialogView::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   if (delegate_)
-    return delegate_->HandleContextMenu(params);
-  return WebDialogWebContentsDelegate::HandleContextMenu(params);
+    return delegate_->HandleContextMenu(render_frame_host, params);
+  return WebDialogWebContentsDelegate::HandleContextMenu(render_frame_host,
+                                                         params);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

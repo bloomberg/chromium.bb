@@ -611,6 +611,7 @@ base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
 }
 
 bool ProfileChooserView::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Suppresses the context menu because some features, such as inspecting
   // elements, are not appropriate in a bubble.

@@ -98,7 +98,8 @@ class UserManagerProfileDialog {
     BaseDialogDelegate();
 
     // content::WebContentsDelegate:
-    bool HandleContextMenu(const content::ContextMenuParams& params) override;
+    bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                           const content::ContextMenuParams& params) override;
 
     // content::WebContentsDelegate:
     void LoadingStateChanged(content::WebContents* source,
