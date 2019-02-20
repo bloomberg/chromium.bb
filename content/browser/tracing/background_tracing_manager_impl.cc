@@ -511,6 +511,10 @@ void BackgroundTracingManagerImpl::StartTracing(
   }
 #endif
 
+  is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
+      config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
+                             base::Unretained(this), preset));
+
   // Activate the categories immediately. StartTracing eventually does this
   // itself, but asynchronously via PostTask, and in the meantime events will be
   // dropped. This ensures that we start recording events for those categories
@@ -521,10 +525,6 @@ void BackgroundTracingManagerImpl::StartTracing(
       modes |= base::trace_event::TraceLog::FILTERING_MODE;
     base::trace_event::TraceLog::GetInstance()->SetEnabled(config, modes);
   }
-
-  is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
-      config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
-                             base::Unretained(this), preset));
 
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }

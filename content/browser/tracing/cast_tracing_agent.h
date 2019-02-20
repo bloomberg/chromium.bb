@@ -33,10 +33,12 @@ class CastTracingAgent : public tracing::BaseAgent {
 
   // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
   void StartTracing(const std::string& config,
-                    base::TimeTicks coordinator_time) override;
+                    base::TimeTicks coordinator_time,
+                    Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
 
-  void StartTracingCallbackProxy(bool success);
+  void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
+                                 bool success);
   void HandleTraceData(chromecast::SystemTracer::Status status,
                        std::string trace_data);
 

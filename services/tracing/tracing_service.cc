@@ -4,6 +4,7 @@
 
 #include "services/tracing/tracing_service.h"
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -25,10 +26,12 @@ namespace tracing {
 class ServiceListener : public service_manager::mojom::ServiceManagerListener {
  public:
   ServiceListener(service_manager::Connector* connector,
-                  AgentRegistry* agent_registry)
+                  AgentRegistry* agent_registry,
+                  Coordinator* coordinator)
       : binding_(this),
         connector_(connector),
-        agent_registry_(agent_registry) {
+        agent_registry_(agent_registry),
+        coordinator_(coordinator) {
     service_manager::mojom::ServiceManagerPtr service_manager;
     connector_->BindInterface(service_manager::mojom::kServiceName,
                               &service_manager);
@@ -58,31 +61,75 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     traced_process->ConnectToTracingService(std::move(new_connection_request));
   }
 
+  size_t CountServicesWithPID(uint32_t pid) {
+    return std::count_if(service_pid_map_.begin(), service_pid_map_.end(),
+                         [pid](decltype(service_pid_map_)::value_type p) {
+                           return p.second == pid;
+                         });
+  }
+
+  void ServiceAddedWithPID(const service_manager::Identity& identity,
+                           uint32_t pid) {
+    service_pid_map_[identity] = pid;
+    // First service with this PID added; expect a connection from it.
+    if (CountServicesWithPID(pid) == 1) {
+      coordinator_->AddExpectedPID(pid);
+      ConnectProcessToTracingService(identity);
+    }
+  }
+
+  void ServiceRemoved(const service_manager::Identity& identity) {
+    auto entry = service_pid_map_.find(identity);
+    if (entry != service_pid_map_.end()) {
+      uint32_t pid = entry->second;
+      service_pid_map_.erase(entry);
+      // Last entry with this PID removed; stop expecting it
+      // to connect to the tracing service.
+      if (CountServicesWithPID(pid) == 0) {
+        coordinator_->RemoveExpectedPID(pid);
+      }
+    }
+  }
+
   // service_manager::mojom::ServiceManagerListener implementation.
   void OnInit(std::vector<service_manager::mojom::RunningServiceInfoPtr>
                   running_services) override {
     for (auto& service : running_services) {
-      ConnectProcessToTracingService(service->identity);
+      if (service->pid) {
+        ServiceAddedWithPID(service->identity, service->pid);
+      }
     }
+
+    coordinator_->FinishedReceivingRunningPIDs();
+  }
+
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {
+    ServiceAddedWithPID(identity, pid);
+  }
+
+  void OnServiceFailedToStart(
+      const service_manager::Identity& identity) override {
+    ServiceRemoved(identity);
+  }
+
+  void OnServiceStopped(const service_manager::Identity& identity) override {
+    ServiceRemoved(identity);
   }
 
   void OnServiceStarted(const service_manager::Identity& identity,
                         uint32_t pid) override {
-    ConnectProcessToTracingService(identity);
   }
 
   void OnServiceCreated(
       service_manager::mojom::RunningServiceInfoPtr service) override {}
-  void OnServicePIDReceived(const service_manager::Identity& identity,
-                            uint32_t pid) override {}
-  void OnServiceFailedToStart(
-      const service_manager::Identity& identity) override {}
-  void OnServiceStopped(const service_manager::Identity& identity) override {}
 
  private:
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
   service_manager::Connector* connector_;
   AgentRegistry* agent_registry_;
+  Coordinator* coordinator_;
+  std::map<service_manager::Identity, uint32_t> service_pid_map_;
 };
 
 TracingService::TracingService(service_manager::mojom::ServiceRequest request)
@@ -105,7 +152,7 @@ void TracingService::OnStart() {
     registry_.AddInterface(
         base::BindRepeating(&PerfettoTracingCoordinator::BindCoordinatorRequest,
                             base::Unretained(perfetto_coordinator.get())));
-    perfetto_tracing_coordinator_ = std::move(perfetto_coordinator);
+    tracing_coordinator_ = std::move(perfetto_coordinator);
   } else {
     auto tracing_coordinator = std::make_unique<Coordinator>(
         tracing_agent_registry_.get(),
@@ -118,7 +165,8 @@ void TracingService::OnStart() {
   }
 
   service_listener_ = std::make_unique<ServiceListener>(
-      service_binding_.GetConnector(), tracing_agent_registry_.get());
+      service_binding_.GetConnector(), tracing_agent_registry_.get(),
+      tracing_coordinator_.get());
 }
 
 void TracingService::OnBindInterface(
