@@ -8,8 +8,10 @@ namespace content {
 
 RefCountedVideoCaptureFactory::RefCountedVideoCaptureFactory(
     video_capture::mojom::DeviceFactoryPtr device_factory,
+    video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider,
     base::OnceClosure destruction_cb)
     : device_factory_(std::move(device_factory)),
+      device_factory_provider_(std::move(device_factory_provider)),
       destruction_cb_(std::move(destruction_cb)),
       weak_ptr_factory_(this) {}
 
@@ -20,6 +22,10 @@ RefCountedVideoCaptureFactory::~RefCountedVideoCaptureFactory() {
 base::WeakPtr<RefCountedVideoCaptureFactory>
 RefCountedVideoCaptureFactory::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void RefCountedVideoCaptureFactory::ShutdownServiceAsap() {
+  device_factory_provider_->ShutdownServiceAsap();
 }
 
 void RefCountedVideoCaptureFactory::ReleaseFactoryForTesting() {

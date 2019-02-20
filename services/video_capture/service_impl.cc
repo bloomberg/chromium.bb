@@ -73,6 +73,10 @@ bool ServiceImpl::HasNoContextRefs() {
   return keepalive_.HasNoRefs();
 }
 
+void ServiceImpl::ShutdownServiceAsap() {
+  binding_.RequestClose();
+}
+
 void ServiceImpl::OnStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -145,8 +149,11 @@ void ServiceImpl::LazyInitializeDeviceFactoryProvider() {
   if (device_factory_provider_)
     return;
 
-  device_factory_provider_ =
-      std::make_unique<DeviceFactoryProviderImpl>(ui_task_runner_);
+  // Use of base::Unretained() is safe because |this| owns, and therefore
+  // outlives |device_factory_provider_|
+  device_factory_provider_ = std::make_unique<DeviceFactoryProviderImpl>(
+      ui_task_runner_, base::BindOnce(&ServiceImpl::ShutdownServiceAsap,
+                                      base::Unretained(this)));
 }
 
 void ServiceImpl::OnProviderClientDisconnected() {

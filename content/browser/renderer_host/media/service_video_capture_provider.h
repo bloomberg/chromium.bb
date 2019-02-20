@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_PROVIDER_H_
 
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,7 +20,7 @@ namespace content {
 // Connects to the service lazily on demand and disconnects from the service as
 // soon as all previously handed out VideoCaptureDeviceLauncher instances have
 // been released and no more answers to GetDeviceInfosAsync() calls are pending.
-// It is legal to create instances using |nullptr|as |connector| but for
+// It is legal to create instances using |nullptr| as |connector| but for
 // instances produced this way, it is illegal to subsequently call any of the
 // public methods.
 class CONTENT_EXPORT ServiceVideoCaptureProvider
@@ -57,7 +58,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
                             uint32_t pid) override {}
   void OnServiceFailedToStart(
       const ::service_manager::Identity& identity) override {}
-  void OnServiceStopped(const ::service_manager::Identity& identity) override {}
+  void OnServiceStopped(const ::service_manager::Identity& identity) override;
 
  private:
   enum class ReasonForDisconnect { kShutdown, kUnused, kConnectionLost };
@@ -72,10 +73,14 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
   // disconnect.
   scoped_refptr<RefCountedVideoCaptureFactory> LazyConnectToService()
       WARN_UNUSED_RESULT;
+
+  void GetDeviceInfosAsyncForRetry(GetDeviceInfosCallback result_callback,
+                                   int retry_count);
   void OnDeviceInfosReceived(
       scoped_refptr<RefCountedVideoCaptureFactory> service_connection,
       GetDeviceInfosCallback result_callback,
-      const std::vector<media::VideoCaptureDeviceInfo>&);
+      int retry_count,
+      const std::vector<media::VideoCaptureDeviceInfo>& infos);
   void OnLostConnectionToDeviceFactory();
   void OnServiceConnectionClosed(ReasonForDisconnect reason);
 
@@ -91,6 +96,11 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
 
   mojo::Binding<service_manager::mojom::ServiceManagerListener>
       service_listener_binding_;
+
+#if defined(OS_MACOSX)
+  GetDeviceInfosCallback stashed_result_callback_for_retry_;
+  int stashed_retry_count_;
+#endif
 
   base::WeakPtrFactory<ServiceVideoCaptureProvider> weak_ptr_factory_;
 };

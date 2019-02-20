@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 #include "content/browser/renderer_host/media/virtual_video_capture_devices_changed_observer.h"
 #include "content/common/child_process_host_impl.h"
@@ -19,6 +20,14 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "content/public/common/content_features.h"
+#endif
+
 namespace {
 
 std::unique_ptr<video_capture::mojom::AcceleratorFactory>
@@ -26,6 +35,10 @@ CreateAcceleratorFactory() {
   return std::make_unique<
       content::DelegateToBrowserGpuServiceAcceleratorFactory>();
 }
+
+#if defined(OS_MACOSX)
+static const int kMaxRetriesForGetDeviceInfos = 1;
+#endif
 
 }  // anonymous namespace
 
@@ -65,15 +78,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
     GetDeviceInfosCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   emit_log_message_cb_.Run("ServiceVideoCaptureProvider::GetDeviceInfosAsync");
-  auto service_connection = LazyConnectToService();
-  // Use a ScopedCallbackRunner to make sure that |result_callback| gets
-  // invoked with an empty result in case that the service drops the request.
-  service_connection->device_factory()->GetDeviceInfos(
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
-                         weak_ptr_factory_.GetWeakPtr(), service_connection,
-                         std::move(result_callback)),
-          std::vector<media::VideoCaptureDeviceInfo>()));
+  GetDeviceInfosAsyncForRetry(std::move(result_callback), 0);
 }
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
@@ -104,6 +109,24 @@ void ServiceVideoCaptureProvider::OnServiceStarted(
   service_connection->device_factory()->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       true /*raise_event_if_virtual_devices_already_present*/);
+}
+
+void ServiceVideoCaptureProvider::OnServiceStopped(
+    const ::service_manager::Identity& identity) {
+#if defined(OS_MACOSX)
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (identity.name() != video_capture::mojom::kServiceName)
+    return;
+
+  if (stashed_result_callback_for_retry_) {
+    TRACE_EVENT_INSTANT0(
+        TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+        "Video capture service has shut down. Retrying GetDeviceInfos.",
+        TRACE_EVENT_SCOPE_PROCESS);
+    GetDeviceInfosAsyncForRetry(std::move(stashed_result_callback_for_retry_),
+                                stashed_retry_count_ + 1);
+  }
+#endif
 }
 
 void ServiceVideoCaptureProvider::RegisterServiceListenerOnIOThread() {
@@ -173,7 +196,7 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
       &ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory,
       weak_ptr_factory_.GetWeakPtr()));
   auto result = base::MakeRefCounted<RefCountedVideoCaptureFactory>(
-      std::move(device_factory),
+      std::move(device_factory), std::move(device_factory_provider),
       base::BindOnce(&ServiceVideoCaptureProvider::OnServiceConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr(),
                      ReasonForDisconnect::kUnused));
@@ -181,11 +204,53 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   return result;
 }
 
+void ServiceVideoCaptureProvider::GetDeviceInfosAsyncForRetry(
+    GetDeviceInfosCallback result_callback,
+    int retry_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  auto service_connection = LazyConnectToService();
+  // Use a ScopedCallbackRunner to make sure that |result_callback| gets
+  // invoked with an empty result in case that the service drops the request.
+  service_connection->device_factory()->GetDeviceInfos(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
+                         weak_ptr_factory_.GetWeakPtr(), service_connection,
+                         std::move(result_callback), retry_count),
+          std::vector<media::VideoCaptureDeviceInfo>()));
+}
+
 void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
     scoped_refptr<RefCountedVideoCaptureFactory> service_connection,
     GetDeviceInfosCallback result_callback,
+    int retry_count,
     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+#if defined(OS_MACOSX)
+  if (retry_count > 0) {
+    UMA_HISTOGRAM_COUNTS_1M(
+        "Media.VideoCapture.MacBook.NumberOfDevicesAfterServiceRestart",
+        infos.size());
+  }
+
+  std::string model = base::mac::GetModelIdentifier();
+  if (base::FeatureList::IsEnabled(
+          features::kRetryGetVideoCaptureDeviceInfos) &&
+      infos.empty() &&
+      base::StartsWith(model, "MacBook",
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      retry_count < kMaxRetriesForGetDeviceInfos &&
+      !stashed_result_callback_for_retry_) {
+    TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                         "Asking video capture service to shut down.",
+                         TRACE_EVENT_SCOPE_PROCESS);
+    service_connection->ShutdownServiceAsap();
+    stashed_result_callback_for_retry_ = std::move(result_callback);
+    stashed_retry_count_ = retry_count;
+    // Continue when service manager reports that service has shut down via
+    // OnServiceStopped().
+    return;
+  }
+#endif
   base::ResetAndReturn(&result_callback).Run(infos);
 }
 

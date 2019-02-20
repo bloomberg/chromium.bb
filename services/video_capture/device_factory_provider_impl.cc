@@ -70,8 +70,10 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
 };
 
 DeviceFactoryProviderImpl::DeviceFactoryProviderImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : ui_task_runner_(std::move(ui_task_runner)) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::OnceClosure request_service_quit_asap_cb)
+    : ui_task_runner_(std::move(ui_task_runner)),
+      request_service_quit_asap_cb_(std::move(request_service_quit_asap_cb)) {
   // Unretained |this| is safe because |factory_bindings_| is owned by
   // |this|.
   factory_bindings_.set_connection_error_handler(base::BindRepeating(
@@ -116,6 +118,11 @@ void DeviceFactoryProviderImpl::ConnectToVideoSourceProvider(
   LazyInitializeVideoSourceProvider();
   video_source_provider_bindings_.AddBinding(video_source_provider_.get(),
                                              std::move(request));
+}
+
+void DeviceFactoryProviderImpl::ShutdownServiceAsap() {
+  if (request_service_quit_asap_cb_)
+    std::move(request_service_quit_asap_cb_).Run();
 }
 
 void DeviceFactoryProviderImpl::LazyInitializeGpuDependenciesContext() {

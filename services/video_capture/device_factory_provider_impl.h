@@ -25,7 +25,8 @@ class VirtualDeviceEnabledDeviceFactory;
 class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
  public:
   explicit DeviceFactoryProviderImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::OnceClosure request_service_quit_asap_cb);
   ~DeviceFactoryProviderImpl() override;
 
   void SetServiceRef(
@@ -37,6 +38,7 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void ConnectToVideoSourceProvider(
       mojom::VideoSourceProviderRequest request) override;
+  void ShutdownServiceAsap() override;
 
  private:
   class GpuDependenciesContext;
@@ -54,6 +56,7 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  base::OnceClosure request_service_quit_asap_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderImpl);
 };
