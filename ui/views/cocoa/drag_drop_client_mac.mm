@@ -14,47 +14,6 @@
 #import "ui/views_bridge_mac/bridged_content_view.h"
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
-@interface CocoaDragDropDataProvider ()
-- (instancetype)initWithData:(const ui::OSExchangeData&)data;
-- (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard;
-@end
-
-@implementation CocoaDragDropDataProvider {
-  std::unique_ptr<ui::OSExchangeData> data_;
-}
-
-- (instancetype)initWithData:(const ui::OSExchangeData&)data {
-  if ((self = [super init])) {
-    data_.reset(new OSExchangeData(
-        std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone())));
-  }
-  return self;
-}
-
-- (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard {
-  if ((self = [super init])) {
-    data_ = ui::OSExchangeDataProviderMac::CreateDataFromPasteboard(pasteboard);
-  }
-  return self;
-}
-
-- (ui::OSExchangeData*)data {
-  return data_.get();
-}
-
-// NSPasteboardItemDataProvider protocol implementation.
-
-- (void)pasteboard:(NSPasteboard*)sender
-                  item:(NSPasteboardItem*)item
-    provideDataForType:(NSString*)type {
-  const ui::OSExchangeDataProviderMac& provider =
-      static_cast<const ui::OSExchangeDataProviderMac&>(data_->provider());
-  NSData* ns_data = provider.GetNSDataForType(type);
-  [sender setData:ns_data forType:type];
-}
-
-@end
-
 namespace views {
 
 DragDropClientMac::DragDropClientMac(BridgedNativeWidgetImpl* bridge,
@@ -74,12 +33,15 @@ void DragDropClientMac::StartDragAndDrop(
     const ui::OSExchangeData& data,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  data_source_.reset([[CocoaDragDropDataProvider alloc] initWithData:data]);
+  // TODO(avi): Why must this data be cloned?
+  exchange_data_ =
+      std::make_unique<ui::OSExchangeData>(data.provider().Clone());
   operation_ = operation;
   is_drag_source_ = true;
 
-  const ui::OSExchangeDataProviderMac& provider =
-      static_cast<const ui::OSExchangeDataProviderMac&>(data.provider());
+  const ui::OSExchangeDataProviderMac& provider_mac =
+      static_cast<const ui::OSExchangeDataProviderMac&>(
+          exchange_data_->provider());
 
   // Release capture before beginning the dragging session. Capture may have
   // been acquired on the mouseDown, but capture is not required during the
@@ -102,7 +64,7 @@ void DragDropClientMac::StartDragAndDrop(
                                       pressure:1.0];
 
   NSImage* image = gfx::NSImageFromImageSkiaWithColorSpace(
-      provider.GetDragImage(), base::mac::GetSRGBColorSpace());
+      provider_mac.GetDragImage(), base::mac::GetSRGBColorSpace());
 
   // TODO(crbug/876201): This shouldn't happen. When a repro for this
   // is identified and the bug is fixed, change the early return to
@@ -110,12 +72,7 @@ void DragDropClientMac::StartDragAndDrop(
   if (!image || NSEqualSizes([image size], NSZeroSize))
     return;
 
-  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
-  [item setDataProvider:data_source_.get()
-               forTypes:provider.GetAvailableTypes()];
-
-  base::scoped_nsobject<NSDraggingItem> drag_item(
-      [[NSDraggingItem alloc] initWithPasteboardWriter:item.get()]);
+  NSDraggingItem* drag_item = provider_mac.GetDraggingItem();
 
   // Subtract the image's height from the y location so that the mouse will be
   // at the upper left corner of the image.
@@ -125,7 +82,7 @@ void DragDropClientMac::StartDragAndDrop(
                  [image size].width, [image size].height);
   [drag_item setDraggingFrame:dragging_frame contents:image];
 
-  [bridge_->ns_view() beginDraggingSessionWithItems:@[ drag_item.get() ]
+  [bridge_->ns_view() beginDraggingSessionWithItems:@[ drag_item ]
                                               event:event
                                              source:bridge_->ns_view()];
 
@@ -137,32 +94,30 @@ void DragDropClientMac::StartDragAndDrop(
 }
 
 NSDragOperation DragDropClientMac::DragUpdate(id<NSDraggingInfo> sender) {
-  if (!data_source_.get()) {
-    data_source_.reset([[CocoaDragDropDataProvider alloc]
-        initWithPasteboard:[sender draggingPasteboard]]);
+  if (!exchange_data_) {
+    exchange_data_ = std::make_unique<OSExchangeData>(
+        ui::OSExchangeDataProviderMac::CreateProviderWrappingPasteboard(
+            [sender draggingPasteboard]));
     operation_ = ui::DragDropTypes::NSDragOperationToDragOperation(
         [sender draggingSourceOperationMask]);
   }
 
   int drag_operation = drop_helper_.OnDragOver(
-      *[data_source_ data], LocationInView([sender draggingLocation]),
-      operation_);
+      *exchange_data_, LocationInView([sender draggingLocation]), operation_);
   return ui::DragDropTypes::DragOperationToNSDragOperation(drag_operation);
 }
 
 NSDragOperation DragDropClientMac::Drop(id<NSDraggingInfo> sender) {
-  // OnDrop may delete |this|, so clear |data_source_| first.
-  base::scoped_nsobject<CocoaDragDropDataProvider> data_source(
-      std::move(data_source_));
+  // OnDrop may delete |this|, so clear |exchange_data_| first.
+  std::unique_ptr<ui::OSExchangeData> exchange_data = std::move(exchange_data_);
 
   int drag_operation = drop_helper_.OnDrop(
-      *[data_source data], LocationInView([sender draggingLocation]),
-      operation_);
+      *exchange_data, LocationInView([sender draggingLocation]), operation_);
   return ui::DragDropTypes::DragOperationToNSDragOperation(drag_operation);
 }
 
 void DragDropClientMac::EndDrag() {
-  data_source_.reset();
+  exchange_data_.reset();
   is_drag_source_ = false;
 
   // Allow a test to invoke EndDrag() without spinning the nested run loop.
@@ -175,7 +130,7 @@ void DragDropClientMac::EndDrag() {
 void DragDropClientMac::DragExit() {
   drop_helper_.OnDragExit();
   if (!is_drag_source_)
-    data_source_.reset();
+    exchange_data_.reset();
 }
 
 gfx::Point DragDropClientMac::LocationInView(NSPoint point) const {
