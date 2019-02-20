@@ -158,7 +158,7 @@ class OutsideSettingsCSPDelegate final
   const Member<WorkerOrWorkletGlobalScope> global_scope_for_logging_;
 };
 
-};  // namespace
+}  // namespace
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,

@@ -23,7 +23,7 @@ class S2CellId;
 // absent language.
 class SerializedLanguageTree {
  public:
-  virtual ~SerializedLanguageTree(){};
+  virtual ~SerializedLanguageTree() {}
 
   virtual std::string GetLanguageAt(const size_t pos) const = 0;
   virtual size_t GetNumLanguages() const = 0;
@@ -42,7 +42,7 @@ class BitsetSerializedLanguageTree : public SerializedLanguageTree {
   BitsetSerializedLanguageTree(std::vector<std::string> languages,
                                std::bitset<numbits> bits)
       : languages_(languages), bits_(bits) {}
-  ~BitsetSerializedLanguageTree() override{};
+  ~BitsetSerializedLanguageTree() override {}
 
   // SerializedTree implementation
   std::string GetLanguageAt(const size_t pos) const override {
