@@ -140,12 +140,12 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     return False
 
   def ClearFakeModules(device):
-    for path in [SPLITCOMPAT_PATH, MODULES_SRC_DIRECTORY_PATH]:
-      if device.PathExists(path, as_root=True):
-        device.RemovePath(path, force=True, recursive=True, as_root=True)
-        logging.info('Removed %s', path)
-      else:
-        logging.info('Skipped removing nonexistent %s', path)
+    if device.PathExists(SPLITCOMPAT_PATH, as_root=True):
+      device.RemovePath(
+          SPLITCOMPAT_PATH, force=True, recursive=True, as_root=True)
+      logging.info('Removed %s', SPLITCOMPAT_PATH)
+    else:
+      logging.info('Skipped removing nonexistent %s', SPLITCOMPAT_PATH)
 
   def InstallFakeModules(device):
     try:
@@ -171,19 +171,32 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
 
       # Push fake modules, with renames.
       for fake_module in fake_modules:
-        remote = posixpath.join(MODULES_SRC_DIRECTORY_PATH,
-                                '%s.apk' % fake_module)
-        # Try |local| filename alternatives, and ensure there's exactly one.
-        # TODO(huangs): Handle fake packages with different languages: See
-        #     http://crbug.com/925358.
-        local_choices = []
-        for suffix in ['-master.apk', '-master_2.apk']:
-          local = os.path.join(temp_path, fake_module + suffix)
-          if os.path.isfile(local):
-            local_choices.append(local)
-        if len(local_choices) != 1:
-          raise Exception('Expect 1 matching local file for %s' % fake_module)
-        device.adb.Push(local_choices[0], remote)
+        found_master = False
+
+        for filename in os.listdir(temp_path):
+          # If file matches expected format, rename it to follow conventions
+          # required by splitcompatting.
+          match = re.match(r'%s-([a-z_0-9]+)\.apk' % fake_module, filename)
+          local_path = os.path.join(temp_path, filename)
+
+          if match is not None:
+            module_suffix = match.group(1)
+            remote = os.path.join(
+                temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
+            # Check if filename matches a master apk.
+            if 'master' in module_suffix:
+              if found_master:
+                raise Exception('Expect 1 master apk file for %s' % fake_module)
+              else:
+                found_master = True
+                remote = os.path.join(temp_path, '%s.apk' % fake_module)
+            os.rename(local_path, remote)
+          else:
+            # File doesn't match - remove from directory.
+            os.remove(local_path)
+
+        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
+
     finally:
       shutil.rmtree(temp_path, ignore_errors=True)
 
@@ -195,7 +208,8 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
         msg = ('Command line has no %s: Fake modules will be ignored.' %
                FAKE_FEATURE_MODULE_INSTALL)
         print _Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT)
-      InstallFakeModules(device)
+
+    InstallFakeModules(device)
 
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
