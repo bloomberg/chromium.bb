@@ -1865,7 +1865,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, TokensNotLoaded) {
   // can start as long as the token service is not empty.
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   // When tokens are loaded, reconcile starts automatically.
-  identity_test_env()->identity_manager()->LegacyLoadCredentials(account_id);
+  identity_test_env()->ReloadAccountsFromDisk();
 #endif
 
   if (!IsMultiloginEnabled()) {

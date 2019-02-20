@@ -1279,7 +1279,7 @@ TEST_F(IdentityManagerTest, LegacyLoadCredentials) {
 
   // Load the accounts and ensure that we see the resulting notification that
   // they were loaded.
-  identity_manager()->LegacyLoadCredentials("");
+  identity_manager()->LegacyLoadCredentialsForSupervisedUser("");
   run_loop.Run();
 }
 

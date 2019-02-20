@@ -377,8 +377,9 @@ void SupervisedUserService::SetActive(bool active) {
   if (!delegate_ || !delegate_->SetActive(active_)) {
     if (active_) {
 #if !defined(OS_ANDROID)
-      IdentityManagerFactory::GetForProfile(profile_)->LegacyLoadCredentials(
-          supervised_users::kSupervisedUserPseudoEmail);
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->LegacyLoadCredentialsForSupervisedUser(
+              supervised_users::kSupervisedUserPseudoEmail);
 #else
       NOTREACHED();
 #endif
