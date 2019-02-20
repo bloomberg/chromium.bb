@@ -17,6 +17,7 @@
         android:id="@+id/omnibox_answer"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
+        android:paddingVertical="10dp"
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/omnibox_answer_refine_icon"
         android:layout_width="0dp">
