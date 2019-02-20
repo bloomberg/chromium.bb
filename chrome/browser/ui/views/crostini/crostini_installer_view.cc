@@ -133,6 +133,14 @@ base::string16 CrostiniInstallerView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
 }
 
+bool CrostiniInstallerView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_CANCEL &&
+      (state_ == State::CLEANUP || state_ == State::CLEANUP_FINISHED)) {
+    return false;
+  }
+  return true;
+}
 
 bool CrostiniInstallerView::ShouldShowCloseButton() const {
   return false;
@@ -157,13 +165,9 @@ bool CrostiniInstallerView::Accept() {
   profile_->GetPrefs()->Set(crostini::prefs::kCrostiniContainers,
                             base::Value(base::Value::Type::LIST));
 
-  progress_bar_->SetVisible(true);
-
   // |learn_more_link_| should only be present in State::PROMPT.
   delete learn_more_link_;
   learn_more_link_ = nullptr;
-
-  StepProgress();
 
   // HandleError needs the |progress_bar_|, so we delay our Offline check until
   // it exists.
@@ -250,7 +254,6 @@ void CrostiniInstallerView::OnComponentLoaded(CrostiniResult result) {
   }
   VLOG(1) << "cros-termina install success";
   UpdateState(State::START_CONCIERGE);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
@@ -265,7 +268,6 @@ void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
   }
   VLOG(1) << "Concierge service started";
   UpdateState(State::CREATE_DISK_IMAGE);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnDiskImageCreated(
@@ -290,7 +292,6 @@ void CrostiniInstallerView::OnDiskImageCreated(
   }
   VLOG(1) << "Created crostini disk image";
   UpdateState(State::START_TERMINA_VM);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnVmStarted(CrostiniResult result) {
@@ -305,7 +306,6 @@ void CrostiniInstallerView::OnVmStarted(CrostiniResult result) {
   }
   VLOG(1) << "Started Termina VM successfully";
   UpdateState(State::CREATE_CONTAINER);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnContainerDownloading(int32_t download_percent) {
@@ -319,7 +319,6 @@ void CrostiniInstallerView::OnContainerCreated(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::CREATE_CONTAINER);
   UpdateState(State::START_CONTAINER);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnContainerStarted(CrostiniResult result) {
@@ -336,7 +335,6 @@ void CrostiniInstallerView::OnContainerStarted(CrostiniResult result) {
   }
   VLOG(1) << "Started container successfully";
   UpdateState(State::SETUP_CONTAINER);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnContainerSetup(CrostiniResult result) {
@@ -353,7 +351,6 @@ void CrostiniInstallerView::OnContainerSetup(CrostiniResult result) {
   }
   VLOG(1) << "Set up container successfully";
   UpdateState(State::FETCH_SSH_KEYS);
-  StepProgress();
 }
 
 void CrostiniInstallerView::OnSshKeysFetched(CrostiniResult result) {
@@ -370,7 +367,6 @@ void CrostiniInstallerView::OnSshKeysFetched(CrostiniResult result) {
   }
   VLOG(1) << "Fetched ssh keys successfully";
   UpdateState(State::MOUNT_CONTAINER);
-  StepProgress();
 }
 
 // static
@@ -490,8 +486,6 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message,
   UpdateState(State::ERROR);
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
-  SetBigMessageLabel();
-  progress_bar_->SetVisible(false);
 
   // Remove the buttons so they get recreated with correct color and
   // highlighting. Without this it is possible for both buttons to be styled as
@@ -512,7 +506,6 @@ void CrostiniInstallerView::MountContainerFinished(CrostiniResult result) {
         SetupResult::kErrorMountingContainer);
     return;
   }
-  StepProgress();
   ShowLoginShell();
 }
 
@@ -526,7 +519,6 @@ void CrostiniInstallerView::ShowLoginShell() {
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       std::vector<std::string>());
 
-  StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);
   crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
   RecordTimeFromDeviceSetupToInstallMetric();
@@ -628,6 +620,8 @@ void CrostiniInstallerView::UpdateState(State new_state) {
       state_progress_timer_->AbandonAndStop();
     }
   }
+
+  StepProgress();
 }
 
 void CrostiniInstallerView::SetMessageLabel() {
@@ -661,6 +655,9 @@ void CrostiniInstallerView::SetMessageLabel() {
       break;
     case State::MOUNT_CONTAINER:
       message_id = IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE;
+      break;
+    case State::CLEANUP:
+      message_id = IDS_CROSTINI_INSTALLER_CANCELING;
       break;
     default:
       break;
