@@ -684,6 +684,12 @@ def GetChangeComments(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
+def GetChangeRobotComments(host, change):
+  """Get the line- and file-level robot comments on a change."""
+  path = 'changes/%s/robotcomments' % change
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = 'changes/%s/abandon' % change
