@@ -21612,6 +21612,7 @@ Called by update_net_error_codes.py.-->
   <int value="2790" label="ClientHintsUAArch"/>
   <int value="2791" label="ClientHintsUAPlatform"/>
   <int value="2792" label="ClientHintsUAModel"/>
+  <int value="2793" label="AnimationFrameCancelledWithinFrame"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
