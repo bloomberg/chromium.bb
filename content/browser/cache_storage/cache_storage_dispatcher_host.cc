@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -90,20 +91,34 @@ class CacheStorageDispatcherHost::CacheImpl
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
              MatchCallback callback) override {
-    auto cb =
-        base::BindOnce(
-            [](blink::mojom::CacheStorageCache::MatchCallback callback,
-               blink::mojom::CacheStorageError error,
-               blink::mojom::FetchAPIResponsePtr response) {
-              if (error != CacheStorageError::kSuccess) {
-                std::move(callback).Run(
-                    blink::mojom::MatchResult::NewStatus(error));
-                return;
-              }
-              std::move(callback).Run(
-                  blink::mojom::MatchResult::NewResponse(std::move(response)));
-            },
-            std::move(callback));
+    auto cb = base::BindOnce(
+        [](base::TimeTicks start_time, bool ignore_search,
+           blink::mojom::CacheStorageCache::MatchCallback callback,
+           blink::mojom::CacheStorageError error,
+           blink::mojom::FetchAPIResponsePtr response) {
+          base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+          UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.Match",
+                                   elapsed);
+          if (ignore_search) {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.Cache.Browser.Match.IgnoreSearch", elapsed);
+          }
+          if (error == CacheStorageError::kErrorNotFound) {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.Cache.Browser.Match.Miss", elapsed);
+          }
+          if (error != CacheStorageError::kSuccess) {
+            std::move(callback).Run(
+                blink::mojom::MatchResult::NewStatus(error));
+            return;
+          }
+          UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.Match.Hit",
+                                   elapsed);
+          std::move(callback).Run(
+              blink::mojom::MatchResult::NewResponse(std::move(response)));
+        },
+        base::TimeTicks::Now(), match_options->ignore_search,
+        std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -117,23 +132,24 @@ class CacheStorageDispatcherHost::CacheImpl
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
                 blink::mojom::CacheQueryOptionsPtr match_options,
                 MatchAllCallback callback) override {
-    auto cb =
-        base::BindOnce(
-            [](blink::mojom::CacheStorageCache::MatchAllCallback callback,
-               blink::mojom::CacheStorageError error,
-               std::vector<blink::mojom::FetchAPIResponsePtr> responses) {
-              if (error != CacheStorageError::kSuccess &&
-                  error != CacheStorageError::kErrorNotFound) {
-                std::move(callback).Run(
-                    blink::mojom::MatchAllResult::NewStatus(error));
-                return;
-              }
-
-              std::move(callback).Run(
-                  blink::mojom::MatchAllResult::NewResponses(
-                      std::move(responses)));
-            },
-            std::move(callback));
+    auto cb = base::BindOnce(
+        [](base::TimeTicks start_time,
+           blink::mojom::CacheStorageCache::MatchAllCallback callback,
+           blink::mojom::CacheStorageError error,
+           std::vector<blink::mojom::FetchAPIResponsePtr> responses) {
+          base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+          UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.MatchAll",
+                                   elapsed);
+          if (error != CacheStorageError::kSuccess &&
+              error != CacheStorageError::kErrorNotFound) {
+            std::move(callback).Run(
+                blink::mojom::MatchAllResult::NewStatus(error));
+            return;
+          }
+          std::move(callback).Run(
+              blink::mojom::MatchAllResult::NewResponses(std::move(responses)));
+        },
+        base::TimeTicks::Now(), std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -149,26 +165,28 @@ class CacheStorageDispatcherHost::CacheImpl
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr match_options,
             KeysCallback callback) override {
-    auto cb =
-        base::BindOnce(
-            [](blink::mojom::CacheStorageCache::KeysCallback callback,
-               blink::mojom::CacheStorageError error,
-               std::unique_ptr<content::CacheStorageCache::Requests> requests) {
-              if (error != CacheStorageError::kSuccess) {
-                std::move(callback).Run(
-                    blink::mojom::CacheKeysResult::NewStatus(error));
-                return;
-              }
-              std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
-              for (const auto& request : *requests) {
-                requests_.push_back(
-                    BackgroundFetchSettledFetch::CloneRequest(request));
-              }
+    auto cb = base::BindOnce(
+        [](base::TimeTicks start_time,
+           blink::mojom::CacheStorageCache::KeysCallback callback,
+           blink::mojom::CacheStorageError error,
+           std::unique_ptr<content::CacheStorageCache::Requests> requests) {
+          UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.Keys",
+                                   base::TimeTicks::Now() - start_time);
+          if (error != CacheStorageError::kSuccess) {
+            std::move(callback).Run(
+                blink::mojom::CacheKeysResult::NewStatus(error));
+            return;
+          }
+          std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
+          for (const auto& request : *requests) {
+            requests_.push_back(
+                BackgroundFetchSettledFetch::CloneRequest(request));
+          }
 
-              std::move(callback).Run(
-                  blink::mojom::CacheKeysResult::NewKeys(std::move(requests_)));
-            },
-            std::move(callback));
+          std::move(callback).Run(
+              blink::mojom::CacheKeysResult::NewKeys(std::move(requests_)));
+        },
+        base::TimeTicks::Now(), std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -187,11 +205,33 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
+    // Validated batch operations always have at least one entry.
+    blink::mojom::OperationType operation_type =
+        batch_operations[0]->operation_type;
+    int operation_count = batch_operations.size();
+
     auto cb = base::BindOnce(
-        [](blink::mojom::CacheStorageCache::BatchCallback callback,
+        [](base::TimeTicks start_time,
+           blink::mojom::OperationType operation_type, int operation_count,
+           blink::mojom::CacheStorageCache::BatchCallback callback,
            blink::mojom::CacheStorageVerboseErrorPtr error) {
+          base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+          if (operation_type == blink::mojom::OperationType::kDelete) {
+            DCHECK_EQ(operation_count, 1);
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.Cache.Browser.DeleteOne", elapsed);
+          } else if (operation_count > 1) {
+            DCHECK_EQ(operation_type, blink::mojom::OperationType::kPut);
+            UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.PutMany",
+                                     elapsed);
+          } else {
+            DCHECK_EQ(operation_type, blink::mojom::OperationType::kPut);
+            UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.PutOne",
+                                     elapsed);
+          }
           std::move(callback).Run(std::move(error));
         },
+        base::TimeTicks::Now(), operation_type, operation_count,
         std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
@@ -250,15 +290,19 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   // Mojo CacheStorage Interface implementation:
   void Keys(blink::mojom::CacheStorage::KeysCallback callback) override {
     auto cb = base::BindOnce(
-        [](blink::mojom::CacheStorage::KeysCallback callback,
+        [](base::TimeTicks start_time,
+           blink::mojom::CacheStorage::KeysCallback callback,
            const CacheStorageIndex& cache_index) {
           std::vector<base::string16> string16s;
           for (const auto& metadata : cache_index.ordered_cache_metadata()) {
             string16s.push_back(base::UTF8ToUTF16(metadata.name));
           }
+          UMA_HISTOGRAM_LONG_TIMES(
+              "ServiceWorkerCache.CacheStorage.Browser.Keys",
+              base::TimeTicks::Now() - start_time);
           std::move(callback).Run(string16s);
         },
-        std::move(callback));
+        base::TimeTicks::Now(), std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -271,26 +315,40 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
 
   void Delete(const base::string16& cache_name,
               blink::mojom::CacheStorage::DeleteCallback callback) override {
-    auto cb = std::move(callback);
+    auto cb = base::BindOnce(
+        [](base::TimeTicks start_time,
+           blink::mojom::CacheStorage::DeleteCallback callback,
+           CacheStorageError error) {
+          UMA_HISTOGRAM_LONG_TIMES(
+              "ServiceWorkerCache.CacheStorage.Browser.Delete",
+              base::TimeTicks::Now() - start_time);
+          std::move(callback).Run(error);
+        },
+        base::TimeTicks::Now(), std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
       std::move(cb).Run(MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
       return;
     }
+
     cache_storage->DoomCache(base::UTF16ToUTF8(cache_name), std::move(cb));
   }
 
   void Has(const base::string16& cache_name,
            blink::mojom::CacheStorage::HasCallback callback) override {
     auto cb = base::BindOnce(
-        [](blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
+        [](base::TimeTicks start_time,
+           blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
            CacheStorageError error) {
           if (!has_cache)
             error = CacheStorageError::kErrorNotFound;
+          UMA_HISTOGRAM_LONG_TIMES(
+              "ServiceWorkerCache.CacheStorage.Browser.Has",
+              base::TimeTicks::Now() - start_time);
           std::move(callback).Run(error);
         },
-        std::move(callback));
+        base::TimeTicks::Now(), std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -306,18 +364,29 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
              blink::mojom::MultiCacheQueryOptionsPtr match_options,
              blink::mojom::CacheStorage::MatchCallback callback) override {
     auto cb = BindOnce(
-        [](blink::mojom::CacheStorage::MatchCallback callback,
+        [](base::TimeTicks start_time, bool match_all_caches,
+           blink::mojom::CacheStorage::MatchCallback callback,
            CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
+          base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+          if (match_all_caches) {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.CacheStorage.Browser.MatchAllCaches",
+                elapsed);
+          } else {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.CacheStorage.Browser.MatchOneCache",
+                elapsed);
+          }
           if (error != CacheStorageError::kSuccess) {
             std::move(callback).Run(
                 blink::mojom::MatchResult::NewStatus(error));
             return;
           }
-
           std::move(callback).Run(
               blink::mojom::MatchResult::NewResponse(std::move(response)));
         },
+        base::TimeTicks::Now(), !match_options->cache_name,
         std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
@@ -343,11 +412,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     auto cb =
         base::BindOnce(
-            [](base::WeakPtr<CacheStorageImpl> self,
+            [](base::WeakPtr<CacheStorageImpl> self, base::TimeTicks start_time,
                blink::mojom::CacheStorage::OpenCallback callback,
                CacheStorageCacheHandle cache_handle, CacheStorageError error) {
               if (!self)
                 return;
+
+              UMA_HISTOGRAM_LONG_TIMES(
+                  "ServiceWorkerCache.CacheStorage.Browser.Open",
+                  base::TimeTicks::Now() - start_time);
 
               if (error != CacheStorageError::kSuccess) {
                 std::move(callback).Run(
@@ -365,7 +438,8 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
               std::move(callback).Run(
                   blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
             },
-            weak_factory_.GetWeakPtr(), std::move(callback));
+            weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+            std::move(callback));
 
     if (!cache_storage) {
       std::move(cb).Run(CacheStorageCacheHandle(),
