@@ -110,8 +110,7 @@ class BASE_EXPORT JSONReader {
   ~JSONReader();
 
   // Reads and parses |json|, returning a Value.
-  // If |json| is not a properly formed JSON string, returns a Value of type
-  // NONE.
+  // If |json| is not a properly formed JSON string, returns base::nullopt.
   static Optional<Value> Read(StringPiece json,
                               int options = JSON_PARSE_RFC,
                               int max_depth = kStackMaxDepth);
