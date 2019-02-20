@@ -132,16 +132,10 @@ public class BottomToolbarCoordinator {
     }
 
     /**
-     * @return The wrapper for the app menu button.
+     * @return The wrapper for the browsing mode toolbar's app menu button.
      */
     public MenuButton getMenuButtonWrapper() {
-        if (mBrowsingModeCoordinator.isVisible()) {
-            return mBrowsingModeCoordinator.getMenuButton();
-        }
-        if (mTabSwitcherModeCoordinator != null) {
-            return mTabSwitcherModeCoordinator.getMenuButton();
-        }
-        return null;
+        return mBrowsingModeCoordinator.getMenuButton();
     }
 
     /**

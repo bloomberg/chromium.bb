@@ -153,7 +153,7 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
-     * @return The view containing the menu button and menu button badge.
+     * @return The wrapper for the browsing mode toolbar's menu button.
      */
     public MenuButton getMenuButtonWrapper() {
         if (mToolbarLayout == null) return null;
