@@ -284,7 +284,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   // Sanity check the request.
   const auto& request = post_interceptor_->GetRequestBody(0);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
+    ASSERT_TRUE(root);
     const auto* request = root->FindKey("request");
     ASSERT_TRUE(request);
     EXPECT_TRUE(request->FindKey("@os"));
@@ -431,7 +432,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckInvalidAp) {
 
   const auto request = post_interceptor_->GetRequestBody(0);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -488,7 +490,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   const auto request = post_interceptor_->GetRequestBody(0);
 
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -570,7 +573,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckDownloadPreference) {
   // The request must contain dlpref="cacheable".
   const auto request = post_interceptor_->GetRequestBody(0);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader().Read(request);
+    ASSERT_TRUE(root);
     EXPECT_EQ("cacheable",
               root->FindKey("request")->FindKey("dlpref")->GetString());
   } else {
@@ -608,7 +612,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckCupError) {
   // Sanity check the request.
   const auto& request = post_interceptor_->GetRequestBody(0);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -711,11 +716,13 @@ TEST_P(UpdateCheckerTest, UpdateCheckLastRollCall) {
 
   if (use_JSON_) {
     const auto root1 =
-        base::JSONReader().ReadDeprecated(post_interceptor_->GetRequestBody(0));
+        base::JSONReader::Read(post_interceptor_->GetRequestBody(0));
+    ASSERT_TRUE(root1);
     const auto& app1 = root1->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(5, app1.FindPath({"ping", "r"})->GetInt());
     const auto root2 =
-        base::JSONReader().ReadDeprecated(post_interceptor_->GetRequestBody(1));
+        base::JSONReader::Read(post_interceptor_->GetRequestBody(1));
+    ASSERT_TRUE(root2);
     const auto& app2 = root2->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(3383, app2.FindPath({"ping", "rd"})->GetInt());
     EXPECT_TRUE(app2.FindPath({"ping", "ping_freshness"})->is_string());
@@ -783,23 +790,26 @@ TEST_P(UpdateCheckerTest, UpdateCheckLastActive) {
 
   if (use_JSON_) {
     {
-      const auto root = base::JSONReader().ReadDeprecated(
-          post_interceptor_->GetRequestBody(0));
+      const auto root =
+          base::JSONReader::Read(post_interceptor_->GetRequestBody(0));
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(10, app.FindPath({"ping", "a"})->GetInt());
       EXPECT_EQ(-2, app.FindPath({"ping", "r"})->GetInt());
     }
     {
-      const auto root = base::JSONReader().ReadDeprecated(
-          post_interceptor_->GetRequestBody(1));
+      const auto root =
+          base::JSONReader::Read(post_interceptor_->GetRequestBody(1));
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(3383, app.FindPath({"ping", "ad"})->GetInt());
       EXPECT_EQ(3383, app.FindPath({"ping", "rd"})->GetInt());
       EXPECT_TRUE(app.FindPath({"ping", "ping_freshness"})->is_string());
     }
     {
-      const auto root = base::JSONReader().ReadDeprecated(
-          post_interceptor_->GetRequestBody(2));
+      const auto root =
+          base::JSONReader::Read(post_interceptor_->GetRequestBody(2));
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(3383, app.FindPath({"ping", "rd"})->GetInt());
       EXPECT_TRUE(app.FindPath({"ping", "ping_freshness"})->is_string());
@@ -839,7 +849,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckInstallSource) {
       RunThreads();
       const auto& request = post_interceptor->GetRequestBody(0);
       if (use_JSON_) {
-        const auto root = base::JSONReader().ReadDeprecated(request);
+        const auto root = base::JSONReader::Read(request);
+        ASSERT_TRUE(root);
         const auto& app =
             root->FindKey("request")->FindKey("app")->GetList()[0];
         EXPECT_EQ("ondemand", app.FindKey("installsource")->GetString());
@@ -867,7 +878,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckInstallSource) {
       RunThreads();
       const auto& request = post_interceptor->GetRequestBody(0);
       if (use_JSON_) {
-        const auto root = base::JSONReader().ReadDeprecated(request);
+        const auto root = base::JSONReader::Read(request);
+        ASSERT_TRUE(root);
         const auto& app =
             root->FindKey("request")->FindKey("app")->GetList()[0];
         EXPECT_EQ("sideload", app.FindKey("installsource")->GetString());
@@ -895,7 +907,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckInstallSource) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_FALSE(app.FindKey("installsource"));
     } else {
@@ -919,7 +932,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckInstallSource) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ("webstore", app.FindKey("installsource")->GetString());
       EXPECT_EQ("external", app.FindKey("installedby")->GetString());
@@ -953,7 +967,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(true, app.FindKey("enabled")->GetBool());
       EXPECT_FALSE(app.FindKey("disabled"));
@@ -979,7 +994,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(true, app.FindKey("enabled")->GetBool());
       EXPECT_FALSE(app.FindKey("disabled"));
@@ -1005,7 +1021,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(false, app.FindKey("enabled")->GetBool());
       const auto& disabled = app.FindKey("disabled")->GetList();
@@ -1032,7 +1049,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(false, app.FindKey("enabled")->GetBool());
       const auto& disabled = app.FindKey("disabled")->GetList();
@@ -1060,7 +1078,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(false, app.FindKey("enabled")->GetBool());
       const auto& disabled = app.FindKey("disabled")->GetList();
@@ -1092,7 +1111,8 @@ TEST_P(UpdateCheckerTest, ComponentDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(false, app.FindKey("enabled")->GetBool());
       const auto& disabled = app.FindKey("disabled")->GetList();
@@ -1143,7 +1163,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
       EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -1176,7 +1197,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
       EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -1209,7 +1231,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
       EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -1242,7 +1265,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
     RunThreads();
     const auto& request = post_interceptor->GetRequestBody(0);
     if (use_JSON_) {
-      const auto root = base::JSONReader().ReadDeprecated(request);
+      const auto root = base::JSONReader::Read(request);
+      ASSERT_TRUE(root);
       const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
       EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
       EXPECT_EQ("0.9", app.FindKey("version")->GetString());
@@ -1317,7 +1341,8 @@ TEST_P(UpdateCheckerTest, UpdatePauseResume) {
 
   const auto& request = post_interceptor_->GetRequestBody(0);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.9", app.FindKey("version")->GetString());

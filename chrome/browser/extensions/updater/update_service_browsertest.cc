@@ -117,7 +117,8 @@ IN_PROC_BROWSER_TEST_P(UpdateServiceTest, NoUpdate) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.10", app.FindKey("version")->GetString());
@@ -189,7 +190,8 @@ IN_PROC_BROWSER_TEST_P(UpdateServiceTest, UpdateCheckError) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.10", app.FindKey("version")->GetString());
@@ -352,7 +354,8 @@ IN_PROC_BROWSER_TEST_P(UpdateServiceTest, SuccessfulUpdate) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.10", app.FindKey("version")->GetString());
@@ -457,7 +460,8 @@ IN_PROC_BROWSER_TEST_P(UpdateServiceTest, PolicyCorrupted) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
@@ -703,7 +707,8 @@ IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, FailedUpdateRetries) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(id_, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
@@ -834,7 +839,8 @@ IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
   if (use_JSON_) {
-    const auto root = base::JSONReader().ReadDeprecated(update_request);
+    const auto root = base::JSONReader::Read(update_request);
+    ASSERT_TRUE(root);
     const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
     EXPECT_EQ(id_, app.FindKey("appid")->GetString());
     EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
