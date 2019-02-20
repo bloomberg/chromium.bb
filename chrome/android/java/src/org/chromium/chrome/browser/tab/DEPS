@@ -1,5 +1,3 @@
-noparent = True
-
 specific_include_rules = {
   'Tab\.java': [
     "-chrome",
