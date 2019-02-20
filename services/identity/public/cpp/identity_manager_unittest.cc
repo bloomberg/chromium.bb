@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
@@ -289,15 +290,27 @@ class IdentityManagerTest : public testing::Test {
                 },
                 test_url_loader_factory())) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
+    account_fetcher_.Initialize(&signin_client_, &token_service_,
+                                &account_tracker_,
+                                std::make_unique<TestImageDecoder>());
 
     RecreateSigninAndIdentityManager(
         signin::AccountConsistencyMethod::kDisabled,
         SigninManagerSetup::kWithAuthenticatedAccout);
+  }
+
+  ~IdentityManagerTest() override {
+    signin_client_.Shutdown();
+    token_service_.Shutdown();
+    gaia_cookie_manager_service_.Shutdown();
+    account_tracker_.Shutdown();
+    account_fetcher_.Shutdown();
   }
 
   IdentityManager* identity_manager() { return identity_manager_.get(); }
@@ -309,6 +322,7 @@ class IdentityManagerTest : public testing::Test {
     return identity_manager_diagnostics_observer_.get();
   }
   AccountTrackerServiceForTest* account_tracker() { return &account_tracker_; }
+  FakeAccountFetcherService* account_fetcher() { return &account_fetcher_; }
   SigninManagerForTest* signin_manager() { return signin_manager_.get(); }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
@@ -382,8 +396,8 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_.reset();
 
     identity_manager_.reset(new IdentityManager(
-        signin_manager_.get(), &token_service_, &account_tracker_,
-        &gaia_cookie_manager_service_, nullptr, nullptr,
+        signin_manager_.get(), &token_service_, &account_fetcher_,
+        &account_tracker_, &gaia_cookie_manager_service_, nullptr, nullptr,
         std::make_unique<AccountsCookieMutatorImpl>(
             &gaia_cookie_manager_service_)));
     identity_manager_observer_.reset(
@@ -425,6 +439,7 @@ class IdentityManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerServiceForTest account_tracker_;
+  FakeAccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -2063,7 +2078,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
   run_loop.Run();
 }
 
-TEST_F(IdentityManagerTest, StartObservingCookieChanges) {
+TEST_F(IdentityManagerTest, OnNetworkInitialized) {
   const char kTestAccountId[] = "account_id";
   const char kTestAccountId2[] = "account_id2";
   const std::vector<std::string> account_ids = {kTestAccountId,
@@ -2074,7 +2089,7 @@ TEST_F(IdentityManagerTest, StartObservingCookieChanges) {
       test_cookie_manager.get();
   signin_client()->set_cookie_manager(std::move(test_cookie_manager));
 
-  identity_manager()->StartObservingCookieChanges();
+  identity_manager()->OnNetworkInitialized();
 
   // Needed to insert request in the queue.
   gaia_cookie_manager_service()->SetAccountsInCookie(

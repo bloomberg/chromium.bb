@@ -30,9 +30,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
-#include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -206,11 +204,9 @@ void ChromeBrowserStateManagerImpl::DoFinalInit(
 
 void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
     ios::ChromeBrowserState* browser_state) {
-  ios::GaiaCookieManagerServiceFactory::GetForBrowserState(browser_state)
-      ->InitCookieListener();
   ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state);
-  ios::AccountFetcherServiceFactory::GetForBrowserState(browser_state)
-      ->OnProfileLoaded();
+  IdentityManagerFactory::GetForBrowserState(browser_state)
+      ->OnNetworkInitialized();
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
   // Initialization needs to happen after the browser context is available
   // because UnifiedConsentService's dependencies needs the URL context getter.

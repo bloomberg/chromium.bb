@@ -72,9 +72,9 @@ class AccountFetcherService : public KeyedService,
     return account_tracker_service_;
   }
 
-  // It is important that network fetches are not enabled until the profile is
-  // loaded. See http://crbug.com/441399 for more context.
-  void OnProfileLoaded();
+  // It is important that network fetches are not enabled until the network is
+  // initialized. See http://crbug.com/441399 for more context.
+  void OnNetworkInitialized();
 
   void EnableNetworkFetchesForTest();
 
@@ -137,7 +137,7 @@ class AccountFetcherService : public KeyedService,
   OAuth2TokenService* token_service_ = nullptr;               // Not owned.
   SigninClient* signin_client_ = nullptr;                     // Not owned.
   bool network_fetches_enabled_ = false;
-  bool profile_loaded_ = false;
+  bool network_initialized_ = false;
   bool refresh_tokens_loaded_ = false;
   bool shutdown_called_ = false;
   base::Time last_updated_;

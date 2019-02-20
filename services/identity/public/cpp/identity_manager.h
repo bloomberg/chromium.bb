@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -203,6 +204,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   IdentityManager(
       SigninManagerBase* signin_manager,
       ProfileOAuth2TokenService* token_service,
+      AccountFetcherService* account_fetcher_service,
       AccountTrackerService* account_tracker_service,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
@@ -366,8 +368,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   // accounts associated with them. Guaranteed to be non-null.
   AccountsCookieMutator* GetAccountsCookieMutator();
 
-  // Turns on observation of network::CookieManager changes.
-  void StartObservingCookieChanges();
+  // Performs initalization that is dependent on the network being initialized.
+  void OnNetworkInitialized();
 
   // Explicitly triggers the loading of accounts in the context of supervised
   // users.
@@ -551,6 +553,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // backed by the Identity Service.
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
+  AccountFetcherService* account_fetcher_service_;
   AccountTrackerService* account_tracker_service_;
   GaiaCookieManagerService* gaia_cookie_manager_service_;
 

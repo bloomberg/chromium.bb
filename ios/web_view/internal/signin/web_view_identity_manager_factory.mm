@@ -8,6 +8,7 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
@@ -38,6 +39,8 @@ class IdentityManagerWrapper : public KeyedService,
       : identity::IdentityManager(
             WebViewSigninManagerFactory::GetForBrowserState(browser_state),
             WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+            WebViewAccountFetcherServiceFactory::GetForBrowserState(
+                browser_state),
             WebViewAccountTrackerServiceFactory::GetForBrowserState(
                 browser_state),
             WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
@@ -56,6 +59,7 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(WebViewAccountFetcherServiceFactory::GetInstance());
   DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
   DependsOn(WebViewGaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
@@ -36,6 +37,7 @@ const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 IdentityManager::IdentityManager(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service,
+    AccountFetcherService* account_fetcher_service,
     AccountTrackerService* account_tracker_service,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
@@ -43,11 +45,13 @@ IdentityManager::IdentityManager(
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator)
     : signin_manager_(signin_manager),
       token_service_(token_service),
+      account_fetcher_service_(account_fetcher_service),
       account_tracker_service_(account_tracker_service),
       gaia_cookie_manager_service_(gaia_cookie_manager_service),
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
       accounts_cookie_mutator_(std::move(accounts_cookie_mutator)) {
+  DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
@@ -273,8 +277,9 @@ AccountsCookieMutator* IdentityManager::GetAccountsCookieMutator() {
   return accounts_cookie_mutator_.get();
 }
 
-void IdentityManager::StartObservingCookieChanges() {
+void IdentityManager::OnNetworkInitialized() {
   gaia_cookie_manager_service_->InitCookieListener();
+  account_fetcher_service_->OnNetworkInitialized();
 }
 
 void IdentityManager::LegacyLoadCredentialsForSupervisedUser(
