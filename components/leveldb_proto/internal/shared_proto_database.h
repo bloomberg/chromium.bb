@@ -41,8 +41,8 @@ class SharedProtoDatabase
   void GetClientAsync(
       ProtoDbType db_type,
       bool create_if_missing,
-      base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
-          callback);
+      base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>,
+                              Enums::InitStatus)> callback);
 
   void GetDatabaseInitStatusAsync(const std::string& client_db_id,
                                   Callbacks::InitStatusCallback callback);
@@ -59,6 +59,7 @@ class SharedProtoDatabase
   friend class ProtoDatabaseImplTest;
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;
+  friend class TestSharedProtoDatabase;
 
   enum InitState {
     kNone,
@@ -103,10 +104,11 @@ class SharedProtoDatabase
 
   // |callback_task_runner| should be the same sequence that Init was called
   // from.
-  void Init(bool create_if_missing,
-            const std::string& client_db_id,
-            SharedClientInitCallback callback,
-            scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
+  virtual void Init(
+      bool create_if_missing,
+      const std::string& client_db_id,
+      SharedClientInitCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
   void InitMetadataDatabase(bool create_shared_db_if_missing,
                             int attempt,
                             bool corruption);
