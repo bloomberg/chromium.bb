@@ -2218,7 +2218,7 @@ class WebKitStyleTest(CppStyleTestBase):
             '')
         # FIXME: currently we only check first conditional, so we cannot detect errors in next ones.
         self.assert_multi_line_lint(
-            'WTF_MAKE_NONCOPYABLE(ClassName); WTF_MAKE_FAST_ALLOCATED;\n',
+            'WTF_MAKE_FAST_ALLOCATED;\n',
             '')
         self.assert_multi_line_lint(
             'if (condition) doSomething(); else {\n'
