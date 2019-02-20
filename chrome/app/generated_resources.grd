@@ -5376,12 +5376,6 @@ the Bookmarks menu.">
         </message>
       </if>
 
-      <if expr="is_win or (is_linux and not chromeos)">
-        <message name="IDS_QUIT_ACCELERATOR_TUTORIAL" desc="Instructions for how the user should quit using keyboard shortcuts.">
-          Press |<ph name="ACCELERATOR1">$1<ex>Ctrl</ex></ph>|+|<ph name="ACCELERATOR2">$2<ex>Shift</ex></ph>| followed by |<ph name="ACCELERATOR3">$3<ex>Q</ex></ph>| to exit
-        </message>
-      </if>
-
       <!-- Importer Lock Dialog -->
       <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
         Close Firefox

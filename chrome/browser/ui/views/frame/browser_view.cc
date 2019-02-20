@@ -1269,13 +1269,6 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 }
 
 void BrowserView::DestroyBrowser() {
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (quit_instruction_bubble_controller_) {
-    GetWidget()->GetNativeView()->RemovePreTargetHandler(
-        quit_instruction_bubble_controller_.get());
-  }
-#endif
-
   // After this returns other parts of Chrome are going to be shutdown. Close
   // the window now so that we are deleted immediately and aren't left holding
   // references to deleted objects.
@@ -2143,13 +2136,6 @@ views::View* BrowserView::CreateOverlayView() {
 }
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (quit_instruction_bubble_controller_) {
-    GetWidget()->GetNativeView()->RemovePreTargetHandler(
-        quit_instruction_bubble_controller_.get());
-  }
-#endif
-
   // Destroy any remaining WebContents early on. Doing so may result in
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
@@ -2488,15 +2474,6 @@ void BrowserView::InitViews() {
   // can get it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
-    quit_instruction_bubble_controller_ =
-        QuitInstructionBubbleController::GetInstance();
-    GetWidget()->GetNativeView()->AddPreTargetHandler(
-        quit_instruction_bubble_controller_.get());
-  }
-#endif
 
 #if defined(USE_AURA)
   // Stow a pointer to the browser's profile onto the window handle so

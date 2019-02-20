@@ -50,10 +50,6 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
-#endif
-
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -851,11 +847,6 @@ class BrowserView : public BrowserWindow,
     size_t step_count = 0;
   };
   base::Optional<ResizeSession> interactive_resize_;
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  scoped_refptr<QuitInstructionBubbleController>
-      quit_instruction_bubble_controller_;
-#endif
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};
