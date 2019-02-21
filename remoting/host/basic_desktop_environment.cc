@@ -72,7 +72,7 @@ BasicDesktopEnvironment::CreateMouseCursorMonitor() {
 
 std::unique_ptr<FileOperations>
 BasicDesktopEnvironment::CreateFileOperations() {
-  return std::make_unique<LocalFileOperations>();
+  return std::make_unique<LocalFileOperations>(ui_task_runner_);
 }
 
 std::string BasicDesktopEnvironment::GetCapabilities() const {

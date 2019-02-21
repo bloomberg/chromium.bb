@@ -11,9 +11,26 @@
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
+#include "remoting/host/file_transfer/fake_file_chooser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+
+namespace {
+
+// BindOnce disallows binding lambdas with captures. This is reasonable in
+// production code, as it requires one to either explicitly pass owned objects
+// or pointers using Owned, Unretained, et cetera. This helps to avoid use-
+// after-free bugs in async code. In test code, though, where the lambda is
+// immediately invoked in the test method using, e.g., RunUntilIdle, the ability
+// to capture can make the code much easier to read and write.
+template <typename T>
+auto BindLambda(T lambda) {
+  return base::BindOnce(&T::operator(),
+                        base::Owned(new auto(std::move(lambda))));
+}
+
+}  // namespace
 
 class LocalFileOperationsTest : public testing::Test {
  public:
@@ -56,7 +73,8 @@ LocalFileOperationsTest::LocalFileOperationsTest()
           base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
       // Points DIR_USER_DESKTOP at a scoped temporary directory.
       scoped_path_override_(base::DIR_USER_DESKTOP),
-      file_operations_(std::make_unique<LocalFileOperations>()) {}
+      file_operations_(std::make_unique<LocalFileOperations>(
+          scoped_task_environment_.GetMainThreadTaskRunner())) {}
 
 void LocalFileOperationsTest::SetUp() {}
 
@@ -180,6 +198,141 @@ TEST_F(LocalFileOperationsTest, CancelsWhileOperationPending) {
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(base::IsDirectoryEmpty(TestDir()));
+}
+
+// Verifies that a file can be successfully opened for reading.
+TEST_F(LocalFileOperationsTest, OpensReader) {
+  base::FilePath path = TestDir().Append(kTestFilename);
+  std::string contents = kTestDataOne + kTestDataTwo + kTestDataThree;
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(path, contents.data(), contents.size()));
+
+  std::unique_ptr<FileOperations::Reader> reader =
+      file_operations_->CreateReader();
+
+  FakeFileChooser::SetResult(path);
+  base::Optional<FileOperations::Reader::OpenResult> open_result;
+  ASSERT_EQ(FileOperations::kCreated, reader->state());
+  reader->Open(BindLambda([&](FileOperations::Reader::OpenResult result) {
+    open_result = std::move(result);
+  }));
+  ASSERT_EQ(FileOperations::kBusy, reader->state());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(FileOperations::kReady, reader->state());
+  ASSERT_TRUE(open_result);
+  ASSERT_TRUE(*open_result);
+  EXPECT_EQ(kTestFilename, reader->filename());
+  EXPECT_EQ(contents.size(), reader->size());
+}
+
+// Verifies that a file can be successfully read in three chunks.
+TEST_F(LocalFileOperationsTest, ReadsThreeChunks) {
+  base::FilePath path = TestDir().Append(kTestFilename);
+  std::string contents = kTestDataOne + kTestDataTwo + kTestDataThree;
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(path, contents.data(), contents.size()));
+
+  std::unique_ptr<FileOperations::Reader> reader =
+      file_operations_->CreateReader();
+
+  FakeFileChooser::SetResult(path);
+  base::Optional<FileOperations::Reader::OpenResult> open_result;
+  reader->Open(BindLambda([&](FileOperations::Reader::OpenResult result) {
+    open_result = std::move(result);
+  }));
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_TRUE(open_result && *open_result);
+
+  for (const auto& chunk : {kTestDataOne, kTestDataTwo, kTestDataThree}) {
+    base::Optional<FileOperations::Reader::ReadResult> read_result;
+    reader->ReadChunk(
+        chunk.size(),
+        BindLambda([&](FileOperations::Reader::ReadResult result) {
+          read_result = std::move(result);
+        }));
+    ASSERT_EQ(FileOperations::kBusy, reader->state());
+    scoped_task_environment_.RunUntilIdle();
+    ASSERT_EQ(FileOperations::kReady, reader->state());
+    ASSERT_TRUE(read_result);
+    ASSERT_TRUE(*read_result);
+    EXPECT_EQ(chunk, **read_result);
+  }
+}
+
+// Verifies proper EOF handling.
+TEST_F(LocalFileOperationsTest, ReaderHandlesEof) {
+  base::FilePath path = TestDir().Append(kTestFilename);
+  std::string contents = kTestDataOne + kTestDataTwo + kTestDataThree;
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(path, contents.data(), contents.size()));
+
+  std::unique_ptr<FileOperations::Reader> reader =
+      file_operations_->CreateReader();
+
+  FakeFileChooser::SetResult(path);
+  base::Optional<FileOperations::Reader::OpenResult> open_result;
+  reader->Open(BindLambda([&](FileOperations::Reader::OpenResult result) {
+    open_result = std::move(result);
+  }));
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_TRUE(open_result && *open_result);
+
+  base::Optional<FileOperations::Reader::ReadResult> read_result;
+  reader->ReadChunk(
+      contents.size() + 5,  // Attempt to read more than is in file.
+      BindLambda([&](FileOperations::Reader::ReadResult result) {
+        read_result = std::move(result);
+      }));
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_EQ(FileOperations::kReady, reader->state());
+  ASSERT_TRUE(read_result && *read_result);
+  EXPECT_EQ(contents, **read_result);
+
+  read_result.reset();
+  reader->ReadChunk(5,
+                    BindLambda([&](FileOperations::Reader::ReadResult result) {
+                      read_result = std::move(result);
+                    }));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(FileOperations::kComplete, reader->state());
+  ASSERT_TRUE(read_result && *read_result);
+  EXPECT_EQ(std::size_t{0}, (*read_result)->size());
+}
+
+// Verifies cancellation is propagated.
+TEST_F(LocalFileOperationsTest, ReaderCancels) {
+  std::unique_ptr<FileOperations::Reader> reader =
+      file_operations_->CreateReader();
+
+  FakeFileChooser::SetResult(protocol::MakeFileTransferError(
+      FROM_HERE, protocol::FileTransfer_Error_Type_CANCELED));
+  base::Optional<FileOperations::Reader::OpenResult> open_result;
+  reader->Open(BindLambda([&](FileOperations::Reader::OpenResult result) {
+    open_result = std::move(result);
+  }));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(FileOperations::kFailed, reader->state());
+  ASSERT_TRUE(open_result);
+  ASSERT_FALSE(*open_result);
+  EXPECT_EQ(protocol::FileTransfer_Error_Type_CANCELED,
+            open_result->error().type());
+}
+
+// Verifies failure when file doesn't exist.
+TEST_F(LocalFileOperationsTest, FileNotFound) {
+  std::unique_ptr<FileOperations::Reader> reader =
+      file_operations_->CreateReader();
+
+  // Currently non-existent file.
+  FakeFileChooser::SetResult(TestDir().Append(kTestFilename));
+  base::Optional<FileOperations::Reader::OpenResult> open_result;
+  reader->Open(BindLambda([&](FileOperations::Reader::OpenResult result) {
+    open_result = std::move(result);
+  }));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(FileOperations::kFailed, reader->state());
+  ASSERT_TRUE(open_result);
+  ASSERT_FALSE(*open_result);
 }
 
 }  // namespace remoting

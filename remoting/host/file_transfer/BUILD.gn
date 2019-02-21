@@ -8,6 +8,11 @@ source_set("file_transfer") {
   sources = [
     "ensure_user_mac.cc",
     "ensure_user_win.cc",
+    "file_chooser_chromeos.cc",
+    "file_chooser_common_win.h",
+    "file_chooser_mac.mm",
+    "file_chooser_main_win.cc",
+    "file_chooser_win.cc",
     "get_desktop_directory.cc",
     "get_desktop_directory.h",
     "get_desktop_directory_win.cc",
@@ -29,6 +34,11 @@ source_set("file_transfer") {
   if (is_win) {
     sources -= [ "get_desktop_directory.cc" ]
   }
+
+  if (is_desktop_linux) {
+    sources += [ "file_chooser_linux.cc" ]
+    deps += [ "//build/config/linux/gtk" ]
+  }
 }
 
 source_set("common") {
@@ -45,10 +55,6 @@ source_set("common") {
     "buffered_file_writer.h",
     "ensure_user.h",
     "file_chooser.h",
-    "file_chooser_common_win.h",
-    "file_chooser_mac.mm",
-    "file_chooser_main_win.cc",
-    "file_chooser_win.cc",
     "file_transfer_message_handler.cc",
     "ipc_file_operations.cc",
     "local_file_operations.cc",
@@ -59,11 +65,6 @@ source_set("common") {
     "//base",
     "//remoting/protocol",
   ]
-
-  if (is_desktop_linux) {
-    sources += [ "file_chooser_linux.cc" ]
-    deps += [ "//build/config/linux/gtk" ]
-  }
 }
 
 source_set("test_support") {
@@ -71,6 +72,8 @@ source_set("test_support") {
 
   sources = [
     "ensure_user_no_op.cc",
+    "fake_file_chooser.cc",
+    "fake_file_chooser.h",
     "fake_file_operations.cc",
     "fake_file_operations.h",
     "get_desktop_directory.cc",
