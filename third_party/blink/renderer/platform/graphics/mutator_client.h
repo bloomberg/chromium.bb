@@ -17,10 +17,6 @@ class PLATFORM_EXPORT MutatorClient {
 
   virtual void SynchronizeAnimatorName(const String& animator_name) = 0;
   virtual void SetMutationUpdate(std::unique_ptr<AnimationWorkletOutput>) = 0;
-
-  virtual void NotifyAnimationsPending() = 0;
-
-  virtual void NotifyAnimationsReady() = 0;
 };
 
 }  // namespace blink

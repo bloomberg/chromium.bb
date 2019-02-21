@@ -24,8 +24,6 @@ class MockMutatorClient : public MutatorClient {
       std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
 
   void SetMutationUpdate(std::unique_ptr<AnimationWorkletOutput>) override {}
-  void NotifyAnimationsPending() override {}
-  void NotifyAnimationsReady() override {}
   MOCK_METHOD1(SynchronizeAnimatorName, void(const String&));
 
   std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator_;
