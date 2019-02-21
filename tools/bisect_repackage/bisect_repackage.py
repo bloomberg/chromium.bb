@@ -72,6 +72,7 @@ CHROME_REQUIRED_FILES = {
         'chromedriver.exe',
         'default_apps',
         'd3dcompiler_47.dll',
+        'd3dcompiler_old.dll',
         'icudtl.dat',
         'libEGL.dll',
         'libGLESv2.dll',
