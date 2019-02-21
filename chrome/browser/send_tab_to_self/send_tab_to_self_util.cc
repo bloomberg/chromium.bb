@@ -27,9 +27,7 @@ bool IsUserSyncTypeEnabled(Profile* profile) {
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return sync_service &&
-         (sync_service->GetUserSettings()->IsSyncEverythingEnabled() ||
-          sync_service->GetUserSettings()->GetChosenDataTypes().Has(
-              syncer::SEND_TAB_TO_SELF));
+         sync_service->GetPreferredDataTypes().Has(syncer::SEND_TAB_TO_SELF);
 }
 
 bool IsSyncingOnMultipleDevices(Profile* profile) {
