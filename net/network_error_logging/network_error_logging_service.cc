@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/clock.h"
@@ -275,16 +276,16 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     // include_subdomains policies are only allowed to report on DNS resolution
     // errors.
-    if (phase_string != kDnsPhase && policy->include_subdomains &&
-        !(policy->origin == report_origin)) {
+    if (phase_string != kDnsPhase &&
+        IsMismatchingSubdomainReport(*policy, report_origin)) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
       return;
     }
 
     bool success = (type == OK) && !IsHttpError(details);
-    double sampling_fraction =
-        success ? policy->success_fraction : policy->failure_fraction;
-    if (base::RandDouble() >= sampling_fraction) {
+    const base::Optional<double> sampling_fraction =
+        SampleAndReturnFraction(*policy, success);
+    if (!sampling_fraction.has_value()) {
       RecordRequestOutcome(success
                                ? RequestOutcome::DISCARDED_UNSAMPLED_SUCCESS
                                : RequestOutcome::DISCARDED_UNSAMPLED_FAILURE);
@@ -297,8 +298,49 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
              << details.uri;
     reporting_service_->QueueReport(
         details.uri, details.user_agent, policy->report_to, kReportType,
-        CreateReportBody(phase_string, type_string, sampling_fraction, details),
+        CreateReportBody(phase_string, type_string, sampling_fraction.value(),
+                         details),
         details.reporting_upload_depth);
+    RecordRequestOutcome(RequestOutcome::QUEUED);
+  }
+
+  void QueueSignedExchangeReport(
+      const SignedExchangeReportDetails& details) override {
+    if (!reporting_service_) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
+      return;
+    }
+    if (!details.outer_url.SchemeIsCryptographic()) {
+      RecordHeaderOutcome(HeaderOutcome::DISCARDED_INSECURE_ORIGIN);
+      return;
+    }
+    const auto report_origin = url::Origin::Create(details.outer_url);
+    const OriginPolicy* policy = FindPolicyForOrigin(report_origin);
+    if (!policy) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_ORIGIN_POLICY);
+      return;
+    }
+    if (IsMismatchingSubdomainReport(*policy, report_origin)) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
+      return;
+    }
+    // Don't send the report when the IP addresses of the server and the policy
+    // don’t match. This case is coverd by OnRequest() while processing the HTTP
+    // response.
+    if (details.server_ip_address != policy->received_ip_address)
+      return;
+    const base::Optional<double> sampling_fraction =
+        SampleAndReturnFraction(*policy, details.success);
+    if (!sampling_fraction.has_value()) {
+      RecordRequestOutcome(details.success
+                               ? RequestOutcome::DISCARDED_UNSAMPLED_SUCCESS
+                               : RequestOutcome::DISCARDED_UNSAMPLED_FAILURE);
+      return;
+    }
+    reporting_service_->QueueReport(
+        details.outer_url, details.user_agent, policy->report_to, kReportType,
+        CreateSignedExchangeReportBody(details, sampling_fraction.value()),
+        0 /* depth */);
     RecordRequestOutcome(RequestOutcome::QUEUED);
   }
 
@@ -545,6 +587,49 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     return std::move(body);
   }
+
+  std::unique_ptr<const base::Value> CreateSignedExchangeReportBody(
+      const SignedExchangeReportDetails& details,
+      double sampling_fraction) const {
+    auto body = std::make_unique<base::DictionaryValue>();
+    body->SetString(kPhaseKey, kSignedExchangePhaseValue);
+    body->SetString(kTypeKey, details.type);
+    body->SetDouble(kSamplingFractionKey, sampling_fraction);
+    body->SetString(kReferrerKey, details.referrer);
+    body->SetString(kServerIpKey, details.server_ip_address.ToString());
+    body->SetString(kProtocolKey, details.protocol);
+    body->SetString(kMethodKey, details.method);
+    body->SetInteger(kStatusCodeKey, details.status_code);
+    body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
+
+    auto sxg_body = std::make_unique<base::DictionaryValue>();
+    sxg_body->SetKey(kOuterUrlKey, base::Value(details.outer_url.spec()));
+    if (details.inner_url.is_valid())
+      sxg_body->SetKey(kInnerUrlKey, base::Value(details.inner_url.spec()));
+
+    base::Value cert_url_list = base::Value(base::Value::Type::LIST);
+    if (details.cert_url.is_valid())
+      cert_url_list.GetList().push_back(base::Value(details.cert_url.spec()));
+    sxg_body->SetKey(kCertUrlKey, std::move(cert_url_list));
+    body->SetDictionary(kSignedExchangeBodyKey, std::move(sxg_body));
+
+    return std::move(body);
+  }
+
+  bool IsMismatchingSubdomainReport(const OriginPolicy& policy,
+                                    const url::Origin& report_origin) const {
+    return policy.include_subdomains && (policy.origin != report_origin);
+  }
+
+  // Returns a valid value of matching fraction iff the event should be sampled.
+  base::Optional<double> SampleAndReturnFraction(const OriginPolicy& policy,
+                                                 bool success) const {
+    const double sampling_fraction =
+        success ? policy.success_fraction : policy.failure_fraction;
+    if (base::RandDouble() >= sampling_fraction)
+      return base::nullopt;
+    return sampling_fraction;
+  }
 };
 
 }  // namespace
@@ -555,6 +640,16 @@ NetworkErrorLoggingService::RequestDetails::RequestDetails(
     const RequestDetails& other) = default;
 
 NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
+
+NetworkErrorLoggingService::SignedExchangeReportDetails::
+    SignedExchangeReportDetails() = default;
+
+NetworkErrorLoggingService::SignedExchangeReportDetails::
+    SignedExchangeReportDetails(const SignedExchangeReportDetails& other) =
+        default;
+
+NetworkErrorLoggingService::SignedExchangeReportDetails::
+    ~SignedExchangeReportDetails() = default;
 
 const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
@@ -584,6 +679,12 @@ const char NetworkErrorLoggingService::kStatusCodeKey[] = "status_code";
 const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed_time";
 const char NetworkErrorLoggingService::kPhaseKey[] = "phase";
 const char NetworkErrorLoggingService::kTypeKey[] = "type";
+
+const char NetworkErrorLoggingService::kSignedExchangePhaseValue[] = "sxg";
+const char NetworkErrorLoggingService::kSignedExchangeBodyKey[] = "sxg";
+const char NetworkErrorLoggingService::kOuterUrlKey[] = "outer_url";
+const char NetworkErrorLoggingService::kInnerUrlKey[] = "inner_url";
+const char NetworkErrorLoggingService::kCertUrlKey[] = "cert_url";
 
 // static
 void NetworkErrorLoggingService::

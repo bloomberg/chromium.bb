@@ -950,6 +950,34 @@ void NetworkContext::QueueReport(const std::string& type,
                                  base::Value::ToUniquePtrValue(std::move(body)),
                                  0 /* depth */);
 }
+
+void NetworkContext::QueueSignedExchangeReport(
+    mojom::SignedExchangeReportPtr report) {
+  net::URLRequestContext* request_context = url_request_context();
+  net::NetworkErrorLoggingService* logging_service =
+      request_context->network_error_logging_service();
+  if (!logging_service)
+    return;
+  std::string user_agent;
+  if (request_context->http_user_agent_settings() != nullptr) {
+    user_agent = request_context->http_user_agent_settings()->GetUserAgent();
+  }
+  net::NetworkErrorLoggingService::SignedExchangeReportDetails details;
+  details.success = report->success;
+  details.type = std::move(report->type);
+  details.outer_url = std::move(report->outer_url);
+  details.inner_url = std::move(report->inner_url);
+  details.cert_url = std::move(report->cert_url);
+  details.referrer = std::move(report->referrer);
+  details.server_ip_address = std::move(report->server_ip_address);
+  details.protocol = std::move(report->protocol);
+  details.method = std::move(report->method);
+  details.status_code = report->status_code;
+  details.elapsed_time = report->elapsed_time;
+  details.user_agent = std::move(user_agent);
+  logging_service->QueueSignedExchangeReport(details);
+}
+
 #else   // BUILDFLAG(ENABLE_REPORTING)
 void NetworkContext::ClearReportingCacheReports(
     mojom::ClearDataFilterPtr filter,
@@ -974,6 +1002,11 @@ void NetworkContext::QueueReport(const std::string& type,
                                  const GURL& url,
                                  const base::Optional<std::string>& user_agent,
                                  base::Value body) {
+  NOTREACHED();
+}
+
+void NetworkContext::QueueSignedExchangeReport(
+    mojom::SignedExchangeReportPtr report) {
   NOTREACHED();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)

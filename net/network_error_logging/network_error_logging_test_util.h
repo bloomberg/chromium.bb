@@ -18,6 +18,8 @@
 
 namespace net {
 
+class IPAddress;
+
 // A NetworkErrorLoggingService implementation that stashes all NEL headers and
 // reports so that they can be easily verified in unit tests.
 class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
@@ -46,6 +48,8 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
                 const IPAddress& received_ip_address,
                 const std::string& value) override;
   void OnRequest(RequestDetails details) override;
+  void QueueSignedExchangeReport(
+      const SignedExchangeReportDetails& details) override;
   void RemoveBrowsingData(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
   void RemoveAllBrowsingData() override;

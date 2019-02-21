@@ -397,7 +397,7 @@ void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
   }
 
   if (reporter_)
-    reporter_->ReportResult(result);
+    reporter_->ReportResultAndFinish(result);
 }
 
 void SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(

@@ -4266,6 +4266,10 @@ crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multipl
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
+# Signed Exchange Reporting tests require SignedExchangeReportingForDistributors feature.
+crbug.com/910516 external/wpt/signed-exchange/reporting/ [ Skip ]
+crbug.com/910516 virtual/sxg-with-network-service/external/wpt/signed-exchange/reporting/ [ Skip ]
+
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
 

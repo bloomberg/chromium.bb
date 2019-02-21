@@ -13,6 +13,7 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "net/base/ip_address.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -21,6 +22,9 @@ struct ResourceResponseHead;
 
 namespace content {
 
+// SignedExchangeReporter sends a signed exchange report for distributor when
+// the distributor of signed exchange has set Network Error Logging (NEL) policy
+// using HTTP header.
 class CONTENT_EXPORT SignedExchangeReporter {
  public:
   static std::unique_ptr<SignedExchangeReporter> MaybeCreate(
@@ -35,7 +39,9 @@ class CONTENT_EXPORT SignedExchangeReporter {
   void set_inner_url(const GURL& inner_url);
   void set_cert_url(const GURL& cert_url);
 
-  void ReportResult(SignedExchangeLoadResult result);
+  // Queues the signed exchange report. This method must be called at the last
+  // method to be called on |this|, and must be called only once.
+  void ReportResultAndFinish(SignedExchangeLoadResult result);
 
  private:
   SignedExchangeReporter(
@@ -44,14 +50,10 @@ class CONTENT_EXPORT SignedExchangeReporter {
       const network::ResourceResponseHead& response,
       base::OnceCallback<int(void)> frame_tree_node_id_getter);
 
-  const GURL outer_url_;
-  const std::string referrer_;
-  const net::IPAddress server_ip_address_;
-  const int status_code_;
+  network::mojom::SignedExchangeReportPtr report_;
+  const base::TimeTicks request_start_;
   base::OnceCallback<int(void)> frame_tree_node_id_getter_;
   net::IPAddress cert_server_ip_address_;
-  GURL inner_url_;
-  GURL cert_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeReporter);
 };

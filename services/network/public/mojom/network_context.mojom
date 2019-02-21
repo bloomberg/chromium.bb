@@ -13,6 +13,7 @@ import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
+import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
@@ -398,6 +399,22 @@ struct NetworkUsage {
   int64 total_bytes_sent;
 };
 
+// Represents a signed exchange report.
+// Spec: https://wicg.github.io/webpackage/loading.html#queue-report
+struct SignedExchangeReport {
+  bool success;
+  string type;
+  url.mojom.Url outer_url;
+  url.mojom.Url inner_url;
+  url.mojom.Url cert_url;
+  string referrer;
+  IPAddress server_ip_address;
+  string protocol;
+  string method;
+  int32 status_code;
+  mojo_base.mojom.TimeDelta elapsed_time;
+};
+
 const uint32 kBrowserProcessId = 0;
 const uint32 kInvalidProcessId = 0xffffffff;
 
@@ -608,6 +625,9 @@ interface NetworkContext {
               url.mojom.Url url,
               string? user_agent,
               mojo_base.mojom.DictionaryValue body);
+
+  // Queues a signed exchange report.
+  QueueSignedExchangeReport(SignedExchangeReport report);
 
   // Closes all open connections within this context.
   CloseAllConnections() => ();
