@@ -157,24 +157,6 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
 };
 
 /**
- * Checks if the current device is in the given device list.
- * @param {Array<string>} ids Device ids.
- * @return {!Promise<boolean>} Promise for the result.
- */
-cca.util.isChromeOSDevice = function(ids) {
-  return new Promise((resolve) => {
-    if (!chrome.chromeosInfoPrivate) {
-      resolve(false);
-      return;
-    }
-    chrome.chromeosInfoPrivate.get(['customizationId'], (values) => {
-      var device = values['customizationId'];
-      resolve(device && ids.indexOf(device) >= 0);
-    });
-  });
-};
-
-/**
  * Returns true if current installed Chrome version is larger than or equal to
  * the given version.
  * @param {number} minVersion the version to be compared with.

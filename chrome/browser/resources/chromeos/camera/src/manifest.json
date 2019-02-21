@@ -17,9 +17,11 @@
     "unlimitedStorage",
     "idle",
     "chromeosInfoPrivate",
+    "metricsPrivate",
     "fileManagerPrivate",
     "fileSystem.requestDownloads",
-    {"fileSystem": ["write", "directory"]}
+    {"fileSystem": ["write", "directory"]},
+    "https://www.google-analytics.com/"
   ],
   "app": {
     "background": {

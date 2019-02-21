@@ -133,6 +133,7 @@ cca.App.prototype.start = function() {
     // Prompt to migrate pictures if needed.
     var message = chrome.i18n.getMessage('migrate_pictures_msg');
     return cca.nav.open('dialog', message, false).then((acked) => {
+      cca.state.set('migrate-prompted', true);
       if (!acked) {
         throw new Error('no-migrate');
       }
@@ -152,6 +153,8 @@ cca.App.prototype.start = function() {
       return;
     }
     cca.nav.open('warning', 'filesystem-failure');
+  }).finally(() => {
+    cca.metrics.log(cca.metrics.Type.LAUNCH);
   });
 };
 

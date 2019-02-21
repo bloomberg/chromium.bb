@@ -111,7 +111,9 @@ RESOURCES = \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/gallerybutton.js \
+	src/js/google-analytics-bundle.js \
 	src/js/main.js \
+	src/js/metrics.js \
 	src/js/models/gallery.js \
 	src/js/models/file_system.js \
 	src/js/nav.js \
