@@ -129,6 +129,18 @@ void GetUserDataDir(FilePath* user_data_dir) {
   }
 }
 
+net::CookieStore::SetCookiesCallback StatusToBool(
+    base::OnceCallback<void(bool)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(bool)> callback,
+         const net::CanonicalCookie::CookieInclusionStatus status) {
+        bool success =
+            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        std::move(callback).Run(success);
+      },
+      std::move(callback));
+}
+
 }  // namespace
 
 namespace {
@@ -309,12 +321,13 @@ void CookieManager::SetCookieHelper(
       replace_host.SetSchemeStr("https");
       GURL new_host = host.ReplaceComponents(replace_host);
       GetCookieStore()->SetCookieWithOptionsAsync(new_host, value, options,
-                                                  callback);
+                                                  StatusToBool(callback));
       return;
     }
   }
 
-  GetCookieStore()->SetCookieWithOptionsAsync(host, value, options, callback);
+  GetCookieStore()->SetCookieWithOptionsAsync(host, value, options,
+                                              StatusToBool(callback));
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {

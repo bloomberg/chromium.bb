@@ -176,8 +176,8 @@ class RemoveCookieTester {
     await_completion_.Notify();
   }
 
-  void SetCookieCallback(bool result) {
-    ASSERT_TRUE(result);
+  void SetCookieCallback(CanonicalCookie::CookieInclusionStatus result) {
+    ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
     await_completion_.Notify();
   }
 

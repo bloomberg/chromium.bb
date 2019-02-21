@@ -82,12 +82,13 @@ class WebSocketStreamClientUseCookieTest
     base::RunLoop().RunUntilIdle();
   }
 
-  static void SetCookieHelperFunction(const base::Closure& task,
-                                      base::WeakPtr<bool> weak_is_called,
-                                      base::WeakPtr<bool> weak_result,
-                                      bool success) {
+  static void SetCookieHelperFunction(
+      const base::RepeatingClosure& task,
+      base::WeakPtr<bool> weak_is_called,
+      base::WeakPtr<bool> weak_result,
+      CanonicalCookie::CookieInclusionStatus status) {
     *weak_is_called = true;
-    *weak_result = success;
+    *weak_result = (status == CanonicalCookie::CookieInclusionStatus::INCLUDE);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 };

@@ -45,6 +45,18 @@ mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause) {
   return mojom::CookieChangeCause::EXPLICIT;
 }
 
+net::CookieStore::SetCookiesCallback StatusToBool(
+    base::OnceCallback<void(bool)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(bool)> callback,
+         const net::CanonicalCookie::CookieInclusionStatus status) {
+        bool success =
+            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        std::move(callback).Run(success);
+      },
+      std::move(callback));
+}
+
 }  // anonymous namespace
 
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
@@ -213,7 +225,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
   bool modify_http_only = false;
   cookie_store_->SetCanonicalCookieAsync(std::move(sanitized_cookie),
                                          secure_source, modify_http_only,
-                                         std::move(callback));
+                                         StatusToBool(std::move(callback)));
 }
 
 void RestrictedCookieManager::AddChangeListener(

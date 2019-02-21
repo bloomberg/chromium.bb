@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,12 +23,6 @@
 #endif
 
 namespace net {
-
-namespace {
-
-void IgnoreBoolean(bool not_used) {}
-
-}  // namespace
 
 #pragma mark -
 #pragma mark TestPersistentCookieStore
@@ -141,7 +136,7 @@ void SetCookie(const std::string& cookie_line,
   net::CookieOptions options;
   options.set_include_httponly();
   store->SetCookieWithOptionsAsync(url, cookie_line, options,
-                                   base::Bind(&IgnoreBoolean));
+                                   base::DoNothing());
   net::CookieStoreIOS::NotifySystemCookiesChanged();
   // Wait until the flush is posted.
   base::RunLoop().RunUntilIdle();

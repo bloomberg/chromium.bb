@@ -1229,26 +1229,32 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
   cookie_monster->SetCookieableSchemes({"gopher", "http"});
-  ResultSavingCookieCallback<bool> set_cookie_callback;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
       GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
       CookieOptions(),
-      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookie_callback.result());
 
   // Also insert a whole bunch of cookies to slow down the background loading of
   // all the cookies.
   for (int i = 0; i < 50; ++i) {
-    ResultSavingCookieCallback<bool> set_cookie_callback2;
+    ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+        set_cookie_callback2;
     cookie_monster->SetCookieWithOptionsAsync(
         GURL(base::StringPrintf("http://example%d.com/", i)),
         "A=B; max-age=3600", CookieOptions(),
-        base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+        base::BindOnce(&ResultSavingCookieCallback<
+                           CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
     set_cookie_callback2.WaitUntilDone();
-    EXPECT_TRUE(set_cookie_callback2.result());
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+              set_cookie_callback2.result());
   }
 
   net::TestClosure flush_closure;
@@ -1289,13 +1295,16 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
 
-  ResultSavingCookieCallback<bool> set_cookie_callback;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
       GURL("http://www.example.com/"), "A=B; max-age=3600", CookieOptions(),
-      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookie_callback.result());
 
   // Things should commit once going out of scope.
 }
