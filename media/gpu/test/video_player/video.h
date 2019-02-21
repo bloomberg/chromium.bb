@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "media/base/video_codecs.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace test {
@@ -35,28 +36,36 @@ class Video {
   const std::vector<uint8_t>& Data() const;
 
   // Get the video's codec.
+  VideoCodec Codec() const;
+  // Get the video's codec profile.
   VideoCodecProfile Profile() const;
   // Get the number of frames in the video.
   uint32_t NumFrames() const;
+  // Get the number of fragments in the video.
+  uint32_t NumFragments() const;
+  // Get the video resolution.
+  gfx::Size Resolution() const;
+
   // Get the list of frame checksums.
   const std::vector<std::string>& FrameChecksums() const;
+  // Get the list of thumbnail checksums, used by the "RenderThumbnails" test.
+  // TODO(crbug.com/933632) Remove once the frame validator is supported on all
+  // active platforms.
+  const std::vector<std::string>& ThumbnailChecksums() const;
 
   // Set the default path to the test video data.
   static void SetTestDataPath(const base::FilePath& test_data_path);
 
  private:
-  // Return a profile that |codec| represents.
-  static VideoCodecProfile ConvertStringtoProfile(const std::string& codec);
+  // Return the profile associated with the |profile| string.
+  static VideoCodecProfile ConvertStringtoProfile(const std::string& profile);
+  // Return the codec associated with the |profile|.
+  static VideoCodec ConvertProfileToCodec(VideoCodecProfile profile);
 
   // Load metadata from the JSON file associated with the video file.
   bool LoadMetadata();
   // Return true if video metadata is already loaded.
   bool IsMetadataLoaded() const;
-
-  // Load video frame checksums from the associated checksums file.
-  bool LoadFrameChecksums();
-  // Return true if the video frame checksums are loaded.
-  bool FrameChecksumsLoaded() const;
 
   // The path where all test video files are stored.
   // TODO(dstaessens@) Avoid using a static data path here.
@@ -69,9 +78,14 @@ class Video {
 
   // Ordered list of video frame checksums.
   std::vector<std::string> frame_checksums_;
+  // List of thumbnail checksums.
+  std::vector<std::string> thumbnail_checksums_;
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+  VideoCodec codec_ = kUnknownVideoCodec;
   uint32_t num_frames_ = 0;
+  uint32_t num_fragments_ = 0;
+  gfx::Size resolution_;
 
   DISALLOW_COPY_AND_ASSIGN(Video);
 };

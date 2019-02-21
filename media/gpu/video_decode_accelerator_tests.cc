@@ -270,7 +270,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(
       g_env->video_, config,
-      FrameRendererThumbnail::Create(g_env->video_->FilePath()));
+      FrameRendererThumbnail::Create(g_env->video_->ThumbnailChecksums()));
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());

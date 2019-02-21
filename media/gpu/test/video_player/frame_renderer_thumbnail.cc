@@ -131,6 +131,15 @@ FrameRendererThumbnail::~FrameRendererThumbnail() {
 
 // static
 std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
+    const std::vector<std::string> thumbnail_checksums) {
+  auto frame_renderer =
+      base::WrapUnique(new FrameRendererThumbnail(thumbnail_checksums));
+  frame_renderer->Initialize();
+  return frame_renderer;
+}
+
+// static
+std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
     const base::FilePath& video_file_path) {
   // Read thumbnail checksums from file.
   std::vector<std::string> thumbnail_checksums =
@@ -139,7 +148,7 @@ std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
 
   auto frame_renderer =
       base::WrapUnique(new FrameRendererThumbnail(thumbnail_checksums));
-  frame_renderer->Initialize(video_file_path);
+  frame_renderer->Initialize();
   return frame_renderer;
 }
 
@@ -245,7 +254,7 @@ void FrameRendererThumbnail::SaveThumbnail() {
   EXPECT_EQ(static_cast<size_t>(num_bytes), png.size());
 }
 
-void FrameRendererThumbnail::Initialize(const base::FilePath& video_file_path) {
+void FrameRendererThumbnail::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   // Initialize GL rendering and create GL context.

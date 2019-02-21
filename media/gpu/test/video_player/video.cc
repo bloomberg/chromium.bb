@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/values.h"
-#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
@@ -21,9 +20,6 @@ namespace test {
 // Suffix to append to the video file path to get the metadata file path.
 constexpr const base::FilePath::CharType* kMetadataSuffix =
     FILE_PATH_LITERAL(".json");
-// Suffix to append to the video file path to get the checksums file path.
-constexpr const base::FilePath::CharType* kFrameChecksumSuffix =
-    FILE_PATH_LITERAL(".frames.md5");
 
 base::FilePath Video::test_data_path_ = base::FilePath();
 
@@ -66,11 +62,6 @@ bool Video::Load() {
     return false;
   }
 
-  if (!LoadFrameChecksums()) {
-    VLOGF(1) << "Failed to load frame checksums";
-    return false;
-  }
-
   return true;
 }
 
@@ -86,6 +77,10 @@ const std::vector<uint8_t>& Video::Data() const {
   return data_;
 }
 
+VideoCodec Video::Codec() const {
+  return codec_;
+}
+
 VideoCodecProfile Video::Profile() const {
   return profile_;
 }
@@ -94,8 +89,20 @@ uint32_t Video::NumFrames() const {
   return num_frames_;
 }
 
+uint32_t Video::NumFragments() const {
+  return num_fragments_;
+}
+
+gfx::Size Video::Resolution() const {
+  return resolution_;
+}
+
 const std::vector<std::string>& Video::FrameChecksums() const {
   return frame_checksums_;
+}
+
+const std::vector<std::string>& Video::ThumbnailChecksums() const {
+  return thumbnail_checksums_;
 }
 
 // static
@@ -139,7 +146,8 @@ bool Video::LoadMetadata() {
     return false;
   }
   profile_ = ConvertStringtoProfile(profile->GetString());
-  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN) {
+  codec_ = ConvertProfileToCodec(profile_);
+  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || codec_ == kUnknownVideoCodec) {
     VLOGF(1) << profile->GetString() << " is not supported";
     return false;
   }
@@ -152,28 +160,56 @@ bool Video::LoadMetadata() {
   }
   num_frames_ = static_cast<uint32_t>(num_frames->GetInt());
 
+  const base::Value* num_fragments =
+      metadata->FindKeyOfType("num_fragments", base::Value::Type::INTEGER);
+  if (!num_fragments) {
+    VLOGF(1) << "Key \"num_fragments\" is not found in " << json_path;
+    return false;
+  }
+  num_fragments_ = static_cast<uint32_t>(num_fragments->GetInt());
+
+  const base::Value* width =
+      metadata->FindKeyOfType("width", base::Value::Type::INTEGER);
+  if (!width) {
+    VLOGF(1) << "Key \"width\" is not found in " << json_path;
+    return false;
+  }
+  const base::Value* height =
+      metadata->FindKeyOfType("height", base::Value::Type::INTEGER);
+  if (!height) {
+    VLOGF(1) << "Key \"height\" is not found in " << json_path;
+    return false;
+  }
+  resolution_ = gfx::Size(static_cast<uint32_t>(width->GetInt()),
+                          static_cast<uint32_t>(height->GetInt()));
+
+  const base::Value* md5_checksums =
+      metadata->FindKeyOfType("md5_checksums", base::Value::Type::LIST);
+  if (!md5_checksums) {
+    VLOGF(1) << "Key \"md5_checksums\" is not found in " << json_path;
+    return false;
+  }
+  for (const base::Value& checksum : md5_checksums->GetList()) {
+    frame_checksums_.push_back(checksum.GetString());
+  }
+
+  const base::Value* thumbnail_checksums =
+      metadata->FindKeyOfType("thumbnail_checksums", base::Value::Type::LIST);
+  if (!thumbnail_checksums) {
+    VLOGF(1) << "Key \"thumbnail_checksums\" is not found in " << json_path;
+    return false;
+  }
+  for (const base::Value& checksum : thumbnail_checksums->GetList()) {
+    const std::string& checksum_str = checksum.GetString();
+    if (checksum_str.size() > 0 && checksum_str[0] != '#')
+      thumbnail_checksums_.push_back(checksum_str);
+  }
+
   return true;
 }
 
 bool Video::IsMetadataLoaded() const {
   return profile_ != VIDEO_CODEC_PROFILE_UNKNOWN || num_frames_ != 0;
-}
-
-bool Video::LoadFrameChecksums() {
-  if (FrameChecksumsLoaded()) {
-    VLOGF(1) << "Frame checksums are already loaded";
-    return false;
-  }
-
-  frame_checksums_ =
-      ReadGoldenThumbnailMD5s(file_path_.AddExtension(kFrameChecksumSuffix));
-  LOG_ASSERT(frame_checksums_.size() == num_frames_)
-      << "Video frame checksum count does not match number of video frames";
-  return frame_checksums_.size() == num_frames_;
-}
-
-bool Video::FrameChecksumsLoaded() const {
-  return frame_checksums_.size() == num_frames_;
 }
 
 // static
@@ -187,8 +223,22 @@ VideoCodecProfile Video::ConvertStringtoProfile(const std::string& profile) {
   } else if (profile == "VP9PROFILE_PROFILE2") {
     return VP9PROFILE_PROFILE2;
   } else {
-    VLOG(2) << profile << " is not supported.";
+    VLOG(2) << profile << " is not supported";
     return VIDEO_CODEC_PROFILE_UNKNOWN;
+  }
+}
+
+// static
+VideoCodec Video::ConvertProfileToCodec(VideoCodecProfile profile) {
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
+    return kCodecH264;
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
+    return kCodecVP8;
+  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
+    return kCodecVP9;
+  } else {
+    VLOG(2) << GetProfileName(profile) << " is not supported";
+    return kUnknownVideoCodec;
   }
 }
 

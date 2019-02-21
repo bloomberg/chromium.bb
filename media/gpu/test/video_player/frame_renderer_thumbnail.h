@@ -38,6 +38,10 @@ class FrameRendererThumbnail : public FrameRenderer {
  public:
   ~FrameRendererThumbnail() override;
 
+  // Create an instance of the thumbnail frame renderer.
+  static std::unique_ptr<FrameRendererThumbnail> Create(
+      const std::vector<std::string> thumbnail_checksums);
+
   // Create an instance of the thumbnail frame renderer. The |video_file_path|
   // should point to a file containing all golden thumbnail hashes for the video
   // being rendered.
@@ -67,7 +71,7 @@ class FrameRendererThumbnail : public FrameRenderer {
       const std::vector<std::string>& thumbnail_checksums);
 
   // Initialize the frame renderer, performs all rendering-related setup.
-  void Initialize(const base::FilePath& video_file_path);
+  void Initialize();
 
   // Initialize the thumbnail image the frame thumbnails will be rendered to.
   void InitializeThumbnailImage() EXCLUSIVE_LOCKS_REQUIRED(renderer_lock_);
