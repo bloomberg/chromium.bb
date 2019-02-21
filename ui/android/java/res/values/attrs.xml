@@ -3,6 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <resources>
+    <attr name="rippleColor" format="color"/>
+
     <declare-styleable name="DualControlLayout">
         <attr name="stackedMargin" format="reference"/>
         <attr name="primaryButtonText" format="reference|string"/>
@@ -16,7 +18,7 @@
 
     <declare-styleable name="ButtonCompat">
         <attr name="buttonColor" format="color"/>
-        <attr name="rippleColor" format="color"/>
+        <attr name="rippleColor"/>
         <attr name="buttonRaised" format="boolean"/>
     </declare-styleable>
 
@@ -28,7 +30,7 @@
         <attr name="iconHeight" format="reference|dimension"/>
         <attr name="primaryTextAppearance" format="reference"/>
         <attr name="secondaryTextAppearance" format="reference"/>
-        <attr name="rippleColor" format="color"/>
+        <attr name="rippleColor"/>
     </declare-styleable>
 
     <declare-styleable name="TextViewWithLeading">
