@@ -5,6 +5,7 @@
 #include "chromecast/base/cast_paths.h"
 
 #include "base/base_paths.h"
+#include "base/base_paths_fuchsia.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -42,6 +43,9 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
       CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.conf");
+#elif defined(OS_FUCHSIA)
+      CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
+      *result = data_dir.Append(".eureka.conf");
 #else
       CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.conf");
@@ -53,6 +57,9 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
       CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.crl");
+#elif defined(OS_FUCHSIA)
+      CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
+      *result = data_dir.Append(".eureka.crl");
 #else
       CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.crl");
