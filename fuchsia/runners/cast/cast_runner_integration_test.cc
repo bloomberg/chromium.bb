@@ -76,7 +76,9 @@ class FakeCastChannel : public chromium::cast::CastChannel {
 class CastRunnerIntegrationTest : public testing::Test {
  public:
   CastRunnerIntegrationTest()
-      : run_timeout_(TestTimeouts::action_timeout()),
+      : run_timeout_(
+            TestTimeouts::action_timeout(),
+            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")),
         app_config_binding_(&app_config_manager_) {
     // Create a new test ServiceDirectory, and ServiceDirectoryClient connected
     // to it, for tests to use to drive the CastRunner.

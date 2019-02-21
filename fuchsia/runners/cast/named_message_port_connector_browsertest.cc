@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
@@ -30,7 +31,8 @@ class NamedMessagePortConnectorTest
       public chromium::web::NavigationEventObserver {
  public:
   NamedMessagePortConnectorTest()
-      : run_timeout_(TestTimeouts::action_timeout()) {
+      : run_timeout_(TestTimeouts::action_timeout(),
+                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 

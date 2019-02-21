@@ -39,16 +39,12 @@ ScopedRunTimeoutForTestTLS() {
   return tls.get();
 }
 
-void OnRunTimeout(RunLoop* run_loop, RepeatingClosure on_timeout) {
+void OnRunTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
   run_loop->Quit();
-  if (on_timeout)
-    on_timeout.Run();
+  std::move(on_timeout).Run();
 }
 
 }  // namespace
-
-RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(TimeDelta timeout)
-    : ScopedRunTimeoutForTest(timeout, RepeatingClosure()) {}
 
 RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(
     TimeDelta timeout,
@@ -56,6 +52,8 @@ RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(
     : timeout_(timeout),
       on_timeout_(std::move(on_timeout)),
       nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
+  DCHECK_GT(timeout_, TimeDelta());
+  DCHECK(on_timeout_);
   ScopedRunTimeoutForTestTLS()->Set(this);
 }
 
@@ -67,6 +65,15 @@ RunLoop::ScopedRunTimeoutForTest::~ScopedRunTimeoutForTest() {
 const RunLoop::ScopedRunTimeoutForTest*
 RunLoop::ScopedRunTimeoutForTest::Current() {
   return ScopedRunTimeoutForTestTLS()->Get();
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::ScopedDisableRunTimeoutForTest()
+    : nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
+  ScopedRunTimeoutForTestTLS()->Set(nullptr);
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::~ScopedDisableRunTimeoutForTest() {
+  ScopedRunTimeoutForTestTLS()->Set(nested_timeout_);
 }
 
 RunLoop::Delegate::Delegate() {
@@ -129,7 +136,7 @@ void RunLoop::Run() {
   // can be applied even in tests which mock TimeTicks::Now().
   CancelableOnceClosure cancelable_timeout;
   ScopedRunTimeoutForTest* run_timeout = ScopedRunTimeoutForTestTLS()->Get();
-  if (run_timeout && !run_timeout->timeout().is_zero()) {
+  if (run_timeout) {
     cancelable_timeout.Reset(
         BindOnce(&OnRunTimeout, Unretained(this), run_timeout->on_timeout()));
     ThreadTaskRunnerHandle::Get()->PostDelayedTask(

@@ -27,16 +27,14 @@ namespace {
 // referenced frequently in this file.
 using NavigationDetails = chromium::web::NavigationEvent;
 
-void OnError() {
-  ADD_FAILURE();
-}
-
 class CastChannelBindingsTest : public cr_fuchsia::test::WebRunnerBrowserTest,
                                 public chromium::web::NavigationEventObserver,
                                 public chromium::cast::CastChannel {
  public:
   CastChannelBindingsTest()
-      : receiver_binding_(this), run_timeout_(TestTimeouts::action_timeout()) {
+      : receiver_binding_(this),
+        run_timeout_(TestTimeouts::action_timeout(),
+                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 
@@ -167,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
   testing::InSequence seq;
   CastChannelBindings cast_channel_instance(
       frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind(),
-      base::BindOnce(&OnError));
+      base::MakeExpectedNotRunClosure(FROM_HERE));
 
   // Verify that CastChannelBindings can properly handle message, connect,
   // disconnect, and MessagePort disconnection events.

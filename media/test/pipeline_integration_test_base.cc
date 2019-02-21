@@ -135,9 +135,6 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       webaudio_attached_(false),
       mono_output_(false),
       fuzzing_(false),
-#if defined(ADDRESS_SANITIZER) || defined(UNDEFINED_SANITIZER)
-      disable_run_timeout_(base::TimeDelta()),
-#endif
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
                            scoped_task_environment_.GetMainThreadTaskRunner(),
