@@ -840,15 +840,17 @@ bool FileManagerPrivateCancelCopyFunction::RunAsync() {
   return true;
 }
 
-bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalResolveIsolatedEntriesFunction::Run() {
   using extensions::api::file_manager_private_internal::ResolveIsolatedEntries::
       Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  const ChromeExtensionFunctionDetails chrome_details(this);
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          GetProfile(), render_frame_host());
+          chrome_details.GetProfile(), render_frame_host());
   DCHECK(file_system_context.get());
 
   const storage::ExternalFileSystemBackend* external_backend =
@@ -865,8 +867,8 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
     FileDefinition file_definition;
     const bool result =
         file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            GetProfile(), extension_->id(), file_system_url.path(),
-            &file_definition.virtual_path);
+            chrome_details.GetProfile(), extension_->id(),
+            file_system_url.path(), &file_definition.virtual_path);
     if (!result)
       continue;
     // The API only supports isolated files. It still works for directories,
@@ -876,13 +878,13 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      GetProfile(), extension_->id(),
+      chrome_details.GetProfile(), extension_->id(),
       file_definition_list,  // Safe, since copied internally.
       base::BindOnce(
           &FileManagerPrivateInternalResolveIsolatedEntriesFunction::
               RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList,
           this));
-  return true;
+  return RespondLater();
 }
 
 void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
@@ -903,9 +905,8 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
     entries.push_back(std::move(entry));
   }
 
-  results_ = extensions::api::file_manager_private_internal::
-      ResolveIsolatedEntries::Results::Create(entries);
-  SendResponse(true);
+  Respond(ArgumentList(extensions::api::file_manager_private_internal::
+                           ResolveIsolatedEntries::Results::Create(entries)));
 }
 
 FileManagerPrivateInternalComputeChecksumFunction::
