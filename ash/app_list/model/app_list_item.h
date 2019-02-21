@@ -96,6 +96,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   bool is_page_break() const { return metadata_->is_page_break; }
 
  protected:
+  // Subclasses also have mutable access to the metadata ptr.
+  ash::mojom::AppListItemMetadata* metadata() { return metadata_.get(); }
+
   friend class ::FastShowPickler;
   friend class ash::AppListControllerImpl;
   friend class AppListItemList;

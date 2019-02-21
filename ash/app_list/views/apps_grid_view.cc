@@ -2171,7 +2171,7 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     const std::string& source_folder_id) {
   AppListFolderItem* source_folder =
       static_cast<AppListFolderItem*>(item_list_->FindItem(source_folder_id));
-  if (!source_folder || !source_folder->ShouldAutoRemove())
+  if (source_folder && !source_folder->ShouldAutoRemove())
     return;
 
   // Save the folder item view's bounds before deletion, which will be used as
@@ -2185,6 +2185,12 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
   DeleteItemViewAtIndex(
       view_model_.GetIndexOfView(activated_folder_item_view()),
       false /* sanitize */);
+
+  // For single-app folders (which can exist for system-managed folders, see
+  // crbug.com/925052) there will not be a "last item" so we can ignore the
+  // rest.
+  if (!source_folder || source_folder->item_list()->item_count() != 1)
+    return;
 
   // Now make the data change to remove the folder item in model.
   AppListItem* last_item = source_folder->item_list()->item_at(0);

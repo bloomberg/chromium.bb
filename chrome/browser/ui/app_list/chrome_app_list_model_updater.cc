@@ -227,6 +227,18 @@ void ChromeAppListModelUpdater::SetItemPosition(
   app_list_controller_->SetItemMetadata(id, std::move(data));
 }
 
+void ChromeAppListModelUpdater::SetItemIsPersistent(const std::string& id,
+                                                    bool is_persistent) {
+  if (!app_list_controller_)
+    return;
+  ChromeAppListItem* item = FindItem(id);
+  if (!item)
+    return;
+  ash::mojom::AppListItemMetadataPtr data = item->CloneMetadata();
+  data->is_persistent = is_persistent;
+  app_list_controller_->SetItemMetadata(id, std::move(data));
+}
+
 void ChromeAppListModelUpdater::SetItemFolderId(const std::string& id,
                                                 const std::string& folder_id) {
   if (!app_list_controller_)

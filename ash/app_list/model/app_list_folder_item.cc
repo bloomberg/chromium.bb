@@ -47,6 +47,14 @@ size_t AppListFolderItem::ChildItemCount() const {
   return item_list_->item_count();
 }
 
+bool AppListFolderItem::IsPersistent() const {
+  return GetMetadata()->is_persistent;
+}
+
+void AppListFolderItem::SetIsPersistent(bool is_persistent) {
+  metadata()->is_persistent = is_persistent;
+}
+
 bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
   if (!AppListItem::CompareForTest(other))
     return false;
@@ -63,7 +71,7 @@ bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
 }
 
 bool AppListFolderItem::ShouldAutoRemove() const {
-  return ChildItemCount() <= (is_persistent() ? 0u : 1u);
+  return ChildItemCount() <= (IsPersistent() ? 0u : 1u);
 }
 
 std::string AppListFolderItem::GenerateId() {
