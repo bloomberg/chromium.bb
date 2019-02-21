@@ -58,8 +58,6 @@ class CORE_EXPORT WorkletAnimationController
 
   void SetMutationUpdate(
       std::unique_ptr<AnimationWorkletOutput> output) override;
-  void NotifyAnimationsPending() override {}
-  void NotifyAnimationsReady() override {}
 
   void SynchronizeAnimatorName(const String& animator_name) override;
   // Returns true if the animator with given name is registered in
