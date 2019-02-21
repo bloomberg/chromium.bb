@@ -1085,7 +1085,7 @@ void DocumentLoader::StartLoadingInternal() {
 
   GetFrameLoader().Progress().WillStartLoading(main_resource_identifier_,
                                                ResourceLoadPriority::kVeryHigh);
-  probe::willSendNavigationRequest(GetFrame()->GetDocument(),
+  probe::willSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
                                    main_resource_identifier_, this, url_,
                                    http_method_, http_body_.get());
 
@@ -1106,7 +1106,7 @@ void DocumentLoader::StartLoadingInternal() {
     http_content_type_ = g_null_atom;
     // TODO(dgozman): check whether clearing origin policy is intended behavior.
     origin_policy_ = String();
-    probe::willSendNavigationRequest(GetFrame()->GetDocument(),
+    probe::willSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
                                      main_resource_identifier_, this, url_,
                                      http_method_, http_body_.get());
     ResourceResponse redirect_response =

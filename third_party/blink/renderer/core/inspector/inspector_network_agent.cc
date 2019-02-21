@@ -711,9 +711,9 @@ void InspectorNetworkAgent::ShouldBypassServiceWorker(bool* result) {
 }
 
 void InspectorNetworkAgent::DidBlockRequest(
-    ExecutionContext* execution_context,
     const ResourceRequest& request,
     DocumentLoader* loader,
+    const KURL& fetch_context_url,
     const FetchInitiatorInfo& initiator_info,
     ResourceRequestBlockedReason reason,
     ResourceType resource_type) {
@@ -721,7 +721,7 @@ void InspectorNetworkAgent::DidBlockRequest(
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);
 
-  WillSendRequestInternal(execution_context, identifier, loader, request,
+  WillSendRequestInternal(identifier, loader, fetch_context_url, request,
                           ResourceResponse(), initiator_info, type);
 
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -744,9 +744,9 @@ void InspectorNetworkAgent::DidChangeResourcePriority(
 }
 
 void InspectorNetworkAgent::WillSendRequestInternal(
-    ExecutionContext* execution_context,
     unsigned long identifier,
     DocumentLoader* loader,
+    const KURL& fetch_context_url,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
@@ -800,9 +800,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     request_info->setIsLinkPreload(true);
 
   String resource_type = InspectorPageAgent::ResourceTypeJson(type);
-  String documentURL =
-      loader ? UrlWithoutFragment(loader->Url()).GetString()
-             : UrlWithoutFragment(execution_context->Url()).GetString();
+  String documentURL = loader
+                           ? UrlWithoutFragment(loader->Url()).GetString()
+                           : UrlWithoutFragment(fetch_context_url).GetString();
   Maybe<String> maybe_frame_id;
   if (!frame_id.IsEmpty())
     maybe_frame_id = frame_id;
@@ -823,7 +823,6 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 }
 
 void InspectorNetworkAgent::WillSendNavigationRequest(
-    ExecutionContext* execution_context,
     unsigned long identifier,
     DocumentLoader* loader,
     const KURL& url,
@@ -845,7 +844,6 @@ void InspectorNetworkAgent::WillSendNavigationRequest(
 }
 
 void InspectorNetworkAgent::PrepareRequest(
-    ExecutionContext* execution_context,
     DocumentLoader* loader,
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,
@@ -891,9 +889,9 @@ void InspectorNetworkAgent::PrepareRequest(
 }
 
 void InspectorNetworkAgent::WillSendRequest(
-    ExecutionContext* execution_context,
     unsigned long identifier,
     DocumentLoader* loader,
+    const KURL& fetch_context_url,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
@@ -905,7 +903,7 @@ void InspectorNetworkAgent::WillSendRequest(
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);
 
-  WillSendRequestInternal(execution_context, identifier, loader, request,
+  WillSendRequestInternal(identifier, loader, fetch_context_url, request,
                           redirect_response, initiator_info, type);
 }
 

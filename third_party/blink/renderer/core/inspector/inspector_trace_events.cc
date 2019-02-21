@@ -102,9 +102,9 @@ void SetCallStack(TracedValue* value) {
 }
 
 void InspectorTraceEvents::WillSendRequest(
-    ExecutionContext*,
     unsigned long identifier,
     DocumentLoader* loader,
+    const KURL& fetch_context_url,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo&,
@@ -117,7 +117,6 @@ void InspectorTraceEvents::WillSendRequest(
 }
 
 void InspectorTraceEvents::WillSendNavigationRequest(
-    ExecutionContext*,
     unsigned long identifier,
     DocumentLoader* loader,
     const KURL& url,

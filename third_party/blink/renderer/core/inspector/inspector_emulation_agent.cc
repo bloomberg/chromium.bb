@@ -351,7 +351,6 @@ void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
 }
 
 void InspectorEmulationAgent::PrepareRequest(
-    ExecutionContext* execution_context,
     DocumentLoader* loader,
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,
