@@ -89,8 +89,9 @@
 
     <!-- Activity themes -->
     <style name="Theme.Chromium.Activity" parent="Theme.Chromium.WithWindowAnimation" />
-    <!-- TODO(huayinz): Can this be merged to Theme.Chromium.Activity.Fullscreen.Transparent? -->
-    <style name="Theme.Chromium.Activity.Translucent">
+    <!-- This is distinct from Theme.Chromium.Activity.Fullscreen.Transparent, which makes the
+         payment handler window overlap the bottom nav bar. -->
+    <style name="Theme.Chromium.Activity.Translucent" parent="Base.Theme.Chromium">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
