@@ -373,7 +373,6 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
     AXPlatformNodeWin* node_win =
         static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
     DCHECK(node_win);
-    node_win->AddRef();
     SafeArrayPutElement(uia_array, &i,
                         static_cast<IRawElementProviderSimple*>(node_win));
     ++i;
@@ -1868,15 +1867,31 @@ IFACEMETHODIMP AXPlatformNodeWin::get_SelectionContainer(
 
 IFACEMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
   UIA_VALIDATE_CALL_1_ARG(result);
-  int child_count = GetDelegate()->GetChildCount();
-  *result = SafeArrayCreateVector(VT_UNKNOWN, 0, child_count);
+
+  std::vector<AXPlatformNodeWin*> selected_children;
+  LONG child_count = GetDelegate()->GetChildCount();
   for (LONG i = 0; i < child_count; ++i) {
     auto* child = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
     DCHECK(child);
-    child->AddRef();
-    SafeArrayPutElement(*result, &i,
-                        static_cast<IRawElementProviderSimple*>(child));
+    if (child->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+      selected_children.push_back(child);
+  }
+
+  LONG selected_children_count = selected_children.size();
+  *result = SafeArrayCreateVector(VT_UNKNOWN, 0, selected_children_count);
+  if (!*result)
+    return E_OUTOFMEMORY;
+
+  for (LONG i = 0; i < selected_children_count; ++i) {
+    HRESULT hr = SafeArrayPutElement(
+        *result, &i,
+        static_cast<IRawElementProviderSimple*>(selected_children[i]));
+    if (FAILED(hr)) {
+      SafeArrayDestroy(*result);
+      *result = nullptr;
+      return hr;
+    }
   }
   return S_OK;
 }
@@ -1889,7 +1904,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_CanSelectMultiple(BOOL* result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
-  return E_NOTIMPL;
+  *result = GetData().HasState(ax::mojom::State::kRequired);
+  return S_OK;
 }
 
 //
