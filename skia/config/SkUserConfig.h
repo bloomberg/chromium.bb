@@ -149,10 +149,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DRAWLOOPER
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_SETLENGTH
-#define SK_SUPPORT_LEGACY_SETLENGTH
-#endif
-
 // Skia is enabling this feature soon. Chrome probably does
 // not want it for M64
 #ifndef SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
