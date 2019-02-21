@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_monitor/system_monitor.h"
+#include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
 
 #include <windows.h>
 
@@ -14,24 +14,18 @@ namespace {
 
 const DWORDLONG kMBBytes = 1024 * 1024;
 
-// Returns the amount of physical memory available on the system.
-base::Optional<int> GetFreePhysMemoryMb() {
+}  // namespace
+
+MetricEvaluatorsHelperWin::MetricEvaluatorsHelperWin() = default;
+MetricEvaluatorsHelperWin::~MetricEvaluatorsHelperWin() = default;
+
+base::Optional<int> MetricEvaluatorsHelperWin::GetFreePhysicalMemoryMb() {
   MEMORYSTATUSEX mem_status;
   mem_status.dwLength = sizeof(mem_status);
   if (!::GlobalMemoryStatusEx(&mem_status))
     return base::nullopt;
 
   return (mem_status.ullAvailPhys / kMBBytes);
-}
-
-}  // namespace
-
-void SystemMonitor::FreePhysMemoryMetricEvaluator::Evaluate() {
-  auto value = GetFreePhysMemoryMb();
-  if (value) {
-    value_ = value.value();
-    has_value_ = true;
-  }
 }
 
 }  // namespace performance_monitor
