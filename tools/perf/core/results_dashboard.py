@@ -11,8 +11,8 @@
 import calendar
 import datetime
 import httplib
-import json
 import os
+import shutil
 import subprocess
 import sys
 import traceback
@@ -69,7 +69,7 @@ def SendResults(data, data_label, url, send_as_histograms=False,
   This function tries to send the given data to the dashboard.
 
   Args:
-    data: The data to try to send. Must be JSON-serializable.
+    data: The JSON string to try to send.
     data_label: string name of the data to be uploaded. This is only used for
     logging purpose.
     url: Performance Dashboard URL (including schema).
@@ -93,8 +93,6 @@ def SendResults(data, data_label, url, send_as_histograms=False,
 
   data_type = ('histogram' if send_as_histograms else 'chartjson')
 
-  dashboard_data_str = json.dumps(data)
-
   # When perf dashboard is overloaded, it takes sometimes to spin up new
   # instance. So sleep before retrying again. (
   # For more details, see crbug.com/867379.
@@ -105,11 +103,11 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       print 'Sending %s result of %s to dashboard (attempt %i out of %i).' % (
           data_type, data_label, i, num_retries)
       if send_as_histograms:
-        _SendHistogramJson(url, dashboard_data_str,
+        _SendHistogramJson(url, data,
                            service_account_file, token_generator_callback)
       else:
         # TODO(eakuefner): Remove this logic once all bots use histograms.
-        _SendResultsJson(url, dashboard_data_str)
+        _SendResultsJson(url, data)
       all_data_uploaded = True
       break
     except SendResultsRetryException as e:
@@ -139,7 +137,18 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
                                     test_name, bot, buildername, buildnumber,
                                     project, buildbucket,
                                     revisions_dict, is_reference_build,
-                                    perf_dashboard_machine_group):
+                                    perf_dashboard_machine_group, max_bytes=0,
+                                    output_path=''):
+  """Generates strings containing HistogramSet JSON.
+
+  Args:
+    histograms_file: input filename
+    output_path: output filename. If empty, a temporary directory will be
+      created.
+    max_bytes: If non-zero, tries to produce files no larger than max_bytes.
+      (May generate a file that is larger than max_bytes if max_bytes is smaller
+      than a single Histogram.)
+  """
   add_diagnostics_args = []
   add_diagnostics_args.extend([
       '--benchmarks', test_name,
@@ -148,6 +157,9 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
       '--masters', perf_dashboard_machine_group,
       '--is_reference_build', 'true' if is_reference_build else '',
   ])
+
+  if max_bytes:
+    add_diagnostics_args.extend(['--max_bytes', max_bytes])
 
   stdio_url = _MakeStdioUrl(test_name, buildername, buildnumber)
   if stdio_url:
@@ -172,21 +184,31 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
       path_util.GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing',
       'bin', 'add_reserved_diagnostics')
 
-  tf = tempfile.NamedTemporaryFile(delete=False)
-  tf.close()
-  temp_histogram_output_file = tf.name
+  output_dir = None
+  if not output_path:
+    output_dir = tempfile.mkdtemp()
+    output_path = os.path.join(output_dir, 'histograms.json')
 
   cmd = ([sys.executable, add_reserved_diagnostics_path] +
-         add_diagnostics_args + ['--output_path', temp_histogram_output_file])
+         add_diagnostics_args + ['--output_path', output_path])
 
   try:
+    begin_time = time.time()
     subprocess.check_call(cmd)
+    end_time = time.time()
+    print 'Duration of adding diagnostics for %s: %d seconds' % (
+        test_name, end_time - begin_time)
+
     # TODO: Handle reference builds
-    with open(temp_histogram_output_file) as f:
-      hs = json.load(f)
-    return hs
+
+    if output_dir:
+      for basename in os.listdir(output_dir):
+        yield file(os.path.join(output_dir, basename)).read()
+    else:
+      yield file(output_path).read()
   finally:
-    os.remove(temp_histogram_output_file)
+    if output_dir:
+      shutil.rmtree(output_dir)
 
 
 def MakeListOfPoints(charts, bot, test_name, buildername,

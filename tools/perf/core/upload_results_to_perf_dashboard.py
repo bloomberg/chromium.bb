@@ -12,7 +12,6 @@ import json
 import optparse
 import re
 import sys
-import time
 import urllib
 
 from core import results_dashboard
@@ -30,7 +29,7 @@ def _GetMainRevision(commit_pos):
   return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
 
-def _GetDashboardJson(options):
+def _GenerateDashboardJSONs(options):
   main_revision = _GetMainRevision(options.got_revision_cp)
   revisions = _GetPerfDashboardRevisionsWithProperties(
     options.got_webrtc_revision, options.got_v8_revision,
@@ -57,9 +56,13 @@ def _GetDashboardJson(options):
       options.buildername, options.buildnumber,
       {}, reference_build,
       perf_dashboard_machine_group=options.perf_dashboard_machine_group)
-  return dashboard_json
+  dashboard_json = json.dumps(dashboard_json, indent=2, separators=(',', ': '))
+  if options.output_json_file:
+    with open(options.output_json_file, 'w') as f:
+      f.write(dashboard_json)
+  yield dashboard_json
 
-def _GetDashboardHistogramData(options):
+def _GenerateDashboardHistogramJSONs(options, max_bytes=0):
   revisions = {
       '--chromium_commit_positions': _GetMainRevision(options.got_revision_cp),
       '--chromium_revisions': options.git_revision
@@ -73,18 +76,14 @@ def _GetDashboardHistogramData(options):
   is_reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
 
-  begin_time = time.time()
-  hs = results_dashboard.MakeHistogramSetWithDiagnostics(
+  return results_dashboard.MakeHistogramSetWithDiagnostics(
       histograms_file=options.results_file, test_name=stripped_test_name,
       bot=options.configuration_name, buildername=options.buildername,
-      buildnumber=options.buildnumber,
+      buildnumber=options.buildnumber, max_bytes=max_bytes,
+      output_path=options.output_json_file,
       project=options.project, buildbucket=options.buildbucket,
       revisions_dict=revisions, is_reference_build=is_reference_build,
       perf_dashboard_machine_group=options.perf_dashboard_machine_group)
-  end_time = time.time()
-  print 'Duration of adding diagnostics for %s: %d seconds' % (
-      stripped_test_name, end_time - begin_time)
-  return hs
 
 def _CreateParser():
   # Parse options
@@ -125,16 +124,22 @@ def main(args):
     print 'Error: Invalid perf dashboard machine group'
     return 1
 
-  if not options.send_as_histograms:
-    dashboard_json = _GetDashboardJson(options)
+  if options.send_as_histograms:
+    if options.output_json_file:
+      _GenerateDashboardHistogramJSONs(options)
+      # Clear output_json_file so that the next call will use mkdtemp.
+      options.output_json_file = ''
+    dashboard_jsons = _GenerateDashboardHistogramJSONs(
+        options, max_bytes=1<<20)
   else:
-    dashboard_json = _GetDashboardHistogramData(options)
+    dashboard_jsons = _GenerateDashboardJSONs(options)
 
-  if options.output_json_file:
-    json.dump(dashboard_json, options.output_json_file,
-        indent=4, separators=(',', ': '))
+  any_results = False
+  for dashboard_json in dashboard_jsons:
+    if not dashboard_json:
+      continue
 
-  if dashboard_json:
+    any_results = True
     if options.output_json_dashboard_url:
       # Dump dashboard url to file.
       dashboard_url = GetDashboardUrl(options.name,
@@ -151,9 +156,11 @@ def main(args):
         send_as_histograms=options.send_as_histograms,
         service_account_file=service_account_file):
       return 1
-  else:
+
+  if not any_results:
     # The upload didn't fail since there was no data to upload.
     print 'Warning: No perf dashboard JSON was produced.'
+
   return 0
 
 if __name__ == '__main__':
