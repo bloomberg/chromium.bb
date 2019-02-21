@@ -1328,8 +1328,7 @@ def SyncPushBranch(git_repo, remote, target, use_merge=False, **kwargs):
     raise
 
 
-def PushBranch(branch, git_repo, dryrun=False,
-               staging_branch=None, auto_merge=False):
+def PushBranch(branch, git_repo, dryrun=False, staging_branch=None):
   """General method to push local git changes.
 
   This method only works with branches created via the CreatePushBranch
@@ -1342,9 +1341,6 @@ def PushBranch(branch, git_repo, dryrun=False,
     git_repo: Git repository to push from.
     dryrun: Git push --dry-run if set to True.
     staging_branch: Push change commits to the staging_branch if it's not None
-    auto_merge: Enable Gerrit's automerge feature. See here for more info:
-      https://gerrit-review.googlesource.com/Documentation/user-upload.html#auto_merge
-      Note: The setting must be enabled in Gerrit UI for the specific repo.
 
   Raises:
     GitPushFailed if push was unsuccessful after retries
@@ -1359,8 +1355,6 @@ def PushBranch(branch, git_repo, dryrun=False,
     raise Exception('Was asked to push to a non branch namespace: %s' %
                     remote_ref.ref)
 
-  if auto_merge:
-    remote_ref.ref += '%submit'
   #reference = staging_branch if staging_branch is not None else remote_ref.ref
   if staging_branch is not None:
     remote_ref = remote_ref._replace(ref=staging_branch)
