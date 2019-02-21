@@ -286,7 +286,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_not_blocked.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
+// TODO(crbug.com/934250) The test is flaky (crashes) on trybots.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_Bug84933Test) {
   const GURL url = GetTestUrl("indexeddb", "bug_84933.html");
 
   // Just navigate to the URL. Test will crash if it fails.
