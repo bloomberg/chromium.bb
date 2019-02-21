@@ -10,14 +10,11 @@ cr.define('discards', function() {
   let uiHandler;
 
   /**
-   * @return {!mojom.DiscardsDetailsProviderPtr} The UI handler.
+   * @return {!mojom.DiscardsDetailsProviderProxy} The UI handler.
    */
   function getOrCreateUiHandler() {
     if (!uiHandler) {
-      uiHandler = new mojom.DiscardsDetailsProviderPtr;
-      Mojo.bindInterface(
-          mojom.DiscardsDetailsProvider.name,
-          mojo.makeRequest(uiHandler).handle);
+      uiHandler = mojom.DiscardsDetailsProvider.getProxy();
     }
     return uiHandler;
   }

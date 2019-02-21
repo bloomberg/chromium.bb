@@ -54,10 +54,7 @@ class CryptAuthController {
         this.showExistingUserNewChromebookNotification_.bind(this);
 
     this.multiDeviceSetup =
-        new chromeos.multideviceSetup.mojom.MultiDeviceSetupPtr();
-    Mojo.bindInterface(
-        chromeos.multideviceSetup.mojom.MultiDeviceSetup.name,
-        mojo.makeRequest(this.multiDeviceSetup).handle);
+        chromeos.multideviceSetup.mojom.MultiDeviceSetup.getProxy();
   }
 
   /**

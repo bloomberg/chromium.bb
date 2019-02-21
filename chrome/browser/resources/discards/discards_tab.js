@@ -99,7 +99,7 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderPtr|null)} */
+  /** @private {(mojom.DiscardsDetailsProviderProxy|null)} */
   uiHandler_: null,
 
   /** @override */
