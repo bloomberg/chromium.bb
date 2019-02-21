@@ -2577,6 +2577,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-ui-blue-search-loop-and-search-query",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-ui-use-generic-search-engine-icon",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80

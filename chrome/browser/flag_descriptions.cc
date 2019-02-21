@@ -1362,6 +1362,11 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
+const char kOmniboxUIBlueSearchLoopAndSearchQueryName[] =
+    "Omnibox UI Blue Search Loop and Search Query";
+const char kOmniboxUIBlueSearchLoopAndSearchQueryDescription[] =
+    "Color the generic search icon and search terms blue.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
