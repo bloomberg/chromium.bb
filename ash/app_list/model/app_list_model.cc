@@ -281,9 +281,11 @@ void AppListModel::DeleteUninstalledItem(const std::string& id) {
   DeleteItem(id);
 
   // crbug.com/368111: Deleting a child item may cause the parent folder to be
-  // auto-removed.
+  // auto-removed. Further, if an auto-removed folder has an item in it, that
+  // item needs to be reparented first.
   AppListFolderItem* folder = FindFolderItem(folder_id);
-  if (folder && folder->ShouldAutoRemove()) {
+  if (folder && folder->ShouldAutoRemove() &&
+      folder->item_list()->item_count() == 1) {
     AppListItem* last_item = folder->item_list()->item_at(0);
     MoveItemToFolderAt(last_item, "", folder->position());
   }

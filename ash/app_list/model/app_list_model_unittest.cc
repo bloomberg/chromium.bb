@@ -449,7 +449,7 @@ TEST_F(AppListModelFolderTest, UninstallPersistentFolderItem) {
   AppListItem* item1 = model_.CreateAndAddItem("Item 1");
   AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
       model_.AddItem(new AppListFolderItem("folder1")));
-  folder1->set_is_persistent(true);
+  folder1->SetIsPersistent(true);
   EXPECT_EQ("Item 0,Item 1,folder1", GetModelContents());
 
   // Move all items to folder1.

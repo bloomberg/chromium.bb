@@ -10,14 +10,16 @@
 namespace app_list {
 
 AppListItem::AppListItem(const std::string& id)
-    : metadata_(ash::mojom::AppListItemMetadata::New(id,
-                                                     std::string(),
-                                                     std::string(),
-                                                     std::string(),
-                                                     syncer::StringOrdinal(),
-                                                     false,
-                                                     gfx::ImageSkia(),
-                                                     false)),
+    : metadata_(ash::mojom::AppListItemMetadata::New(
+          id,
+          std::string() /* name */,
+          std::string() /* short_name */,
+          std::string() /* folder_id */,
+          syncer::StringOrdinal() /* position */,
+          false /* is_folder */,
+          false /* is_persistent */,
+          gfx::ImageSkia() /* icon */,
+          false /* is_page_break */)),
       is_installing_(false),
       percent_downloaded_(-1) {}
 

@@ -74,6 +74,7 @@ class AppListModelUpdater {
                                        const std::string& short_name) {}
   virtual void SetItemPosition(const std::string& id,
                                const syncer::StringOrdinal& new_position) {}
+  virtual void SetItemIsPersistent(const std::string& id, bool is_persistent) {}
   virtual void SetItemFolderId(const std::string& id,
                                const std::string& folder_id) {}
   virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}

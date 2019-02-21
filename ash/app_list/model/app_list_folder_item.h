@@ -68,8 +68,8 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
   bool CompareForTest(const AppListItem* other) const override;
 
   // Persistent folders will be retained even if there is 1 app in them.
-  bool is_persistent() const { return is_persistent_; }
-  void set_is_persistent(bool is_persistent) { is_persistent_ = is_persistent; }
+  bool IsPersistent() const;
+  void SetIsPersistent(bool is_persistent);
 
   // Returns true if this folder is a candidate for auto-removal (based on its
   // type and the number of children it has).
@@ -91,8 +91,6 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
 
   // List of items in the folder.
   std::unique_ptr<AppListItemList> item_list_;
-
-  bool is_persistent_ = false;
 
   FolderImage folder_image_;
 
