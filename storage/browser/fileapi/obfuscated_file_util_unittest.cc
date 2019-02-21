@@ -802,7 +802,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, ObfuscatedFileUtilTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, ObfuscatedFileUtilTest, ::testing::Bool());
 
 TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");

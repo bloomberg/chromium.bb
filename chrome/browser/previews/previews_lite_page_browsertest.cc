@@ -749,9 +749,9 @@ class PreviewsLitePageServerBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageServerBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerBrowserTest,
+                         testing::Bool());
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
@@ -1362,9 +1362,9 @@ class PreviewsLitePageServerTimeoutBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageServerTimeoutBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerTimeoutBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsTimeout)) {
@@ -1410,9 +1410,9 @@ class PreviewsLitePageServerBadServerBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageServerBadServerBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerBadServerBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBadServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsBadServer)) {
@@ -1461,9 +1461,9 @@ class PreviewsLitePageServerDataSaverBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageServerDataSaverBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerDataSaverBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerDataSaverBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsDSTriggering)) {
@@ -1496,9 +1496,9 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
@@ -1534,9 +1534,9 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageNotificationDSEnabledBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageNotificationDSEnabledBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSEnabledBrowserTest,
@@ -1603,9 +1603,9 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageNotificationDSDisabledBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageNotificationDSDisabledBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSDisabledBrowserTest,
@@ -1631,9 +1631,9 @@ class PreviewsLitePageControlBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageControlBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageControlBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageControlBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsControlGroup)) {
@@ -1709,9 +1709,9 @@ class PreviewsLitePageAndPageHintsBrowserTest
 };
 
 // True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
-                        PreviewsLitePageAndPageHintsBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageAndPageHintsBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageAndPageHintsBrowserTest,

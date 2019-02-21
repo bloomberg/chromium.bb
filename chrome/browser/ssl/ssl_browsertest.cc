@@ -6128,9 +6128,9 @@ IN_PROC_BROWSER_TEST_P(SSLUITestIgnoreLocalhostCertErrors,
 // pattern matching.
 using SSLUICaptivePortalListTest = SSLUITest;
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUICaptivePortalListTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUICaptivePortalListTest,
+                         ::testing::Values(false, true));
 
 std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
 MakeCaptivePortalConfig(int version_id,
