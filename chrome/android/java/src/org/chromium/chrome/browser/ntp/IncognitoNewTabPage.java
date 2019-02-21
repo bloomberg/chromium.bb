@@ -86,7 +86,7 @@ public class IncognitoNewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =
-                (IncognitoNewTabPageView) inflater.inflate(getLayoutResource(), null);
+                (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
 
         boolean useAlternateIncognitoStrings =
@@ -95,10 +95,6 @@ public class IncognitoNewTabPage
                 (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
         newTabIncognitoHeader.setText(useAlternateIncognitoStrings ? R.string.new_tab_private_title
                                                                    : R.string.new_tab_otr_title);
-    }
-
-    protected int getLayoutResource() {
-        return R.layout.new_tab_page_incognito_md;
     }
 
     /**
