@@ -56,7 +56,7 @@ void AcceleratedVideoEncoder::EncodeJob::Execute() {
 }
 
 size_t AcceleratedVideoEncoder::GetBitstreamBufferSize() const {
-  return GetEncodeBitstreamBufferSize();
+  return GetEncodeBitstreamBufferSize(GetCodedSize());
 }
 
 }  // namespace media
