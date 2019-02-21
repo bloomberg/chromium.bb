@@ -327,7 +327,7 @@ IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
 
 void IndexAndPersistRules(service_manager::Connector* connector,
                           const base::Optional<base::Token>& decoder_batch_id,
-                          const RulesetSource& source,
+                          RulesetSource source,
                           IndexAndPersistRulesCallback callback) {
   DCHECK(IsAPIAvailable());
 
@@ -342,11 +342,11 @@ void IndexAndPersistRules(service_manager::Connector* connector,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  auto success_callback = base::BindRepeating(
-      &OnSafeJSONParserSuccess, source.Clone(), repeating_callback);
   auto error_callback =
       base::BindRepeating(&OnSafeJSONParserError, repeating_callback,
                           GetFilename(source.json_path));
+  auto success_callback = base::BindRepeating(
+      &OnSafeJSONParserSuccess, std::move(source), repeating_callback);
 
   if (decoder_batch_id) {
     data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,

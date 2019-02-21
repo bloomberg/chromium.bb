@@ -76,7 +76,7 @@ using IndexAndPersistRulesCallback =
 // NOTE: This must be called on a sequence where file IO is allowed.
 void IndexAndPersistRules(service_manager::Connector* connector,
                           const base::Optional<base::Token>& decoder_batch_id,
-                          const RulesetSource& source,
+                          RulesetSource source,
                           IndexAndPersistRulesCallback callback);
 
 // Returns true if |data| represents a valid data buffer containing indexed

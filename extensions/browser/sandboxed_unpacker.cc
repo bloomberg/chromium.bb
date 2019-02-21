@@ -682,11 +682,8 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(extension_);
 
-  const ExtensionResource* resource =
-      declarative_net_request::DNRManifestData::GetRulesetResource(
-          extension_.get());
-  // The extension did not provide a ruleset.
-  if (!resource) {
+  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension_)) {
+    // The extension did not provide a ruleset.
     ReportSuccess(std::move(manifest), base::nullopt /*dnr_ruleset_checksum*/);
     return;
   }

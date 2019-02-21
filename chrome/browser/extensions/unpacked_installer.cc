@@ -266,11 +266,10 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
 
-  const ExtensionResource* resource =
-      declarative_net_request::DNRManifestData::GetRulesetResource(extension());
-  // The extension did not provide a ruleset.
-  if (!resource)
+  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension())) {
+    // The extension did not provide a ruleset.
     return true;
+  }
 
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
