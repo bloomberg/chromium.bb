@@ -22,11 +22,6 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls the billing interstitial UI.
-// TODO(http://crbug.com/933807): remove this base::Feature after a full launch.
-const base::Feature kBillingInterstitial{"BillingInterstitial",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
 //
@@ -75,7 +70,6 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
-    {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
     {&kForceEnableResetPasswordWebUI, true},

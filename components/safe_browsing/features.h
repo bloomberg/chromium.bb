@@ -21,9 +21,6 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
-// Controls the billing interstitial UI.
-extern const base::Feature kBillingInterstitial;
-
 extern const base::Feature kCheckByURLLoaderThrottle;
 
 // Controls if safe browsing interstitials are implemented as committed

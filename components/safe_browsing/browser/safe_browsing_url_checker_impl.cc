@@ -9,7 +9,6 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -139,9 +138,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
       threat_type == SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
 
   if (threat_type == SB_THREAT_TYPE_SAFE ||
-      threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE ||
-      (!base::FeatureList::IsEnabled(safe_browsing::kBillingInterstitial) &&
-       threat_type == SB_THREAT_TYPE_BILLING)) {
+      threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE) {
     state_ = STATE_NONE;
 
     if (threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE) {

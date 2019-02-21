@@ -10,11 +10,9 @@
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,12 +31,9 @@ AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
           {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-           safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})),
-      whitelist_manager_(whitelist_manager) {
-  if (base::FeatureList::IsEnabled(safe_browsing::kBillingInterstitial)) {
-    threat_types_.insert(safe_browsing::SB_THREAT_TYPE_BILLING);
-  }
-}
+           safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
+           safe_browsing::SB_THREAT_TYPE_BILLING})),
+      whitelist_manager_(whitelist_manager) {}
 
 AwUrlCheckerDelegateImpl::~AwUrlCheckerDelegateImpl() = default;
 
