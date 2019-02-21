@@ -11,7 +11,7 @@ let whenPageIsPopulatedForTest;
 /** @type {function()} */
 let disableAutoupdateForTests;
 
-/** @type {mojom.SiteEngagementDetailsProviderPtr} */
+/** @type {mojom.SiteEngagementDetailsProviderProxy} */
 let uiHandler;
 
 (function() {
@@ -25,10 +25,7 @@ whenPageIsPopulatedForTest = function() {
 };
 
 function initialize() {
-  uiHandler = new mojom.SiteEngagementDetailsProviderPtr;
-  Mojo.bindInterface(
-      mojom.SiteEngagementDetailsProvider.name,
-      mojo.makeRequest(uiHandler).handle);
+  uiHandler = mojom.SiteEngagementDetailsProvider.getProxy();
 
   /** @type {?HTMLElement} */
   const engagementTableBody = $('engagement-table-body');
