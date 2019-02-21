@@ -60,8 +60,9 @@ import java.util.List;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-public class BottomSheet extends FrameLayout
-        implements BottomSheetSwipeDetector.SwipeableBottomSheet, NativePageHost {
+public class BottomSheet
+        extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
+                                       NativePageHost, View.OnLayoutChangeListener {
     /** The different states that the bottom sheet can have. */
     @IntDef({SheetState.NONE, SheetState.HIDDEN, SheetState.PEEK, SheetState.HALF, SheetState.FULL,
             SheetState.SCROLLING})
@@ -137,6 +138,9 @@ public class BottomSheet extends FrameLayout
      */
     private static final float SHEET_SWIPE_MIN_DP_PER_MS = 0.2f;
 
+    /** The desired height of a content that has just been shown or whose height was invalidated. */
+    private static final float HEIGHT_UNSPECIFIED = -1.0f;
+
     /**
      * Information about the different scroll states of the sheet. Order is important for these,
      * they go from smallest to largest.
@@ -184,6 +188,9 @@ public class BottomSheet extends FrameLayout
 
     /** The height of the view that contains the bottom sheet. */
     private float mContainerHeight;
+
+    /** The desired height of the current content view. */
+    private float mContentDesiredHeight = HEIGHT_UNSPECIFIED;
 
     /**
      * The current offset of the sheet from the bottom of the screen in px. This does not include
@@ -304,6 +311,15 @@ public class BottomSheet extends FrameLayout
          * @return Whether the peek state is enabled.
          */
         boolean isPeekStateEnabled();
+
+        /**
+         * @return Whether the bottom sheet should wrap its content, i.e. its height in the FULL
+         *         state is the minimum height required such that the content is visible. If this
+         *         behavior is enabled, the HALF state of the sheet is disabled.
+         */
+        default boolean wrapContentEnabled() {
+            return false;
+        }
 
         /**
          * @return The resource id of the content description for the bottom sheet. This is
@@ -536,6 +552,7 @@ public class BottomSheet extends FrameLayout
 
                 if (previousWidth != mContainerWidth || previousHeight != mContainerHeight) {
                     updateSheetStateRatios();
+                    invalidateContentDesiredHeight();
                 }
 
                 int heightMinusKeyboard = (int) mContainerHeight;
@@ -750,6 +767,11 @@ public class BottomSheet extends FrameLayout
 
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
+
+        // Remove this as listener from previous content layout changes.
+        if (mSheetContent != null) {
+            mSheetContent.getContentView().removeOnLayoutChangeListener(this);
+        }
 
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
@@ -981,7 +1003,7 @@ public class BottomSheet extends FrameLayout
         mStateRatios[SheetState.FULL] =
                 (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
 
-        if (mCurrentState == SheetState.HALF && isSmallScreen()) {
+        if (mCurrentState == SheetState.HALF && shouldSkipHalfState()) {
             setSheetState(SheetState.FULL, false);
         }
     }
@@ -1227,8 +1249,9 @@ public class BottomSheet extends FrameLayout
             @SheetState int state, boolean animate, @StateChangeReason int reason) {
         assert state != SheetState.SCROLLING && state != SheetState.NONE;
 
-        // Half state is not valid on small screens.
-        if (state == SheetState.HALF && isSmallScreen()) state = SheetState.FULL;
+        if (state == SheetState.HALF && shouldSkipHalfState()) {
+            state = SheetState.FULL;
+        }
 
         mTargetState = state;
 
@@ -1346,6 +1369,18 @@ public class BottomSheet extends FrameLayout
      * @return The height of the sheet at the provided state.
      */
     public float getSheetHeightForState(@SheetState int state) {
+        if (mSheetContent != null && mSheetContent.wrapContentEnabled()
+                && state == SheetState.FULL) {
+            if (mContentDesiredHeight == HEIGHT_UNSPECIFIED) {
+                mSheetContent.getContentView().measure(
+                        MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
+                        MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
+                mContentDesiredHeight =
+                        mSheetContent.getContentView().getMeasuredHeight() + mToolbarShadowHeight;
+            }
+            return mContentDesiredHeight;
+        }
+
         return mStateRatios[state] * mContainerHeight;
     }
 
@@ -1379,7 +1414,7 @@ public class BottomSheet extends FrameLayout
         if (sheetHeight >= getMaxOffsetPx()) return SheetState.FULL;
 
         boolean isMovingDownward = yVelocity < 0;
-        boolean shouldSkipHalfState = isMovingDownward || isSmallScreen();
+        boolean shouldSkipHalfState = isMovingDownward || shouldSkipHalfState();
 
         // First, find the two states that the sheet height is between.
         @SheetState
@@ -1413,6 +1448,11 @@ public class BottomSheet extends FrameLayout
             return nextState;
         }
         return prevState;
+    }
+
+    private boolean shouldSkipHalfState() {
+        // Half state is neither valid on small screens nor when wrapping the sheet content.
+        return isSmallScreen() || (mSheetContent != null && mSheetContent.wrapContentEnabled());
     }
 
     public boolean isSmallScreen() {
@@ -1468,9 +1508,46 @@ public class BottomSheet extends FrameLayout
      */
     protected void onSheetContentChanged(@Nullable final BottomSheetContent content) {
         mSheetContent = content;
+
+        if (content != null && content.wrapContentEnabled()) {
+            content.getContentView().addOnLayoutChangeListener(this);
+            ensureContentIsWrapped();
+
+            // HALF state is forbidden when wrapping the content.
+            if (mCurrentState == SheetState.HALF) {
+                setSheetState(SheetState.FULL, /* animate= */ true);
+            }
+        }
+
         for (BottomSheetObserver o : mObservers) {
             o.onSheetContentChanged(content);
         }
         mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    /**
+     * Called when the sheet content layout changed.
+     */
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        ensureContentIsWrapped();
+    }
+
+    private void ensureContentIsWrapped() {
+        invalidateContentDesiredHeight();
+
+        if (mCurrentState == SheetState.HIDDEN || mCurrentState == SheetState.PEEK) return;
+
+        // The SCROLLING state is used when animating the sheet height or when the user is swiping
+        // the sheet. If it is the latter, we should not change the sheet height.
+        cancelAnimation();
+        if (mCurrentState == SheetState.SCROLLING) return;
+
+        createSettleAnimation(mCurrentState, StateChangeReason.NONE);
+    }
+
+    private void invalidateContentDesiredHeight() {
+        mContentDesiredHeight = HEIGHT_UNSPECIFIED;
     }
 }
