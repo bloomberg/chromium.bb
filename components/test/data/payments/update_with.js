@@ -23,6 +23,13 @@ function buildPaymentRequest() {
             label: 'Free shipping',
             amount: {currency: 'USD', value: '0.00'},
           }],
+          modifiers: [{
+            supportedMethods: 'basic-card',
+            additionalDisplayItems: [{
+              label: 'Discount',
+              amount: {currency: 'USD', value: '0.00'},
+            }],
+          }],
         },
         {requestShipping: true});
   } catch (error) {
@@ -113,6 +120,33 @@ function updateWithShippingOptions() {  // eslint-disable-line no-unused-vars
       id: 'updatedShipping',
       label: 'Updated shipping',
       amount: {currency: 'USD', value: '5.00'},
+    }],
+  };
+  pr.addEventListener('shippingaddresschange', function(e) {
+    e.updateWith(updatedDetails);
+  });
+  pr.addEventListener('shippingoptionchange', function(e) {
+    e.updateWith(updatedDetails);
+  });
+  showPaymentRequest(pr);
+}
+
+/**
+ * Calls updateWith() with modifiers
+ */
+function updateWithModifiers() {  // eslint-disable-line no-unused-vars
+  var pr = buildPaymentRequest();
+  var updatedDetails = {
+    modifiers: [{
+      supportedMethods: 'basic-card',
+      total: {
+        label: 'Modifier total',
+        amount: {currency: 'USD', value: '4.00'},
+      },
+      additionalDisplayItems: [{
+        label: 'Discount',
+        amount: {currency: 'USD', value: '-1.00'},
+      }],
     }],
   };
   pr.addEventListener('shippingaddresschange', function(e) {
