@@ -31,7 +31,6 @@
 #include "cc/tiles/software_image_decode_cache.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/renderer/platform/drag_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -48,7 +47,9 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 #include <math.h>
 #include <tuple>
@@ -121,6 +122,57 @@ scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
   scoped_refptr<Image> image = BitmapImage::Create();
   image->SetData(resource, true);
   return image;
+}
+
+// static
+PaintImage Image::ResizeAndOrientImage(
+    const PaintImage& image,
+    ImageOrientation orientation,
+    FloatSize image_scale,
+    float opacity,
+    InterpolationQuality interpolation_quality) {
+  IntSize size(image.width(), image.height());
+  size.Scale(image_scale.Width(), image_scale.Height());
+  AffineTransform transform;
+  if (orientation != kDefaultImageOrientation) {
+    if (orientation.UsesWidthAsHeight())
+      size = size.TransposedSize();
+    transform *= orientation.TransformFromDefault(FloatSize(size));
+  }
+  transform.ScaleNonUniform(image_scale.Width(), image_scale.Height());
+
+  if (size.IsEmpty())
+    return PaintImage();
+
+  if (transform.IsIdentity() && opacity == 1) {
+    // Nothing to adjust, just use the original.
+    DCHECK_EQ(image.width(), size.Width());
+    DCHECK_EQ(image.height(), size.Height());
+    return image;
+  }
+
+  const SkImageInfo info =
+      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
+                           SkColorSpace::MakeSRGB());
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  if (!surface)
+    return PaintImage();
+
+  SkPaint paint;
+  DCHECK_GE(opacity, 0);
+  DCHECK_LE(opacity, 1);
+  paint.setAlpha(opacity * 255);
+  paint.setFilterQuality(interpolation_quality == kInterpolationNone
+                             ? kNone_SkFilterQuality
+                             : kHigh_SkFilterQuality);
+
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->concat(AffineTransformToSkMatrix(transform));
+  canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
+
+  return PaintImageBuilder::WithProperties(std::move(image))
+      .set_image(surface->makeImageSnapshot(), PaintImage::GetNextContentId())
+      .TakePaintImage();
 }
 
 Image::SizeAvailability Image::SetData(scoped_refptr<SharedBuffer> data,
@@ -307,7 +359,7 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
       IsBitmapImage()) {
     ImageOrientation orientation =
         ToBitmapImage(this)->CurrentFrameOrientation();
-    paint_image = DragImage::ResizeAndOrientImage(paint_image, orientation);
+    paint_image = ResizeAndOrientImage(paint_image, orientation);
     if (!paint_image)
       return {};
   }

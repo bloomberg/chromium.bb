@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -58,7 +59,6 @@ namespace blink {
 
 class FloatPoint;
 class FloatRect;
-class FloatSize;
 class GraphicsContext;
 class Image;
 class KURL;
@@ -79,6 +79,13 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       CanvasPixelFormat pixel_format);
 
   static scoped_refptr<Image> LoadPlatformResource(const char* name);
+
+  static PaintImage ResizeAndOrientImage(
+      const PaintImage&,
+      ImageOrientation,
+      FloatSize image_scale = FloatSize(1, 1),
+      float opacity = 1.0,
+      InterpolationQuality = kInterpolationNone);
 
   virtual bool IsSVGImage() const { return false; }
   virtual bool IsBitmapImage() const { return false; }

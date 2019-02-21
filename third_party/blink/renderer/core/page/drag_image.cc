@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/drag_image.h"
+#include "third_party/blink/renderer/core/page/drag_image.h"
 
 #include <algorithm>
 #include <memory>
@@ -53,11 +53,6 @@
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
@@ -76,56 +71,6 @@ const float kDragLinkLabelFontSize = 11;
 const float kDragLinkUrlFontSize = 10;
 
 }  // anonymous namespace
-
-PaintImage DragImage::ResizeAndOrientImage(
-    const PaintImage& image,
-    ImageOrientation orientation,
-    FloatSize image_scale,
-    float opacity,
-    InterpolationQuality interpolation_quality) {
-  IntSize size(image.width(), image.height());
-  size.Scale(image_scale.Width(), image_scale.Height());
-  AffineTransform transform;
-  if (orientation != kDefaultImageOrientation) {
-    if (orientation.UsesWidthAsHeight())
-      size = size.TransposedSize();
-    transform *= orientation.TransformFromDefault(FloatSize(size));
-  }
-  transform.ScaleNonUniform(image_scale.Width(), image_scale.Height());
-
-  if (size.IsEmpty())
-    return PaintImage();
-
-  if (transform.IsIdentity() && opacity == 1) {
-    // Nothing to adjust, just use the original.
-    DCHECK_EQ(image.width(), size.Width());
-    DCHECK_EQ(image.height(), size.Height());
-    return image;
-  }
-
-  const SkImageInfo info =
-      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
-                           SkColorSpace::MakeSRGB());
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
-  if (!surface)
-    return PaintImage();
-
-  SkPaint paint;
-  DCHECK_GE(opacity, 0);
-  DCHECK_LE(opacity, 1);
-  paint.setAlpha(opacity * 255);
-  paint.setFilterQuality(interpolation_quality == kInterpolationNone
-                             ? kNone_SkFilterQuality
-                             : kHigh_SkFilterQuality);
-
-  SkCanvas* canvas = surface->getCanvas();
-  canvas->concat(AffineTransformToSkMatrix(transform));
-  canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
-
-  return PaintImageBuilder::WithProperties(std::move(image))
-      .set_image(surface->makeImageSnapshot(), PaintImage::GetNextContentId())
-      .TakePaintImage();
-}
 
 FloatSize DragImage::ClampedImageScale(const IntSize& image_size,
                                        const IntSize& size,
@@ -169,8 +114,8 @@ std::unique_ptr<DragImage> DragImage::Create(
     orientation = ToBitmapImage(image)->CurrentFrameOrientation();
 
   SkBitmap bm;
-  paint_image = ResizeAndOrientImage(paint_image, orientation, image_scale,
-                                     opacity, interpolation_quality);
+  paint_image = Image::ResizeAndOrientImage(
+      paint_image, orientation, image_scale, opacity, interpolation_quality);
   if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(&bm))
     return nullptr;
 

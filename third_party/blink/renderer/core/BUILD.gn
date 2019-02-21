@@ -2121,6 +2121,7 @@ jumbo_source_set("unit_tests") {
     "page/chrome_client_test.cc",
     "page/context_menu_controller_test.cc",
     "page/drag_controller_test.cc",
+    "page/drag_image_test.cc",
     "page/focus_controller_test.cc",
     "page/page_popup_client_test.cc",
     "page/print_context_test.cc",
