@@ -234,7 +234,8 @@ class StyleBuilderConverter {
 
   static cc::ScrollSnapType ConvertSnapType(StyleResolverState&,
                                             const CSSValue&);
-  static ScrollSnapAlign ConvertSnapAlign(StyleResolverState&, const CSSValue&);
+  static cc::ScrollSnapAlign ConvertSnapAlign(StyleResolverState&,
+                                              const CSSValue&);
   static scoped_refptr<TranslateTransformOperation> ConvertTranslate(
       StyleResolverState&,
       const CSSValue&);

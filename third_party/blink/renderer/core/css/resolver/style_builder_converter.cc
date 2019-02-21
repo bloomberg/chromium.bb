@@ -1522,9 +1522,10 @@ cc::ScrollSnapType StyleBuilderConverter::ConvertSnapType(
   return snapType;
 }
 
-ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
-                                                        const CSSValue& value) {
-  ScrollSnapAlign snapAlign =
+cc::ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(
+    StyleResolverState&,
+    const CSSValue& value) {
+  cc::ScrollSnapAlign snapAlign =
       ComputedStyleInitialValues::InitialScrollSnapAlign();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);

@@ -2046,7 +2046,7 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
 }
 
 CSSValue* ComputedStyleUtils::ValueForScrollSnapAlign(
-    const ScrollSnapAlign& align,
+    const cc::ScrollSnapAlign& align,
     const ComputedStyle& style) {
   return CSSValuePair::Create(
       CSSIdentifierValue::Create(align.alignment_block),
