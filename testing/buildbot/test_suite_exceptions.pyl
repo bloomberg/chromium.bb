@@ -1654,13 +1654,13 @@
       },
     },
   },
-  'webui_polymer2_browser_tests': {
+  'webui_polymer1_browser_tests': {
     'remove_from': [
       # chromium.win
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
     ],
   },
-  'webui_polymer2_interactive_ui_tests': {
+  'webui_polymer1_interactive_ui_tests': {
     'modifications': {
       # Match interactive_ui_tests, see https://crbug.com/840369
       # chromium.win
