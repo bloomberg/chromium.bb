@@ -137,7 +137,6 @@ ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNode(AXNode* node) {
   EXPECT_HRESULT_SUCCEEDED(
       ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
                                                                   &result));
-
   return result;
 }
 
@@ -152,13 +151,7 @@ AXPlatformNodeWinTest::GetRootIRawElementProviderFragment() {
 }
 
 ComPtr<IAccessible> AXPlatformNodeWinTest::IAccessibleFromNode(AXNode* node) {
-  TestAXNodeWrapper* wrapper =
-      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-  if (!wrapper)
-    return ComPtr<IAccessible>();
-  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
-  IAccessible* iaccessible = ax_platform_node->GetNativeViewAccessible();
-  return ComPtr<IAccessible>(iaccessible);
+  return QueryInterfaceFromNode<IAccessible>(node);
 }
 
 ComPtr<IAccessible> AXPlatformNodeWinTest::GetRootIAccessible() {
@@ -252,6 +245,45 @@ AXPlatformNodeWinTest::GetFragmentRoot() {
   ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
       IID_PPV_ARGS(&fragment_root_provider));
   return fragment_root_provider;
+}
+
+void AXPlatformNodeWinTest::InitListBox(
+    bool option_1_is_selected,
+    bool option_2_is_selected,
+    bool option_3_is_selected,
+    ax::mojom::State additional_state = ax::mojom::State::kNone) {
+  AXNodeData listbox;
+  listbox.id = 0;
+  listbox.SetName("ListBox");
+  listbox.role = ax::mojom::Role::kListBox;
+  if (additional_state != ax::mojom::State::kNone)
+    listbox.AddState(additional_state);
+
+  AXNodeData option_1;
+  option_1.id = 1;
+  option_1.SetName("Option1");
+  option_1.role = ax::mojom::Role::kListBoxOption;
+  if (option_1_is_selected)
+    option_1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_1.id);
+
+  AXNodeData option_2;
+  option_2.id = 2;
+  option_2.SetName("Option2");
+  option_2.role = ax::mojom::Role::kListBoxOption;
+  if (option_2_is_selected)
+    option_2.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_2.id);
+
+  AXNodeData option_3;
+  option_3.id = 3;
+  option_3.SetName("Option3");
+  option_3.role = ax::mojom::Role::kListBoxOption;
+  if (option_3_is_selected)
+    option_3.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_3.id);
+
+  Init(listbox, option_1, option_2, option_3);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
@@ -3092,12 +3124,12 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetRuntimeId) {
   SAFEARRAY* runtime_id;
   EXPECT_HRESULT_SUCCEEDED(root_provider->GetRuntimeId(&runtime_id));
 
-  long array_lower_bound;
+  LONG array_lower_bound;
   EXPECT_HRESULT_SUCCEEDED(
       ::SafeArrayGetLBound(runtime_id, 1, &array_lower_bound));
   EXPECT_EQ(0, array_lower_bound);
 
-  long array_upper_bound;
+  LONG array_upper_bound;
   EXPECT_HRESULT_SUCCEEDED(
       ::SafeArrayGetUBound(runtime_id, 1, &array_upper_bound));
   EXPECT_EQ(1, array_upper_bound);
@@ -3174,6 +3206,168 @@ TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
 
   TestNavigate(element3_node, element1_node, nullptr, nullptr, nullptr,
                nullptr);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ false,
+              /*option_3_is_selected*/ false);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+
+  BOOL multiple = TRUE;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->get_CanSelectMultiple(&multiple));
+  EXPECT_FALSE(multiple);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleTrue) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ false,
+              /*option_3_is_selected*/ false,
+              /*additional_state*/ ax::mojom::State::kMultiselectable);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+
+  BOOL multiple = FALSE;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->get_CanSelectMultiple(&multiple));
+  EXPECT_TRUE(multiple);
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestISelectionProviderIsSelectionRequiredDefault) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ false,
+              /*option_3_is_selected*/ false);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+
+  BOOL selection_required = TRUE;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->get_IsSelectionRequired(&selection_required));
+  EXPECT_FALSE(selection_required);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionProviderIsSelectionRequiredTrue) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ false,
+              /*option_3_is_selected*/ false,
+              /*additional_state*/ ax::mojom::State::kRequired);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+
+  BOOL selection_required = FALSE;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->get_IsSelectionRequired(&selection_required));
+  EXPECT_TRUE(selection_required);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ false,
+              /*option_3_is_selected*/ false);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+
+  SAFEARRAY* selected_items;
+  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
+  EXPECT_NE(nullptr, selected_items);
+
+  LONG array_lower_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+  EXPECT_EQ(0, array_lower_bound);
+
+  LONG array_upper_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+  EXPECT_EQ(-1, array_upper_bound);
+
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestISelectionProviderGetSelectionSingleItemSelected) {
+  InitListBox(/*option_1_is_selected*/ false,
+              /*option_2_is_selected*/ true,
+              /*option_3_is_selected*/ false);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+  ComPtr<IRawElementProviderSimple> option2_provider(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[1]));
+
+  SAFEARRAY* selected_items;
+  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
+  EXPECT_NE(nullptr, selected_items);
+
+  LONG array_lower_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+  EXPECT_EQ(0, array_lower_bound);
+
+  LONG array_upper_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+  EXPECT_EQ(0, array_upper_bound);
+
+  IRawElementProviderSimple** array_data;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
+      selected_items, reinterpret_cast<void**>(&array_data)));
+  EXPECT_EQ(option2_provider.Get(), array_data[0]);
+
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestISelectionProviderGetSelectionMultipleItemsSelected) {
+  InitListBox(/*option_1_is_selected*/ true,
+              /*option_2_is_selected*/ true,
+              /*option_3_is_selected*/ true);
+
+  ComPtr<ISelectionProvider> selection_provider(
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
+  ComPtr<IRawElementProviderSimple> option1_provider(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]));
+  ComPtr<IRawElementProviderSimple> option2_provider(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[1]));
+  ComPtr<IRawElementProviderSimple> option3_provider(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[2]));
+
+  SAFEARRAY* selected_items;
+  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
+  EXPECT_NE(nullptr, selected_items);
+
+  LONG array_lower_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+  EXPECT_EQ(0, array_lower_bound);
+
+  LONG array_upper_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+  EXPECT_EQ(2, array_upper_bound);
+
+  IRawElementProviderSimple** array_data;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
+      selected_items, reinterpret_cast<void**>(&array_data)));
+  EXPECT_EQ(option1_provider.Get(), array_data[0]);
+  EXPECT_EQ(option2_provider.Get(), array_data[1]);
+  EXPECT_EQ(option3_provider.Get(), array_data[2]);
+
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
