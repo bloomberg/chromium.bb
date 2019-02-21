@@ -104,6 +104,11 @@ suite('Bluetooth', function() {
       bluetoothStartConnecting: 'bluetoothStartConnecting',
     });
 
+    // Disable animations so sub-pages open within one event loop.
+    testing.Test.disableAnimationsAndTransitions();
+  });
+
+  setup(function() {
     bluetoothApi = new settings.FakeBluetooth();
     bluetoothPrivateApi = new settings.FakeBluetoothPrivate(bluetoothApi);
 
@@ -111,11 +116,6 @@ suite('Bluetooth', function() {
     bluetoothApis.bluetoothApiForTest = bluetoothApi;
     bluetoothApis.bluetoothPrivateApiForTest = bluetoothPrivateApi;
 
-    // Disable animations so sub-pages open within one event loop.
-    testing.Test.disableAnimationsAndTransitions();
-  });
-
-  setup(function() {
     PolymerTest.clearBody();
     bluetoothPage = document.createElement('settings-bluetooth-page');
     bluetoothPage.prefs = getFakePrefs();
@@ -133,12 +133,54 @@ suite('Bluetooth', function() {
   test('MainPage', function() {
     assertFalse(bluetoothApi.getAdapterStateForTest().powered);
     assertFalse(bluetoothPage.bluetoothToggleState_);
+    assertTrue(bluetoothPage.isToggleEnabled_());
+
     // Test that tapping the single settings-box div enables bluetooth.
     const div = bluetoothPage.$$('div.settings-box');
     assertTrue(!!div);
     div.click();
+
+    assertTrue(
+        bluetoothPrivateApi.getLastSetAdapterStateValueForTest().powered);
+    assertFalse(bluetoothPage.isToggleEnabled_());
+
+    bluetoothPrivateApi.simulateSuccessfulSetAdapterStateCallForTest();
+    assertTrue(bluetoothPage.isToggleEnabled_());
     assertTrue(bluetoothPage.bluetoothToggleState_);
-    assertTrue(bluetoothApi.getAdapterStateForTest().powered);
+  });
+
+  // Tests that the adapter changing states affects the toggle.
+  test('Main Page: State changed', function() {
+    // The default adapter starts available and powered off.
+    assertFalse(bluetoothApi.getAdapterStateForTest().powered);
+    assertTrue(bluetoothApi.getAdapterStateForTest().available);
+
+    assertFalse(bluetoothPage.bluetoothToggleState_);
+    assertTrue(bluetoothPage.isToggleEnabled_());
+
+    // Make the adapter unavailable.
+    bluetoothApi.simulateAdapterStateChangedForTest({
+      available: false,
+      powered: false,
+    });
+    assertFalse(bluetoothPage.bluetoothToggleState_);
+    assertFalse(bluetoothPage.isToggleEnabled_());
+
+    // Make the adapter available again.
+    bluetoothApi.simulateAdapterStateChangedForTest({
+      available: true,
+      powered: false,
+    });
+    assertFalse(bluetoothPage.bluetoothToggleState_);
+    assertTrue(bluetoothPage.isToggleEnabled_());
+
+    // Powered on the adapter.
+    bluetoothApi.simulateAdapterStateChangedForTest({
+      available: true,
+      powered: true,
+    });
+    assertTrue(bluetoothPage.bluetoothToggleState_);
+    assertTrue(bluetoothPage.isToggleEnabled_());
   });
 
   suite('SubPage', function() {
@@ -152,7 +194,11 @@ suite('Bluetooth', function() {
     }
 
     setup(async function() {
-      bluetoothApi.setEnabled(true);
+      bluetoothApi.simulateAdapterStateChangedForTest({
+        available: true,
+        powered: true,
+      });
+
       Polymer.dom.flush();
       const div = bluetoothPage.$$('div.settings-box');
       div.click();
@@ -169,15 +215,22 @@ suite('Bluetooth', function() {
 
     test('toggle', function() {
       assertTrue(subpage.bluetoothToggleState);
+      assertTrue(subpage.isToggleEnabled_());
 
       const enableButton = subpage.$.enableBluetooth;
       assertTrue(!!enableButton);
       assertTrue(enableButton.checked);
 
+      // Changing the toggle should power off the adapter.
       subpage.bluetoothToggleState = false;
       assertFalse(enableButton.checked);
-      assertFalse(bluetoothApi.getAdapterStateForTest().powered);
+      assertFalse(
+          bluetoothPrivateApi.getLastSetAdapterStateValueForTest().powered);
+      assertFalse(subpage.isToggleEnabled_());
+
+      bluetoothPrivateApi.simulateSuccessfulSetAdapterStateCallForTest();
       assertFalse(bluetoothPage.bluetoothToggleState_);
+      assertTrue(subpage.isToggleEnabled_());
     });
 
     async function waitForListUpdateTimeout() {
