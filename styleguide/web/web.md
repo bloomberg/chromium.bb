@@ -248,7 +248,7 @@ compatibility issues are less relevant for Chrome-only code).
   readability.
 
 * Prefer `rgb()` or `rgba()` with decimal values instead of hex notation
-  (`#rrggbb`) because alpha can be more easily added.
+  (`#rrggbb`).
     * Exception: shades of gray (i.e. `#333`)
 
 * If the hex value is `#rrggbb`, use the shorthand notation `#rgb`.
