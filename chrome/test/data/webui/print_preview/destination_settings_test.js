@@ -58,6 +58,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings =
           document.createElement('print-preview-destination-settings');
       destinationSettings.destinationStore = null;
+      destinationSettings.destination = null;
       destinationSettings.recentDestinations = [];
       destinationSettings.state = print_preview_new.State.NOT_READY;
       destinationSettings.cloudPrintState =
