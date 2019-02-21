@@ -242,9 +242,6 @@ const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
-// Disables the new File System Provider API based ZIP unpacker.
-const char kDisableNewZIPUnpacker[] = "disable-new-zip-unpacker";
-
 // Disables Office Editing for Docs, Sheets & Slides component app so handlers
 // won't be registered, making it possible to install another version for
 // testing.

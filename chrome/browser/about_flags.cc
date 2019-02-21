@@ -1879,11 +1879,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kReducedReferrerGranularity)},
 #if defined(OS_CHROMEOS)
-    {"disable-new-zip-unpacker", flag_descriptions::kNewZipUnpackerName,
-     flag_descriptions::kNewZipUnpackerDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)},
-#endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS)
     {"crostini-backup", flag_descriptions::kCrostiniBackupName,
      flag_descriptions::kCrostiniBackupDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBackup)},
