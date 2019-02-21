@@ -13,65 +13,6 @@ namespace blink {
 
 namespace {
 
-// Preorder traverse |container|, and collect the fragments satisfying
-// |filter| into |results|.
-// |filter|.IsTraverse(NGPaintFragment) returns true to traverse children.
-// |filter|.IsCollectible(NGPaintFragment) returns true to collect fragment.
-
-template <typename Filter>
-void CollectPaintFragments(const NGPaintFragment& container,
-                           Filter& filter,
-                           Vector<NGPaintFragment*>* result) {
-  for (NGPaintFragment* child : container.Children()) {
-    if (filter.IsCollectible(child)) {
-      result->push_back(child);
-    }
-    if (filter.IsTraverse(child)) {
-      CollectPaintFragments(*child, filter, result);
-    }
-  }
-}
-
-// Does not collect fragments with SelfPaintingLayer or their descendants.
-class NotSelfPaintingFilter {
- public:
-  bool IsCollectible(const NGPaintFragment* fragment) const {
-    return !fragment->HasSelfPaintingLayer();
-  }
-  bool IsTraverse(const NGPaintFragment* fragment) const {
-    return !fragment->HasSelfPaintingLayer();
-  }
-};
-
-// Collects line box and inline fragments.
-class InlineFilter {
- public:
-  bool IsCollectible(const NGPaintFragment* fragment) const {
-    return fragment->PhysicalFragment().IsInline() ||
-           fragment->PhysicalFragment().IsLineBox();
-  }
-  bool IsTraverse(const NGPaintFragment* fragment) {
-    return fragment->PhysicalFragment().IsContainer() &&
-           !fragment->PhysicalFragment().IsBlockFormattingContextRoot();
-  }
-};
-
-// Collect only fragments that belong to this LayoutObject.
-class LayoutObjectFilter {
- public:
-  explicit LayoutObjectFilter(const LayoutObject* layout_object)
-      : layout_object_(layout_object) {
-    DCHECK(layout_object);
-  }
-  bool IsCollectible(const NGPaintFragment* fragment) const {
-    return fragment->GetLayoutObject() == layout_object_;
-  }
-  bool IsTraverse(const NGPaintFragment*) const { return true; }
-
- private:
-  const LayoutObject* layout_object_;
-};
-
 // ------ Helpers for traversing inline fragments ------
 
 bool IsLineBreak(const NGPaintFragmentTraversalContext& fragment) {
@@ -231,12 +172,10 @@ NGPaintFragmentTraversal::InclusiveAncestorsOf(const NGPaintFragment& start) {
   return AncestorRange(start);
 }
 
-Vector<NGPaintFragment*> NGPaintFragmentTraversal::InlineDescendantsOf(
+NGPaintFragmentTraversal::InlineDescendantsRange
+NGPaintFragmentTraversal::InlineDescendantsOf(
     const NGPaintFragment& container) {
-  Vector<NGPaintFragment*> result;
-  InlineFilter filter;
-  CollectPaintFragments(container, filter, &result);
-  return result;
+  return InlineDescendantsRange(container);
 }
 
 NGPaintFragment* NGPaintFragmentTraversal::PreviousLineOf(
@@ -350,6 +289,59 @@ NGPaintFragment* NGPaintFragmentTraversal::AncestorRange::Iterator::operator->()
 void NGPaintFragmentTraversal::AncestorRange::Iterator::operator++() {
   DCHECK(current_);
   current_ = current_->Parent();
+}
+
+// ----
+
+NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::Iterator(
+    const NGPaintFragment& container)
+    : container_(&container), current_(container.FirstChild()) {
+  if (!current_ || IsInlineFragment(*current_))
+    return;
+  operator++();
+}
+
+NGPaintFragment* NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::
+operator->() const {
+  DCHECK(current_);
+  return current_;
+}
+
+void NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::operator++() {
+  DCHECK(current_);
+  do {
+    current_ = Next(*current_);
+  } while (current_ && !IsInlineFragment(*current_));
+}
+
+// static
+// Returns next fragment of |start| in DFS pre-order within |container_| and
+// skipping descendants in block formatting context.
+NGPaintFragment*
+NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::Next(
+    const NGPaintFragment& start) const {
+  if (ShouldTraverse(start) && start.FirstChild())
+    return start.FirstChild();
+  for (NGPaintFragment* runner = const_cast<NGPaintFragment*>(&start);
+       runner != container_; runner = runner->Parent()) {
+    if (NGPaintFragment* next_sibling = runner->NextSibling())
+      return next_sibling;
+  }
+  return nullptr;
+}
+
+// static
+bool NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::
+    IsInlineFragment(const NGPaintFragment& fragment) {
+  return fragment.PhysicalFragment().IsInline() ||
+         fragment.PhysicalFragment().IsLineBox();
+}
+
+// static
+bool NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::ShouldTraverse(
+    const NGPaintFragment& fragment) {
+  return fragment.PhysicalFragment().IsContainer() &&
+         !fragment.PhysicalFragment().IsBlockFormattingContextRoot();
 }
 
 }  // namespace blink
