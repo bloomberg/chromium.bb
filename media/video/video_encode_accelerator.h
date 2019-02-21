@@ -71,6 +71,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // Specification of an encoding profile supported by an encoder.
   struct MEDIA_EXPORT SupportedProfile {
     SupportedProfile();
+    SupportedProfile(VideoCodecProfile profile,
+                     const gfx::Size& max_resolution,
+                     uint32_t max_framerate_numerator = 0u,
+                     uint32_t max_framerate_denominator = 1u);
     ~SupportedProfile();
     VideoCodecProfile profile;
     gfx::Size max_resolution;
