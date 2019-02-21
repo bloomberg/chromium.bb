@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // Multiply-included param traits file, so no include guard.
+// Disabling the presubmit warning with:
+//   no-include-guard-because-multiply-included
 
 #if !defined(FULL_SAFE_BROWSING)
 #error FULL_SAFE_BROWSING should be defined.
@@ -103,4 +105,6 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(signature_blob)
   IPC_STRUCT_TRAITS_MEMBER(detached_code_signatures)
 #endif  // OS_MACOSX
+  IPC_STRUCT_TRAITS_MEMBER(file_count)
+  IPC_STRUCT_TRAITS_MEMBER(directory_count)
 IPC_STRUCT_TRAITS_END()
