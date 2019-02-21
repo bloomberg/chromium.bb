@@ -127,17 +127,6 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
     std::swap(class_of_find_text, class_of_additional_text);
   }
 
-  // For this experiment, we want to color the search query text blue like URLs.
-  // Therefore, we add the URL class to the find and additional text.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
-      text_is_search_query) {
-    class_of_find_text = (ACMatchClassification::Style)(
-        class_of_find_text | ACMatchClassification::URL);
-    class_of_additional_text = (ACMatchClassification::Style)(
-        class_of_additional_text | ACMatchClassification::URL);
-  }
-
   ACMatchClassifications match_class;
   size_t current_position = 0;
 

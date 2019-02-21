@@ -163,6 +163,8 @@ void OmniboxResultView::Invalidate() {
   // Answers use their own styling for additional content text and the
   // description text, whereas non-answer suggestions use the match text and
   // calculated classifications for the description text.
+  bool blue_search_query = base::FeatureList::IsEnabled(
+      omnibox::kUIExperimentBlueSearchLoopAndSearchQuery);
   if (match_.answer) {
     const bool reverse = OmniboxFieldTrial::IsReverseAnswersEnabled() &&
                          !match_.IsExceptedFromLineReversal();
@@ -171,14 +173,16 @@ void OmniboxResultView::Invalidate() {
       suggestion_view_->description()->SetText(match_.contents,
                                                match_.contents_class, true);
       suggestion_view_->description()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DIMMED);
+          blue_search_query ? OmniboxPart::RESULTS_TEXT_URL
+                            : OmniboxPart::RESULTS_TEXT_DIMMED);
       suggestion_view_->description()->AppendExtraText(
           match_.answer->first_line());
     } else {
       suggestion_view_->content()->SetText(match_.contents,
                                            match_.contents_class);
       suggestion_view_->content()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DEFAULT);
+          blue_search_query ? OmniboxPart::RESULTS_TEXT_URL
+                            : OmniboxPart::RESULTS_TEXT_DEFAULT);
       suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
       suggestion_view_->description()->SetText(match_.answer->second_line(),
                                                true);
@@ -189,6 +193,10 @@ void OmniboxResultView::Invalidate() {
     // adjustments like answers above.  Pedals do likewise.
     suggestion_view_->content()->SetText(match_.contents,
                                          match_.contents_class);
+    if (blue_search_query) {
+      suggestion_view_->content()->ApplyTextColor(
+          OmniboxPart::RESULTS_TEXT_URL);
+    }
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class, -1);
     suggestion_view_->description()->ApplyTextColor(
@@ -206,6 +214,13 @@ void OmniboxResultView::Invalidate() {
     if (high_contrast) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
+    }
+
+    // If the blue search query experiment is on, search suggestions are
+    // recolored at the end.
+    if (blue_search_query && AutocompleteMatch::IsSearchType(match_.type)) {
+      suggestion_view_->content()->ApplyTextColor(
+          OmniboxPart::RESULTS_TEXT_URL);
     }
   }
 
