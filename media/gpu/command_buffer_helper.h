@@ -7,8 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/gpu/media_gpu_export.h"
@@ -30,7 +32,7 @@ namespace media {
 // both hold a ref to the same CommandBufferHelper). Consider making an owned
 // variant.
 class MEDIA_GPU_EXPORT CommandBufferHelper
-    : public base::RefCountedThreadSafe<CommandBufferHelper> {
+    : public base::RefCountedDeleteOnSequence<CommandBufferHelper> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
@@ -120,7 +122,8 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   virtual void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) = 0;
 
  protected:
-  CommandBufferHelper() = default;
+  explicit CommandBufferHelper(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // TODO(sandersd): Deleting remaining textures upon destruction requires
   // making the context current, which may be undesireable. Consider adding an
@@ -128,7 +131,8 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   virtual ~CommandBufferHelper() = default;
 
  private:
-  friend class base::RefCountedThreadSafe<CommandBufferHelper>;
+  friend class base::DeleteHelper<CommandBufferHelper>;
+  friend class base::RefCountedDeleteOnSequence<CommandBufferHelper>;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
 };
