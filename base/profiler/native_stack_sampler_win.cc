@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
@@ -433,7 +434,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
   const void* const thread_stack_base_address_;
 
   // The module objects, indexed by the module handle.
-  std::map<HMODULE, ModuleCache::Module> module_cache_;
+  std::map<HMODULE, std::unique_ptr<ModuleCache::Module>> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
@@ -485,6 +486,8 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "NativeStackSamplerWin::CreateFrames");
 
+  static NoDestructor<ModuleCache::Module> invalid_module;
+
   std::vector<Frame> frames;
   frames.reserve(stack.size());
 
@@ -493,22 +496,22 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
 
     HMODULE module_handle = frame.module.Get();
     if (!module_handle) {
-      frames.emplace_back(frame_ip, ModuleCache::Module());
+      frames.emplace_back(frame_ip, invalid_module.get());
       continue;
     }
 
     auto loc = module_cache_.find(module_handle);
     if (loc != module_cache_.end()) {
-      frames.emplace_back(frame_ip, loc->second);
+      frames.emplace_back(frame_ip, loc->second.get());
       continue;
     }
 
-    ModuleCache::Module module =
+    std::unique_ptr<ModuleCache::Module> module =
         ModuleCache::CreateModuleForHandle(module_handle);
-    if (module.is_valid)
-      module_cache_.insert(std::make_pair(module_handle, module));
-
-    frames.emplace_back(frame_ip, std::move(module));
+    frames.emplace_back(frame_ip,
+                        module->is_valid ? module.get() : invalid_module.get());
+    if (module->is_valid)
+      module_cache_.insert(std::make_pair(module_handle, std::move(module)));
   }
 
   return frames;

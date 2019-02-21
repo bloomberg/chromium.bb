@@ -91,22 +91,22 @@ void CallStackProfileBuilder::OnSampleCompleted(
     // keep the frame information even if its module is invalid so we have
     // visibility into how often this issue is happening on the server.
     CallStackProfile::Location* location = stack.add_frame();
-    if (!frame.module.is_valid)
+    if (!frame.module->is_valid)
       continue;
 
     // Dedup modules.
-    const base::ModuleCache::Module& module = frame.module;
-    auto module_loc = module_index_.find(module.base_address);
+    const base::ModuleCache::Module* module = frame.module;
+    auto module_loc = module_index_.find(module->base_address);
     if (module_loc == module_index_.end()) {
       modules_.push_back(module);
       size_t index = modules_.size() - 1;
-      module_loc = module_index_.emplace(module.base_address, index).first;
+      module_loc = module_index_.emplace(module->base_address, index).first;
     }
 
     // Write CallStackProfile::Location protobuf message.
     ptrdiff_t module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
-        reinterpret_cast<const char*>(module.base_address);
+        reinterpret_cast<const char*>(module->base_address);
     DCHECK_GE(module_offset, 0);
     location->set_address(static_cast<uint64_t>(module_offset));
     location->set_module_id_index(module_loc->second);
@@ -165,11 +165,11 @@ void CallStackProfileBuilder::OnProfileCompleted(
   call_stack_profile->set_sampling_period_ms(sampling_period.InMilliseconds());
 
   // Write CallStackProfile::ModuleIdentifier protobuf message.
-  for (const auto& module : modules_) {
+  for (const auto* module : modules_) {
     CallStackProfile::ModuleIdentifier* module_id =
         call_stack_profile->add_module_id();
-    module_id->set_build_id(module.id);
-    module_id->set_name_md5_prefix(HashModuleFilename(module.filename));
+    module_id->set_build_id(module->id);
+    module_id->set_name_md5_prefix(HashModuleFilename(module->filename));
   }
 
   PassProfilesToMetricsProvider(std::move(sampled_profile_));
