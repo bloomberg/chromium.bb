@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,6 +48,7 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   }
 
   cell.titleLabel.text = self.title;
+  cell.detailTextLabel.text = self.detailText;
   UIColor* cellBackgroundColor = styler.cellBackgroundColor
                                      ? styler.cellBackgroundColor
                                      : styler.tableViewBackgroundColor;
@@ -56,6 +58,14 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
     cell.titleLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {
     cell.titleLabel.textColor = styler.cellTitleColor;
+  } else {
+    cell.textLabel.textColor = UIColor.blackColor;
+  }
+  if (self.detailTextColor) {
+    cell.detailTextLabel.textColor = self.detailTextColor;
+  } else {
+    cell.detailTextLabel.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   }
 
   cell.userInteractionEnabled = self.enabled;
@@ -65,8 +75,9 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
 
 @implementation TableViewImageCell
 
-// This property overrides the one from UITableViewCell, so this @synthesize
+// These properties overrides the ones from UITableViewCell, so this @synthesize
 // cannot be removed.
+@synthesize detailTextLabel = _detailTextLabel;
 @synthesize imageView = _imageView;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -87,16 +98,30 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
+    _detailTextLabel = [[UILabel alloc] init];
+    _detailTextLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _detailTextLabel.adjustsFontForContentSizeCategory = YES;
+    _detailTextLabel.numberOfLines = 0;
+
+    UIStackView* verticalStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ _titleLabel, _detailTextLabel ]];
+    verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
+    verticalStack.axis = UILayoutConstraintAxisVertical;
+    verticalStack.spacing = 0;
+    verticalStack.distribution = UIStackViewDistributionFill;
+    verticalStack.alignment = UIStackViewAlignmentLeading;
+    [self.contentView addSubview:verticalStack];
 
     UIStackView* horizontalStack = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ _imageView, _titleLabel ]];
+        initWithArrangedSubviews:@[ _imageView, verticalStack ]];
     horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
     horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
     horizontalStack.distribution = UIStackViewDistributionFill;
     horizontalStack.alignment = UIStackViewAlignmentCenter;
-
     [self.contentView addSubview:horizontalStack];
+
     [NSLayoutConstraint activateConstraints:@[
       // Horizontal Stack constraints.
       [horizontalStack.leadingAnchor
@@ -112,13 +137,44 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
           constraintEqualToAnchor:self.contentView.bottomAnchor
                          constant:-kLabelCellVerticalSpacing],
     ]];
+
+    [self configureTextLabelForAccessibility:
+              UIContentSizeCategoryIsAccessibilityCategory(
+                  self.traitCollection.preferredContentSizeCategory)];
   }
   return self;
 }
 
+#pragma mark - Private
+
+// Configures -TableViewImageCell.textLabel for accessibility or not.
+- (void)configureTextLabelForAccessibility:(BOOL)accessibility {
+  if (accessibility) {
+    self.textLabel.numberOfLines = 2;
+  } else {
+    self.textLabel.numberOfLines = 1;
+  }
+}
+
+#pragma mark - UITableViewCell
+
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.userInteractionEnabled = YES;
+}
+
+#pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  BOOL isCurrentCategoryAccessibility =
+      UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory);
+  if (isCurrentCategoryAccessibility !=
+      UIContentSizeCategoryIsAccessibilityCategory(
+          previousTraitCollection.preferredContentSizeCategory)) {
+    [self configureTextLabelForAccessibility:isCurrentCategoryAccessibility];
+  }
 }
 
 @end

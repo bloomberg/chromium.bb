@@ -128,6 +128,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textImageItem.image = [UIImage imageNamed:@"show_history"];
   [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
 
+  TableViewImageItem* textImageItem2 =
+      [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryImage];
+  textImageItem2.title = @"Image item without image, and disabled";
+  textImageItem2.textColor = UIColor.redColor;
+  textImageItem2.detailText =
+      @"Very very very long detail text for the image cell without image";
+  textImageItem2.detailTextColor = UIColor.redColor;
+  textImageItem2.enabled = NO;
+  [model addItem:textImageItem2 toSectionWithIdentifier:SectionIdentifierText];
+
   textImageItem =
       [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryNoImage];
   textImageItem.title = @"Image Item with No Image";

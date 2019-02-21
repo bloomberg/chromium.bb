@@ -22,9 +22,11 @@ using TableViewImageItemTest = PlatformTest;
 // |configureCell:| and the image are visible.
 TEST_F(TableViewImageItemTest, ItemProperties) {
   NSString* text = @"Cell text";
+  NSString* detailText = @"Detail text";
 
   TableViewImageItem* item = [[TableViewImageItem alloc] initWithType:0];
   item.title = text;
+  item.detailText = detailText;
   item.image = [[UIImage alloc] init];
 
   id cell = [[[item cellClass] alloc] init];
@@ -33,10 +35,12 @@ TEST_F(TableViewImageItemTest, ItemProperties) {
   TableViewImageCell* imageCell =
       base::mac::ObjCCastStrict<TableViewImageCell>(cell);
   EXPECT_FALSE(imageCell.textLabel.text);
+  EXPECT_FALSE(imageCell.detailTextLabel.text);
   EXPECT_FALSE(imageCell.imageView.image);
 
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_NSEQ(text, imageCell.titleLabel.text);
+  EXPECT_NSEQ(detailText, imageCell.detailTextLabel.text);
   EXPECT_FALSE(imageCell.imageView.isHidden);
 }
 

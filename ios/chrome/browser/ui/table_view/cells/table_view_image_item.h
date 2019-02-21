@@ -18,8 +18,16 @@
 // The title label in the cell.
 @property(nonatomic, readwrite, copy) NSString* title;
 // UIColor for the cell's textLabel. ChromeTableViewStyler's |cellTitleColor|
-// takes precedence over the default color, but not over |textColor|.
+// takes precedence over black color, but not over |textColor|.
 @property(nonatomic, strong) UIColor* textColor;
+
+// UIColor for the cell's detailTextLabel. If not set,
+// kTableViewSecondaryLabelLightGrayTextColor is used.
+@property(nonatomic, strong) UIColor* detailTextColor;
+// Detail text to be displayed. The detail text label is configured wiht
+// multiline (no limit).
+@property(nonatomic, strong) NSString* detailText;
+
 // Whether the item is enabled. When it is not enabled, the associated cell
 // cannot be interacted with.
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
@@ -33,6 +41,8 @@
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 // The cell title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
+// The cell detail text.
+@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
 
 @end
 
