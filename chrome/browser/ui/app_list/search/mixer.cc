@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 
 namespace app_list {
 
@@ -109,10 +108,6 @@ void Mixer::MixAndPublish(size_t num_max_results) {
   // number* will be kept (e.g., an app result takes priority over a web store
   // result with the same ID).
   RemoveDuplicates(&results);
-
-  // TODO(https://crbug.com/931149): tweak the scores of |results| using
-  // |ranker_|.
-
   std::sort(results.begin(), results.end());
 
   const size_t original_size = results.size();
@@ -161,17 +156,9 @@ void Mixer::FetchResults() {
     group->FetchResults();
 }
 
-void Mixer::SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker) {
-  ranker_ = std::move(ranker);
-}
-
 void Mixer::Train(const std::string& id, RankingItemType type) {
-  if (!ranker_)
-    return;
-
-  if (type == RankingItemType::kFile || type == RankingItemType::kOmnibox) {
-    ranker_->Record(std::to_string(static_cast<int>(type)));
-  }
+  // TODO(https://crbug.com/931149)) train a ranking model using this training
+  // signal.
 }
 
 }  // namespace app_list

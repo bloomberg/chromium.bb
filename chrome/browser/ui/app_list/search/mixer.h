@@ -22,7 +22,6 @@ namespace test {
 FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
-class RecurrenceRanker;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -48,9 +47,6 @@ class Mixer {
 
   // Collects the results, sorts and publishes them.
   void MixAndPublish(size_t num_max_results);
-
-  // Add a |RecurrenceRanker| to tweak mixing results.
-  void SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker);
 
   // Handle a training signal.
   void Train(const std::string& id, RankingItemType type);
@@ -84,9 +80,6 @@ class Mixer {
   AppListModelUpdater* const model_updater_;  // Not owned.
 
   Groups groups_;
-
-  // Adaptive category ranking model, which tweaks the score of search results.
-  std::unique_ptr<RecurrenceRanker> ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

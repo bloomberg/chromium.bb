@@ -27,8 +27,6 @@ const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableAdaptiveResultRanker{
-    "EnableAdaptiveResultRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppSearchResultRanker{
     "EnableAppSearchResultRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
@@ -68,10 +66,6 @@ bool IsZeroStateSuggestionsEnabled() {
 
 bool IsAppListSearchAutocompleteEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
-}
-
-bool IsAdaptiveResultRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAdaptiveResultRanker);
 }
 
 bool IsAppSearchResultRankerEnabled() {
