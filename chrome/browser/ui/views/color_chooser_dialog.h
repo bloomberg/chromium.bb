@@ -23,9 +23,9 @@ class ColorChooserDialog
       public ui::BaseShellDialog,
       public ui::BaseShellDialogImpl {
  public:
-  ColorChooserDialog(views::ColorChooserListener* listener,
-                     SkColor initial_color,
-                     gfx::NativeWindow owning_window);
+  explicit ColorChooserDialog(views::ColorChooserListener* listener);
+
+  void Open(SkColor initial_color, gfx::NativeWindow owning_window);
 
   // BaseShellDialog:
   bool IsRunning(gfx::NativeWindow owning_window) const override;
