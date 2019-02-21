@@ -20,7 +20,7 @@ class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
   GLImageNativePixmap(const gfx::Size& size, gfx::BufferFormat format);
 
   // Create an EGLImage from a given NativePixmap.
-  bool Initialize(gfx::NativePixmap* pixmap);
+  bool Initialize(scoped_refptr<gfx::NativePixmap> pixmap);
   // Create an EGLImage from a given GL texture.
   bool InitializeFromTexture(uint32_t texture_id);
   // Export the wrapped EGLImage to dmabuf fds.

@@ -125,7 +125,7 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
   }
 
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
-  if (!image->Initialize(pixmap.get())) {
+  if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
                << gfx::BufferFormatToString(format);
     return nullptr;
@@ -162,7 +162,7 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     return nullptr;
   }
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
-  if (!image->Initialize(pixmap.get())) {
+  if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
                << gfx::BufferFormatToString(format);
     return nullptr;
