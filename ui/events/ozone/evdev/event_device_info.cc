@@ -118,6 +118,24 @@ void AssignBitset(const unsigned long* src,
     memset(&dst[src_len], 0, (dst_len - src_len) * sizeof(unsigned long));
 }
 
+bool IsBlacklistedAbsoluteMouseDevice(const input_id& id) {
+  static constexpr struct {
+    uint16_t vid;
+    uint16_t pid;
+  } kUSBLegacyBlackListedDevices[] = {
+      {0x222a, 0x0001},  // ILITEK ILITEK-TP
+  };
+
+  for (size_t i = 0; i < base::size(kUSBLegacyBlackListedDevices); ++i) {
+    if (id.vendor == kUSBLegacyBlackListedDevices[i].vid &&
+        id.product == kUSBLegacyBlackListedDevices[i].pid) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 EventDeviceInfo::EventDeviceInfo() {
@@ -506,7 +524,8 @@ EventDeviceInfo::ProbeLegacyAbsoluteDevice() const {
     return LegacyAbsoluteDeviceType::TOUCHSCREEN;
 
   // ABS_Z mitigation for extra device on some Elo devices.
-  if (HasKeyEvent(BTN_LEFT) && !HasAbsEvent(ABS_Z))
+  if (HasKeyEvent(BTN_LEFT) && !HasAbsEvent(ABS_Z) &&
+      !IsBlacklistedAbsoluteMouseDevice(input_id_))
     return LegacyAbsoluteDeviceType::TOUCHSCREEN;
 
   return LegacyAbsoluteDeviceType::NONE;

@@ -700,6 +700,66 @@ const DeviceCapabilities kHammerTouchpad = {
     base::size(kHammerTouchpadAbsAxes),
 };
 
+// Captured from Logitech Tap touch controller
+const DeviceAbsoluteAxis kIlitekTP_Mouse_AbsAxes[] = {
+    {ABS_X, {0, 0, 16384, 0, 0, 76}},
+    {ABS_Y, {0, 0, 9600, 0, 0, 71}},
+};
+const DeviceCapabilities kIlitekTP_Mouse = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.1/1-2.1.1/1-2.1.1.4/"
+    "1-2.1.1.4.2/1-2.1.1.4.2:1.1/0003:222A:0001.0015/input/input19/event9",
+    /* name */ "ILITEK ILITEK-TP",
+    /* phys */ "usb-0000:00:14.0-2.1.1.4.2/input1",
+    /* uniq */ "",
+    /* bustype */ "0003",
+    /* vendor */ "222a",
+    /* product */ "0001",
+    /* version */ "0110",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "1f0000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "3",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kIlitekTP_Mouse_AbsAxes,
+    base::size(kIlitekTP_Mouse_AbsAxes),
+};
+const DeviceAbsoluteAxis kIlitekTPAbsAxes[] = {
+    {ABS_X, {0, 0, 16384, 0, 0, 76}},
+    {ABS_Y, {0, 0, 9600, 0, 0, 71}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 16384, 0, 0, 76}},
+    {ABS_MT_POSITION_Y, {0, 0, 9600, 0, 0, 71}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+};
+const DeviceCapabilities kIlitekTP = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.1/1-2.1.1/1-2.1.1.4/"
+    "1-2.1.1.4.2/1-2.1.1.4.2:1.0/0003:222A:0001.0014/input/input18/event8",
+    /* name */ "ILITEK ILITEK-TP",
+    /* phys */ "usb-0000:00:14.0-2.1.1.4.2/input0",
+    /* uniq */ "",
+    /* bustype */ "0003",
+    /* vendor */ "222a",
+    /* product */ "0001",
+    /* version */ "0110",
+    /* prop */ "2",
+    /* ev */ "1b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "260800000000003",
+    /* msc */ "20",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kIlitekTPAbsAxes,
+    base::size(kIlitekTPAbsAxes),
+};
+
 // NB: Please use the capture_device_capabilities.py script to add more
 // test data here. This will help ensure the data matches what the kernel
 // reports for a real device and is entered correctly.
