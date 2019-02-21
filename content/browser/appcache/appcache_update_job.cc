@@ -100,15 +100,9 @@ void EmptyCompletionCallback(int result) {}
 // so that only one notification is sent for all hosts using the same frontend.
 class HostNotifier {
  public:
-  using AppCacheFrontend = blink::mojom::AppCacheFrontend;
-  using HostIds = std::vector<int>;
-  using NotifyHostMap = std::map<AppCacheFrontend*, HostIds>;
-
   // Caller is responsible for ensuring there will be no duplicate hosts.
   void AddHost(AppCacheHost* host) {
-    std::pair<NotifyHostMap::iterator, bool> ret = hosts_to_notify_.insert(
-        NotifyHostMap::value_type(host->frontend(), HostIds()));
-    ret.first->second.push_back(host->host_id());
+    hosts_to_notify_.insert(host->frontend());
   }
 
   void AddHosts(const std::set<AppCacheHost*>& hosts) {
@@ -117,41 +111,32 @@ class HostNotifier {
   }
 
   void SendNotifications(blink::mojom::AppCacheEventID event_id) {
-    for (auto& pair : hosts_to_notify_) {
-      AppCacheFrontend* frontend = pair.first;
-      frontend->EventRaised(pair.second, event_id);
-    }
+    for (auto* frontend : hosts_to_notify_)
+      frontend->EventRaised(event_id);
   }
 
   void SendProgressNotifications(const GURL& url,
                                  int num_total,
                                  int num_complete) {
-    for (const auto& pair : hosts_to_notify_) {
-      AppCacheFrontend* frontend = pair.first;
-      frontend->ProgressEventRaised(pair.second, url, num_total, num_complete);
-    }
+    for (auto* frontend : hosts_to_notify_)
+      frontend->ProgressEventRaised(url, num_total, num_complete);
   }
 
   void SendErrorNotifications(
       const blink::mojom::AppCacheErrorDetails& details) {
     DCHECK(!details.message.empty());
-    for (const auto& pair : hosts_to_notify_) {
-      AppCacheFrontend* frontend = pair.first;
-      frontend->ErrorEventRaised(pair.second, details.Clone());
-    }
+    for (auto* frontend : hosts_to_notify_)
+      frontend->ErrorEventRaised(details.Clone());
   }
 
   void SendLogMessage(const std::string& message) {
-    for (const auto& pair : hosts_to_notify_) {
-      AppCacheFrontend* frontend = pair.first;
-      for (const auto& id : pair.second)
-        frontend->LogMessage(id, blink::mojom::ConsoleMessageLevel::kWarning,
-                             message);
-    }
+    for (auto* frontend : hosts_to_notify_)
+      frontend->LogMessage(blink::mojom::ConsoleMessageLevel::kWarning,
+                           message);
   }
 
  private:
-  NotifyHostMap hosts_to_notify_;
+  std::set<blink::mojom::AppCacheFrontend*> hosts_to_notify_;
 };
 AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
                                           bool checked,
@@ -834,8 +819,7 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
 void AppCacheUpdateJob::NotifySingleHost(
     AppCacheHost* host,
     blink::mojom::AppCacheEventID event_id) {
-  std::vector<int> ids(1, host->host_id());
-  host->frontend()->EventRaised(ids, event_id);
+  host->frontend()->EventRaised(event_id);
 }
 
 void AppCacheUpdateJob::NotifyAllAssociatedHosts(

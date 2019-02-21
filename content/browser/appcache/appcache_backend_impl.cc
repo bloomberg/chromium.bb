@@ -21,8 +21,6 @@ namespace content {
 AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
                                          int process_id)
     : service_(service),
-      frontend_proxy_(process_id),
-      frontend_(&frontend_proxy_),
       process_id_(process_id) {
   DCHECK(service);
   service_->RegisterBackend(this);
@@ -35,6 +33,7 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
 
 void AppCacheBackendImpl::RegisterHost(
     blink::mojom::AppCacheHostRequest host_request,
+    blink::mojom::AppCacheFrontendPtr frontend,
     int32_t id,
     int32_t render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -50,10 +49,10 @@ void AppCacheBackendImpl::RegisterHost(
   if (host) {
     // Switch the frontend proxy so that the host can make IPC calls from
     // here on.
-    host->set_frontend(frontend_, render_frame_id);
+    host->set_frontend(std::move(frontend), render_frame_id);
   } else {
     host = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
-                                          frontend_, service_);
+                                          std::move(frontend), service_);
   }
 
   host->BindRequest(std::move(host_request));

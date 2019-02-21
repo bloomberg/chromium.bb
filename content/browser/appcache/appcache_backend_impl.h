@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <memory>
 
-#include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -27,6 +26,7 @@ class CONTENT_EXPORT AppCacheBackendImpl
 
   // blink::mojom::AppCacheBackend
   void RegisterHost(blink::mojom::AppCacheHostRequest host_request,
+                    blink::mojom::AppCacheFrontendPtr frontend,
                     int32_t host_id,
                     int32_t render_frame_id) override;
   void UnregisterHost(int32_t host_id);
@@ -40,16 +40,10 @@ class CONTENT_EXPORT AppCacheBackendImpl
   using HostMap = std::unordered_map<int, std::unique_ptr<AppCacheHost>>;
   const HostMap& hosts() { return hosts_; }
 
-  void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
-    frontend_ = frontend;
-  }
-
  private:
   // Raw pointer is safe because instances of this class are owned by
   // |service_|.
   AppCacheServiceImpl* service_;
-  AppCacheFrontendProxy frontend_proxy_;
-  blink::mojom::AppCacheFrontend* frontend_;
   int process_id_;
   HostMap hosts_;
 

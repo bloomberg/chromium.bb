@@ -61,7 +61,7 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
 AppCacheHost::AppCacheHost(int host_id,
                            int process_id,
                            int render_frame_id,
-                           blink::mojom::AppCacheFrontend* frontend,
+                           blink::mojom::AppCacheFrontendPtr frontend,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
@@ -72,7 +72,8 @@ AppCacheHost::AppCacheHost(int host_id,
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
-      frontend_(frontend),
+      frontend_ptr_(std::move(frontend)),
+      frontend_(frontend_ptr_.get()),
       render_frame_id_(render_frame_id),
       service_(service),
       storage_(service->storage()),
@@ -137,8 +138,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
-         pending_get_status_callback_.is_null() &&
-         !is_selection_pending());
+         pending_get_status_callback_.is_null() && !is_selection_pending());
 
   was_select_cache_called_ = true;
   if (!is_cache_selection_enabled_) {
@@ -178,18 +178,14 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     // continue whether it was set or not.
 
     AppCachePolicy* policy = service()->appcache_policy();
-    if (policy &&
-        !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
+    if (policy && !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
       FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
-      std::vector<int> host_ids(1, host_id_);
-      frontend_->EventRaised(
-          host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-      frontend_->ErrorEventRaised(
-          host_ids,
-          blink::mojom::AppCacheErrorDetails::New(
-              "Cache creation was blocked by the content policy",
-              blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(),
-              0, false /*is_cross_origin*/));
+      frontend()->EventRaised(
+          blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+      frontend()->ErrorEventRaised(blink::mojom::AppCacheErrorDetails::New(
+          "Cache creation was blocked by the content policy",
+          blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(), 0,
+          false /*is_cross_origin*/));
       OnContentBlocked(manifest_url);
       return;
     }
@@ -214,8 +210,7 @@ void AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
 
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
-         pending_get_status_callback_.is_null() &&
-         !is_selection_pending());
+         pending_get_status_callback_.is_null() && !is_selection_pending());
 
   was_select_cache_called_ = true;
   if (appcache_id != blink::mojom::kAppCacheNoCacheId) {
@@ -475,8 +470,8 @@ void AppCacheHost::FinishCacheSelection(
     AppCacheGroup* owning_group = cache->owning_group();
     const char* kFormatString =
         "Document was loaded from Application Cache with manifest %s";
-    frontend_->LogMessage(
-        host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
+    frontend()->LogMessage(
+        blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            owning_group->manifest_url().spec().c_str()));
     AssociateCompleteCache(cache);
@@ -493,11 +488,12 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(!group->is_obsolete());
     DCHECK(new_master_entry_url_.is_valid());
     DCHECK_EQ(group->manifest_url(), preferred_manifest_url_);
-    const char* kFormatString = group->HasCache() ?
-        "Adding master entry to Application Cache with manifest %s" :
-        "Creating Application Cache with manifest %s";
-    frontend_->LogMessage(
-        host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
+    const char* kFormatString =
+        group->HasCache()
+            ? "Adding master entry to Application Cache with manifest %s"
+            : "Creating Application Cache with manifest %s";
+    frontend()->LogMessage(
+        blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            group->manifest_url().spec().c_str()));
     // The UpdateJob may produce one for us later.
@@ -557,7 +553,7 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
     // This ensures that they can be served out of the AppCache.
     MaybePassSubresourceFactory();
     OnAppCacheAccessed(info->manifest_url, false);
-    frontend_->CacheSelected(host_id_, std::move(info));
+    frontend()->CacheSelected(std::move(info));
   }
 }
 
@@ -619,7 +615,7 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
                                                         &factory_ptr);
 
-  frontend_->SetSubresourceFactory(host_id(), std::move(factory_ptr));
+  frontend()->SetSubresourceFactory(std::move(factory_ptr));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(
@@ -665,7 +661,7 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
     MaybePassSubresourceFactory();
 
   OnAppCacheAccessed(info->manifest_url, false);
-  frontend_->CacheSelected(host_id_, std::move(info));
+  frontend()->CacheSelected(std::move(info));
 }
 
 void AppCacheHost::OnContentBlocked(const GURL& manifest_url) {

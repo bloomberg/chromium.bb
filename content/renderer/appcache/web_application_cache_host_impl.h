@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -19,13 +19,13 @@
 
 namespace content {
 
-class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
+class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
+                                    public blink::mojom::AppCacheFrontend {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              blink::mojom::AppCacheBackend* backend,
                               int appcache_host_id,
                               int render_frame_id);
   ~WebApplicationCacheHostImpl() override;
@@ -34,12 +34,13 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   blink::mojom::AppCacheBackend* backend() const { return backend_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
-  virtual void OnCacheSelected(const blink::mojom::AppCacheInfo& info);
-  void OnEventRaised(blink::mojom::AppCacheEventID);
-  void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
-  void OnErrorEventRaised(const blink::mojom::AppCacheErrorDetails& details);
-  virtual void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
-                            const std::string& message) {}
+  // blink::mojom::AppCacheFrontend
+  void CacheSelected(blink::mojom::AppCacheInfoPtr info) override;
+  void EventRaised(blink::mojom::AppCacheEventID event_id) override;
+  void ProgressEventRaised(const GURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override;
+  void ErrorEventRaised(blink::mojom::AppCacheErrorDetailsPtr details) override;
 
   // blink::WebApplicationCacheHost:
   void WillStartMainResourceRequest(
@@ -58,13 +59,10 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
 
   void SelectCacheForSharedWorker(long long app_cache_id);
 
-  // Set the URLLoaderFactory instance to be used for subresource requests.
-  virtual void SetSubresourceFactory(
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) {}
-
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
 
+  mojo::Binding<blink::mojom::AppCacheFrontend> binding_;
   blink::WebApplicationCacheHostClient* client_;
   blink::mojom::AppCacheBackend* backend_;
   blink::mojom::AppCacheHostPtr backend_host_;

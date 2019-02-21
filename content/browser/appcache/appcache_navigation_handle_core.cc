@@ -55,7 +55,7 @@ void AppCacheNavigationHandleCore::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host_.get() == nullptr);
   precreated_host_ = std::make_unique<AppCacheHost>(
-      appcache_host_id_, process_id_, MSG_ROUTING_NONE, this,
+      appcache_host_id_, process_id_, MSG_ROUTING_NONE, nullptr,
       GetAppCacheService());
 
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
@@ -86,50 +86,6 @@ void AppCacheNavigationHandleCore::SetProcessId(int process_id) {
   DCHECK(precreated_host_);
   process_id_ = process_id;
   precreated_host_->SetProcessId(process_id);
-}
-
-void AppCacheNavigationHandleCore::CacheSelected(
-    int host_id,
-    blink::mojom::AppCacheInfoPtr info) {
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::EventRaised(
-    const std::vector<int>& host_ids,
-    blink::mojom::AppCacheEventID event_id) {
-  // Should never be called.
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::ProgressEventRaised(
-    const std::vector<int>& host_ids,
-    const GURL& url,
-    int num_total,
-    int num_complete) {
-  // Should never be called.
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::ErrorEventRaised(
-    const std::vector<int>& host_ids,
-    blink::mojom::AppCacheErrorDetailsPtr details) {
-  // Should never be called.
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::LogMessage(
-    int host_id,
-    blink::mojom::ConsoleMessageLevel log_level,
-    const std::string& message) {
-  // Should never be called.
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::SetSubresourceFactory(
-    int host_id,
-    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
-  // Should never be called.
-  DCHECK(false);
 }
 
 }  // namespace content

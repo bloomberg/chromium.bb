@@ -91,7 +91,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
-#include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
@@ -3913,7 +3912,6 @@ RenderFrameImpl::CreateApplicationCacheHost(
 
   return std::make_unique<RendererWebApplicationCacheHostImpl>(
       RenderViewImpl::FromWebView(frame_->View()), client,
-      RenderThreadImpl::current()->appcache_frontend_impl()->backend_proxy(),
       navigation_state->commit_params().appcache_host_id, routing_id_);
 }
 

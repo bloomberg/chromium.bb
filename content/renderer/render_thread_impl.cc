@@ -80,7 +80,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/categorized_worker_pool.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
@@ -760,11 +759,6 @@ void RenderThreadImpl::Init() {
   widget_count_ = 0;
   hidden_widget_count_ = 0;
 
-  appcache_frontend_impl_ = std::make_unique<AppCacheFrontendImpl>();
-  registry->AddInterface(
-      base::BindRepeating(&AppCacheFrontendImpl::Bind,
-                          base::Unretained(appcache_frontend_impl())),
-      GetWebMainThreadScheduler()->IPCTaskRunner());
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
 
   vc_manager_.reset(new VideoCaptureImplManager());

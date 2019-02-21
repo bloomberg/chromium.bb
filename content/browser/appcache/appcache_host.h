@@ -29,12 +29,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace blink {
-namespace mojom {
-class AppCacheFrontend;
-}  // namespace mojom
-}  // namespace blink
-
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -79,7 +73,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   AppCacheHost(int host_id,
                int process_id,
                int render_frame_id,
-               blink::mojom::AppCacheFrontend* frontend,
+               blink::mojom::AppCacheFrontendPtr frontend,
                AppCacheServiceImpl* service);
   ~AppCacheHost() override;
 
@@ -109,9 +103,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // spawning host context was never identified.
   const AppCacheHost* GetSpawningHost() const;
 
-  const GURL& preferred_manifest_url() const {
-    return preferred_manifest_url_;
-  }
+  const GURL& preferred_manifest_url() const { return preferred_manifest_url_; }
   void set_preferred_manifest_url(const GURL& url) {
     preferred_manifest_url_ = url;
   }
@@ -164,9 +156,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
 
   // Used by the update job to keep track of which hosts are associated
   // with which pending master entries.
-  const GURL& pending_master_entry_url() const {
-    return new_master_entry_url_;
-  }
+  const GURL& pending_master_entry_url() const { return new_master_entry_url_; }
 
   int host_id() const { return host_id_; }
 
@@ -185,13 +175,18 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   blink::mojom::AppCacheFrontend* frontend() const { return frontend_; }
 
   // PlzNavigate:
-  // The AppCacheHost instance is created with a dummy AppCacheFrontend
+  // The AppCacheHost instance is created with a null AppCacheFrontend
   // pointer when the navigation starts. We need to switch it to the
   // actual frontend when the navigation commits.
-  void set_frontend(blink::mojom::AppCacheFrontend* frontend,
+  void set_frontend(blink::mojom::AppCacheFrontendPtr frontend,
                     int render_frame_id) {
-    frontend_ = frontend;
+    frontend_ptr_ = std::move(frontend);
+    frontend_ = frontend_ptr_.get();
     render_frame_id_ = render_frame_id;
+  }
+
+  void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
+    frontend_ = frontend;
   }
 
   AppCache* associated_cache() const { return associated_cache_.get(); }
@@ -340,7 +335,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // A new master entry to be added to the cache, may be empty.
   GURL new_master_entry_url_;
 
-  // The frontend proxy to deliver notifications to the child process.
+  // The frontend to deliver notifications to the child process.
+  blink::mojom::AppCacheFrontendPtr frontend_ptr_;
   blink::mojom::AppCacheFrontend* frontend_;
   int render_frame_id_;
 

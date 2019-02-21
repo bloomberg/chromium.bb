@@ -169,9 +169,10 @@ void AppCacheURLRequestJob::BeginDelivery() {
 }
 
 void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
-  if (host_)
-    host_->frontend()->LogMessage(
-        host_->host_id(), blink::mojom::ConsoleMessageLevel::kError, message);
+  if (host_) {
+    host_->frontend()->LogMessage(blink::mojom::ConsoleMessageLevel::kError,
+                                  message);
+  }
   delivery_type_ = DeliveryType::kError;
   storage_ = nullptr;
   BeginDelivery();
