@@ -154,7 +154,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       sandbox_mask_(0),
       treat_as_public_address_(false),
-      require_safe_types_(false),
+      require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
 void ContentSecurityPolicy::BindToDelegate(
@@ -198,7 +198,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   if (treat_as_public_address_)
     delegate_->SetAddressSpace(mojom::IPAddressSpace::kPublic);
 
-  if (require_safe_types_)
+  if (require_trusted_types_)
     delegate_->SetRequireTrustedTypes();
 
   delegate_->AddInsecureRequestPolicy(insecure_request_policy_);
@@ -1055,6 +1055,15 @@ bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
   return false;
 }
 
+bool ContentSecurityPolicy::AllowTrustedTypeAssignmentFailure(
+    const String& message) const {
+  bool allow = true;
+  for (const auto& policy : policies_) {
+    allow &= policy->AllowTrustedTypeAssignmentFailure(message);
+  }
+  return allow;
+}
+
 bool ContentSecurityPolicy::IsActive() const {
   return !policies_.IsEmpty();
 }
@@ -1084,7 +1093,7 @@ void ContentSecurityPolicy::TreatAsPublicAddress() {
 void ContentSecurityPolicy::RequireTrustedTypes() {
   // We store whether CSP demands a policy. The caller still needs to check
   // whether the feature is enabled in the first place.
-  require_safe_types_ = true;
+  require_trusted_types_ = true;
 }
 
 void ContentSecurityPolicy::EnforceStrictMixedContentChecking() {
@@ -1162,6 +1171,9 @@ static void GatherSecurityPolicyViolationEventData(
         init->setBlockedURI(
             StripURLForUseInReport(delegate->GetSecurityOrigin(), blocked_url,
                                    redirect_status, effective_type));
+        break;
+      case ContentSecurityPolicy::kTrustedTypesViolation:
+        init->setBlockedURI("trusted-types");
         break;
     }
   }
