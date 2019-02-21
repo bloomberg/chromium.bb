@@ -46,7 +46,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
                              kTestTimeDeltaKey,
-                             base::TimeDelta());
+                             base::TimeDelta())
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
                                    kTestImageSkiaPropertyKey,

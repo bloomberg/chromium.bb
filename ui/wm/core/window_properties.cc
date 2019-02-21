@@ -17,7 +17,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
                              kWindowVisibilityAnimationDurationKey,
-                             base::TimeDelta());
+                             base::TimeDelta())
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowVisibilityAnimationTransition,
                              kWindowVisibilityAnimationTransitionKey,
                              ANIMATE_BOTH)
