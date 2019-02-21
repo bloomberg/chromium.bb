@@ -3008,6 +3008,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
+    {"omnibox-ui-blue-search-loop-and-search-query",
+     flag_descriptions::kOmniboxUIBlueSearchLoopAndSearchQueryName,
+     flag_descriptions::kOmniboxUIBlueSearchLoopAndSearchQueryDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueSearchLoopAndSearchQuery)},
+
     {"omnibox-ui-use-generic-search-engine-icon",
      flag_descriptions::kOmniboxUIUseGenericSearchEngineIconName,
      flag_descriptions::kOmniboxUIUseGenericSearchEngineIconDescription,
