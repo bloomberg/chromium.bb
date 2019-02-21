@@ -115,6 +115,8 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return ash::mojom::SearchResultType::kAnswerCard;
       case ash::SearchResultType::kPlayStoreReinstallApp:
         return ash::mojom::SearchResultType::kPlayStoreReinstallApp;
+      case ash::SearchResultType::kArcAppShortcut:
+        return ash::mojom::SearchResultType::kArcAppShortcut;
       case ash::SearchResultType::kUnknown:
         break;
     }
@@ -154,6 +156,9 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return true;
       case ash::mojom::SearchResultType::kPlayStoreReinstallApp:
         *out = ash::SearchResultType::kPlayStoreReinstallApp;
+        return true;
+      case ash::mojom::SearchResultType::kArcAppShortcut:
+        *out = ash::SearchResultType::kArcAppShortcut;
         return true;
     }
     NOTREACHED();

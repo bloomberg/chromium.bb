@@ -37,6 +37,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetAccessibleName(ComputeAccessibleName());
+  SetResultType(ash::SearchResultType::kArcAppShortcut);
 
   const int icon_dimension =
       app_list::AppListConfig::instance().search_tile_icon_dimension();
