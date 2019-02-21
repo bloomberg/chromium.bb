@@ -240,15 +240,7 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
 void AssistantOptInFlowScreenHandler::OnStateChanged(
     ash::mojom::VoiceInteractionState state) {
   if (state != ash::mojom::VoiceInteractionState::NOT_READY) {
-    if (voice_enrollment_pending) {
-      voice_enrollment_pending = false;
-      DCHECK(settings_manager_.is_bound() &&
-             base::FeatureList::IsEnabled(
-                 assistant::features::kAssistantVoiceMatch));
-      settings_manager_->StartSpeakerIdEnrollment(true, std::move(client_ptr_));
-    } else {
-      BindAssistantSettingsManager();
-    }
+    BindAssistantSettingsManager();
     arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
   }
 }
@@ -449,14 +441,9 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     ShowNextScreen();
   } else if (action == kRecordPressed) {
     if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled)) {
-      // Turn on hotword will restart the Assistant service. Thus the enrollment
-      // request should be sent after the service restart complete.
-      voice_enrollment_pending = true;
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
-      arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
-    } else {
-      settings_manager_->StartSpeakerIdEnrollment(true, std::move(client_ptr_));
     }
+    settings_manager_->StartSpeakerIdEnrollment(true, std::move(client_ptr_));
   }
 }
 
