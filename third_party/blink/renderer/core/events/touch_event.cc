@@ -147,7 +147,7 @@ enum TouchTargetAndDispatchResultType {
 };
 
 void LogTouchTargetHistogram(EventTarget* event_target,
-                             unsigned short phase,
+                             uint8_t phase,
                              bool default_prevented_before_current_target,
                              bool default_prevented) {
   int result = 0;
