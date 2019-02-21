@@ -2342,6 +2342,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "mobile-identity-consistency",
+    "owners": [ "bsazonov", "droger", "msarda" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "modal-permission-prompts",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

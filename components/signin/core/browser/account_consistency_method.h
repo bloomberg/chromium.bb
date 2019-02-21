@@ -9,7 +9,16 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_CONSISTENCY_METHOD_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_CONSISTENCY_METHOD_H_
 
+#include "base/feature_list.h"
+#include "build/build_config.h"
+
 namespace signin {
+
+#if defined(OS_ANDROID)
+// Mice is similar to Mirror but also works when the user is not opted into
+// Sync.
+extern const base::Feature kMiceFeature;
+#endif
 
 // TODO(https://crbug.com/777774): Cleanup this enum and remove related
 // functions once Dice is fully rolled out, and/or Mirror code is removed on

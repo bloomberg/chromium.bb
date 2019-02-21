@@ -750,6 +750,9 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 extern const char kMessageCenterNewStyleNotificationName[];
 extern const char kMessageCenterNewStyleNotificationDescription[];
 
+extern const char kMobileIdentityConsistencyName[];
+extern const char kMobileIdentityConsistencyDescription[];
+
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 

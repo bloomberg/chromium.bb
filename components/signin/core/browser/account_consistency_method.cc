@@ -15,6 +15,11 @@ bool AccountConsistencyMethodGreaterOrEqual(AccountConsistencyMethod a,
 }
 }  // namespace
 
+#if defined(OS_ANDROID)
+const base::Feature kMiceFeature{"MobileIdentityConsistency",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
                               AccountConsistencyMethod b) {
   DCHECK_NE(AccountConsistencyMethod::kMirror, a);
