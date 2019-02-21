@@ -633,20 +633,16 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    'betty-pre-cq',                   # vm board                  vmtest
-    'cyan-no-vmtest-pre-cq',          # braswell     kernel 3.18
-    'daisy_spring-no-vmtest-pre-cq',  # arm32        kernel 3.8
-    'eve-no-vmtest-pre-cq',           # kabylake     kernel 4.4   cheets_user_64
-    'fizz-no-vmtest-pre-cq',          # kabylake     kernel 4.4
-    'grunt-no-vmtest-pre-cq',         # stoneyridge  kernel 4.14
-    'guado_moblab-no-vmtest-pre-cq',  # broadwell    kernel 3.14  moblab
-    'kevin-arcnext-no-vmtest-pre-cq', # arm64        kernel 4.4   arcnext
-    'lakitu-no-vmtest-pre-cq',        # container    kernel 4.14
-    'nyan_blaze-no-vmtest-pre-cq',    # arm32        kernel 3.10
-    'reef-no-vmtest-pre-cq',          # apollolake   kernel 4.4   vulkan
-    'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
+    'betty-arcnext-pre-cq',           # vm board    arcnext
+    'betty-pre-cq',                   # vm board    vmtest
+    'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
+    'fizz-no-vmtest-pre-cq',          # kabylake
+    'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
+    'guado_moblab-no-vmtest-pre-cq',  # broadwell   moblab
+    'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
+    'lakitu-no-vmtest-pre-cq',        # container
+    'nyan_blaze-no-vmtest-pre-cq',    # arm32
     'whirlwind-no-vmtest-pre-cq',     # brillo
-    'zako-no-vmtest-pre-cq',          # haswell      kernel 3.8
 ]
 
 # The name of the pre-cq launching config.
