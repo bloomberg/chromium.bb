@@ -26,23 +26,6 @@ QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
 
 QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() = default;
 
-quic::WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
-    const char* buffer,
-    size_t buf_len,
-    const quic::QuicIpAddress& self_address,
-    const quic::QuicSocketAddress& peer_address,
-    quic::PerPacketOptions* options,
-    WriteCallback callback) {
-  DCHECK(callback_.is_null());
-  callback_ = callback;
-  quic::WriteResult result =
-      WritePacket(buffer, buf_len, self_address, peer_address, options);
-  if (!quic::IsWriteBlockedStatus(result.status)) {
-    callback_.Reset();
-  }
-  return result;
-}
-
 void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   write_blocked_ = false;

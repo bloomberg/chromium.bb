@@ -21,7 +21,6 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/tools/quic_simple_dispatcher.h"
-#include "net/tools/quic/quic_simple_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_session_helper.h"
 
