@@ -585,7 +585,8 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   if (!GetOrCreateResourceProvider())
     return false;
 
-  scoped_refptr<CanvasResource> frame = ResourceProvider()->ProduceFrame();
+  scoped_refptr<CanvasResource> frame =
+      ResourceProvider()->ProduceCanvasResource();
   if (!frame || !frame->IsValid())
     return false;
 

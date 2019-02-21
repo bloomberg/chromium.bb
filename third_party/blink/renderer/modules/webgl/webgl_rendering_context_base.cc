@@ -765,7 +765,7 @@ void WebGLRenderingContextBase::commit() {
 
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      Host()->Commit(Host()->ResourceProvider()->ProduceFrame(),
+      Host()->Commit(Host()->ResourceProvider()->ProduceCanvasResource(),
                      SkIRect::MakeWH(width, height));
     }
   }
@@ -1388,7 +1388,7 @@ void WebGLRenderingContextBase::PushFrame() {
   int height = GetDrawingBuffer()->Size().Height();
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      Host()->PushFrame(Host()->ResourceProvider()->ProduceFrame(),
+      Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(),
                         SkIRect::MakeWH(width, height));
     }
   }

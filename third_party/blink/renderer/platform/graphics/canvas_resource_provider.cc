@@ -64,8 +64,9 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   }
 
  protected:
-  scoped_refptr<CanvasResource> ProduceFrame() override {
-    TRACE_EVENT0("blink", "CanvasResourceProviderTexture::ProduceFrame");
+  scoped_refptr<CanvasResource> ProduceCanvasResource() override {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderTexture::ProduceCanvasResource");
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -174,9 +175,10 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
         FilterQuality(), is_accelerated);
   }
 
-  scoped_refptr<CanvasResource> ProduceFrame() final {
-    TRACE_EVENT0("blink",
-                 "CanvasResourceProviderTextureGpuMemoreBuffer::ProduceFrame");
+  scoped_refptr<CanvasResource> ProduceCanvasResource() final {
+    TRACE_EVENT0(
+        "blink",
+        "CanvasResourceProviderTextureGpuMemoreBuffer::ProduceCanvasResource");
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -185,7 +187,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource) {
       // GpuMemoryBuffer creation failed, fallback to Texture resource
-      return CanvasResourceProviderTexture::ProduceFrame();
+      return CanvasResourceProviderTexture::ProduceCanvasResource();
     }
 
     auto paint_image = MakeImageSnapshot();
@@ -233,7 +235,7 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
   bool SupportsDirectCompositing() const override { return false; }
 
  private:
-  scoped_refptr<CanvasResource> ProduceFrame() override {
+  scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     return nullptr;  // Does not support direct compositing
   }
 
@@ -286,9 +288,10 @@ class CanvasResourceProviderBitmapGpuMemoryBuffer final
         FilterQuality(), is_accelerated);
   }
 
-  scoped_refptr<CanvasResource> ProduceFrame() final {
-    TRACE_EVENT0("blink",
-                 "CanvasResourceProviderBitmapGpuMemoryBuffer::ProduceFrame");
+  scoped_refptr<CanvasResource> ProduceCanvasResource() final {
+    TRACE_EVENT0(
+        "blink",
+        "CanvasResourceProviderBitmapGpuMemoryBuffer::ProduceCanvasResource");
 
     DCHECK(GetSkSurface());
 
@@ -341,7 +344,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
                                               CreateWeakPtr(), FilterQuality());
   }
 
-  scoped_refptr<CanvasResource> ProduceFrame() final {
+  scoped_refptr<CanvasResource> ProduceCanvasResource() final {
     DCHECK(GetSkSurface());
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource)
@@ -401,9 +404,10 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
     return resource_;
   }
 
-  scoped_refptr<CanvasResource> ProduceFrame() final {
-    TRACE_EVENT0("blink",
-                 "CanvasResourceProviderDirectGpuMemoryBuffer::ProduceFrame");
+  scoped_refptr<CanvasResource> ProduceCanvasResource() final {
+    TRACE_EVENT0(
+        "blink",
+        "CanvasResourceProviderDirectGpuMemoryBuffer::ProduceCanvasResource");
     if (IsGpuContextLost())
       return nullptr;
     FlushSkia();
@@ -495,8 +499,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   }
 
  protected:
-  scoped_refptr<CanvasResource> ProduceFrame() override {
-    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::ProduceFrame");
+  scoped_refptr<CanvasResource> ProduceCanvasResource() override {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderSharedImage::ProduceCanvasResource");
 
     scoped_refptr<CanvasResource> resource_snapshot = resource_;
 
@@ -549,10 +554,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> resource_;
 };
 
-// This class does nothing except answering to ProduceFrame() by piping it to
-// NewOrRecycledResource().  This ResourceProvider is meant to be used with an
-// imported external CanvasResource, and all drawing and lifetime logic must be
-// kept at a higher level.
+// This class does nothing except answering to ProduceCanvasResource() by piping
+// it to NewOrRecycledResource().  This ResourceProvider is meant to be used
+// with an imported external CanvasResource, and all drawing and lifetime logic
+// must be kept at a higher level.
 class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
  public:
   CanvasResourceProviderPassThrough(
@@ -580,7 +585,7 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
     return nullptr;
   }
 
-  scoped_refptr<CanvasResource> ProduceFrame() final {
+  scoped_refptr<CanvasResource> ProduceCanvasResource() final {
     return NewOrRecycledResource();
   }
 

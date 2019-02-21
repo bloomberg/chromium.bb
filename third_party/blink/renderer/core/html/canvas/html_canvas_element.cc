@@ -446,7 +446,7 @@ void HTMLCanvasElement::FinalizeFrame() {
 
       const base::TimeTicks start_time = WTF::CurrentTimeTicks();
       const scoped_refptr<CanvasResource> canvas_resource =
-          ResourceProvider()->ProduceFrame();
+          ResourceProvider()->ProduceCanvasResource();
       const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
       dirty_rect_.Intersect(src_rect);
       const IntRect int_dirty = EnclosingIntRect(dirty_rect_);
