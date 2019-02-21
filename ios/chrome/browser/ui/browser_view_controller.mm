@@ -2462,8 +2462,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!(self.helper && _browserState))
     return;
 
-  Tab* tab = self.tabModel.currentTab;
-  if (![tab navigationManager])
+  web::WebState* webState = self.currentWebState;
+  if (!webState)
     return;
 
   PrerenderService* prerenderService =
@@ -2473,7 +2473,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (isPrerendered && ![self.helper isToolbarLoading:self.currentWebState])
     [self.primaryToolbarCoordinator showPrerenderingAnimation];
 
-  auto* findHelper = FindTabHelper::FromWebState(tab.webState);
+  auto* findHelper = FindTabHelper::FromWebState(webState);
   if (findHelper && findHelper->IsFindUIActive()) {
     [self showFindBarWithAnimation:NO
                         selectText:YES
@@ -2481,7 +2481,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   BOOL hideToolbar = NO;
-  if (tab.webState) {
+  if (webState) {
     // There are times when the NTP can be hidden but before the visibleURL
     // changes.  This can leave the BVC in a blank state where only the bottom
     // toolbar is visible. Instead, if possible, use the NewTabPageTabHelper
@@ -2489,10 +2489,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     BOOL isNTP = false;
     if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
       NewTabPageTabHelper* NTPHelper =
-          NewTabPageTabHelper::FromWebState(tab.webState);
+          NewTabPageTabHelper::FromWebState(webState);
       isNTP = NTPHelper && NTPHelper->IsActive();
     } else {
-      isNTP = IsVisibleURLNewTabPage(tab.webState);
+      isNTP = IsVisibleURLNewTabPage(webState);
     }
     // Hide the toolbar when displaying content suggestions without the tab
     // strip, without the focused omnibox, and for UI Refresh, only when in
@@ -3063,15 +3063,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)closeWebState:(web::WebState*)webState {
   // Only allow a web page to close itself if it was opened by DOM, or if there
   // are no navigation items.
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK(webState->HasOpener() || ![tab navigationManager]->GetItemCount());
-
+  DCHECK(webState->HasOpener() ||
+         !webState->GetNavigationManager()->GetItemCount());
   if (![self tabModel])
     return;
-
-  NSUInteger index = [[self tabModel] indexOfTab:tab];
-  if (index != NSNotFound)
-    [[self tabModel] closeTabAtIndex:index];
+  WebStateList* webStateList = self.tabModel.webStateList;
+  int index = webStateList->GetIndexOfWebState(webState);
+  if (index != WebStateList::kInvalidIndex)
+    webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
 }
 
 - (web::WebState*)webState:(web::WebState*)webState

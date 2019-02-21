@@ -220,7 +220,7 @@ class TabTest : public BlockCleanupTest,
     tab_ = LegacyTabHelper::GetTabForWebState(web_state_impl_.get());
     web::NavigationManager::WebLoadParams load_params(
         GURL("chrome://version/"));
-    [tab_ navigationManager]->LoadURLWithParams(load_params);
+    web_state_impl_->GetNavigationManager()->LoadURLWithParams(load_params);
 
     // There should be no entries in the history at this point.
     history::QueryResults results;
@@ -273,7 +273,8 @@ class TabTest : public BlockCleanupTest,
     web_state_impl_->SetIsLoading(true);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
-    [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
+    web_state_impl_->GetNavigationManager()->GetLastCommittedItem()->SetTitle(
+        new_title);
 
     web_state_impl_->OnTitleChanged();
     web_state_impl_->SetIsLoading(false);
@@ -287,7 +288,7 @@ class TabTest : public BlockCleanupTest,
     // The only test that uses it is currently disabled.
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
-    [tab_ navigationManager]->LoadURLWithParams(params);
+    web_state_impl_->GetNavigationManager()->LoadURLWithParams(params);
     web_state_impl_->SetIsLoading(true);
     web_state_impl_->SetIsLoading(false);
     web_state_impl_->OnPageLoaded(url, true);
@@ -318,13 +319,15 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const GURL& expectedUrl, NSString* expectedTitle) {
-    web::NavigationItem* item = [tab_ navigationManager]->GetVisibleItem();
+    web::NavigationItem* item =
+        web_state_impl_->GetNavigationManager()->GetVisibleItem();
     EXPECT_EQ(expectedUrl, item->GetURL());
     EXPECT_EQ(base::SysNSStringToUTF16(expectedTitle), item->GetTitle());
   }
 
   void CheckCurrentItem(const history::URLResult& historyResult) {
-    web::NavigationItem* item = [tab_ navigationManager]->GetVisibleItem();
+    web::NavigationItem* item =
+        web_state_impl_->GetNavigationManager()->GetVisibleItem();
     CheckHistoryResult(historyResult, item->GetURL(),
                        base::SysUTF16ToNSString(item->GetTitle()));
   }

@@ -32,8 +32,6 @@ class ChromeBrowserState;
 }
 
 namespace web {
-class NavigationItem;
-class NavigationManager;
 class WebState;
 }
 
@@ -101,10 +99,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Dismisses all modals owned by the tab.
 - (void)dismissModals;
-
-// Returns the NavigationManager for this tab's WebState. Requires WebState to
-// be populated. Can return null.
-- (web::NavigationManager*)navigationManager;
 
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;

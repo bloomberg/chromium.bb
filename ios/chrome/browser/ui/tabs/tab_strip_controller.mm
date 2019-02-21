@@ -1705,11 +1705,11 @@ UIColor* BackgroundColor() {
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(index));
   if (index == NSNotFound)
     return;
-  Tab* tab = [_tabModel tabAtIndex:index];
+  web::WebState* webState = _tabModel.webStateList->GetWebStateAt(index);
 
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  tab.navigationManager->LoadURLWithParams(params);
+  webState->GetNavigationManager()->LoadURLWithParams(params);
 }
 
 @end
