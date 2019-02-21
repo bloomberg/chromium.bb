@@ -41,14 +41,14 @@ class DedicatedWorkerHostFactoryClient final
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
-  void OnScriptLoaded(
+  void OnScriptLoadStarted(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info) override;
-  void OnScriptLoadFailed() override;
+  void OnScriptLoadStartFailed() override;
 
   // |worker_| owns |this|.
   blink::WebDedicatedWorker* worker_;

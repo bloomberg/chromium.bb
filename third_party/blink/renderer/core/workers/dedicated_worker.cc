@@ -60,7 +60,7 @@ ConnectToWorkerInterfaceProvider(
   execution_context->GetInterfaceProvider()->GetInterface(&worker_host_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_ptr;
-  worker_host_factory->CreateDedicatedWorker(
+  worker_host_factory->CreateWorkerHost(
       script_origin, mojo::MakeRequest(&interface_provider_ptr));
   return interface_provider_ptr;
 }
@@ -233,7 +233,7 @@ void DedicatedWorker::Start() {
         script_request_url_,
         WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
         blob_url_token.PassInterface().PassHandle());
-    // Continue in OnScriptLoaded().
+    // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }
   if (base::FeatureList::IsEnabled(
@@ -315,7 +315,7 @@ void DedicatedWorker::OnWorkerHostCreated(
       service_manager::mojom::blink::InterfaceProvider::Version_);
 }
 
-void DedicatedWorker::OnScriptLoaded() {
+void DedicatedWorker::OnScriptLoadStarted() {
   DCHECK(features::IsPlzDedicatedWorkerEnabled());
   // Specify empty source code here because scripts will be fetched on the
   // worker thread.
@@ -324,7 +324,7 @@ void DedicatedWorker::OnScriptLoaded() {
       network::mojom::ReferrerPolicy::kDefault, String() /* source_code */);
 }
 
-void DedicatedWorker::OnScriptLoadFailed() {
+void DedicatedWorker::OnScriptLoadStartFailed() {
   DCHECK(features::IsPlzDedicatedWorkerEnabled());
   context_proxy_->DidFailToFetchScript();
   factory_client_.reset();

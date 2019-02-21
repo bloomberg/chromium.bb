@@ -64,7 +64,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   // PlzDedicatedWorker:
-  void LoadDedicatedWorker(
+  void StartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       blink::mojom::BlobURLTokenPtr blob_url_token,
@@ -74,22 +74,25 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
     auto* render_process_host = RenderProcessHost::FromID(process_id_);
     if (!render_process_host) {
-      client->OnScriptLoadFailed();
+      client->OnScriptLoadStartFailed();
       return;
     }
     auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
         render_process_host->GetStoragePartition());
 
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-    if (blob_url_token) {
-      if (!script_url.SchemeIsBlob()) {
-        mojo::ReportBadMessage("DWH_NOT_BLOB_URL");
+    if (script_url.SchemeIsBlob()) {
+      if (!blob_url_token) {
+        mojo::ReportBadMessage("DWH_NO_BLOB_URL_TOKEN");
         return;
       }
       blob_url_loader_factory =
           ChromeBlobStorageContext::URLLoaderFactoryForToken(
               storage_partition_impl->browser_context(),
               std::move(blob_url_token));
+    } else if (blob_url_token) {
+      mojo::ReportBadMessage("DWH_NOT_BLOB_URL");
+      return;
     }
 
     appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
@@ -100,7 +103,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory),
         storage_partition_impl,
-        base::BindOnce(&DedicatedWorkerHost::DidLoadDedicatedWorker,
+        base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                        weak_factory_.GetWeakPtr(), std::move(client)));
   }
 
@@ -115,7 +118,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
   }
 
-  void DidLoadDedicatedWorker(
+  void DidStartScriptLoad(
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
@@ -132,13 +135,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK(!main_script_loader_factory);
 
     if (!success) {
-      client->OnScriptLoadFailed();
+      client->OnScriptLoadStartFailed();
       return;
     }
 
     auto* render_process_host = RenderProcessHost::FromID(process_id_);
     if (!render_process_host) {
-      client->OnScriptLoadFailed();
+      client->OnScriptLoadStartFailed();
       return;
     }
 
@@ -167,10 +170,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       }
     }
 
-    client->OnScriptLoaded(std::move(service_worker_provider_info),
-                           std::move(main_script_load_params),
-                           std::move(subresource_loader_factories),
-                           std::move(controller));
+    client->OnScriptLoadStarted(std::move(service_worker_provider_info),
+                                std::move(main_script_load_params),
+                                std::move(subresource_loader_factories),
+                                std::move(controller));
 
     // |service_worker_remote_object| is an associated interface ptr, so calls
     // can't be made on it until its request endpoint is sent. Now that the
@@ -268,7 +271,7 @@ class DedicatedWorkerHostFactoryImpl
   }
 
   // blink::mojom::DedicatedWorkerHostFactory:
-  void CreateDedicatedWorker(
+  void CreateWorkerHost(
       const url::Origin& origin,
       service_manager::mojom::InterfaceProviderRequest request) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -289,7 +292,7 @@ class DedicatedWorkerHostFactoryImpl
   }
 
   // PlzDedicatedWorker:
-  void CreateAndStartLoad(
+  void CreateWorkerHostAndStartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       blink::mojom::BlobURLTokenPtr blob_url_token,
@@ -314,8 +317,8 @@ class DedicatedWorkerHostFactoryImpl
             blink::mojom::kNavigation_DedicatedWorkerSpec, process_id_,
             mojo::MakeRequest(&interface_provider)));
     client->OnWorkerHostCreated(std::move(interface_provider));
-    host_raw->LoadDedicatedWorker(script_url, request_initiator_origin,
-                                  std::move(blob_url_token), std::move(client));
+    host_raw->StartScriptLoad(script_url, request_initiator_origin,
+                              std::move(blob_url_token), std::move(client));
   }
 
  private:

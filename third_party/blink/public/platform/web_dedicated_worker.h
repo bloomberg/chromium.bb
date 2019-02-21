@@ -20,14 +20,14 @@ class WebDedicatedWorker {
   virtual void OnWorkerHostCreated(
       mojo::ScopedMessagePipeHandle interface_provider) = 0;
 
-  // Called when content::DedicatedWorkerHost loaded the main worker script in
-  // the browser process, and the script information is sent back to the
-  // content::DedicatedWorkerHostFactoryClient.
-  virtual void OnScriptLoaded() = 0;
+  // Called when content::DedicatedWorkerHost started loading the main worker
+  // script in the browser process, and the script information is sent back to
+  // the content::DedicatedWorkerHostFactoryClient.
+  virtual void OnScriptLoadStarted() = 0;
 
-  // Called when content::DedicatedWorkerHost failed to load the main worker
-  // script in the browser process.
-  virtual void OnScriptLoadFailed() = 0;
+  // Called when content::DedicatedWorkerHost failed to start loading the main
+  // worker script in the browser process.
+  virtual void OnScriptLoadStartFailed() = 0;
 };
 
 }  // namespace blink

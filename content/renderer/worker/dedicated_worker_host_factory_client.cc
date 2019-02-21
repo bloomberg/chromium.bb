@@ -34,7 +34,7 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
   blink::mojom::DedicatedWorkerHostFactoryClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
 
-  factory_->CreateAndStartLoad(
+  factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin,
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
@@ -46,7 +46,7 @@ void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
   worker_->OnWorkerHostCreated(interface_provider.PassInterface().PassHandle());
 }
 
-void DedicatedWorkerHostFactoryClient::OnScriptLoaded(
+void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -56,12 +56,12 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoaded(
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   // TODO(nhiroki): Keep the given values for creating
   // WebWorkerFetchContextImpl.
-  worker_->OnScriptLoaded();
+  worker_->OnScriptLoadStarted();
 }
 
-void DedicatedWorkerHostFactoryClient::OnScriptLoadFailed() {
+void DedicatedWorkerHostFactoryClient::OnScriptLoadStartFailed() {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
-  worker_->OnScriptLoadFailed();
+  worker_->OnScriptLoadStartFailed();
   // |this| may be destroyed at this point.
 }
 
