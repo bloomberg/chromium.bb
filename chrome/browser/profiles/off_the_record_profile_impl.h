@@ -76,6 +76,8 @@ class OffTheRecordProfileImpl : public Profile {
       service_manager::mojom::ServiceRequest request) override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
+  SimpleFactoryKey* GetOriginalKey() const override;
+  SimpleFactoryKey* GetOffTheRecordKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -152,6 +154,8 @@ class OffTheRecordProfileImpl : public Profile {
   base::Time start_time_;
 
   base::FilePath last_selected_directory_;
+
+  SimpleFactoryKey* off_the_record_key_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

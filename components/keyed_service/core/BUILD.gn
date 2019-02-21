@@ -24,6 +24,12 @@ component("core") {
     "refcounted_keyed_service_factory.cc",
     "refcounted_keyed_service_factory.h",
     "service_access_type.h",
+    "simple_dependency_manager.cc",
+    "simple_dependency_manager.h",
+    "simple_factory_key.cc",
+    "simple_factory_key.h",
+    "simple_keyed_service_factory.cc",
+    "simple_keyed_service_factory.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

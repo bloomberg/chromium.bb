@@ -77,6 +77,8 @@
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
@@ -300,8 +302,10 @@ TestingProfile::TestingProfile(
       delegate_(delegate),
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
-  if (parent)
+  if (parent) {
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
+    off_the_record_key_ = parent->GetOffTheRecordKey();
+  }
 
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
@@ -373,6 +377,11 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
+  if (!IsOffTheRecord()) {
+    owned_key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
+    owned_off_the_record_key_ =
+        std::make_unique<SimpleFactoryKey>(profile_path_, owned_key_.get());
+  }
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
@@ -514,6 +523,9 @@ TestingProfile::~TestingProfile() {
   MaybeSendDestroyedNotification();
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
+  SimpleFactoryKey* key =
+      IsOffTheRecord() ? GetOffTheRecordKey() : GetOriginalKey();
+  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(key);
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -871,6 +883,18 @@ bool TestingProfile::IsSameProfile(Profile *profile) {
 
 base::Time TestingProfile::GetStartTime() const {
   return start_time_;
+}
+
+SimpleFactoryKey* TestingProfile::GetOriginalKey() const {
+  if (IsOffTheRecord())
+    return off_the_record_key_->original_key();
+  return owned_key_.get();
+}
+
+SimpleFactoryKey* TestingProfile::GetOffTheRecordKey() const {
+  if (IsOffTheRecord())
+    return off_the_record_key_;
+  return owned_off_the_record_key_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

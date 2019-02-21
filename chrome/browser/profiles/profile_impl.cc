@@ -110,6 +110,8 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
@@ -475,6 +477,12 @@ ProfileImpl::ProfileImpl(
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
                         << "profile files to the root directory!";
 
+  // TODO(hanxi): get |key_| and |off_the_record_key_ |from the startup data if
+  // they have been created when this profile is created.
+  key_ = std::make_unique<SimpleFactoryKey>(GetPath());
+  off_the_record_key_ =
+      std::make_unique<SimpleFactoryKey>(GetPath(), key_.get());
+
 #if defined(OS_CHROMEOS)
   if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
       !chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
@@ -779,6 +787,12 @@ ProfileImpl::~ProfileImpl() {
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
+  // The SimpleDependencyManager should always be called after the
+  // BrowserContextDependencyManager. This is because the KeyedService instances
+  // in the BrowserContextDependencyManager's dependency graph can depend on the
+  // ones in the SimpleDependencyManager's graph.
+  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
+      GetOriginalKey());
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
@@ -821,6 +835,14 @@ scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
 
 bool ProfileImpl::IsOffTheRecord() const {
   return false;
+}
+
+SimpleFactoryKey* ProfileImpl::GetOriginalKey() const {
+  return key_.get();
+}
+
+SimpleFactoryKey* ProfileImpl::GetOffTheRecordKey() const {
+  return off_the_record_key_.get();
 }
 
 Profile* ProfileImpl::GetOffTheRecordProfile() {

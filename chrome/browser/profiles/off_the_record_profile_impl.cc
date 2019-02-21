@@ -51,6 +51,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -145,6 +147,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
           ->CreateDelegate());
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
+  off_the_record_key_ = profile_->GetOffTheRecordKey();
 }
 
 void OffTheRecordProfileImpl::Init() {
@@ -216,6 +219,12 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
+  // The SimpleDependencyManager should always be called after the
+  // BrowserContextDependencyManager. This is because the KeyedService instances
+  // in the BrowserContextDependencyManager's dependency graph can depend on the
+  // ones in the SimpleDependencyManager's graph.
+  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
+      GetOffTheRecordKey());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(
@@ -530,6 +539,14 @@ bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
 
 base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
+}
+
+SimpleFactoryKey* OffTheRecordProfileImpl::GetOriginalKey() const {
+  return off_the_record_key_->original_key();
+}
+
+SimpleFactoryKey* OffTheRecordProfileImpl::GetOffTheRecordKey() const {
+  return off_the_record_key_;
 }
 
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
