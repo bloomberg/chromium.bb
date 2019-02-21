@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -47,24 +48,25 @@ ProcessProxy::ProcessProxy() : process_launched_(false), callback_set_(false) {
   ClearFdPair(pt_pair_);
 }
 
-int ProcessProxy::Open(const base::CommandLine& cmdline,
-                       const std::string& user_id_hash) {
+bool ProcessProxy::Open(const base::CommandLine& cmdline,
+                        const std::string& user_id_hash,
+                        std::string* id) {
   if (process_launched_)
-    return -1;
+    return false;
 
   if (!CreatePseudoTerminalPair(pt_pair_)) {
-    return -1;
+    return false;
   }
 
-  int process_id = LaunchProcess(cmdline, user_id_hash, pt_pair_[PT_SLAVE_FD]);
-  process_launched_ = process_id >= 0;
+  process_launched_ =
+      LaunchProcess(cmdline, user_id_hash, pt_pair_[PT_SLAVE_FD], id);
 
   if (process_launched_) {
     CloseFd(&pt_pair_[PT_SLAVE_FD]);
   } else {
     CloseFdPair(pt_pair_);
   }
-  return process_id;
+  return process_launched_;
 }
 
 bool ProcessProxy::StartWatchingOutput(
@@ -223,9 +225,10 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
   return true;
 }
 
-int ProcessProxy::LaunchProcess(const base::CommandLine& cmdline,
-                                const std::string& user_id_hash,
-                                int slave_fd) {
+bool ProcessProxy::LaunchProcess(const base::CommandLine& cmdline,
+                                 const std::string& user_id_hash,
+                                 int slave_fd,
+                                 std::string* id) {
   base::LaunchOptions options;
 
   // Redirect crosh  process' output and input so we can read it.
@@ -246,10 +249,19 @@ int ProcessProxy::LaunchProcess(const base::CommandLine& cmdline,
   // Launch the process.
   process_ = base::LaunchProcess(cmdline, options);
 
+  // If the process is valid, generate a new random id.
+  // https://crbug.com/352465
+  if (process_.IsValid()) {
+    // We use the GUID API as it's trivial and works well enough.
+    // We prepend the pid to avoid random number collisions.  It should be a
+    // guaranteed unique id for the life of this Chrome session.
+    *id = std::to_string(process_.Pid()) + "-" + base::GenerateGUID();
+  }
+
   // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
   // Open vends pid_t* so ownership is quite vague anyway, and Process::Close
   // doesn't do much in POSIX.
-  return process_.IsValid() ? process_.Pid() : -1;
+  return process_.IsValid();
 }
 
 void ProcessProxy::CloseFdPair(int* pipe) {
@@ -268,6 +280,10 @@ void ProcessProxy::CloseFd(int* fd) {
 void ProcessProxy::ClearFdPair(int* pipe) {
   pipe[PT_MASTER_FD] = base::kInvalidFd;
   pipe[PT_SLAVE_FD] = base::kInvalidFd;
+}
+
+base::ProcessHandle ProcessProxy::GetProcessHandleForTesting() {
+  return process_.IsValid() ? process_.Handle() : base::kNullProcessHandle;
 }
 
 }  // namespace chromeos
