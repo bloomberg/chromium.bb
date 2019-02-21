@@ -4,12 +4,15 @@
 
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 
+#include <cmath>
 #include <memory>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -45,6 +48,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
     was_hidden_ = true;
     return CONTINUE_OBSERVING;
   }
+
+  browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
 
   // When OnStart is invoked, we don't yet know whether we're observing a web
   // page load, vs another kind of load (e.g. a download or a PDF). Thus,
@@ -161,6 +166,13 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::PageLoad builder(info.source_id);
+
+  base::Optional<int64_t> rounded_site_engagement_score =
+      GetRoundedSiteEngagementScore(info);
+  if (rounded_site_engagement_score) {
+    builder.SetSiteEngagementScore(rounded_site_engagement_score.value());
+  }
+
   if (timing.input_to_navigation_start) {
     builder.SetExperimental_InputToNavigationStart(
         timing.input_to_navigation_start.value().InMilliseconds());
@@ -419,4 +431,28 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability(
       static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
   UMA_HISTOGRAM_COUNTS_100("PageLoad.Experimental.LayoutStability.JankScore",
                            uma_value);
+}
+
+base::Optional<int64_t>
+UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
+    const page_load_metrics::PageLoadExtraInfo& info) const {
+  if (!browser_context_)
+    return base::nullopt;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  SiteEngagementService* engagement_service =
+      SiteEngagementService::Get(profile);
+
+  // UKM privacy requires the engagement score be rounded to nearest
+  // value of 10.
+  int64_t rounded_document_engagement_score =
+      static_cast<int>(
+          std::roundf(engagement_service->GetScore(info.url) / 10.0)) *
+      10;
+
+  DCHECK(rounded_document_engagement_score >= 0 &&
+         rounded_document_engagement_score <=
+             engagement_service->GetMaxPoints());
+
+  return rounded_document_engagement_score;
 }
