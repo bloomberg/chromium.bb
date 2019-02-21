@@ -25,7 +25,7 @@ namespace trace_event {
 class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
  public:
   TracedValue();
-  explicit TracedValue(size_t capacity);
+  explicit TracedValue(size_t capacity, bool force_json = false);
   ~TracedValue() override;
 
   void EndDictionary();
