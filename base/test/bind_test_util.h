@@ -6,6 +6,7 @@
 #define BASE_TEST_BIND_TEST_UTIL_H_
 
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -35,10 +36,15 @@ decltype(auto) BindLambdaForTesting(F&& f) {
 }
 
 // Returns a closure that fails on destruction if it hasn't been run.
-OnceClosure MakeExpectedRunClosure(const Location& location);
+OnceClosure MakeExpectedRunClosure(const Location& location,
+                                   StringPiece message = StringPiece());
+RepeatingClosure MakeExpectedRunAtLeastOnceClosure(
+    const Location& location,
+    StringPiece message = StringPiece());
 
 // Returns a closure that fails the test if run.
-OnceClosure MakeExpectedNotRunClosure(const Location& location);
+RepeatingClosure MakeExpectedNotRunClosure(const Location& location,
+                                           StringPiece message = StringPiece());
 
 }  // namespace base
 

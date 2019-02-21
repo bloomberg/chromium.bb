@@ -546,7 +546,7 @@ TEST_P(ScopedTaskEnvironmentMockedTime, RunLoopDriveable) {
 
   // Disable Run() timeout here, otherwise we'll fast-forward to it before we
   // reach the quit task.
-  RunLoop::ScopedRunTimeoutForTest disable_timeout{TimeDelta()};
+  RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
 
   RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(

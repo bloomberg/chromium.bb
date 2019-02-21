@@ -4,6 +4,8 @@
 
 #include "base/test/bind_test_util.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -18,37 +20,53 @@ namespace {
 // before destruction.
 class RunChecker {
  public:
-  explicit RunChecker(const Location& location)
-      : location_(location), called_(false) {}
+  explicit RunChecker(const Location& location,
+                      StringPiece message,
+                      bool is_repeating)
+      : location_(location),
+        message_(message.as_string()),
+        is_repeating_(is_repeating) {}
 
   ~RunChecker() {
     if (!called_) {
-      ADD_FAILURE_AT(location_.file_name(), location_.line_number());
+      ADD_FAILURE_AT(location_.file_name(), location_.line_number())
+          << message_;
     }
   }
 
   void Run() {
-    DCHECK(!called_);
+    DCHECK(is_repeating_ || !called_);
     called_ = true;
   }
 
  private:
-  Location location_;
-  bool called_;
+  const Location location_;
+  const std::string message_;
+  const bool is_repeating_;
+  bool called_ = false;
 };
 
 }  // namespace
 
-OnceClosure MakeExpectedRunClosure(const Location& location) {
-  return BindOnce(&RunChecker::Run, Owned(new RunChecker(location)));
+OnceClosure MakeExpectedRunClosure(const Location& location,
+                                   StringPiece message) {
+  return BindOnce(&RunChecker::Run,
+                  Owned(new RunChecker(location, message, false)));
 }
 
-OnceClosure MakeExpectedNotRunClosure(const Location& location) {
-  return BindOnce(
-      [](const Location& location) {
-        ADD_FAILURE_AT(location.file_name(), location.line_number());
+RepeatingClosure MakeExpectedRunAtLeastOnceClosure(const Location& location,
+                                                   StringPiece message) {
+  return BindRepeating(&RunChecker::Run,
+                       Owned(new RunChecker(location, message, true)));
+}
+
+RepeatingClosure MakeExpectedNotRunClosure(const Location& location,
+                                           StringPiece message) {
+  return BindRepeating(
+      [](const Location& location, StringPiece message) {
+        ADD_FAILURE_AT(location.file_name(), location.line_number()) << message;
       },
-      location);
+      location, message.as_string());
 }
 
 }  // namespace base

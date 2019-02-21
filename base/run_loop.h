@@ -244,26 +244,26 @@ class BASE_EXPORT RunLoop {
   // allow a step to Run() for longer than the suite's default timeout, by
   // creating a new ScopedRunTimeoutForTest on their stack, e.g:
   //
-  //   ScopedRunTimeoutForTest default_timeout(kDefaultRunTimeout);
+  //   ScopedRunTimeoutForTest default_timeout(kDefaultRunTimeout, on_timeout);
   //   ... do other test stuff ...
   //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
   //   ...
   //   {
-  //     ScopedRunTimeoutForTest test_specific_timeout(kTestSpecificTimeout);
+  //     ScopedRunTimeoutForTest specific_timeout(kTestSpecificTimeout, ...);
   //     RunLoop().Run(); // Run for up to kTestSpecificTimeout.
   //   }
   //   ...
   //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
   //
-  // The currently-active timeout can be temporarily disabled by passing a zero
-  // timeout e.g:
-  //   ScopedRunTimeoutForTest disable_timeout(TimeDelta());
+  // The currently-active timeout can also be temporarily disabled:
+  //   ScopedDisableRunTimeoutForTest disable_timeout;
   //
   // ScopedTaskEnvironment applies a default Run() timeout after which a
-  // LOG(FATAL) is performed, to dump a crash stack for diagnosis.
+  // LOG(FATAL) is performed, to dump a crash stack for diagnosis. Tests adding
+  // their own Run() timeouts can use e.g. MakeExpectedNotRunClosure().
+
   class BASE_EXPORT ScopedRunTimeoutForTest {
    public:
-    explicit ScopedRunTimeoutForTest(TimeDelta timeout);
     ScopedRunTimeoutForTest(TimeDelta timeout, RepeatingClosure on_timeout);
     ~ScopedRunTimeoutForTest();
 
@@ -279,6 +279,16 @@ class BASE_EXPORT RunLoop {
     const RepeatingClosure on_timeout_;
     ScopedRunTimeoutForTest* const nested_timeout_;
     DISALLOW_COPY_AND_ASSIGN(ScopedRunTimeoutForTest);
+  };
+
+  class BASE_EXPORT ScopedDisableRunTimeoutForTest {
+   public:
+    ScopedDisableRunTimeoutForTest();
+    ~ScopedDisableRunTimeoutForTest();
+
+   private:
+    ScopedRunTimeoutForTest* const nested_timeout_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedDisableRunTimeoutForTest);
   };
 
   // Run() will DCHECK if called while there's a ScopedDisallowRunningForTesting

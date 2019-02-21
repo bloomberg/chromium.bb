@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -52,7 +53,9 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
 // navigation commands and page events.
 class FrameImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
  public:
-  FrameImplTest() : run_timeout_(TestTimeouts::action_timeout()) {
+  FrameImplTest()
+      : run_timeout_(TestTimeouts::action_timeout(),
+                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath(kTestServerRoot));
   }
 

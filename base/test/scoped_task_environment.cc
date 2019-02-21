@@ -318,9 +318,13 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       // TODO(https://crbug.com/918724): Enable Run() timeouts even for
       // instances created with *MOCK_TIME, and determine whether the timeout
       // can be reduced from action_max_timeout() to action_timeout().
-      run_loop_timeout_(std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
-          mock_time_domain_ ? TimeDelta() : TestTimeouts::action_max_timeout(),
-          BindRepeating([]() { LOG(FATAL) << "Run() timed out."; }))) {
+      run_loop_timeout_(
+          mock_time_domain_
+              ? nullptr
+              : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
+                    TestTimeouts::action_max_timeout(),
+                    BindRepeating(
+                        []() { LOG(FATAL) << "Run() timed out."; }))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
   CHECK(!TaskScheduler::GetInstance())

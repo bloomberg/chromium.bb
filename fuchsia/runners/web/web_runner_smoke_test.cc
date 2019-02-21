@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -20,7 +21,9 @@ namespace {
 
 class WebRunnerSmokeTest : public testing::Test {
  public:
-  WebRunnerSmokeTest() : run_timeout_(TestTimeouts::action_timeout()) {}
+  WebRunnerSmokeTest()
+      : run_timeout_(TestTimeouts::action_timeout(),
+                     base::MakeExpectedNotRunClosure(FROM_HERE)) {}
   void SetUp() final {
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &WebRunnerSmokeTest::HandleRequest, base::Unretained(this)));
