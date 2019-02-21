@@ -37,8 +37,11 @@ class WebState;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
-// The InfobarContainer View.
-- (UIView*)view;
+// Sets the visibility of the container to |hidden|.
+- (void)hideContainer:(BOOL)hidden;
+
+// The InfobarContainer Legacy View.
+- (UIView*)legacyContainerView;
 
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
