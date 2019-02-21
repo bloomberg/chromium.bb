@@ -7,7 +7,18 @@
 #include "base/guid.h"
 #include "build/build_config.h"
 #include "google_apis/google_api_keys.h"
+
+// TODO(crbug.com/933949): Remove suppression once gRPC is fixed.
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi"
+#endif
+
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
+
+#if defined(__clang__)
+#pragma clang diagnostic pop  // -Wextra-semi
+#endif
 
 namespace {
 

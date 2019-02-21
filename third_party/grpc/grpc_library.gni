@@ -23,7 +23,11 @@ template("cc_grpc_library") {
                              "use_protobuf_full",
                              "import_dirs",
                            ])
-    extra_configs = [ "//third_party/grpc:grpc_config" ]
+    remove_configs = [ "//build/config/compiler:chromium_code" ]
+    extra_configs = [
+      "//build/config/compiler:no_chromium_code",
+      "//third_party/grpc:grpc_config",
+    ]
     generate_python = false
     generator_plugin_label = "//third_party/grpc:grpc_cpp_plugin"
     generator_plugin_suffix = ".grpc.pb"

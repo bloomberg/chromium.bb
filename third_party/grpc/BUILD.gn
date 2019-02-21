@@ -98,7 +98,11 @@ if (current_toolchain == host_toolchain) {
       "src/src/compiler/cpp_generator.cc",
       "src/src/compiler/cpp_plugin.cc",
     ]
-    configs += [ ":grpc_internal_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":grpc_internal_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
     public_configs = [ ":grpc_config" ]
     deps = [
       "//third_party/protobuf:protoc_lib",
