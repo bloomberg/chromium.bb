@@ -196,6 +196,15 @@ class UpdateWprTest(unittest.TestCase):
     run_benchmark.assert_called_once_with(log_name='replay', live=False)
     print_run_info.assert_called_once_with('<out-file>')
 
+  def testUploadWPR(self):
+    mock.patch(WPR_UPDATER + '_ExistingWpr', return_value='<archive>').start()
+    self.wpr_updater.UploadWpr()
+    self.assertListEqual(self._run.mock_calls, [
+      mock.call(['upload_to_google_storage.py',
+                 '--bucket=chrome-partner-telemetry', '<archive>']),
+      mock.call(['git', 'add', '<archive>.sha1'])
+    ])
+
 
 if __name__ == "__main__":
   unittest.main()

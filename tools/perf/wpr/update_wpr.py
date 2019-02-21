@@ -195,6 +195,22 @@ class WprUpdater(object):
       count = shell(cmd + '| wc -l')
       cli_helpers.Info('    %-16s%-8s  %s' % ('[javascript]:', count, cmd))
 
+  def _UploadArchiveToGoogleStorage(self, archive):
+    """Uploads specified WPR archive to the GS."""
+    cli_helpers.Run([
+      'upload_to_google_storage.py', '--bucket=chrome-partner-telemetry',
+      archive])
+
+  def _GitAddArtifactHash(self, archive):
+    """Stages changes into SHA1 file for commit."""
+    archive_sha1 = archive + '.sha1'
+    if not os.path.exists(archive_sha1):
+      cli_helpers.Error(
+          'Could not find upload artifact: {sha}', sha=archive_sha1)
+      return False
+    cli_helpers.Run(['git', 'add', archive_sha1])
+    return True
+
   def LiveRun(self):
     cli_helpers.Step('LIVE RUN: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
@@ -228,6 +244,14 @@ class WprUpdater(object):
     self._PrintRunInfo(out_file)
     return out_file
 
+  def UploadWpr(self):
+    cli_helpers.Step('UPLOAD WPR: %s' % self.story)
+    archive = self._ExistingWpr()
+    if archive is None:
+      cli_helpers.Error('NO WPR FOUND, use the "record" subcommand')
+    self._UploadArchiveToGoogleStorage(archive)
+    return self._GitAddArtifactHash(archive)
+
 
 def Main(argv):
   parser = argparse.ArgumentParser()
@@ -246,7 +270,7 @@ def Main(argv):
       help='Path to the Chromium/Chrome binary relative to output directory. '
            'Defaults to default Chrome browser installed if not specified.')
   parser.add_argument(
-      'command', choices=['live', 'record', 'replay'],
+      'command', choices=['live', 'record', 'replay', 'upload'],
       help='Mode in which to run this script.')
 
   args = parser.parse_args(argv)
@@ -258,4 +282,6 @@ def Main(argv):
     updater.RecordWpr()
   elif args.command == 'replay':
     updater.ReplayWpr()
+  elif args.command == 'upload':
+    updater.UploadWpr()
   updater.Cleanup()
