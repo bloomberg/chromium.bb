@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/client_hints/client_hints_observer.h"
+#include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -35,6 +36,8 @@
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/plugins/pdf_plugin_placeholder_observer.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -53,7 +56,6 @@
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -360,6 +362,13 @@ offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
 
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents);
+  }
+
+  // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.
+  //     See https://crbug.com/910288.
   resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
       web_contents);
 }

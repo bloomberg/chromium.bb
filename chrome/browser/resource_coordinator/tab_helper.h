@@ -13,16 +13,11 @@
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_manager/frame_resource_coordinator.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "url/gurl.h"
-
-namespace performance_manager {
-class PageResourceCoordinator;
-class PerformanceManager;
-}  // namespace performance_manager
 
 namespace resource_coordinator {
 
@@ -34,16 +29,7 @@ class ResourceCoordinatorTabHelper
  public:
   ~ResourceCoordinatorTabHelper() override;
 
-  static bool ukm_recorder_initialized;
-
-  performance_manager::PageResourceCoordinator* page_resource_coordinator() {
-    return page_resource_coordinator_.get();
-  }
-
   // WebContentsObserver overrides.
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-
   void DidStartLoading() override;
   void DidReceiveResponse() override;
   void DidStopLoading() override;
@@ -52,17 +38,9 @@ class ResourceCoordinatorTabHelper
                    int error_code,
                    const base::string16& error_description) override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void TitleWasSet(content::NavigationEntry* entry) override;
-  void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   void UpdateUkmRecorder(int64_t navigation_id);
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
@@ -77,36 +55,20 @@ class ResourceCoordinatorTabHelper
 
  private:
   explicit ResourceCoordinatorTabHelper(content::WebContents* web_contents);
-  // Favicon, title are set the first time a page is loaded, thus we want to
-  // ignore the very first update, and reset the flags when a non same-document
-  // navigation finished in main frame.
-  void ResetFlag();
+
+  // The coordination unit ID of the page node associated with |web_contents()|,
+  // if any.
+  CoordinationUnitID page_cu_id_;
+  // TODO(siggi): This is used by the TabLifecycleUnit, remove this with it.
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
-
-  // The performance manager for this process, if any.
-  performance_manager::PerformanceManager* performance_manager_ = nullptr;
-
-  std::unique_ptr<performance_manager::PageResourceCoordinator>
-      page_resource_coordinator_;
-  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver>
       local_site_characteristics_wc_observer_;
 #endif
 
-  // Favicon and title are set when a page is loaded, we only want to send
-  // signals to GRC about title and favicon update from the previous title and
-  // favicon, thus we want to ignore the very first update since it is always
-  // supposed to happen.
-  bool first_time_favicon_set_ = false;
-  bool first_time_title_set_ = false;
-
-  // Maps from RenderFrameHost to the associated RC node.
-  std::map<content::RenderFrameHost*,
-           std::unique_ptr<performance_manager::FrameResourceCoordinator>>
-      frames_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

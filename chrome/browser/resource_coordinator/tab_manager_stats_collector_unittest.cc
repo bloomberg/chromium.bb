@@ -17,6 +17,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
@@ -107,6 +108,8 @@ class TabManagerStatsCollectorTest
 
   std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
     std::unique_ptr<WebContents> contents(CreateTestWebContents());
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
     ResourceCoordinatorTabHelper::FromWebContents(contents.get())
         ->SetUkmSourceIdForTest(id);
