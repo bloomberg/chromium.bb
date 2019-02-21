@@ -75,6 +75,7 @@ class Configurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<Configurator>;
   ~Configurator() override;
 
+  scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
   DISALLOW_COPY_AND_ASSIGN(Configurator);
 };
 

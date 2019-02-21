@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/process_version_rc_template.gni")
+import("//testing/test.gni")
 
 group("win") {
   deps = [
@@ -18,7 +19,9 @@ executable("updater") {
 
   configs += [ "//build/config/win:windowed" ]
 
+  libs = [ "winhttp.lib" ]
   deps = [
+    ":code",
     ":version_resources",
     "//build/win:default_exe_manifest",
     "//chrome/updater:common",
@@ -30,4 +33,32 @@ process_version_rc_template("version_resources") {
     "updater.ver",
   ]
   output = "$target_gen_dir/updater_exe.rc"
+}
+
+source_set("code") {
+  sources = [
+    "net/network.h",
+    "net/network_winhttp.cc",
+    "net/network_winhttp.h",
+    "net/scoped_hinternet.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/update_client",
+  ]
+}
+
+source_set("unittest") {
+  testonly = true
+
+  sources = [
+    "net/network_unittest.cc",
+  ]
+
+  deps = [
+    ":code",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
 }
