@@ -135,16 +135,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_EQ(result, test_config_.cursor);
 }
 
-// Flaky on CrOS, Windows and Linux. https://crbug.com/930471
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_GetDisplayMediaVideoAndAudioWithFakeUI \
-  DISABLED_GetDisplayMediaVideoAndAudioWithFakeUI
-#else
-#define MAYBE_GetDisplayMediaVideoAndAudioWithFakeUI \
-  GetDisplayMediaVideoAndAudioWithFakeUI
-#endif  // defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
-                       MAYBE_GetDisplayMediaVideoAndAudioWithFakeUI) {
+                       GetDisplayMediaVideoAndAudio) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
