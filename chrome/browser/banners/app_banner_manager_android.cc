@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
@@ -53,7 +54,7 @@ AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
     : AppBannerManager(web_contents) {
   can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
-  CreateJavaBannerManager();
+  CreateJavaBannerManager(web_contents);
 }
 
 AppBannerManagerAndroid::~AppBannerManagerAndroid() {
@@ -311,10 +312,14 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   }
 }
 
-void AppBannerManagerAndroid::CreateJavaBannerManager() {
+void AppBannerManagerAndroid::CreateJavaBannerManager(
+    content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_banner_manager_.Reset(
-      Java_AppBannerManager_create(env, reinterpret_cast<intptr_t>(this)));
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  base::android::ScopedJavaLocalRef<jobject> jtab(tab ? tab->GetJavaObject()
+                                                      : nullptr);
+  java_banner_manager_.Reset(Java_AppBannerManager_create(
+      env, jtab, reinterpret_cast<intptr_t>(this)));
 }
 
 std::string AppBannerManagerAndroid::ExtractQueryValueForName(

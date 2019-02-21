@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -1244,7 +1243,6 @@ public class Tab
                             mDelegateFactory.createContextMenuPopulator(this), this));
             setInterceptNavigationDelegate(
                     mDelegateFactory.createInterceptNavigationDelegate(this));
-            getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
         }
 
         for (TabObserver observer : mObservers) {
@@ -1470,8 +1468,6 @@ public class Tab
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
                     this));
-
-            getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
         } finally {
             TraceEvent.end("ChromeTab.initBrowserComponents");
         }
@@ -2462,13 +2458,6 @@ public class Tab
     public void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
         mInterceptNavigationDelegate = delegate;
         nativeSetInterceptNavigationDelegate(mNativeTabAndroid, delegate);
-    }
-
-    /**
-     * @return the AppBannerManager.
-     */
-    public AppBannerManager getAppBannerManager() {
-        return AppBannerManager.getAppBannerManagerForWebContents(getWebContents());
     }
 
     @VisibleForTesting

@@ -350,6 +350,7 @@ void TabAndroid::InitWebContents(
   web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
   DCHECK(web_contents_.get());
 
+  TabAndroidHelper::SetTabForWebContents(web_contents(), this);
   AttachTabHelpers(web_contents_.get());
   WebContentsObserver::Observe(web_contents_.get());
 
@@ -359,7 +360,6 @@ void TabAndroid::InitWebContents(
       jcontext_menu_populator);
   ViewAndroidHelper::FromWebContents(web_contents())->
       SetViewAndroid(web_contents()->GetNativeView());
-  TabAndroidHelper::SetTabForWebContents(web_contents(), this);
   web_contents_delegate_ =
       std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);

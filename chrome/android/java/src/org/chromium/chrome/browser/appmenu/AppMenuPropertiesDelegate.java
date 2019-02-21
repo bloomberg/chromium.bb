@@ -253,7 +253,7 @@ public class AppMenuPropertiesDelegate {
         // Record whether or not we have finished installability checks for this page when we're
         // preparing the menu to be displayed. This will let us determine if it is feasible to
         // change the add to homescreen menu item based on whether a site is a PWA.
-        currentTab.getAppBannerManager().recordMenuOpen();
+        AppBannerManager.forTab(currentTab).recordMenuOpen();
 
         MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
         MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
