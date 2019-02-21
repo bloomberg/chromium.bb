@@ -1905,40 +1905,40 @@ inline cc::SnapStrictness CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(SnapAlignment alignment)
+inline CSSIdentifierValue::CSSIdentifierValue(cc::SnapAlignment alignment)
     : CSSValue(kIdentifierClass) {
   switch (alignment) {
-    case SnapAlignment::kNone:
+    case cc::SnapAlignment::kNone:
       value_id_ = CSSValueNone;
       break;
-    case SnapAlignment::kStart:
+    case cc::SnapAlignment::kStart:
       value_id_ = CSSValueStart;
       break;
-    case SnapAlignment::kEnd:
+    case cc::SnapAlignment::kEnd:
       value_id_ = CSSValueEnd;
       break;
-    case SnapAlignment::kCenter:
+    case cc::SnapAlignment::kCenter:
       value_id_ = CSSValueCenter;
       break;
   }
 }
 
 template <>
-inline SnapAlignment CSSIdentifierValue::ConvertTo() const {
+inline cc::SnapAlignment CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueNone:
-      return SnapAlignment::kNone;
+      return cc::SnapAlignment::kNone;
     case CSSValueStart:
-      return SnapAlignment::kStart;
+      return cc::SnapAlignment::kStart;
     case CSSValueEnd:
-      return SnapAlignment::kEnd;
+      return cc::SnapAlignment::kEnd;
     case CSSValueCenter:
-      return SnapAlignment::kCenter;
+      return cc::SnapAlignment::kCenter;
     default:
       break;
   }
   NOTREACHED();
-  return SnapAlignment::kNone;
+  return cc::SnapAlignment::kNone;
 }
 
 template <>
