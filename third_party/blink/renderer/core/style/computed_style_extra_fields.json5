@@ -833,13 +833,6 @@
       field_group: "*",
       default_value: "false",
     },
-    {
-      name: "HasInlineTransform",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "*",
-      default_value: "false",
-    },
     // Style adjustment for appearance is disabled when certain properties are set.
     {
       name: "HasAuthorBackground",

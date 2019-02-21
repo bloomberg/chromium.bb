@@ -2199,16 +2199,6 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     element_animations->UpdateAnimationFlags(*style);
   }
 
-  if (style->HasTransform()) {
-    if (const CSSPropertyValueSet* inline_style = InlineStyle()) {
-      style->SetHasInlineTransform(
-          inline_style->HasProperty(CSSPropertyTransform) ||
-          inline_style->HasProperty(CSSPropertyTranslate) ||
-          inline_style->HasProperty(CSSPropertyRotate) ||
-          inline_style->HasProperty(CSSPropertyScale));
-    }
-  }
-
   style->UpdateIsStackingContext(this == GetDocument().documentElement(),
                                  IsInTopLayer(),
                                  IsSVGForeignObjectElement(*this));

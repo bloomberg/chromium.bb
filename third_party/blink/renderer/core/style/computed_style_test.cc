@@ -195,17 +195,6 @@ TEST(ComputedStyleTest,
 }
 
 TEST(ComputedStyleTest,
-     UpdatePropertySpecificDifferencesCompositingReasonsInlineTransform) {
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
-
-  other->SetHasInlineTransform(true);
-  StyleDifference diff;
-  style->UpdatePropertySpecificDifferences(*other, diff);
-  EXPECT_TRUE(diff.CompositingReasonsChanged());
-}
-
-TEST(ComputedStyleTest,
      UpdatePropertySpecificDifferencesCompositingReasonsBackfaceVisibility) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
