@@ -235,6 +235,11 @@ def GenerateBenchmarkOptions(benchmark_class):
   # all crashes and hence remove the need to enable logging in actual perf
   # benchmarks.
   options.browser_options.logging_verbosity = 'non-verbose'
+  # TODO(sadrul): Remove the check once catapult roll happens.
+  # https://crbug.com/932409
+  if "GetSupportedPlatforms" in dir(benchmark_class):
+    options.target_platforms = benchmark_class.GetSupportedPlatforms(
+        benchmark_class.SUPPORTED_PLATFORMS)
   return options
 
 
