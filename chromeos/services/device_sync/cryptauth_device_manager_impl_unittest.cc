@@ -60,6 +60,7 @@ const bool kStoredUnlockable = false;
 // cryptauth::ExternalDeviceInfo fields for the synced unlock key.
 const char kPublicKey1[] = "GOOG";
 const char kDeviceName1[] = "Pixel XL";
+const char kNoPiiDeviceName1[] = "marlin";
 const char kBluetoothAddress1[] = "aa:bb:cc:ee:dd:ff";
 const bool kUnlockable1 = false;
 const char kBeaconSeed1Data[] = "beaconSeed1Data";
@@ -74,6 +75,7 @@ const bool kPixelPhone1 = true;
 // cryptauth::ExternalDeviceInfo fields for a non-synced unlockable device.
 const char kPublicKey2[] = "CROS";
 const char kDeviceName2[] = "Pixelbook";
+const char kNoPiiDeviceName2[] = "eve-signed-mpkeys";
 const bool kUnlockable2 = true;
 const char kBeaconSeed3Data[] = "beaconSeed3Data";
 const int64_t kBeaconSeed3StartTime = 123456;
@@ -102,6 +104,11 @@ void ExpectSyncedDevicesAreEqual(
               device.has_friendly_device_name());
     EXPECT_EQ(expected_device.friendly_device_name(),
               device.friendly_device_name());
+
+    EXPECT_EQ(expected_device.has_no_pii_device_name(),
+              device.has_no_pii_device_name());
+    EXPECT_EQ(expected_device.no_pii_device_name(),
+              device.no_pii_device_name());
 
     EXPECT_EQ(expected_device.has_bluetooth_address(),
               device.has_bluetooth_address());
@@ -204,6 +211,18 @@ void ExpectSyncedDevicesAndPrefAreEqual(
       EXPECT_EQ(expected_device.friendly_device_name(), device_name);
     } else {
       EXPECT_FALSE(expected_device.has_friendly_device_name());
+    }
+
+    std::string no_pii_device_name_b64, no_pii_device_name;
+    if (device_dictionary->GetString("no_pii_device_name",
+                                     &no_pii_device_name_b64)) {
+      EXPECT_TRUE(base::Base64UrlDecode(
+          no_pii_device_name_b64, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+          &no_pii_device_name));
+      EXPECT_TRUE(expected_device.has_no_pii_device_name());
+      EXPECT_EQ(expected_device.no_pii_device_name(), no_pii_device_name);
+    } else {
+      EXPECT_FALSE(expected_device.has_no_pii_device_name());
     }
 
     std::string bluetooth_address_b64, bluetooth_address;
@@ -416,6 +435,7 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
     cryptauth::ExternalDeviceInfo unlock_key;
     unlock_key.set_public_key(kPublicKey1);
     unlock_key.set_friendly_device_name(kDeviceName1);
+    unlock_key.set_no_pii_device_name(kNoPiiDeviceName1);
     unlock_key.set_bluetooth_address(kBluetoothAddress1);
     unlock_key.set_unlockable(kUnlockable1);
     cryptauth::BeaconSeed* seed1 = unlock_key.add_beacon_seeds();
@@ -443,6 +463,7 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
     cryptauth::ExternalDeviceInfo unlockable_device;
     unlockable_device.set_public_key(kPublicKey2);
     unlockable_device.set_friendly_device_name(kDeviceName2);
+    unlockable_device.set_no_pii_device_name(kNoPiiDeviceName2);
     unlockable_device.set_unlockable(kUnlockable2);
     cryptauth::BeaconSeed* seed3 = unlockable_device.add_beacon_seeds();
     seed3->set_data(kBeaconSeed3Data);
