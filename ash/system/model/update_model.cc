@@ -46,8 +46,8 @@ void UpdateModel::SetUpdateOverCellularAvailable(bool available) {
 }
 
 mojom::UpdateSeverity UpdateModel::GetSeverity() const {
-  // TODO(weidongg/691108): adjust severity according the amount of time
-  // passing after update is available over cellular connection. Use low
+  // TODO(https://crbug.com/927010): adjust severity according the amount of
+  // time passing after update is available over cellular connection. Use low
   // severity for update available over cellular connection.
   return update_over_cellular_available_ ? mojom::UpdateSeverity::LOW
                                          : severity_;
