@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_UPDATE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_UPDATE_SCREEN_H_
 
-#include <set>
-
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -35,9 +33,6 @@ class UpdateScreen : public BaseScreen,
  public:
   static UpdateScreen* Get(ScreenManager* manager);
 
-  // Returns true if this instance is still active (i.e. has not been deleted).
-  static bool HasInstance(UpdateScreen* inst);
-
   UpdateScreen(BaseScreenDelegate* base_screen_delegate, UpdateView* view);
   ~UpdateScreen() override;
 
@@ -50,15 +45,8 @@ class UpdateScreen : public BaseScreen,
 
   void SetIgnoreIdleStatus(bool ignore_idle_status);
 
-  enum ExitReason {
-    REASON_UPDATE_CANCELED = 0,
-    REASON_UPDATE_INIT_FAILED,
-    REASON_UPDATE_OVER_CELLULAR_REJECTED,
-    REASON_UPDATE_NON_CRITICAL,
-    REASON_UPDATE_ENDED
-  };
   // Reports update results to the BaseScreenDelegate.
-  virtual void ExitUpdate(ExitReason reason);
+  void ExitUpdate(ScreenExitCode exit_code);
 
   // UpdateEngineClient::Observer implementation:
   void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
@@ -124,18 +112,16 @@ class UpdateScreen : public BaseScreen,
 
   void DelayErrorMessage();
 
+  // Callback for UpdateEngineClient::RequestUpdateCheck() called fomr
+  // StartUpdateCheck().
+  void OnUpdateCheckStarted(UpdateEngineClient::UpdateCheckResult result);
+
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
 
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer reboot_timer_;
-
-  // Returns a static InstanceSet.
-  // TODO(jdufault): There should only ever be one instance of this class.
-  // Remove support for supporting multiple instances. See crbug.com/672142.
-  typedef std::set<UpdateScreen*> InstanceSet;
-  static InstanceSet& GetInstanceSet();
 
   // Current state of the update screen.
   State state_ = State::STATE_IDLE;
