@@ -273,7 +273,11 @@ void ProcessedTrace::FillTableForPacket(Table* table,
         case STREAM:
           table->AddRow(
               "Stream",
-              absl::StrCat("#", frame.stream_frame_info().stream_id()));
+              absl::StrCat("#", frame.stream_frame_info().stream_id(), ": ",
+                           frame.stream_frame_info().offset(), "-",
+                           frame.stream_frame_info().offset() +
+                           frame.stream_frame_info().length(),
+                           " (", frame.stream_frame_info().length(), ")"));
           break;
         case RESET_STREAM:
           table->AddRow(
