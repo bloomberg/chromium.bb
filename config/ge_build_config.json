@@ -2242,6 +2242,12 @@
         },
         {
           "board_name": "octopus",
+          "name": "casta",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "fleex",
           "test_suites": [
             "sanity",
@@ -2396,6 +2402,12 @@
         {
           "board_name": "octopus",
           "name": "unprovisioned_bobba",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_casta",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
