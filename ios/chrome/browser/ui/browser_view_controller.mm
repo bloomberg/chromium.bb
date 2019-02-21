@@ -2813,7 +2813,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id)nativeControllerForTab:(Tab*)tab {
   id nativeController = tab.webController.nativeController;
-  if (tab) {
+  if (tab.webState) {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive())
