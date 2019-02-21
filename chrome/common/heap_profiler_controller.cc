@@ -130,7 +130,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
     frames.reserve(sample.stack.size());
     for (const void* frame : sample.stack) {
       uintptr_t address = reinterpret_cast<uintptr_t>(frame);
-      const base::ModuleCache::Module& module =
+      const base::ModuleCache::Module* module =
           module_cache.GetModuleForAddress(address);
       frames.emplace_back(address, module);
     }

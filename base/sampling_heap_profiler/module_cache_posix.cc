@@ -7,9 +7,10 @@
 namespace base {
 
 // static
-ModuleCache::Module ModuleCache::CreateModuleForAddress(uintptr_t address) {
+std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
+    uintptr_t address) {
   // TODO(alph): Implement it.
-  return Module();
+  return std::make_unique<Module>();
 }
 
 }  // namespace base

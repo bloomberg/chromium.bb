@@ -58,14 +58,14 @@ class BASE_EXPORT StackSamplingProfiler {
   // This struct is only used for sampling data transfer from NativeStackSampler
   // to ProfileBuilder.
   struct BASE_EXPORT Frame {
-    Frame(uintptr_t instruction_pointer, ModuleCache::Module module);
+    Frame(uintptr_t instruction_pointer, const ModuleCache::Module* module);
     ~Frame();
 
     // The sampled instruction pointer within the function.
     uintptr_t instruction_pointer;
 
     // The module information.
-    ModuleCache::Module module;
+    const ModuleCache::Module* module;
   };
 
   // Represents parameters that configure the sampling.

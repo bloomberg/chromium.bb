@@ -124,7 +124,7 @@ class CallStackProfileBuilder
   std::unordered_map<uintptr_t, size_t> module_index_;
 
   // The distinct modules in the current profile.
-  std::vector<base::ModuleCache::Module> modules_;
+  std::vector<const base::ModuleCache::Module*> modules_;
 
   // Callback made when sampling a profile completes.
   base::OnceClosure completed_callback_;
