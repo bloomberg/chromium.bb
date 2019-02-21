@@ -12,6 +12,7 @@
 #include "base/strings/pattern.h"
 #include "base/values.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
+#include "chromecast/media/cma/backend/audio_output_redirector_input.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/cast_media_shlib.h"
