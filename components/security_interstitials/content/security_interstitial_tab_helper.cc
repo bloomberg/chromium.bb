@@ -60,6 +60,15 @@ void SecurityInterstitialTabHelper::AssociateBlockingPage(
   helper->SetBlockingPage(navigation_id, std::move(blocking_page));
 }
 
+bool SecurityInterstitialTabHelper::ShouldDisplayURL() const {
+  CHECK(IsDisplayingInterstitial());
+  return blocking_page_for_currently_committed_navigation_->ShouldDisplayURL();
+}
+
+bool SecurityInterstitialTabHelper::IsDisplayingInterstitial() const {
+  return blocking_page_for_currently_committed_navigation_ != nullptr;
+}
+
 security_interstitials::SecurityInterstitialPage*
 SecurityInterstitialTabHelper::
     GetBlockingPageForCurrentlyCommittedNavigationForTesting() {

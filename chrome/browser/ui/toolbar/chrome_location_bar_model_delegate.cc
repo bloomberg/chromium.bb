@@ -18,6 +18,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -92,6 +93,12 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry)
     return true;
+
+  security_interstitials::SecurityInterstitialTabHelper* tab_helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          GetActiveWebContents());
+  if (tab_helper && tab_helper->IsDisplayingInterstitial())
+    return tab_helper->ShouldDisplayURL();
 
   if (entry->IsViewSourceMode() ||
       entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
