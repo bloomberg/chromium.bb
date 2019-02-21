@@ -643,7 +643,6 @@ mojom("mojo_bindings") {
   visibility_blink =
       [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
   sources = [
-    "platform/autoplay.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
     "platform/modules/background_sync/background_sync.mojom",
