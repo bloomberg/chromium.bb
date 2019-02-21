@@ -14,8 +14,8 @@ namespace declarative_net_request {
 
 // Holds paths for an extension ruleset.
 struct RulesetSource {
-  // Creates RulesetSource for |extension|. This must be called on a sequence
-  // which supports file IO.
+  // This must only be called for extensions which specified a declarative
+  // ruleset.
   static RulesetSource Create(const Extension& extension);
 
   ~RulesetSource();

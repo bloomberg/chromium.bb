@@ -15,13 +15,8 @@ namespace declarative_net_request {
 // static
 RulesetSource RulesetSource::Create(const Extension& extension) {
   RulesetSource source;
-
-  const ExtensionResource* extension_resource =
-      declarative_net_request::DNRManifestData::GetRulesetResource(&extension);
-  if (!extension_resource)
-    return source;
-
-  source.json_path = extension_resource->GetFilePath();
+  source.json_path =
+      declarative_net_request::DNRManifestData::GetRulesetPath(extension);
   source.indexed_path = file_util::GetIndexedRulesetPath(extension.path());
   return source;
 }

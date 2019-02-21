@@ -72,14 +72,12 @@ class DNRManifestTest : public testing::Test {
     std::string error;
     scoped_refptr<Extension> extension = file_util::LoadExtension(
         temp_dir_.GetPath(), Manifest::UNPACKED, Extension::NO_FLAGS, &error);
-    EXPECT_TRUE(extension);
+    ASSERT_TRUE(extension) << error;
     EXPECT_TRUE(error.empty());
-    const ExtensionResource* resource =
-        DNRManifestData::GetRulesetResource(extension.get());
-    ASSERT_TRUE(resource);
-    EXPECT_EQ(base::MakeAbsoluteFilePath(
-                  temp_dir_.GetPath().Append(rules_file_path_)),
-              resource->GetFilePath());
+
+    ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
+    EXPECT_EQ(DNRManifestData::GetRulesetPath(*extension),
+              temp_dir_.GetPath().Append(rules_file_path_));
   }
 
  private:
