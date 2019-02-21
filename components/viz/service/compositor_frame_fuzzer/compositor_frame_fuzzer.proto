@@ -1,0 +1,31 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package content.fuzzing.proto;
+
+message RenderPass {
+  required Rect output_rect = 1;
+  required Rect damage_rect = 2;
+  required SolidColorDrawQuad draw_quad = 3;
+}
+
+message SolidColorDrawQuad {
+  required Rect rect = 1;
+  required Rect visible_rect = 2;
+  required fixed32 color = 3 [default = 0xffffffff];
+  required bool force_anti_aliasing_off = 4;
+}
+
+// Spec to initialize a gfx::Rect.
+// Defaults to the size of the renderer frame as defined in
+// fuzzer_browser_process.cc, in the hopes that this generally yields more
+// interesting values more quickly.
+message Rect {
+  required sint32 x = 1 [default = 0];
+  required sint32 y = 2 [default = 0];
+  required sint32 width = 3 [default = 620];
+  required sint32 height = 4 [default = 400];
+}
