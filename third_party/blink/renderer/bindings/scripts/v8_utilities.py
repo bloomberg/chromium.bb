@@ -348,14 +348,27 @@ def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
     to the current context. Requires that the surrounding code defines an |is_secure_context|
     variable prior to this check."""
-    if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        conditions = ['is_secure_context']
-        if 'SecureContext' in member.extended_attributes and member.extended_attributes['SecureContext'] is not None:
-            conditions.append('!%s' % runtime_enabled_function(member.extended_attributes['SecureContext']))
-        if 'SecureContext' in interface.extended_attributes and interface.extended_attributes['SecureContext'] is not None:
-            conditions.append('!%s' % runtime_enabled_function(interface.extended_attributes['SecureContext']))
-        return ' || '.join(conditions)
-    return None
+    member_is_secure_context = 'SecureContext' in member.extended_attributes
+    interface_is_secure_context = ((member.defined_in is None or
+                                    member.defined_in == interface.name) and
+                                   'SecureContext' in interface.extended_attributes)
+
+    if not (member_is_secure_context or interface_is_secure_context):
+        return None
+
+    conditions = ['is_secure_context']
+
+    if member_is_secure_context:
+        conditional = member.extended_attributes['SecureContext']
+        if conditional:
+            conditions.append('!{}'.format(runtime_enabled_function(conditional)))
+
+    if interface_is_secure_context:
+        conditional = interface.extended_attributes['SecureContext']
+        if conditional:
+            conditions.append('!{}'.format(runtime_enabled_function(conditional)))
+
+    return ' || '.join(conditions)
 
 
 # [ImplementedAs]

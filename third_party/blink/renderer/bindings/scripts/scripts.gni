@@ -93,7 +93,8 @@ template("compute_interfaces_info_individual") {
       visibility = invoker.visibility
     }
 
-    inputs = [ "$bindings_scripts_dir/utilities.py" ] + invoker.sources
+    inputs = [ "$bindings_scripts_dir/utilities.py" ] + idl_compiler_files +
+             invoker.sources
     outputs = [
       invoker.interfaces_info_file,
       invoker.component_info_file,
