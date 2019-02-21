@@ -11,6 +11,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
@@ -56,6 +57,111 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
                                 base::WaitableEvent* waitable_event) {
     proxy_client->AddGlobalScopeForTesting(
         To<WorkletGlobalScope>(thread->GlobalScope()));
+    waitable_event->Signal();
+  }
+
+  // Returns false when a script evaluation error happens.
+  bool EvaluateScriptModule(AnimationWorkletGlobalScope* global_scope,
+                            const String& source_code) {
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    EXPECT_TRUE(script_state);
+    ScriptState::Scope scope(script_state);
+
+    const KURL js_url("https://example.com/worklet.js");
+    ScriptModule module = ScriptModule::Compile(
+        script_state->GetIsolate(), source_code, js_url, js_url,
+        ScriptFetchOptions(), TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(module.IsNull());
+    ScriptValue exception = module.Instantiate(script_state);
+    EXPECT_TRUE(exception.IsEmpty());
+    ScriptValue value = module.Evaluate(script_state);
+    return value.IsEmpty();
+  }
+
+  using TestCallback =
+      void (AnimationWorkletProxyClientTest::*)(WorkerThread*,
+                                                AnimationWorkletProxyClient*,
+                                                base::WaitableEvent*);
+  void RunTestOnWorkletThread(TestCallback callback) {
+    std::unique_ptr<WorkerThread> worklet =
+        CreateAnimationAndPaintWorkletThread(
+            &GetDocument(), reporting_proxy_.get(), proxy_client_);
+
+    base::WaitableEvent waitable_event;
+    PostCrossThreadTask(
+        *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(
+            callback, CrossThreadUnretained(this),
+            CrossThreadUnretained(worklet.get()),
+            CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client_),
+            CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
+    waitable_event.Reset();
+
+    worklet->Terminate();
+    worklet->WaitForShutdownForTesting();
+  }
+
+  void RunMutateCorrectAnimatorOnWorklet(
+      WorkerThread* thread,
+      AnimationWorkletProxyClient* proxy_client,
+      base::WaitableEvent* waitable_event) {
+    String source_code =
+        R"JS(
+          class Stateful {
+            animate () {}
+            state () {}
+          }
+
+          class Stateless {
+            animate () {}
+          }
+
+          registerAnimator('stateful_animator', Stateful);
+          registerAnimator('stateless_animator', Stateless);
+      )JS";
+
+    auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
+    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+
+    std::unique_ptr<AnimationWorkletInput> state =
+        std::make_unique<AnimationWorkletInput>();
+    cc::WorkletAnimationId first_animation_id = {1, 1};
+    cc::WorkletAnimationId second_animation_id = {1, 2};
+    cc::WorkletAnimationId third_animation_id = {1, 3};
+    cc::WorkletAnimationId forth_animation_id = {1, 4};
+    state->added_and_updated_animations.emplace_back(
+        first_animation_id,    // animation id
+        "stateless_animator",  // name associated with the animation
+        5000,                  // animation's current time
+        nullptr,               // options
+        1                      // number of keyframe effects
+    );
+    state->added_and_updated_animations.emplace_back(
+        second_animation_id, "stateful_animator", 5000, nullptr, 1);
+    state->added_and_updated_animations.emplace_back(
+        third_animation_id, "stateful_animator", 5000, nullptr, 1);
+    state->added_and_updated_animations.emplace_back(
+        forth_animation_id, "stateless_animator", 5000, nullptr, 1);
+
+    std::unique_ptr<AnimationWorkletOutput> output =
+        proxy_client->Mutate(std::move(state));
+    EXPECT_EQ(4u, output->animations.size());
+
+    auto has_id = [&](WorkletAnimationId id) {
+      auto found =
+          std::find_if(output->animations.begin(), output->animations.end(),
+                       [&](auto& it) { return it.worklet_animation_id == id; });
+      return found != output->animations.end();
+    };
+
+    EXPECT_TRUE(has_id(first_animation_id));
+    EXPECT_TRUE(has_id(second_animation_id));
+    EXPECT_TRUE(has_id(third_animation_id));
+    EXPECT_TRUE(has_id(forth_animation_id));
+
     waitable_event->Signal();
   }
 
@@ -176,6 +282,11 @@ TEST_F(AnimationWorkletProxyClientTest, SelectGlobalScope) {
   first_worklet->WaitForShutdownForTesting();
   second_worklet->Terminate();
   second_worklet->WaitForShutdownForTesting();
+}
+
+TEST_F(AnimationWorkletProxyClientTest, MutateCorrectAnimator) {
+  RunTestOnWorkletThread(
+      &AnimationWorkletProxyClientTest::RunMutateCorrectAnimatorOnWorklet);
 }
 
 }  // namespace blink

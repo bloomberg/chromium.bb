@@ -169,15 +169,19 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
     global_scope->UpdateAnimatorsList(*input);
   }
 
-  // Assume animators are stateful.
-  // TODO(https://crbug.com/914918): Implement filter for detecting stateless
-  // and stateful animators. Call mutate on stateful and stateless global
-  // scopes with appropriate predicates.
   AnimationWorkletGlobalScope* stateful_global_scope =
       SelectStatefulGlobalScope();
   DCHECK(stateful_global_scope);
-  stateful_global_scope->UpdateAnimators(*input, output.get(),
-                                         [](Animator*) { return true; });
+  stateful_global_scope->UpdateAnimators(
+      *input, output.get(),
+      [](Animator* animator) { return animator->IsStateful(); });
+
+  AnimationWorkletGlobalScope* stateless_global_scope =
+      SelectStatelessGlobalScope();
+  DCHECK(stateless_global_scope);
+  stateless_global_scope->UpdateAnimators(
+      *input, output.get(),
+      [](Animator* animator) { return !animator->IsStateful(); });
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Animation.AnimationWorklet.MutateDuration", timer.Elapsed(),
