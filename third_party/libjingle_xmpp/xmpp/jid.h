@@ -50,8 +50,8 @@ public:
   bool operator==(const Jid& other) const;
   bool operator!=(const Jid& other) const { return !operator==(other); }
 
-  bool operator<(const Jid& other) const { return Compare(other) < 0; };
-  bool operator>(const Jid& other) const { return Compare(other) > 0; };
+  bool operator<(const Jid& other) const { return Compare(other) < 0; }
+  bool operator>(const Jid& other) const { return Compare(other) > 0; }
 
   int Compare(const Jid & other) const;
 

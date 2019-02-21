@@ -66,8 +66,8 @@ class ScanTree
     ScanTree(StringList *FileMasks,RECURSE_MODE Recurse,bool GetLinks,SCAN_DIRS GetDirs);
     ~ScanTree();
     SCAN_CODE GetNext(FindData *FindData);
-    size_t GetSpecPathLength() {return SpecPathLength;};
-    int GetErrors() {return Errors;};
+    size_t GetSpecPathLength() {return SpecPathLength;}
+    int GetErrors() {return Errors;}
     void SetErrArcName(const wchar *Name) {wcsncpyz(ErrArcName,Name,ASIZE(ErrArcName));}
     void SetCommandData(CommandData *Cmd) {ScanTree::Cmd=Cmd;}
     void SetErrDirList(StringList *List,Array<uint> *Lengths)

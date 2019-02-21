@@ -23,7 +23,7 @@ class StringList
     wchar* GetString();
     bool GetString(wchar **Str);
     void Rewind();
-    size_t ItemsCount() {return StringsCount;};
+    size_t ItemsCount() {return StringsCount;}
     size_t GetCharCount() {return StringData.Size();}
     bool Search(const wchar *Str,bool CaseSensitive);
     void SavePosition();

@@ -43,11 +43,11 @@ const char kCancelLabel[] = "_Cancel";
 const char kOpenLabel[] = "_Open";
 const char kSaveLabel[] = "_Save";
 #else
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 const char* const kCancelLabel = GTK_STOCK_CANCEL;
 const char* const kOpenLabel = GTK_STOCK_OPEN;
 const char* const kSaveLabel = GTK_STOCK_SAVE;
-G_GNUC_END_IGNORE_DEPRECATIONS;
+G_GNUC_END_IGNORE_DEPRECATIONS
 #endif
 
 // Makes sure that .jpg also shows .JPG.
