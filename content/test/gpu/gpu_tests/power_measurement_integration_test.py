@@ -30,6 +30,7 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 import logging
 import os
+import py_utils
 import sys
 import time
 
@@ -243,6 +244,18 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'bypass_ipg': options.bypass_ipg,
               'underlay': True,
               'fullscreen': False})
+      yield ('Video_720_MP4_Fullscreen',
+             _GPU_RELATIVE_PATH + 'power_video_bear_1280x720_mp4.html',
+             {'test_func': 'Video',
+              'bypass_ipg': options.bypass_ipg,
+              'underlay': False,
+              'fullscreen': True})
+      yield ('Video_720_MP4_Underlay_Fullscreen',
+             _GPU_RELATIVE_PATH + 'power_video_bear_1280x720_mp4.html',
+             {'test_func': 'Video',
+              'bypass_ipg': options.bypass_ipg,
+              'underlay': True,
+              'fullscreen': True})
 
   @classmethod
   def SetUpProcess(cls):
@@ -308,9 +321,14 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self.tab.action_runner.WaitForJavaScriptCondition(
       'domAutomationController._finished', timeout=30)
     if fullscreen:
-      # TODO(zmo): Figure out why the following doesn't work
       self.tab.action_runner.ClickElement(element_function=(
         'document.getElementById("fullscreen")'))
+      try:
+        self.tab.action_runner.WaitForJavaScriptCondition(
+          'isVideoInFullscreen()', timeout=5)
+      except py_utils.TimeoutException:
+        self.fail('requestFullscreen() fails to work, possibly because '
+                  '|user_gesture| is not set on ClickElement.')
     if underlay:
       self.tab.action_runner.ExecuteJavaScript('goUnderlay();')
 
