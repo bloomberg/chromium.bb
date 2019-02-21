@@ -555,6 +555,14 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
 
 void DirectManipulationHandler::SetWindowEventTarget(
     WindowEventTarget* event_target) {
+  if (!event_target && LoggingEnabled()) {
+    DebugLogging("Event target is null.", S_OK);
+    if (event_target_) {
+      DebugLogging("Previous event target is not null", S_OK);
+    } else {
+      DebugLogging("Previous event target is null", S_OK);
+    }
+  }
   event_target_ = event_target;
 }
 
