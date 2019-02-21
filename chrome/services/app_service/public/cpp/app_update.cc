@@ -16,6 +16,13 @@ void ClonePermissions(const std::vector<apps::mojom::PermissionPtr>& clone_from,
   }
 }
 
+void CloneStrings(const std::vector<std::string>& clone_from,
+                  std::vector<std::string>* clone_to) {
+  for (const auto& s : clone_from) {
+    clone_to->push_back(s);
+  }
+}
+
 }  // namespace
 
 namespace apps {
@@ -44,6 +51,13 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   }
   if (delta->short_name.has_value()) {
     state->short_name = delta->short_name;
+  }
+  if (!delta->additional_search_terms.empty()) {
+    DCHECK(state->permissions.empty() ||
+           (delta->permissions.size() == state->permissions.size()));
+    state->additional_search_terms.clear();
+    CloneStrings(delta->additional_search_terms,
+                 &state->additional_search_terms);
   }
   if (!delta->icon_key.is_null()) {
     state->icon_key = delta->icon_key.Clone();
@@ -145,6 +159,24 @@ const std::string& AppUpdate::ShortName() const {
 bool AppUpdate::ShortNameChanged() const {
   return delta_ && delta_->short_name.has_value() &&
          (!state_ || (delta_->short_name != state_->short_name));
+}
+
+std::vector<std::string> AppUpdate::AdditionalSearchTerms() const {
+  std::vector<std::string> additional_search_terms;
+
+  if (delta_ && !delta_->additional_search_terms.empty()) {
+    CloneStrings(delta_->additional_search_terms, &additional_search_terms);
+  } else if (state_ && !state_->additional_search_terms.empty()) {
+    CloneStrings(state_->additional_search_terms, &additional_search_terms);
+  }
+
+  return additional_search_terms;
+}
+
+bool AppUpdate::AdditionalSearchTermsChanged() const {
+  return delta_ && !delta_->additional_search_terms.empty() &&
+         (!state_ ||
+          (delta_->additional_search_terms != state_->additional_search_terms));
 }
 
 apps::mojom::IconKeyPtr AppUpdate::IconKey() const {
