@@ -18,13 +18,13 @@ chrome_proxy.exe: %(ChromeDir)s\
 #
 # Chrome version dir entries, sorted alphabetically.
 #
+api-ms-win-*.dll: %(VersionDir)s\
 chrome.dll: %(VersionDir)s\
 chrome_100_percent.pak: %(VersionDir)s\
 chrome_child.dll: %(VersionDir)s\
 chrome_elf.dll: %(VersionDir)s\
 chrome_watcher.dll: %(VersionDir)s\
 d3dcompiler_47.dll: %(VersionDir)s\
-d3dcompiler_old.dll: %(VersionDir)s\
 eventlog_provider.dll: %(VersionDir)s\
 ffmpeg.dll: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
@@ -37,6 +37,7 @@ nacl_irt_x86_64.nexe: %(VersionDir)s\
 natives_blob.bin: %(VersionDir)s\
 notification_helper.exe: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
+ucrtbase*.dll: %(VersionDir)s\
 v8_context_snapshot.bin: %(VersionDir)s\
 #
 # Sub directories living in the version dir
