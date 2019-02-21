@@ -3023,7 +3023,7 @@
   },
   {
     "name": "try-supported-channel-layouts",
-    // "owners": [ "your-team" ],
+    "owners": [ "dalecurtis" ],
     "expiry_milestone": 76
   },
   {
