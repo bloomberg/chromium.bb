@@ -181,10 +181,13 @@ void BrowserNonClientFrameViewAsh::Init() {
   UpdateProfileIcons();
 
   aura::Window* window = frame()->GetNativeWindow();
-  window->SetProperty(
-      aura::client::kAppType,
-      static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
-                                         : ash::AppType::BROWSER));
+  // For Mash, this property is set in BrowserFrameMash as an init property.
+  if (!features::IsUsingWindowService()) {
+    window->SetProperty(
+        aura::client::kAppType,
+        static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
+                                           : ash::AppType::BROWSER));
+  }
 
   window_observer_.Add(GetFrameWindow());
 
