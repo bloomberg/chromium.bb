@@ -2157,7 +2157,9 @@ class Flattener(object):
     for key, value in dep._vars.iteritems():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
-      assert key not in self._vars or self._vars[key][1] == value
+      assert key not in self._vars or self._vars[key][1] == value, (
+        "dep:%s key:%s value:%s != %s" % (
+          dep.name, key, value, self._vars[key][1]))
       self._vars[key] = (hierarchy, value)
     # Override explicit custom variables.
     for key, value in dep.custom_vars.iteritems():
