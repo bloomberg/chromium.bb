@@ -24,12 +24,14 @@ using content::BrowserThread;
 // static
 COLORREF ColorChooserDialog::g_custom_colors[16];
 
-ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
-                                       SkColor initial_color,
-                                       gfx::NativeWindow owning_window)
+ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener)
     : listener_(listener) {
   DCHECK(listener_);
   CopyCustomColors(g_custom_colors, custom_colors_);
+}
+
+void ColorChooserDialog::Open(SkColor initial_color,
+                              gfx::NativeWindow owning_window) {
   HWND owning_hwnd = views::HWNDForNativeWindow(owning_window);
 
   std::unique_ptr<RunState> run_state = BeginRun(owning_hwnd);
