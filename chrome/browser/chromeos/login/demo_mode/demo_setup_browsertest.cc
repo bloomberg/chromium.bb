@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
@@ -47,8 +48,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::test::DemoModeSetupResult;
-using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
-using chromeos::test::MockDemoModeOnlineEnrollmentHelperCreator;
 using chromeos::test::SetupDummyOfflinePolicyDir;
 
 namespace chromeos {
@@ -327,9 +326,11 @@ class DemoSetupTest : public LoginManagerTest {
 
   void SkipToErrorDialog() {
     // Simulate online setup error.
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &MockDemoModeOnlineEnrollmentHelperCreator<
-            DemoModeSetupResult::ERROR_DEFAULT>);
+    enrollment_helper_.ExpectEnrollmentMode(
+        policy::EnrollmentConfig::MODE_ATTESTATION);
+    enrollment_helper_.ExpectAttestationEnrollmentError(
+        policy::EnrollmentStatus::ForRegistrationError(
+            policy::DeviceManagementStatus::DM_STATUS_TEMPORARY_UNAVAILABLE));
 
     // Enrollment type is set in the part of the flow that is skipped, That is
     // why we need to set it here.
@@ -431,6 +432,9 @@ class DemoSetupTest : public LoginManagerTest {
     test::ExecuteOobeJS(query);
   }
 
+ protected:
+  test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
+
  private:
   void DisableConfirmationDialogAnimations() {
     test::ExecuteOobeJS(
@@ -504,8 +508,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, DoNotInvokeWithNonConsecutiveTaps) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   // Simulate successful online setup.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
   SimulateNetworkConnected();
 
   InvokeDemoModeWithAccelerator();
@@ -554,9 +559,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_DEFAULT>);
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentError(
+      policy::EnrollmentStatus::ForRegistrationError(
+          policy::DeviceManagementStatus::DM_STATUS_TEMPORARY_UNAVAILABLE));
   SimulateNetworkConnected();
 
   InvokeDemoModeWithAccelerator();
@@ -618,9 +625,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
   // Simulate online setup failure that requires powerwash.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentError(
+      policy::EnrollmentStatus::ForLockError(
+          chromeos::InstallAttributes::LOCK_ALREADY_LOCKED));
   SimulateNetworkConnected();
 
   InvokeDemoModeWithAccelerator();
@@ -681,8 +690,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
   // Simulate failure to load demo resources CrOS component.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  // There is no enrollment attempt, as process fails earlier.
+  enrollment_helper_.ExpectNoEnrollment();
   SimulateNetworkConnected();
 
   InvokeDemoModeWithAccelerator();
@@ -762,9 +771,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineDemoModeUnavailable) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectOfflineEnrollmentSuccess();
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -816,9 +823,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
   // Simulate offline setup failure.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_DEFAULT>);
+  enrollment_helper_.ExpectOfflineEnrollmentError(
+      policy::EnrollmentStatus::ForStatus(
+          policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED));
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -883,9 +890,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
   // Simulate offline setup failure.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
+  enrollment_helper_.ExpectOfflineEnrollmentError(
+      policy::EnrollmentStatus::ForLockError(
+          chromeos::InstallAttributes::LOCK_READBACK_ERROR));
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -1023,9 +1030,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnErrorScreen) {
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
   SkipToErrorDialog();
 
+  // We need to create another mock after showing error dialog.
+  enrollment_helper_.ResetMock();
   // Simulate successful online setup on retry.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
   ClickScreenDialogButtonWithSelector(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                                       DemoSetupDialog::kError, "#retryButton",
                                       JSExecution::kAsync);
@@ -1110,9 +1120,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
   // "block_devmode" flags do not exist in VPD.
 
   // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectOfflineEnrollmentSuccess();
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -1147,9 +1155,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
   statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "0");
 
   // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectOfflineEnrollmentSuccess();
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -1185,9 +1191,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, LegacyDemoModeDevice) {
   statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "0");
 
   // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  enrollment_helper_.ExpectOfflineEnrollmentSuccess();
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -1220,10 +1224,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
   statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey, "1");
   statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "1");
 
-  // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  // Expect no enrollment to take place due to error.
+  enrollment_helper_.ExpectNoEnrollment();
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();

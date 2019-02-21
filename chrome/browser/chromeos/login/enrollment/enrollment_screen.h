@@ -33,6 +33,10 @@ namespace chromeos {
 class BaseScreenDelegate;
 class ScreenManager;
 
+namespace test {
+class EnrollmentHelperMixin;
+}
+
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
 class EnrollmentScreen
@@ -92,28 +96,12 @@ class EnrollmentScreen
   friend class MultiLicenseEnrollmentScreenUnitTest;
   friend class ZeroTouchEnrollmentScreenUnitTest;
   friend class AutomaticReenrollmentScreenUnitTest;
-  friend class EnterpriseEnrollmentConfigurationTest;
+  friend class test::EnrollmentHelperMixin;
 
   FRIEND_TEST_ALL_PREFIXES(AttestationAuthEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(ForcedAttestationAuthEnrollmentScreenTest,
                            TestCancel);
   FRIEND_TEST_ALL_PREFIXES(MultiAuthEnrollmentScreenTest, TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
-                           TestProperPageGetsLoadedOnEnrollmentSuccess);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
-                           TestAttributePromptPageGetsLoaded);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
-                           TestAuthCodeGetsProperlyReceivedFromGaia);
-  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
-                           TestActiveDirectoryEnrollment_Success);
-  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
-                           TestActiveDirectoryEnrollment_DistinguishedName);
-  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
-                           TestActiveDirectoryEnrollment_UIErrors);
-  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
-                           TestActiveDirectoryEnrollment_ErrorCard);
-  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
-                           TestActiveDirectoryEnrollment_Streamline);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, Retry);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, TestSuccess);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest,

@@ -31,14 +31,10 @@ class EnterpriseEnrollmentHelperImpl
       public policy::DeviceAccountInitializer::Delegate,
       public policy::DeviceCloudPolicyManagerChromeOS::Observer {
  public:
-  EnterpriseEnrollmentHelperImpl(
-      EnrollmentStatusConsumer* status_consumer,
-      ActiveDirectoryJoinDelegate* ad_join_delegate,
-      const policy::EnrollmentConfig& enrollment_config,
-      const std::string& enrolling_user_domain);
+  EnterpriseEnrollmentHelperImpl();
   ~EnterpriseEnrollmentHelperImpl() override;
 
-  // Overridden from EnterpriseEnrollmentHelper:
+  // EnterpriseEnrollmentHelper:
   void EnrollUsingAuthCode(const std::string& auth_code,
                            bool fetch_additional_token) override;
   void EnrollUsingToken(const std::string& token) override;
@@ -46,11 +42,14 @@ class EnterpriseEnrollmentHelperImpl
   void EnrollUsingAttestation() override;
   void EnrollForOfflineDemo() override;
   void RestoreAfterRollback() override;
-  void ClearAuth(const base::Closure& callback) override;
+  void ClearAuth(base::OnceClosure callback) override;
   void UseLicenseType(policy::LicenseType type) override;
   void GetDeviceAttributeUpdatePermission() override;
   void UpdateDeviceAttributes(const std::string& asset_id,
                               const std::string& location) override;
+  void Setup(ActiveDirectoryJoinDelegate* ad_join_delegate,
+             const policy::EnrollmentConfig& enrollment_config,
+             const std::string& enrolling_user_domain) override;
 
   // DeviceCloudPolicyManagerChromeOS::Observer:
   void OnDeviceCloudPolicyManagerConnected() override;
@@ -101,13 +100,13 @@ class EnterpriseEnrollmentHelperImpl
 
   // Called by ProfileHelper when a signin profile clearance has finished.
   // |callback| is a callback, that was passed to ClearAuth() before.
-  void OnSigninProfileCleared(const base::Closure& callback);
+  void OnSigninProfileCleared(base::OnceClosure callback);
 
   // Called when CloudPolicyClient exists, so device account can be initialized.
   void RestoreAfterRollbackInitialized();
 
-  const policy::EnrollmentConfig enrollment_config_;
-  const std::string enrolling_user_domain_;
+  policy::EnrollmentConfig enrollment_config_;
+  std::string enrolling_user_domain_;
   bool fetch_additional_token_;
 
   std::string additional_token_;
@@ -125,7 +124,7 @@ class EnterpriseEnrollmentHelperImpl
   std::unique_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
   std::unique_ptr<policy::DeviceAccountInitializer> device_account_initializer_;
 
-  base::WeakPtrFactory<EnterpriseEnrollmentHelperImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<EnterpriseEnrollmentHelperImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentHelperImpl);
 };

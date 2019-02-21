@@ -94,19 +94,16 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
   // appropriate expectations for testing with the Google Mock framework.
   // The template parameter should_enroll indicates whether or not
   // the EnterpriseEnrollmentHelper should be mocked to successfully enroll.
-  template <AttestationEnrollmentStatus status>
-  static EnterpriseEnrollmentHelper* MockEnrollmentHelperCreator(
-      EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
-      const policy::EnrollmentConfig& enrollment_config,
-      const std::string& enrolling_user_domain) {
-    EnterpriseEnrollmentHelperMock* mock =
-        new EnterpriseEnrollmentHelperMock(status_consumer);
+  void SetupMockEnrollmentHelper(AttestationEnrollmentStatus status) {
+    std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
+        std::make_unique<EnterpriseEnrollmentHelperMock>();
+    EnterpriseEnrollmentHelperMock* mock_ptr = mock.get();
     if (status == SUCCESS) {
       // Define behavior of EnrollUsingAttestation to successfully enroll.
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
-          .WillRepeatedly(Invoke([mock]() {
-            static_cast<EnrollmentScreen*>(mock->status_consumer())
+          .WillRepeatedly(Invoke([mock_ptr]() {
+            static_cast<EnrollmentScreen*>(mock_ptr->status_consumer())
                 ->ShowEnrollmentStatusOnSuccess();
           }));
     } else {
@@ -120,16 +117,17 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
                         DM_STATUS_TEMPORARY_UNAVAILABLE);
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
-          .WillRepeatedly(Invoke([mock, enrollment_status]() {
-            mock->status_consumer()->OnEnrollmentError(enrollment_status);
+          .WillRepeatedly(Invoke([mock_ptr, enrollment_status]() {
+            mock_ptr->status_consumer()->OnEnrollmentError(enrollment_status);
           }));
     }
     // Define behavior of ClearAuth to only run the callback it is given.
     EXPECT_CALL(*mock, ClearAuth(_))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(
-            [](const base::RepeatingClosure& callback) { callback.Run(); }));
-    return mock;
+            [](base::OnceClosure callback) { std::move(callback).Run(); }));
+
+    EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
   }
 
   void SetUpEnrollmentScreen() override {
@@ -159,9 +157,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
   void TestRetry() {
     // Define behavior of EnterpriseEnrollmentHelperMock to always fail
     // enrollment.
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
-            DMSERVER_ERROR>);
+    SetupMockEnrollmentHelper(DMSERVER_ERROR);
 
     SetUpEnrollmentScreen();
 
@@ -180,9 +176,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
 
   void TestFinishEnrollmentFlow() {
     // Define behavior of EnterpriseEnrollmentHelperMock to successfully enroll.
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
-            SUCCESS>);
+    SetupMockEnrollmentHelper(SUCCESS);
 
     SetUpEnrollmentScreen();
 
@@ -201,9 +195,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
   void TestFallback() {
     // Define behavior of EnterpriseEnrollmentHelperMock to fail
     // attestation-based enrollment.
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
-            DEVICE_NOT_SETUP_FOR_ZERO_TOUCH>);
+    SetupMockEnrollmentHelper(DEVICE_NOT_SETUP_FOR_ZERO_TOUCH);
 
     SetUpEnrollmentScreenForFallback();
 
@@ -233,9 +225,7 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, Retry) {
 TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryOnTopOfUser) {
   // Define behavior of EnterpriseEnrollmentHelperMock to always fail
   // enrollment.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
-          DMSERVER_ERROR>);
+  SetupMockEnrollmentHelper(DMSERVER_ERROR);
 
   SetUpEnrollmentScreen();
 
@@ -261,8 +251,7 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryOnTopOfUser) {
 
 TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryAfterSuccess) {
   // Define behavior of EnterpriseEnrollmentHelperMock to successfully enroll.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<SUCCESS>);
+  SetupMockEnrollmentHelper(SUCCESS);
 
   SetUpEnrollmentScreen();
 
@@ -329,32 +318,25 @@ class MultiLicenseEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
     EnrollmentScreenUnitTest::SetUpEnrollmentScreen();
   }
 
-  static EnterpriseEnrollmentHelper* MockEnrollmentHelperCreator(
-      EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
-      const policy::EnrollmentConfig& enrollment_config,
-      const std::string& enrolling_user_domain) {
-    EnterpriseEnrollmentHelperMock* mock =
-        new EnterpriseEnrollmentHelperMock(status_consumer);
-    EXPECT_CALL(*mock, EnrollUsingAuthCode(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(Invoke([mock](const std::string&, bool) {
-          EnrollmentLicenseMap licenses;
-          static_cast<EnrollmentScreen*>(mock->status_consumer())
-              ->OnMultipleLicensesAvailable(licenses);
-        }));
-    EXPECT_CALL(*mock, UseLicenseType(::policy::LicenseType::ANNUAL)).Times(1);
-
-    return mock;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MultiLicenseEnrollmentScreenUnitTest);
 };
 
 // Sign in and check that selected license type is propagated correctly.
 TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MultiLicenseEnrollmentScreenUnitTest::MockEnrollmentHelperCreator);
+  std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
+      std::make_unique<EnterpriseEnrollmentHelperMock>();
+  auto* mock_ref = mock.get();
+  EXPECT_CALL(*mock, EnrollUsingAuthCode(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke([mock_ref](const std::string&, bool) {
+        EnrollmentLicenseMap licenses;
+        static_cast<EnrollmentScreen*>(mock_ref->status_consumer())
+            ->OnMultipleLicensesAvailable(licenses);
+      }));
+  EXPECT_CALL(*mock, UseLicenseType(::policy::LicenseType::ANNUAL)).Times(1);
+
+  EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
 
   EXPECT_CALL(*GetMockScreenView(), SetEnrollmentConfig(_, _)).Times(1);
 

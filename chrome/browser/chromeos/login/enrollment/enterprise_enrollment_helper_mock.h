@@ -16,12 +16,15 @@ namespace chromeos {
 // Mocks out EnterpriseEnrollmentHelper.
 class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
  public:
-  explicit EnterpriseEnrollmentHelperMock(
-      EnrollmentStatusConsumer* status_consumer);
+  EnterpriseEnrollmentHelperMock();
   ~EnterpriseEnrollmentHelperMock() override;
 
-  EnrollmentStatusConsumer* status_consumer();
+  EnrollmentStatusConsumer* status_consumer() const;
 
+  MOCK_METHOD3(Setup,
+               void(ActiveDirectoryJoinDelegate* ad_join_delegate,
+                    const policy::EnrollmentConfig& enrollment_config,
+                    const std::string& enrolling_user_domain));
   MOCK_METHOD2(EnrollUsingAuthCode,
                void(const std::string& auth_code, bool fetch_additional_token));
   MOCK_METHOD1(EnrollUsingToken, void(const std::string& token));
@@ -33,7 +36,7 @@ class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
   MOCK_METHOD0(GetDeviceAttributeUpdatePermission, void());
   MOCK_METHOD2(UpdateDeviceAttributes,
                void(const std::string& asset_id, const std::string& location));
-  MOCK_METHOD1(ClearAuth, void(const base::Closure& callback));
+  MOCK_METHOD1(ClearAuth, void(base::OnceClosure callback));
 };
 
 }  // namespace chromeos

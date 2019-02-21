@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
 #include "chrome/browser/chromeos/login/test/hid_controller_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
@@ -147,74 +148,13 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   explicit EnterpriseEnrollmentTestBase(bool should_initialize_webui)
       : LoginManagerTest(true /*should_launch_browser*/,
                          should_initialize_webui) {
-    enrollment_setup_functions_.clear();
-
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        [](EnterpriseEnrollmentHelper::EnrollmentStatusConsumer*
-               status_consumer,
-           const policy::EnrollmentConfig& enrollment_config,
-           const std::string& enrolling_user_domain) {
-
-          auto* mock = new EnterpriseEnrollmentHelperMock(status_consumer);
-          for (OnSetupEnrollmentHelper fn : enrollment_setup_functions_)
-            fn(mock);
-          return (EnterpriseEnrollmentHelper*)mock;
-        });
   }
 
-  using OnSetupEnrollmentHelper =
-      std::function<void(EnterpriseEnrollmentHelperMock*)>;
-
-  // The given function will be executed when the next enrollment helper is
-  // created.
-  void AddEnrollmentSetupFunction(OnSetupEnrollmentHelper on_setup) {
-    enrollment_setup_functions_.push_back(on_setup);
-  }
-
-  // Set up expectations for enrollment credentials.
-  void ExpectEnrollmentCredentials() {
-    AddEnrollmentSetupFunction(
-        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
-          EXPECT_CALL(*enrollment_helper,
-                      EnrollUsingAuthCode("test_auth_code", _));
-
-          ON_CALL(*enrollment_helper, ClearAuth(_))
-              .WillByDefault(Invoke(
-                  [](const base::Closure& callback) { callback.Run(); }));
-        });
-  }
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
-    enrollment_screen()->OnLoginDone("testuser@test.com", "test_auth_code");
-  }
-
-  void DisableAttributePromptUpdate() {
-    AddEnrollmentSetupFunction(
-        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
-          EXPECT_CALL(*enrollment_helper, GetDeviceAttributeUpdatePermission())
-              .WillOnce(InvokeWithoutArgs([enrollment_helper]() {
-                enrollment_helper->status_consumer()
-                    ->OnDeviceAttributeUpdatePermission(false);
-              }));
-        });
-  }
-
-  // Forces an attribute prompt to display.
-  void ExpectAttributePromptUpdate() {
-    AddEnrollmentSetupFunction(
-        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
-          // Causes the attribute-prompt flow to activate.
-          ON_CALL(*enrollment_helper, GetDeviceAttributeUpdatePermission())
-              .WillByDefault(InvokeWithoutArgs([enrollment_helper]() {
-                enrollment_helper->status_consumer()
-                    ->OnDeviceAttributeUpdatePermission(true);
-              }));
-
-          // Ensures we receive the updates attributes.
-          EXPECT_CALL(*enrollment_helper,
-                      UpdateDeviceAttributes("asset_id", "location"));
-        });
+    enrollment_screen()->OnLoginDone(
+        "testuser@test.com", test::EnrollmentHelperMixin::kTestAuthCode);
   }
 
   // Fills out the UI with device attribute information and submits it.
@@ -268,14 +208,12 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
         WizardController::default_controller()->screen_manager());
   }
 
- private:
-  static std::vector<OnSetupEnrollmentHelper> enrollment_setup_functions_;
+ protected:
+  test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTestBase);
 };
-
-std::vector<EnterpriseEnrollmentTestBase::OnSetupEnrollmentHelper>
-    EnterpriseEnrollmentTestBase::enrollment_setup_functions_;
 
 class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
  public:
@@ -488,28 +426,6 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     mock_auth_policy_client()->set_expected_request(std::move(request));
   }
 
-  // Forces the Active Directory domain join flow during enterprise enrollment.
-  void SetupActiveDirectoryJoin(const std::string& expected_domain,
-                                const std::string& domain_join_config) {
-    AddEnrollmentSetupFunction(
-        [this, expected_domain, domain_join_config](
-            EnterpriseEnrollmentHelperMock* enrollment_helper) {
-          // Causes the attribute-prompt flow to activate.
-          EXPECT_CALL(*enrollment_helper,
-                      EnrollUsingAuthCode("test_auth_code", _))
-              .WillOnce(InvokeWithoutArgs(
-                  [this, expected_domain, domain_join_config]() {
-                    this->enrollment_screen()->JoinDomain(
-                        kDMToken, domain_join_config,
-                        base::BindOnce(
-                            [](const std::string& expected_domain,
-                               const std::string& domain) {
-                              ASSERT_EQ(expected_domain, domain);
-                            },
-                            expected_domain));
-                  }));
-        });
-  }
 
   MockAuthPolicyClient* mock_auth_policy_client() {
     return static_cast<MockAuthPolicyClient*>(
@@ -675,24 +591,6 @@ class EnterpriseEnrollmentConfigurationTest
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
-  void TearDownOnMainThread() override {
-    enrollment_screen()->enrollment_helper_.reset();
-    EnterpriseEnrollmentTestBase::TearDownOnMainThread();
-  }
-
-  // Set up expectations for token enrollment.
-  void ExpectTokenEnrollment() {
-    AddEnrollmentSetupFunction(
-        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
-          EXPECT_CALL(*enrollment_helper,
-                      EnrollUsingEnrollmentToken(
-                          "00000000-1111-2222-3333-444444444444"))
-              .WillOnce(InvokeWithoutArgs([enrollment_helper]() {
-                enrollment_helper->status_consumer()->OnDeviceEnrolled();
-              }));
-        });
-  }
-
  protected:
   // Owned by DBusThreadManagerSetter
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
@@ -732,12 +630,12 @@ class EnterpriseEnrollmentConfigurationTestNoHID
 TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
                       TestAuthCodeGetsProperlyReceivedFromGaia) {
   ShowEnrollmentScreen();
-  ExpectEnrollmentCredentials();
-  SubmitEnrollmentCredentials();
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_MANUAL);
+  enrollment_helper_.ExpectEnrollmentCredentials();
+  enrollment_helper_.SetupClearAuth();
 
-  // We need to reset enrollment_screen->enrollment_helper_, otherwise we will
-  // get some errors on shutdown.
-  enrollment_screen()->enrollment_helper_.reset();
+  SubmitEnrollmentCredentials();
 }
 
 // Shows the enrollment screen and simulates an enrollment failure. Verifies
@@ -762,16 +660,15 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
                       TestProperPageGetsLoadedOnEnrollmentSuccess) {
   ShowEnrollmentScreen();
-  DisableAttributePromptUpdate();
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_MANUAL);
+  enrollment_helper_.DisableAttributePromptUpdate();
   SubmitEnrollmentCredentials();
   CompleteEnrollment();
 
   // Verify that the success page is displayed.
   EXPECT_TRUE(IsStepDisplayed("success"));
   EXPECT_FALSE(IsStepDisplayed("error"));
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to request an
@@ -782,7 +679,9 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
 TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
                       TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
-  ExpectAttributePromptUpdate();
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_MANUAL);
+  enrollment_helper_.ExpectAttributePromptUpdate("asset_id", "location");
   SubmitEnrollmentCredentials();
   CompleteEnrollment();
 
@@ -792,9 +691,6 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
   EXPECT_FALSE(IsStepDisplayed("error"));
 
   SubmitAttributePromptUpdate();
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active
@@ -805,8 +701,9 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
 TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                       TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
-  DisableAttributePromptUpdate();
-  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
+  enrollment_helper_.DisableAttributePromptUpdate();
+  enrollment_helper_.SetupActiveDirectoryJoin(
+      enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -829,9 +726,6 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
   // Verify that the success page is displayed.
   EXPECT_TRUE(IsStepDisplayed("success"));
   EXPECT_FALSE(IsStepDisplayed("error"));
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Verifies that the distinguished name specified on the Active Directory join
@@ -840,8 +734,10 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                       TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
-  DisableAttributePromptUpdate();
-  SetupActiveDirectoryJoin(kAdMachineDomain, std::string());
+  enrollment_helper_.DisableAttributePromptUpdate();
+  enrollment_helper_.SetupActiveDirectoryJoin(
+      enrollment_screen(), kAdMachineDomain, std::string(), kDMToken);
+
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -867,9 +763,6 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
   // Verify that the success page is displayed.
   EXPECT_TRUE(IsStepDisplayed("success"));
   EXPECT_FALSE(IsStepDisplayed("error"));
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active
@@ -880,7 +773,8 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                       TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
-  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
+  enrollment_helper_.SetupActiveDirectoryJoin(
+      enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -919,9 +813,6 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
   test::OobeJS().ExpectFalse(std::string(kAdMachineNameInput) + ".invalid");
   test::OobeJS().ExpectTrue(std::string(kAdUsernameInput) + ".invalid");
   test::OobeJS().ExpectFalse(std::string(kAdPasswordInput) + ".invalid");
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Check that correct error card is shown (Active Directory one). Also checks
@@ -930,7 +821,8 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                       TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
-  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
+  enrollment_helper_.SetupActiveDirectoryJoin(
+      enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -946,9 +838,6 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
   EXPECT_TRUE(IsStepDisplayed("active-directory-join-error"));
   ClickRetryOnErrorScreen();
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-
-  // We have to remove the enrollment_helper before the dtor gets called.
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Check that configuration for the streamline Active Directory domain join
@@ -959,7 +848,8 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));
-  SetupActiveDirectoryJoin(kAdUserDomain, binary_config);
+  enrollment_helper_.SetupActiveDirectoryJoin(
+      enrollment_screen(), kAdUserDomain, binary_config, kDMToken);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -995,7 +885,6 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 
   // Go through configuration.
   CheckPossibleConfiguration(kAdDomainJoinUnlockedConfig);
-  enrollment_screen()->enrollment_helper_.reset();
 }
 
 // Check that configuration lets correctly pass Welcome screen.
@@ -1141,8 +1030,10 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
 // screen.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestEnrollUsingToken) {
-  ExpectTokenEnrollment();
-  DisableAttributePromptUpdate();
+  enrollment_helper_.DisableAttributePromptUpdate();
+  // Token from configuration file:
+  enrollment_helper_.ExpectTokenEnrollmentSuccess(
+      "00000000-1111-2222-3333-444444444444");
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   ExecutePendingJavaScript();

@@ -72,16 +72,7 @@ void TokenRevoker::OnOAuth2RevokeTokenCompleted(
 
 namespace chromeos {
 
-EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl(
-    EnrollmentStatusConsumer* status_consumer,
-    ActiveDirectoryJoinDelegate* ad_join_delegate,
-    const policy::EnrollmentConfig& enrollment_config,
-    const std::string& enrolling_user_domain)
-    : EnterpriseEnrollmentHelper(status_consumer),
-      enrollment_config_(enrollment_config),
-      enrolling_user_domain_(enrolling_user_domain),
-      ad_join_delegate_(ad_join_delegate),
-      weak_ptr_factory_(this) {
+EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl() {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
   DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
@@ -93,6 +84,15 @@ EnterpriseEnrollmentHelperImpl::~EnterpriseEnrollmentHelperImpl() {
       g_browser_process->IsShuttingDown() ||
       oauth_status_ == OAUTH_NOT_STARTED ||
       (oauth_status_ == OAUTH_FINISHED && (success_ || oauth_data_cleared_)));
+}
+
+void EnterpriseEnrollmentHelperImpl::Setup(
+    ActiveDirectoryJoinDelegate* ad_join_delegate,
+    const policy::EnrollmentConfig& enrollment_config,
+    const std::string& enrolling_user_domain) {
+  ad_join_delegate_ = ad_join_delegate;
+  enrollment_config_ = enrollment_config;
+  enrolling_user_domain_ = enrolling_user_domain;
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
@@ -206,7 +206,7 @@ void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
       FROM_HERE, device_account_initializer_.release());
 }
 
-void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
+void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {
   if (oauth_status_ != OAUTH_NOT_STARTED) {
     // Do not revoke the additional token if enrollment has finished
     // successfully.
@@ -228,8 +228,9 @@ void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
   }
   auth_data_.reset();
   chromeos::ProfileHelper::Get()->ClearSigninProfile(
-      base::Bind(&EnterpriseEnrollmentHelperImpl::OnSigninProfileCleared,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &EnterpriseEnrollmentHelperImpl::OnSigninProfileCleared,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 bool EnterpriseEnrollmentHelperImpl::ShouldCheckLicenseType() const {
@@ -601,9 +602,9 @@ void EnterpriseEnrollmentHelperImpl::UMA(policy::MetricEnrollment sample) {
 }
 
 void EnterpriseEnrollmentHelperImpl::OnSigninProfileCleared(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   oauth_data_cleared_ = true;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace chromeos
