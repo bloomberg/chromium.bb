@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -127,7 +127,10 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
                 .SetThreadNameForTest("io thread"))),
         worker_thread_(Platform::Current()->CreateThread(
             ThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadNameForTest("worker thread"))) {}
+                .SetThreadNameForTest("worker thread"))),
+        worker_waiter_(std::make_unique<base::WaitableEvent>(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)) {}
 
  protected:
   using RawScriptData = ThreadSafeScriptContainer::RawScriptData;
@@ -143,25 +146,25 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
             io_thread_->GetTaskRunner());
   }
 
-  WaitableEvent* IsScriptInstalledOnWorkerThread(const String& script_url,
-                                                 bool* out_installed) {
+  base::WaitableEvent* IsScriptInstalledOnWorkerThread(const String& script_url,
+                                                       bool* out_installed) {
     PostCrossThreadTask(
         *worker_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](ServiceWorkerInstalledScriptsManager* installed_scripts_manager,
                const String& script_url, bool* out_installed,
-               WaitableEvent* waiter) {
+               base::WaitableEvent* waiter) {
               *out_installed = installed_scripts_manager->IsScriptInstalled(
                   KURL(script_url));
               waiter->Signal();
             },
             CrossThreadUnretained(installed_scripts_manager_.get()), script_url,
             CrossThreadUnretained(out_installed),
-            CrossThreadUnretained(&worker_waiter_)));
-    return &worker_waiter_;
+            CrossThreadUnretained(worker_waiter_.get())));
+    return worker_waiter_.get();
   }
 
-  WaitableEvent* GetRawScriptDataOnWorkerThread(
+  base::WaitableEvent* GetRawScriptDataOnWorkerThread(
       const String& script_url,
       std::unique_ptr<RawScriptData>* out_data) {
     PostCrossThreadTask(
@@ -170,14 +173,14 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
             &ServiceWorkerInstalledScriptsManagerTest::CallGetRawScriptData,
             CrossThreadUnretained(this), script_url,
             CrossThreadUnretained(out_data),
-            CrossThreadUnretained(&worker_waiter_)));
-    return &worker_waiter_;
+            CrossThreadUnretained(worker_waiter_.get())));
+    return worker_waiter_.get();
   }
 
  private:
   void CallGetRawScriptData(const String& script_url,
                             std::unique_ptr<RawScriptData>* out_data,
-                            WaitableEvent* waiter) {
+                            base::WaitableEvent* waiter) {
     *out_data = installed_scripts_manager_->GetRawScriptData(KURL(script_url));
     waiter->Signal();
   }
@@ -185,7 +188,7 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
   std::unique_ptr<Thread> io_thread_;
   std::unique_ptr<Thread> worker_thread_;
 
-  WaitableEvent worker_waiter_;
+  std::unique_ptr<base::WaitableEvent> worker_waiter_;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
@@ -224,7 +227,7 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     const HashMap<String, String> kScriptInfoHeaders(
         {{"Cache-Control", "no-cache"}, {"User-Agent", "Chrome"}});
 
-    WaitableEvent* get_raw_script_data_waiter =
+    base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script. +1 for null terminator.
@@ -266,7 +269,7 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
         {{"Connection", "keep-alive"}, {"Content-Length", "512"}});
 
     // Request the same script again.
-    WaitableEvent* get_raw_script_data_waiter =
+    base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // It should call a Mojo IPC "RequestInstalledScript()" to the browser.
@@ -314,7 +317,7 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionBody) {
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is a script body.";
     const std::string kExpectedMetaData = "This is a meta data.";
-    WaitableEvent* get_raw_script_data_waiter =
+    base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
@@ -359,7 +362,7 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionMetaData) {
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is a script body.";
     const std::string kExpectedMetaData = "This is a meta data.";
-    WaitableEvent* get_raw_script_data_waiter =
+    base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
@@ -402,7 +405,7 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionManager) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    WaitableEvent* get_raw_script_data_waiter =
+    base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Reset the Mojo connection before sending the script.

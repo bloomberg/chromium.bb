@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/synchronization/waitable_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 namespace {
@@ -91,8 +91,8 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   void WaitUntilThreadTermination() { termination_event_.Wait(); }
 
  private:
-  WaitableEvent script_evaluated_event_;
-  WaitableEvent termination_event_;
+  base::WaitableEvent script_evaluated_event_;
+  base::WaitableEvent termination_event_;
 };
 
 class MockServiceWorkerInstalledScriptsManager
