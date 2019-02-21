@@ -2690,7 +2690,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
   EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
+#if defined(OS_LINUX)
+#define MAYBE_ExtensionAllowedTypes DISABLED_ExtensionAllowedTypes
+#else
+#define MAYBE_ExtensionAllowedTypes ExtensionAllowedTypes
+#endif
+// TODO(crbug.com/934297) The test is flaky (crashing) on Linux.
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionAllowedTypes) {
   // Verifies that extensions are blocked if policy specifies an allowed types
   // list and the extension's type is not on that list.
   extensions::ExtensionService* service = extension_service();
