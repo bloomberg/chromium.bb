@@ -92,7 +92,6 @@ public class WebXrVrDeviceTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=WebXROrientationSensorDevice")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @Restriction(RESTRICTION_TYPE_SVR)
     public void testGvrlessMagicWindowCapabilities() throws InterruptedException {
@@ -139,8 +138,7 @@ public class WebXrVrDeviceTest {
     @MediumTest
     @CommandLineFlags
             .Remove({"enable-webvr"})
-            @CommandLineFlags.
-            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             public void testForNullPosesInInlineVrPostImmersive() throws InterruptedException {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
@@ -175,8 +173,7 @@ public class WebXrVrDeviceTest {
     @MediumTest
     @CommandLineFlags
             .Remove({"enable-webvr"})
-            @CommandLineFlags.
-            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             public void testForNullPosesInInlineVrFromNfc() throws InterruptedException {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
@@ -209,8 +206,7 @@ public class WebXrVrDeviceTest {
     @MediumTest
     @CommandLineFlags
             .Remove({"enable-webvr"})
-            @CommandLineFlags.
-            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             public void testForNullPosesInInlineVrOnNavigation() throws InterruptedException {
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());

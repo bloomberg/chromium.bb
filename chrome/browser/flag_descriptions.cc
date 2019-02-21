@@ -2122,12 +2122,6 @@ const char kWebXrHitTestName[] = "WebXR Hit Test";
 const char kWebXrHitTestDescription[] =
     "Enables access to raycasting against estimated XR scene geometry.";
 
-const char kWebXrOrientationSensorDeviceName[] =
-    "WebXR orientation sensor device";
-const char kWebXrOrientationSensorDeviceDescription[] =
-    "When no VR platform device is available, expose a non-presenting device "
-    "based on the device's orientation sensors, if available.";
-
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";
@@ -3587,6 +3581,10 @@ const char kDcheckIsFatalDescription[] =
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #if BUILDFLAG(ENABLE_VR)
+
+const char kWebXrOrientationSensorDeviceName[] = "Orientation sensors for XR";
+const char kWebXrOrientationSensorDeviceDescription[] =
+    "Allow use of orientation sensors for XR if present";
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 const char kOculusVRName[] = "Oculus hardware support";
