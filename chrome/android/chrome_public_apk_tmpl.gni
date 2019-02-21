@@ -121,7 +121,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ]
 
     # Use zh-TW strings for zh-HK (https://crbug.com/780847).
-    support_zh_hk = true
+    if (!defined(support_zh_hk)) {
+      support_zh_hk = true
+    }
 
     optimize_resources = true
 
