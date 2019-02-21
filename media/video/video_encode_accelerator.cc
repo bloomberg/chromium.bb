@@ -84,6 +84,16 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
       max_framerate_denominator(0) {
 }
 
+VideoEncodeAccelerator::SupportedProfile::SupportedProfile(
+    VideoCodecProfile profile,
+    const gfx::Size& max_resolution,
+    uint32_t max_framerate_numerator,
+    uint32_t max_framerate_denominator)
+    : profile(profile),
+      max_resolution(max_resolution),
+      max_framerate_numerator(max_framerate_numerator),
+      max_framerate_denominator(max_framerate_denominator) {}
+
 VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() = default;
 
 void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {

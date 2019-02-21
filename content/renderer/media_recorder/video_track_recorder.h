@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +16,7 @@
 #include "content/public/common/buildflags.h"
 #include "content/renderer/media_stream_video_sink.h"
 #include "media/muxers/webm_muxer.h"
+#include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -185,10 +187,47 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
     DISALLOW_COPY_AND_ASSIGN(Encoder);
   };
 
+  // Class to encapsulate the enumeration of CodecIds/VideoCodecProfiles
+  // supported by the VEA underlying platform. Provides methods to query the
+  // preferred CodecId and to check if a given CodecId is supported.
+  class CONTENT_EXPORT CodecEnumerator {
+   public:
+    CodecEnumerator(const media::VideoEncodeAccelerator::SupportedProfiles&
+                        vea_supported_profiles);
+    ~CodecEnumerator();
+
+    // Returns the first CodecId that has an associated VEA VideoCodecProfile,
+    // or VP8 if none available.
+    CodecId GetPreferredCodecId() const;
+
+    // Returns VEA's first supported VideoCodedProfile for a given CodecId, or
+    // VIDEO_CODEC_PROFILE_UNKNOWN otherwise.
+    media::VideoCodecProfile GetFirstSupportedVideoCodecProfile(
+        CodecId codec) const;
+
+    // Returns a list of supported media::VEA::SupportedProfile for a given
+    // CodecId, or empty vector if CodecId is unsupported.
+    media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles(
+        CodecId codec) const;
+
+   private:
+    // VEA-supported profiles grouped by CodecId.
+    base::flat_map<CodecId, media::VideoEncodeAccelerator::SupportedProfiles>
+        supported_profiles_;
+
+    DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
+  };
+
   static CodecId GetPreferredCodecId();
+
+  // Returns true if the device has a hardware accelerated encoder which can
+  // encode video of the given |width|x|height| and |framerate| to specific
+  // |codec|.
+  // Note: default framerate value means no restriction.
   static bool CanUseAcceleratedEncoder(CodecId codec,
                                        size_t width,
-                                       size_t height);
+                                       size_t height,
+                                       double framerate = 0.0);
 
   VideoTrackRecorder(
       CodecId codec,

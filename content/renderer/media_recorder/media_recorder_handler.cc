@@ -385,7 +385,8 @@ void MediaRecorderHandler::EncodingInfo(
         VideoTrackRecorder::CanUseAcceleratedEncoder(
             VideoStringToCodecId(codec),
             configuration.video_configuration->width,
-            configuration.video_configuration->height);
+            configuration.video_configuration->height,
+            configuration.video_configuration->framerate);
 
     const float pixels_per_second =
         configuration.video_configuration->width *
