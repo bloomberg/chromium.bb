@@ -211,6 +211,8 @@ class LinuxPort(base.Port):
         """Tries to find a free X display, looping if necessary."""
         # The "xvfb-run" command uses :99 by default.
         for display_number in range(99, 120):
+            if self.host.filesystem.exists('/tmp/.X%d-lock' % display_number):
+                continue
             display = ':%d' % display_number
             exit_code = self.host.executive.run_command(
                 ['xdpyinfo', '-display', display], return_exit_code=True)
