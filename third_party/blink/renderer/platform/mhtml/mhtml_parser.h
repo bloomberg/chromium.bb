@@ -34,7 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/shared_buffer_chunk_reader.h"
+#include "third_party/blink/renderer/platform/mhtml/shared_buffer_chunk_reader.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"

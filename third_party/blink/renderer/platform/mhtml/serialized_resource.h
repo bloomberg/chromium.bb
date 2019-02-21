@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,58 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_CHUNK_READER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_CHUNK_READER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MHTML_SERIALIZED_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MHTML_SERIALIZED_RESOURCE_H_
 
-#include "base/macros.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class SharedBuffer;
-
-class PLATFORM_EXPORT SharedBufferChunkReader final {
+struct SerializedResource {
   DISALLOW_NEW();
+  KURL url;
+  String mime_type;
+  scoped_refptr<const SharedBuffer> data;
 
- public:
-  SharedBufferChunkReader(scoped_refptr<const SharedBuffer>,
-                          const Vector<char>& separator);
-  SharedBufferChunkReader(scoped_refptr<const SharedBuffer>,
-                          const char* separator);
-
-  void SetSeparator(const Vector<char>&);
-  void SetSeparator(const char*);
-
-  // Returns false when the end of the buffer was reached.
-  bool NextChunk(Vector<char>& data, bool include_separator = false);
-
-  // Returns a null string when the end of the buffer has been reached.
-  String NextChunkAsUTF8StringWithLatin1Fallback(
-      bool include_separator = false);
-
-  // Reads size bytes at the current location in the buffer, without changing
-  // the buffer position.
-  // Returns the number of bytes read. That number might be less than the
-  // specified size if the end of the buffer was reached.
-  uint32_t Peek(Vector<char>&, uint32_t);
-
- private:
-  scoped_refptr<const SharedBuffer> buffer_;
-  size_t buffer_position_;
-  const char* segment_;
-  uint32_t segment_length_;
-  uint32_t segment_index_;
-  bool reached_end_of_file_;
-  Vector<char> separator_;
-  uint32_t separator_index_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SharedBufferChunkReader);
+  SerializedResource(const KURL& url,
+                     const String& mime_type,
+                     scoped_refptr<const SharedBuffer> data)
+      : url(url), mime_type(mime_type), data(std::move(data)) {}
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MHTML_SERIALIZED_RESOURCE_H_

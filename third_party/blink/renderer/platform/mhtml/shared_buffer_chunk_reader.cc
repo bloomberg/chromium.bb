@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/shared_buffer_chunk_reader.h"
+#include "third_party/blink/renderer/platform/mhtml/shared_buffer_chunk_reader.h"
 
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
