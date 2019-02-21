@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -308,7 +309,16 @@ void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
   // Update registration with the invalidation service.
   syncer::ObjectIdSet ids;
   ids.insert(object_id);
-  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
+  bool success =
+      invalidation_service_->UpdateRegisteredInvalidationIds(this, ids);
+  // Do not crash as server might send duplicate invalidation IDs due to
+  // http://b/119860379.
+  if (!success) {
+    LOG(ERROR) << "Failed to register " << syncer::ObjectIdToString(object_id)
+               << " for policy invalidations";
+  }
+  UMA_HISTOGRAM_BOOLEAN("Enterprise.PolicyInvalidationsRegistrationResult",
+                        success);
 }
 
 void CloudPolicyInvalidator::Unregister() {
