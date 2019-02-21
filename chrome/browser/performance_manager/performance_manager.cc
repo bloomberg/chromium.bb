@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 #include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
@@ -66,6 +67,14 @@ void PerformanceManager::Destroy(std::unique_ptr<PerformanceManager> instance) {
   g_performance_manager = nullptr;
 
   instance->task_runner_->DeleteSoon(FROM_HERE, instance.release());
+}
+
+void PerformanceManager::DistributeMeasurementBatch(
+    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PerformanceManager::DistributeMeasurementBatchImpl,
+                     base::Unretained(this), std::move(batch)));
 }
 
 void PerformanceManager::BindInterface(
@@ -127,6 +136,14 @@ void PerformanceManager::BindInterfaceImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   interface_registry_.BindInterface(interface_name, std::move(message_pipe),
                                     service_manager::BindSourceInfo());
+}
+
+void PerformanceManager::DistributeMeasurementBatchImpl(
+    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
+  SystemNodeImpl* system_node = graph_.FindOrCreateSystemNode(nullptr);
+  DCHECK(system_node);
+
+  system_node->DistributeMeasurementBatch(std::move(batch));
 }
 
 void PerformanceManager::BindWebUIGraphDump(

@@ -15,6 +15,7 @@
 #include "chrome/browser/performance_manager/graph/graph_introspector_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -52,6 +53,13 @@ class PerformanceManager {
   template <typename Interface>
   void BindInterface(mojo::InterfaceRequest<Interface> request);
 
+  // Dispatches a measurement batch to the SystemNode on the performance
+  // sequence. This is a temporary method to support the RenderProcessProbe,
+  // which will soon go away as the performance measurement moves to the
+  // performance sequence.
+  void DistributeMeasurementBatch(
+      resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch);
+
  private:
   using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>;
@@ -65,6 +73,8 @@ class PerformanceManager {
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
   void BindInterfaceImpl(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
+  void DistributeMeasurementBatchImpl(
+      resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch);
 
   void BindWebUIGraphDump(
       resource_coordinator::mojom::WebUIGraphDumpRequest request,
