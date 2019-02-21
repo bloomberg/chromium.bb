@@ -4590,8 +4590,7 @@
           'required': ['devices', 'urls']
         }
       },
-      'supported_on': ['chrome_os:71-', 'android:71-', 'chrome.*:71-'],
-      'future': True,
+      'supported_on': ['chrome_os:74-', 'chrome.*:74-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
