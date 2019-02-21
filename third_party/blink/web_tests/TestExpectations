@@ -5930,8 +5930,6 @@ crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-hide-o
 crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-hide-on-click-panel.html [ Skip ]
 crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
 
-crbug.com/927866 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Pass Failure ]
-
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
 # contradiction.
