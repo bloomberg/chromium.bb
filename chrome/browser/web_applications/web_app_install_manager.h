@@ -57,7 +57,9 @@ class WebAppInstallManager final : public InstallManager,
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
   void ReturnError(InstallResultCode code);
 
-  // Checks typical errors like WebContents destroyed.
+  // Checks typical errors like WebContents destroyed. Callers must return
+  // early if this is true. Note that if install interrupted, install_callback_
+  // is already invoked or may be invoked later - no actions needed from caller.
   bool InstallInterrupted() const;
 
   void OnGetWebApplicationInfo(
@@ -74,7 +76,8 @@ class WebAppInstallManager final : public InstallManager,
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
-  void OnInstallFinalized(ForInstallableSite for_installable_site,
+  void OnInstallFinalized(std::unique_ptr<WebApplicationInfo> web_app_info,
+                          ForInstallableSite for_installable_site,
                           const AppId& app_id,
                           InstallResultCode code);
 
