@@ -87,24 +87,21 @@ cr.define('system_dialog_browsertest', function() {
       scalingSettings.$$('.md-select').value =
           scalingSettings.scalingValueEnum_.CUSTOM;
       scalingSettings.$$('.md-select').dispatchEvent(new CustomEvent('change'));
-      return nativeLayer.whenCalled('getPreview')
-          .then(() => {
-            nativeLayer.resetResolver('getPreview');
-            // Set an invalid input.
-            const scalingSettingsInput =
-                scalingSettings.$$('print-preview-number-settings-section')
-                    .$.userValue.inputElement;
-            scalingSettingsInput.value = '0';
-            scalingSettingsInput.dispatchEvent(
-                new CustomEvent('input', {composed: true, bubbles: true}));
 
-            // No new preview
-            nativeLayer.whenCalled('getPreview').then(function() {
-              assertTrue(false);
-            });
+      // Set an invalid input.
+      const scalingSettingsInput =
+          scalingSettings.$$('print-preview-number-settings-section')
+              .$.userValue.inputElement;
+      scalingSettingsInput.value = '0';
+      scalingSettingsInput.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
 
-            return test_util.eventToPromise('input-change', scalingSettings);
-          })
+      // No new preview
+      nativeLayer.whenCalled('getPreview').then(function() {
+        assertTrue(false);
+      });
+
+      return test_util.eventToPromise('input-change', scalingSettings)
           .then(() => {
             // Expect disabled print button
             const header = page.$$('print-preview-header');
