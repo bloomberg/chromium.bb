@@ -248,10 +248,19 @@ Polymer({
    * @private
    */
   onIronActivate_: function(event) {
+    event.stopPropagation();
     const type = event.detail.item.dataset.type;
     // Don't change focus when activating the camera via mouse.
     const activate = type != CrPicture.SelectionTypes.CAMERA;
     this.selectImage_(event.detail.item, activate);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onIronSelect_: function(event) {
+    event.stopPropagation();
   },
 
   /**
