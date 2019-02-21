@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ekleniyor...</translation>
 <translation id="1041308826830691739">Web sitelerinden</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
-<translation id="1054301162707478098">Gizli moda geçtiniz.</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1067922213147265141">Diğer Google hizmetleri</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Diğer diller</translation>
 <translation id="124678866338384709">Geçerli sekmeyi kapatır</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Gizli sekmelerde görüntülediğiniz sayfalar, gizli sekmelerinizin tamamını kapattıktan sonra tarayıcı geçmişinizde, çerez deponuzda veya arama geçmişinizde kalmaz. İndirdiğiniz dosyalar veya oluşturduğunuz yer işaretleri saklanır.
-
-Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet Servis Sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
 <translation id="1260236875608242557">Arama yapın ve keşfedin</translation>
 <translation id="1264974993859112054">Spor</translation>
 <translation id="1272079795634619415">Durdur</translation>
@@ -474,7 +470,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4565377596337484307">Şifreyi gizle</translation>
 <translation id="4570913071927164677">Ayrıntılar</translation>
 <translation id="4572422548854449519">Yönetilen hesapta oturum açın</translation>
-<translation id="4581964774250883625">Gizli moda geçtiniz.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# dakika önce}other{# dakika önce}}</translation>
 <translation id="4587589328781138893">Siteler</translation>
 <translation id="4594952190837476234">Bu çevrimdışı sayfa <ph name="CREATION_TIME" /> tarihli olup web'deki sürümden farklı olabilir.</translation>
@@ -632,9 +627,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5686790454216892815">Dosya adı çok uzun</translation>
 <translation id="5689516760719285838">Konum</translation>
 <translation id="569536719314091526">Diğer seçenekler düğmesini kullanarak bu sayfayı istediğiniz dile çevirin</translation>
-<translation id="5719837394786370183">Gizli sekmelerde görüntülediğiniz sayfalar, gizli sekmelerinizin tamamını kapattıktan sonra tarayıcı geçmişinizde, çerez deponuzda veya arama geçmişinizde kalmaz. İndirdiğiniz dosyalar veya oluşturduğunuz yer işaretleri saklanır.
-
-Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5726692708398506830">Sayfadaki her şeyi büyütür</translation>
 <translation id="5734520971562437809">Yüzde 60'a kadar daha az veri kullanın ve web'i hızlandırın.</translation>

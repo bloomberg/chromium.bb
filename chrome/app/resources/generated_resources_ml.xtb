@@ -1404,7 +1404,6 @@
 <translation id="3101709781009526431">തീയതിയും സമയവും</translation>
 <translation id="3104763887980088552">ആക്റ്റിവിറ്റി ലോഗ്</translation>
 <translation id="310671807099593501">സൈറ്റ്, bluetooth ഉപയോഗിക്കുന്നു</translation>
-<translation id="3115128645424181617">നിങ്ങളുടെ ഫോൺ കണ്ടെത്താനാകുന്നില്ല. Bluetooth ഓണാണെന്നും ഫോൺ കൈയ്യിലുണ്ടെന്നും ഉറപ്പാക്കുക.</translation>
 <translation id="3115147772012638511">കാഷെയ്ക്കായി കാത്തിരിക്കുന്നു...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> സഹായം</translation>
 <translation id="3120430004221004537">ഇനി പറയുന്നതിൽ നൽകിയിരിക്കുന്ന പ്രവർത്തനത്തിന് എൻക്രിപ്‌ഷൻ അപര്യാപ്‌തമാണ്: "<ph name="DEVICE_NAME" />".</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">ജോടി മാറ്റിയ ഉപകരണങ്ങൾ</translation>
 <translation id="4482194545587547824">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="4495419450179050807">ഈ പേജില്‍ കാണിക്കരുത്</translation>
-<translation id="449938344715680828">പുറത്തുകടക്കാൻ |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| എന്നിവയും തുടർന്ന് |<ph name="ACCELERATOR3" />| എന്നതും അമർത്തുക</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ക്രാഷ് ചെയ്തിരിക്കുന്നു</translation>
 <translation id="450099669180426158">ആശ്ചര്യചിഹ്നത്തിന്റെ ഐക്കൺ</translation>
 <translation id="4501530680793980440">നീക്കംചെയ്യൽ സ്ഥിരീകരിക്കുക</translation>
@@ -2618,7 +2616,6 @@
 <translation id="4977942889532008999">ആക്‌സസ്സ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="4980805016576257426">ഈ വിപുലീകരണത്തിൽ മാൽവേർ അടങ്ങിയിരിക്കുന്നു.</translation>
 <translation id="4981449534399733132">നിങ്ങളുടെ സമന്വയിപ്പിച്ച എല്ലാ ഉപകരണങ്ങളിൽ നിന്നും Google അക്കൗണ്ടിൽ നിന്നും ബ്രൗസിംഗ് ഡാറ്റ മായ്ക്കാൻ<ph name="BEGIN_LINK" />സൈൻ ഇൻ ചെയ്യുക<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">കുക്കികൾ, JavaScript, പ്ലഗിന്നുകൾ, ജിയോലൊക്കേഷൻ, മൈക്രോഫോൺ, ക്യാമറ എന്നിവപോലുള്ള ഫീച്ചറുകളിലേക്കുള്ള വെബ്‌സൈറ്റിന്റെ ആക്‌സസ്സ് നിയന്ത്രിക്കാൻ നിങ്ങളുടെ ക്രമീകരണം മാറ്റുക.</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />" ഇല്ലാതാക്കണെമെന്ന് ഉറപ്പാണോ?</translation>
 <translation id="4988526792673242964">പേജുകള്‍</translation>
 <translation id="49896407730300355">എ&amp;തിർ ഘടികാരദിശയിൽ തിരിക്കുക</translation>

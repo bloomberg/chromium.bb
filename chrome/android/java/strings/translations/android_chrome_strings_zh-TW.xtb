@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」...</translation>
 <translation id="1041308826830691739">來自網站</translation>
 <translation id="1049743911850919806">無痕模式</translation>
-<translation id="1054301162707478098">你已啟用私密模式。</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">更多語言</translation>
 <translation id="124678866338384709">關閉目前的分頁</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">關閉所有私密分頁後，你在其中瀏覽過的網頁都不會保留在瀏覽器記錄、Cookie 儲存庫或搜尋記錄中，但系統仍會保留你下載的所有檔案或是你建立的所有書籤。
-
-不過，這並不代表你完全沒有瀏覽記錄。使用私密模式時，你的雇主、網際網路服務供應商和你所造訪的網站仍然可以追蹤你的瀏覽記錄。</translation>
 <translation id="1260236875608242557">搜尋及探索</translation>
 <translation id="1264974993859112054">運動資訊</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -474,7 +470,6 @@
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4570913071927164677">詳細資料</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
-<translation id="4581964774250883625">你已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
 <translation id="4587589328781138893">網站</translation>
 <translation id="4594952190837476234">這個離線版網頁是於 <ph name="CREATION_TIME" />建立，可能會和線上版本有所不同。</translation>
@@ -632,9 +627,6 @@
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
-<translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器記錄、Cookie 儲存庫或搜尋記錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
-
-不過，這並不代表您完全沒有瀏覽記錄。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽記錄，您所造訪的網站也可記錄您的瀏覽活動。</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
 <translation id="5734520971562437809">最多可節省百分之 60 的數據用量，並加快網頁載入速度。</translation>

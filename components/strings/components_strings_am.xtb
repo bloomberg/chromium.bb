@@ -103,7 +103,6 @@
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">የመላኪያ አድራሻ ይምረጡ</translation>
 <translation id="1501859676467574491">ከእርስዎ የGoogle መለያ ካርዶችን አሳይ</translation>
-<translation id="1506687042165942984">የዚህን ገጽ የተቀመጠ (ለምሳሌ ቀኑ ያለፈበት እንደሆነ የታወቀ) ቅጂን አሳይ።</translation>
 <translation id="1507202001669085618">&lt;p&gt;መስመር ላይ መሆን ከመቻልዎ በፊት በመለያ መግባት የሚያስፈልግበት የWi-Fi መግቢያ እየተጠቀሙ ከሆኑ ይህን ስህተት ይመለከታሉ።&lt;/p&gt;
     &lt;p&gt;ይህን ስህተት ለመፍታት ለመክፈት እየሞከሩ ባለው ገጽ ላይ &lt;strong&gt;ተገናኝ&lt;/strong&gt;ን ጠቅ ያድርጉ።&lt;/p&gt;</translation>
 <translation id="1517433312004943670">ስልክ ቁጥር ያስፈልጋል</translation>
@@ -494,7 +493,7 @@
 <translation id="3715597595485130451">ከWi-Fi ጋር ይገናኙ</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ወኪሉን፣ ኬላውን እና የዲኤንኤስ ውቅረትን መፈተሽ<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">ይህን ስህተት ሊያስከትሉ የሚችሉ መተግበሪያዎች ጸረ-ቫይረስ፣ ኬላ እና ድር ማጣሪያ ተኪ ሶፍትዌር ያካትታሉ።</translation>
-<translation id="373042150751172459">B4 (የደንዳቤ ፖስታ)</translation>
+<translation id="373042150751172459">B4 (የደብዳቤ ፖስታ)</translation>
 <translation id="3736520371357197498">ደህንነትዎ ላይ የሚያመጣቸውን ስጋቶች ከተረዱ አደገኛ ፕሮግራሞቹ ከመወገዳቸው በፊት <ph name="BEGIN_LINK" />ይህን ደህንነቱ ያልተጠበቀ ጣቢያ ሊጎብኙ<ph name="END_LINK" /> ይችላሉ።</translation>
 <translation id="3744899669254331632">የድር ጣቢያው Chromium ሊያስኬዳቸው የማይችሉ የተዘበራረቁ ምስክርነቶችን ስለላከ አሁን ላይ <ph name="SITE" />ን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች ብዙውን ጊዜ ጊዜያዊ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ምናልባት ሊሰራ ይችል ይሆናል።</translation>
 <translation id="3745099705178523657">ካረጋገጡ በኋላ የGoogle መለያዎ ካርድ ዝርዝሮች ለዚህ ጣቢያ ይጋራሉ።</translation>
@@ -561,7 +560,7 @@
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />የኬላ እና የጸረ-ቫይረስ ውቅረቶችን መፈተሽ<ph name="END_LINK" /></translation>
-<translation id="4215751373031079683">7x9 (የፖስታ ደብዳቤ)</translation>
+<translation id="4215751373031079683">7x9 (የደብዳቤ ፖስታ)</translation>
 <translation id="4220128509585149162">ብልሽቶች</translation>
 <translation id="422022731706691852">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ ያሉ አጥቂዎች (የአሰሳ ተሞክሮዎን የሚጎዱ ፕሮግራሞችን እንዲጭኑ ሊያታልልዎት ሊሞክሩ ይችላሉ ለምሳሌ፦ የእርስዎን የመነሻ ገጽ በመለወጥ ወይም እርስዎ በሚጎበኙዋቸው ጣቢያዎች ላይ ትርፍ ማስታወቂያዎችን ማሳየት የመሳሰሉ በማድረግ)። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4221630205957821124">&lt;h4&gt;ደረጃ 1፦ ወደ መግቢያው ይግቡ&lt;/h4&gt;
@@ -636,7 +635,7 @@
 <translation id="4558551763791394412">ቅጥያዎችዎን አሰናክለው ይሞክሩ።</translation>
 <translation id="4559332380232738994">10x11</translation>
 <translation id="457875822857220463">መላኪያ</translation>
-<translation id="4579056131138995126">የግል (የደንዳቤ ፖስታ)</translation>
+<translation id="4579056131138995126">የግል (የደብዳቤ ፖስታ)</translation>
 <translation id="4582204425268416675">ካርድ አስወግድ</translation>
 <translation id="4587425331216688090">አድራሻ ከChrome ይወገድ?</translation>
 <translation id="4592951414987517459">ወደ የእርስዎ <ph name="DOMAIN" /> ግንኙነት ዘመናዊ የምስጠራ ጥቅል በመጠቀም ተመስጥሯል።</translation>
@@ -945,7 +944,7 @@
 <translation id="6417515091412812850">የእውቅና ማረጋገጫው ተሽሮ እንደሆነ ማረጋገጥ አልተቻለም።</translation>
 <translation id="6433490469411711332">የዕውቂያ መረጃን ያርትዑ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ማገናኘት አሻፈረኝ ብሏል።</translation>
-<translation id="6446163441502663861">ካሁ (የደንዳቤ ፖስታ)</translation>
+<translation id="6446163441502663861">ካሁ (የደብዳቤ ፖስታ)</translation>
 <translation id="6446608382365791566">ተጨማሪ መረጃ ያክሉ</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6451458296329894277">እንደገና ለማስገባት የማረጋገጫ ቅጽ</translation>
@@ -1164,7 +1163,7 @@
 <translation id="7681101578153515023">የፍለጋ ፕሮግራም ቀይር</translation>
 <translation id="7682287625158474539">ዕቃን የማጓጓዝ ስራ</translation>
 <translation id="7687186412095877299">የክፍያ ቅጾችን በተቀመጡ የመክፈያ ዘዴዎችዎ ይሞላቸዋል</translation>
-<translation id="7697066736081121494">Prc8 (የደንዳቤ ፖስታ)</translation>
+<translation id="7697066736081121494">Prc8 (የደብዳቤ ፖስታ)</translation>
 <translation id="769721561045429135">አሁን ላይ በዚህ መሣሪያ ላይ ብቻ ጥቅም ላይ ሊውሉ የሚችሉ ካርዶች አልዎት ካርዶችን መገምገም ለመቀጠል ጠቅ ያድርጉ።</translation>
 <translation id="7699293099605015246">ጽሑፎች አሁን አይገኙም</translation>
 <translation id="7701040980221191251">ምንም</translation>

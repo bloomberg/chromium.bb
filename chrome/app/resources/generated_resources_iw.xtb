@@ -1404,7 +1404,6 @@
 <translation id="3101709781009526431">תאריך ושעה</translation>
 <translation id="3104763887980088552">יומן פעילות</translation>
 <translation id="310671807099593501">‏האתר משתמש ב-Bluetooth</translation>
-<translation id="3115128645424181617">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שהוא נמצא איתך ושהופעל בו Bluetooth.</translation>
 <translation id="3115147772012638511">ממתין למטמון...</translation>
 <translation id="3118319026408854581">עזרה של <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">ההצפנה לא מספיקה לפעולה נתונה במכשיר: "<ph name="DEVICE_NAME" />".</translation>
@@ -2298,7 +2297,6 @@
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4482194545587547824">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
-<translation id="449938344715680828">יש ללחוץ על |<ph name="ACCELERATOR1" />|+‏|<ph name="ACCELERATOR2" />| ואחר כך על |<ph name="ACCELERATOR3" />| כדי לצאת</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> קרס</translation>
 <translation id="450099669180426158">סמל של סימן קריאה</translation>
 <translation id="4501530680793980440">אשר הסרה</translation>
@@ -2619,7 +2617,6 @@
 <translation id="4977942889532008999">אשר גישה</translation>
 <translation id="4980805016576257426">התוסף הזה מכיל תוכנה זדונית.</translation>
 <translation id="4981449534399733132">‏כדי לנקות את נתוני הגלישה מכל המכשירים המסונכרנים ומחשבון Google שלך, <ph name="BEGIN_LINK" />יש לבצע כניסה<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">‏שינוי ההגדרות לגישה של אתרים לתכונות כמו קובצי cookie, ‏JavaScript, יישומי פלאגין, מיקום גיאוגרפי, מיקרופון, מצלמה וכו'.</translation>
 <translation id="4988205478593450158">הקובץ "<ph name="FILE_NAME" />" יימחק. להמשיך?</translation>
 <translation id="4988526792673242964">דפים</translation>
 <translation id="49896407730300355">סובב נ&amp;גד כיוון השעון</translation>

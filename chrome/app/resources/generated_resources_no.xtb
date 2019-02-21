@@ -1403,7 +1403,6 @@
 <translation id="3101709781009526431">Dato og klokkeslett</translation>
 <translation id="3104763887980088552">Aktivitetslogg</translation>
 <translation id="310671807099593501">Nettstedet bruker Bluetooth</translation>
-<translation id="3115128645424181617">Finner ikke telefonen. Sørg for at den er i nærheten, og at Bluetooth er slått på.</translation>
 <translation id="3115147772012638511">Venter på buffer...</translation>
 <translation id="3118319026408854581">Hjelp for <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Utilstrekkelig kryptering for en angitt operasjon på: «<ph name="DEVICE_NAME" />».</translation>
@@ -2294,7 +2293,6 @@
 <translation id="4481530544597605423">Frakoblede enheter</translation>
 <translation id="4482194545587547824">Google kan bruke nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>
 <translation id="4495419450179050807">Ikke vis på denne siden</translation>
-<translation id="449938344715680828">Trykk på |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| og deretter |<ph name="ACCELERATOR3" />| for å avslutte</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> har kræsjet</translation>
 <translation id="450099669180426158">Utropstegnikon</translation>
 <translation id="4501530680793980440">Bekreftelse av fjerning</translation>
@@ -2615,7 +2613,6 @@
 <translation id="4977942889532008999">Bekreft tilgangen</translation>
 <translation id="4980805016576257426">Denne utvidelsen inneholder skadelig programvare.</translation>
 <translation id="4981449534399733132">For å slette nettleserdata på alle synkroniserte enheter og Google-kontoen din må du <ph name="BEGIN_LINK" />logge på<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">endre innstillingene som kontrollerer nettsteders tilgang til elementer som informasjonskapsler, JavaScript, programtillegg, geografisk posisjon, mikrofon, kamera osv.</translation>
 <translation id="4988205478593450158">Er du sikker på at du vil slette «<ph name="FILE_NAME" />»?</translation>
 <translation id="4988526792673242964">Sider</translation>
 <translation id="49896407730300355">Rotér m&amp;ot klokken</translation>
@@ -2937,7 +2934,7 @@
 <translation id="5463275305984126951">Indeks for <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Meny med skjulte bokmerker</translation>
 <translation id="5464632865477611176">Kjør denne gangen</translation>
-<translation id="5466374726908360271">Lim inn og søk etter «<ph name="SEARCH_TERMS" />»</translation>
+<translation id="5466374726908360271">&amp;Lim inn og søk etter «<ph name="SEARCH_TERMS" />»</translation>
 <translation id="5471768120198416576">Heisann! Jeg er tekst til tale-stemmen din.</translation>
 <translation id="5473333559083690127">Skriv inn den nye PIN-koden på nytt</translation>
 <translation id="5481941284378890518">Legg til skrivere i nærheten</translation>
@@ -3132,7 +3129,7 @@
 <translation id="5746169159649715125">Lagre som PDF</translation>
 <translation id="5747552184818312860">Utløper</translation>
 <translation id="5747785204778348146">Utvikler – ustabil</translation>
-<translation id="5747809636523347288">Lim inn og gå til <ph name="URL" /></translation>
+<translation id="5747809636523347288">&amp;Lim inn og gå til <ph name="URL" /></translation>
 <translation id="5750324801516359607">Langt unna</translation>
 <translation id="5752453871435543420">Skybaserte sikkerhetskopier for Chrome OS</translation>
 <translation id="5756163054456765343">&amp;Brukerstøtte</translation>
@@ -5464,7 +5461,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="967007123645306417">Dette logger deg av Google-kontoene dine. Endringer i bokmerkene, loggen, passordene og andre innstillinger du har, blir ikke lenger synkronisert med Google-kontoen din. Data som allerede er lagret i Google-kontoen din, blir imidlertid værende og kan administreres ved hjelp av <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
 <translation id="967624055006145463">Lagrede data</translation>
 <translation id="968000525894980488">Slå på Google Play Tjenester.</translation>
-<translation id="968037381421390582">Lim inn og søk etter «<ph name="SEARCH_TERMS" />»</translation>
+<translation id="968037381421390582">&amp;Lim inn og søk etter «<ph name="SEARCH_TERMS" />»</translation>
 <translation id="968174221497644223">Programbuffer</translation>
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 fane}other{# faner}}</translation>

@@ -1406,7 +1406,6 @@
 <translation id="3101709781009526431">التاريخ والوقت</translation>
 <translation id="3104763887980088552">سجلّ الأنشطة</translation>
 <translation id="310671807099593501">يستخدم موقع الويب البلوتوث.</translation>
-<translation id="3115128645424181617">تعذّر العثور على هاتفك. تأكد من أنه في متناول يديك وأنّ البلوتوث قيد التشغيل.</translation>
 <translation id="3115147772012638511">في انتظار ذاكرة التخزين المؤقت ...</translation>
 <translation id="3118319026408854581">مساعدة <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">تشفير غير كافٍ لعملية معينة على: "<ph name="DEVICE_NAME" />".</translation>
@@ -2296,7 +2295,6 @@
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
 <translation id="4482194545587547824">‏قد يستخدم Google سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="4495419450179050807">عدم الظهور في هذه الصفحة</translation>
-<translation id="449938344715680828">الضغط على |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ثم |<ph name="ACCELERATOR3" />| للخروج</translation>
 <translation id="4500114933761911433">تعطّل <ph name="PLUGIN_NAME" />.</translation>
 <translation id="450099669180426158">رمز علامة التعجب</translation>
 <translation id="4501530680793980440">تأكيد الإزالة</translation>
@@ -2617,7 +2615,6 @@
 <translation id="4977942889532008999">تأكيد الدخول</translation>
 <translation id="4980805016576257426">تحتوي هذه الإضافة على برامج ضارة.</translation>
 <translation id="4981449534399733132">‏لمحو بيانات التصفُّح من جميع أجهزتك التي تمت مزامنتها ومن حسابك على Google، يُرجى <ph name="BEGIN_LINK" />تسجيل الدخول<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">تغيير الإعدادات التي تتحكم في وصول مواقع الويب إلى ميزات كملفات تعريف الارتباط، وجافا سكريبت، والمكونات الإضافية، والمواقع الجغرافية، والميكروفون والكاميرا، وغيرها.</translation>
 <translation id="4988205478593450158">هل تريد بالتأكيد حذف "<ph name="FILE_NAME" />"؟</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="49896407730300355">تدوير ع&amp;كس اتجاه عقارب الساعة</translation>

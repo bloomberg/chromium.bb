@@ -1399,7 +1399,6 @@
 <translation id="3101709781009526431">दिनांक और समय</translation>
 <translation id="3104763887980088552">गतिविधि लॉग</translation>
 <translation id="310671807099593501">साइट ब्लूटूथ का इस्तेमाल कर रही है</translation>
-<translation id="3115128645424181617">आपका फ़ोन नहीं मिल पा रहा है. पक्का करें कि वह पहुंच में है और ब्लूटूथ चालू है.</translation>
 <translation id="3115147772012638511">संचय की प्रतीक्षा कर रहा है...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />सहायता</translation>
 <translation id="3120430004221004537">दिए गए संचालन के लिए इस पर अपर्याप्त एन्क्रिप्शन: "<ph name="DEVICE_NAME" />".</translation>
@@ -2290,7 +2289,6 @@
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
 <translation id="4482194545587547824">खोज और अन्य Google सेवाओं को वैयक्तिकृत करने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कर सकता है</translation>
 <translation id="4495419450179050807">इस पेज पर न दिखाएं</translation>
-<translation id="449938344715680828">बाहर निकलने के लिए |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| उसके बाद |<ph name="ACCELERATOR3" />| दबाएं</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> बंद हो गया है</translation>
 <translation id="450099669180426158">'विस्मयादिबोधक चिह्न' आइकॉन</translation>
 <translation id="4501530680793980440">निकालने की दुबारा पूछें</translation>
@@ -2610,7 +2608,6 @@
 <translation id="4977942889532008999">एक्सेस की दुबारा पूछें</translation>
 <translation id="4980805016576257426">इस एक्सटेंशन में मैलवेयर है.</translation>
 <translation id="4981449534399733132">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />साइन इन करें<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">कुकी, JavaScript, प्‍लग इन, भू-स्‍थान, माइक्रोफ़ोन, कैमरा आदि जैसी सुविधाओं तक वेबसाइट की ऐक्‍सेस नियंत्रित करने वाली सेटिंग में बदलाव करें.</translation>
 <translation id="4988205478593450158">क्या आप वाकई "<ph name="FILE_NAME" />" को मिटाना चाहते हैं?</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="49896407730300355">घड़ी की &amp;विपरीत दिशा में घुमाएं</translation>

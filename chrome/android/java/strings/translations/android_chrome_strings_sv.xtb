@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Lägger till <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Från webbplatser</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Du surfar privat.</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1067922213147265141">Andra Google-tjänster</translation>
 <translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Fler språk</translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Sidor du öppnar på en privat flik sparas inte i webbläsarhistoriken och lagras inte bland cookies eller i sökhistoriken när du har stängt alla privata flikar. Däremot sparas alla filer du laddar ned och bokmärken du skapar.
-
-Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -474,7 +470,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4565377596337484307">Dölj lösenord</translation>
 <translation id="4570913071927164677">Information</translation>
 <translation id="4572422548854449519">Logga in på hanterat konto</translation>
-<translation id="4581964774250883625">Du surfar inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{för # minut sedan}other{för # minuter sedan}}</translation>
 <translation id="4587589328781138893">Webbplatser</translation>
 <translation id="4594952190837476234">Den här offlinesidan sparades <ph name="CREATION_TIME" /> och kan skilja sig från onlineversionen.</translation>
@@ -632,9 +627,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5689516760719285838">Plats</translation>
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
-<translation id="5719837394786370183">Sidor du visar i inkognitoflikar sparas inte i webbläsarhistoriken och lagras inte bland cookies eller i sökhistoriken när du har stängt alla inkognitoflikar. Däremot sparas alla filer du laddar ned och bokmärken du skapar.
-
-Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5726692708398506830">Gör allt på sidan större</translation>
 <translation id="5734520971562437809">Använd upp till 60 procent mindre data och gör webben snabbare.</translation>

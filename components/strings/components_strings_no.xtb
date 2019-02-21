@@ -103,7 +103,6 @@
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Velg leveringsadresse</translation>
 <translation id="1501859676467574491">Vis kredittkort fra Google-kontoen din</translation>
-<translation id="1506687042165942984">Vis en lagret kopi av denne siden (dvs. en kopi du vet at er utdatert).</translation>
 <translation id="1507202001669085618">&lt;p&gt;Du ser denne feilmeldingen hvis du bruker en Wi-Fi-portal hvor du må logge på før du kommer deg på nettet.&lt;/p&gt;
     &lt;p&gt;For å fikse feilen, klikk på &lt;strong&gt;Koble til&lt;/strong&gt; på siden du prøver å åpne.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Det kreves et telefonnummer</translation>
@@ -624,7 +623,7 @@
 <translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4432688616882109544">Enten godtok ikke <ph name="HOST_NAME" /> påloggingssertifikatet ditt, eller så ble det ikke oppgitt.</translation>
 <translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
-<translation id="4435702339979719576">Postcard)</translation>
+<translation id="4435702339979719576">postkort)</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="445100540951337728">Godkjente debetkort</translation>
 <translation id="4482953324121162758">Dette nettstedet oversettes ikke.</translation>

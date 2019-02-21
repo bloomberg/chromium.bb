@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Adding <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">From websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1054301162707478098">You’ve gone private.</translation>
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1067922213147265141">Other Google services</translation>
 <translation id="1068672505746868501">Never translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">More languages</translation>
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Pages that you view in private tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your private tabs. Any files that you download or bookmarks that you create will be kept.
-
-However, you aren’t invisible. Going private doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="1260236875608242557">Search and explore</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -474,7 +470,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4565377596337484307">Hide password</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
-<translation id="4581964774250883625">You’ve gone incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minute ago}other{# minutes ago}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">This offline page is from <ph name="CREATION_TIME" /> and may differ from the online version.</translation>
@@ -632,9 +627,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5689516760719285838">Location</translation>
 <translation id="569536719314091526">Translate this page to any language from the More options button</translation>
-<translation id="5719837394786370183">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your incognito tabs. Any files that you download or bookmarks that you create will be kept.
-
-However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites you visit.</translation>
 <translation id="572328651809341494">Recent tabs</translation>
 <translation id="5726692708398506830">Make everything on the page bigger</translation>
 <translation id="5734520971562437809">Use up to 60 per cent less data and speed up the web.</translation>

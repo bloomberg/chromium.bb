@@ -180,9 +180,9 @@
 
       Esta política está desativada por predefinição e, se for ativada, deixa os utilizadores sujeitos aos problemas de segurança quando o processo de rede tiver isolamento de processos.
 
-      O objetivo desta política é dar às empresas a possibilidade de migrarem para software de terceiros que não dependa de criar hooks para as APIs de rede. Recomendam-se servidores proxy em detrimento de patches de LSPs e Win32 API.
+      O objetivo desta política é dar às empresas a possibilidade de migrarem para software de terceiros que não dependa de articulação com as APIs de rede. Recomendam-se servidores proxy em detrimento de patches de LSPs e Win32 API.
 
-      Se esta política não for definida, o código de rede poderá ser executado fora do processo do navegador, dependendo dos testes de campo da experiência NetworkService.</translation>
+      Se esta política não for definida, o código de rede poderá ser executado fora do processo do navegador, conforme os testes de campo da experiência NetworkService.</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Permitir que os utilizadores efetuem a gestão dos certificados instalados.</translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
@@ -190,7 +190,7 @@
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
 <translation id="1404043648050567997">O serviço de Navegação segura apresenta uma página de aviso quando os utilizadores navegam para sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo malicioso.
 
-      Esta política apenas impede que os utilizadores prossigam em avisos da Navegação segura (por exemplo, software malicioso e phishing), não para problemas relacionados com certificados SSL, como certificados inválidos ou expirados.
+      Esta política apenas impede que os utilizadores prossigam em avisos da Navegação segura (por exemplo, software malicioso e phishing), não para problemas relacionados com certificados SSL, como certificados inválidos ou que tenham expirado.
 
       Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
 
@@ -1694,7 +1694,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for definida ou for definida como verdadeira, o Chrome mantém pelo menos um separador aberto depois de mudar para um navegador alternativo.
 
-      Se esta política for definida como falsa, o Chrome fecha o separador depois de mudar para um navegador alternativo, mesmo que seja o último separador. Isto faz com que o Chrome se feche completamente.</translation>
+      Se esta política for definida como falsa, o Chrome fecha o separador depois de mudar para um navegador alternativo, mesmo que seja o último separador. Desta forma, a execução do Chrome será terminada.</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais de dispositivos desativadas</translation>
 <translation id="5113732180192599620">Esta política controla a lista de Websites que nunca irão provocar uma mudança de navegador.
@@ -2658,7 +2658,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="7252681704926980614">Enviar o nome de utilizador e o nome de ficheiro para o servidor das impressoras nativas com cada tarefa de impressão. A predefinição é não enviar.
 
-      Definir esta política como verdadeira também desativa as impressoras que utilizam outros protocolos que não IPPS, USB ou IPP-over-USB, uma vez que o nome de utilizador e o nome de ficheiro não devem ser enviados através da rede em aberto.</translation>
+      Definir esta política como verdadeira também desativa as impressoras que utilizam outros protocolos que não IPPS, USB ou IPP-over-USB, uma vez que o nome de utilizador e o nome de ficheiro não devem ser enviados através da rede abertamente.</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de fundo do dispositivo</translation>

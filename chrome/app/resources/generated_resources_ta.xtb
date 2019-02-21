@@ -1408,7 +1408,6 @@
 <translation id="3101709781009526431">தேதி மற்றும் நேரம்</translation>
 <translation id="3104763887980088552">செயல்பாட்டுப் பதிவு</translation>
 <translation id="310671807099593501">தளமானது புளூடூத்தைப் பயன்படுத்துகிறது</translation>
-<translation id="3115128645424181617">மொபைலைக் கண்டறிய முடியவில்லை. மொபைல் அருகில் இருப்பதையும் புளூடூத் இயக்கப்பட்டிருப்பதையும் உறுதிப்படுத்திக்கொள்ளவும்.</translation>
 <translation id="3115147772012638511">தேக்ககத்திற்காக காத்திருக்கிறது...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> உதவி</translation>
 <translation id="3120430004221004537">குறிப்பிட்ட செயல்பாட்டுக்குப் போதுமான என்க்ரிப்ட் இல்லாத சாதனம்: "<ph name="DEVICE_NAME" />".</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">இணைக்காத சாதனங்கள்</translation>
 <translation id="4482194545587547824">தேடல் மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் உலாவல் வரலாற்றை Google பயன்படுத்தக்கூடும்</translation>
 <translation id="4495419450179050807">இந்தப் பக்கத்தில் காண்பிக்க வேண்டாம்</translation>
-<translation id="449938344715680828">வெளியேற, |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|ஐயும், அதனைத் தொடர்ந்து |<ph name="ACCELERATOR3" />|ஐயும் அழுத்தவும்</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> செயலிழந்தது</translation>
 <translation id="450099669180426158">ஆச்சரியக்குறி ஐகான்</translation>
 <translation id="4501530680793980440">அகற்றுதலை உறுதிப்படுத்து</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">அணுகலை உறுதிசெய்</translation>
 <translation id="4980805016576257426">இந்த நீட்டிப்பில் தீம்பொருள் உள்ளது.</translation>
 <translation id="4981449534399733132">உங்கள் ஒத்திசைக்கப்பட்ட சாதனங்கள் அனைத்திலிருந்தும் Google கணக்கிலிருந்தும் உலாவல் தரவை முழுமையாக அழிக்க, <ph name="BEGIN_LINK" />உள்நுழையவும்<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">குக்கீகள், JavaScript, செருகுநிரல்கள், புவிஇருப்பிடம், மைக்ரோஃபோன் கேமரா போன்ற இணையதளத்தின் அம்சங்களுக்கான அணுகலைக் கட்டுப்படுத்தும் அமைப்புகளை மாற்றலாம்</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />"ஐ நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
 <translation id="4988526792673242964">பக்கங்கள்</translation>
 <translation id="49896407730300355">இ&amp;டஞ்சுழியாகச் சுற்று</translation>

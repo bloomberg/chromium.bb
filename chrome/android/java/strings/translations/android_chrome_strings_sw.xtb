@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Inaongeza <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Kutoka kwenye tovuti</translation>
 <translation id="1049743911850919806">Kichupo fiche</translation>
-<translation id="1054301162707478098">Unatumia hali ya faragha.</translation>
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
 <translation id="1067922213147265141">Huduma zingine za Google</translation>
 <translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Lugha zaidi</translation>
 <translation id="124678866338384709">Funga kichupo kilichofunguka</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Kurasa unazoziangalia katika vichupo vya faragha hazitahifadhiwa katika historia ya kivinjari, hifadhi ya vidakuzi au historia ya mambo uliyotafuta, ukishafunga vichupo vyako vyote vya faragha. Faili zozote unazopakua au alamisho unazounda hazitafutwa.
-
-Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvinjari kwako kusionekane kwa mwajiri, mtoa huduma za intaneti au tovuti unazotembelea.</translation>
 <translation id="1260236875608242557">Tafuta na ugundue</translation>
 <translation id="1264974993859112054">Michezo</translation>
 <translation id="1272079795634619415">Simamisha</translation>
@@ -474,7 +470,6 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="4565377596337484307">Ficha nenosiri</translation>
 <translation id="4570913071927164677">Maelezo</translation>
 <translation id="4572422548854449519">Ingia katika akaunti zinazodhibitiwa</translation>
-<translation id="4581964774250883625">Unavinjari katika hali fiche.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Dakika # iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="4587589328781138893">Tovuti</translation>
 <translation id="4594952190837476234">Ukurasa huu wa nje ya mtandao umetoka <ph name="CREATION_TIME" /> na huenda ukatofautiana na toleo lililo mtandaoni.</translation>
@@ -632,9 +627,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5689516760719285838">Mahali</translation>
 <translation id="569536719314091526">Tafsiri ukurasa huu katika lugha yoyote kutoka kitufe cha Chaguo zaidi</translation>
-<translation id="5719837394786370183">Kurasa unazoziangalia katika vichupo fiche hazitaendelea kuwepo katika historia ya kivinjari, hifadhi ya vidakuzi, au historia yako ya utafutaji ukishafunga vichupo vyako vyote fiche. Faili zozote unazopakua au alamisho unazounda hazitafutwa.
-
-Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kusionekane kwa mwajiri, mtoa huduma wako wa intaneti, au tovuti unazotembelea.</translation>
 <translation id="572328651809341494">Vichupo vya hivi majuzi</translation>
 <translation id="5726692708398506830">Fanya kila kitu kwenye ukurasa kiwe kikubwa zaidi</translation>
 <translation id="5734520971562437809">Okoa hadi asilimia 60 ya data na uongeze kasi ya wavuti.</translation>

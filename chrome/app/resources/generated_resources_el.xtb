@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Ημερομηνία και ώρα</translation>
 <translation id="3104763887980088552">Αρχείο καταγραφής δραστηριοτήτων</translation>
 <translation id="310671807099593501">Ο ιστότοπος χρησιμοποιεί bluetooth</translation>
-<translation id="3115128645424181617">Δεν είναι δυνατή η εύρεση του τηλεφώνου σας. Βεβαιωθείτε ότι είναι διαθέσιμο και ότι το Bluetooth είναι ενεργοποιημένο.</translation>
 <translation id="3115147772012638511">Αναμονή για προσωρινή μνήμη...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Βοήθεια</translation>
 <translation id="3120430004221004537">Ανεπαρκής κρυπτογράφηση για συγκεκριμένη λειτουργία στη συσκευή: "<ph name="DEVICE_NAME" />".</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Συσκευές στις οποίες διακόπηκε η σύζευξη</translation>
 <translation id="4482194545587547824">Η Google μπορεί να χρησιμοποιεί το ιστορικό περιήγησής σας για να εξατομικεύει την Αναζήτηση και άλλες υπηρεσίες Google</translation>
 <translation id="4495419450179050807">Να μην γίνεται εμφάνιση σε αυτήν τη σελίδα</translation>
-<translation id="449938344715680828">Πατήστε |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| και έπειτα |<ph name="ACCELERATOR3" />| για έξοδο</translation>
 <translation id="4500114933761911433">Η προσθήκη <ph name="PLUGIN_NAME" /> παρουσίασε σφάλμα</translation>
 <translation id="450099669180426158">Εικονίδιο θαυμαστικού</translation>
 <translation id="4501530680793980440">Επιβεβαίωση κατάργησης</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Επιβεβαίωση πρόσβασης</translation>
 <translation id="4980805016576257426">Αυτή η επέκταση περιέχει κακόβουλο πρόγραμμα.</translation>
 <translation id="4981449534399733132">Για να διαγράψετε τα δεδομένα περιήγησης από όλες τις συγχρονισμένες συσκευές σας και τον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />συνδεθείτε<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Αλλάξτε τις ρυθμίσεις που ελέγχουν την πρόσβαση των ιστοτόπων σε δυνατότητες, όπως είναι τα cookie, η JavaScript, οι προσθήκες, η γεωγραφική τοποθεσία, το μικρόφωνο, η κάμερα, κ.λπ.</translation>
 <translation id="4988205478593450158">Είστε βέβαιοι ότι θέλετε να διαγράψετε το "<ph name="FILE_NAME" />";</translation>
 <translation id="4988526792673242964">Σελίδες</translation>
 <translation id="49896407730300355">Περιστροφή προς τα &amp;αριστερά</translation>

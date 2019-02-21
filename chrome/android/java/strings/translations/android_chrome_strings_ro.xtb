@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1054301162707478098">Ai trecut în modul privat.</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1067922213147265141">Alte servicii Google</translation>
 <translation id="1068672505746868501">Nu traduce niciodată paginile în <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Mai multe limbi</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Paginile pe care le vezi în filele private nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele private. Fișierele descărcate și marcajele create vor fi păstrate.
-
-Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="1260236875608242557">Caută și explorează</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Oprește</translation>
@@ -474,7 +470,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4565377596337484307">Ascunde parola</translation>
 <translation id="4570913071927164677">Detalii</translation>
 <translation id="4572422548854449519">Conectează-te la contul gestionat</translation>
-<translation id="4581964774250883625">Ai trecut în modul incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Acum # minut}few{Acum # minute}other{Acum # de minute}}</translation>
 <translation id="4587589328781138893">Site-uri</translation>
 <translation id="4594952190837476234">Această pagină offline este din data de <ph name="CREATION_TIME" /> și poate fi diferită de versiunea online.</translation>
@@ -632,9 +627,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5686790454216892815">Numele fișierului este prea lung</translation>
 <translation id="5689516760719285838">Locație</translation>
 <translation id="569536719314091526">Tradu această pagină în orice limbă folosind butonul Mai multe opțiuni</translation>
-<translation id="5719837394786370183">Paginile pe care le vezi în filele incognito nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele incognito. Fișierele descărcate și marcajele create vor fi păstrate.
-
-Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="572328651809341494">File recente</translation>
 <translation id="5726692708398506830">Mărește întregul conținut al paginii</translation>
 <translation id="5734520971562437809">Folosește cu până la 60 la sută mai puține date și navighează mai rapid pe web.</translation>

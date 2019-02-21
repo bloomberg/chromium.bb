@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">APK <ph name="WEBAPK_NAME" /> lisamine …</translation>
 <translation id="1041308826830691739">Veebisaitidelt</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Olete privaatses režiimis.</translation>
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="1067922213147265141">Muud Google'i teenused</translation>
 <translation id="1068672505746868501">Ära tõlgi kunagi <ph name="SOURCE_LANGUAGE" /> keeles olevaid lehti</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Rohkem keeli</translation>
 <translation id="124678866338384709">Aktiivse vahelehe sulgemine</translation>
 <translation id="1258753120186372309">Google'i Doodle'i vigurlogo: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Privaatsetel vahelehtedel kuvatud lehti ei salvestata teie brauseri ajalukku, küpsisefailide hulka ega otsinguajalukku. Allalaaditud failid ja loodud järjehoidjad jäävad alles.
-
-Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimistegevust tööandja, Interneti-teenusepakkuja ega külastatud veebisaitide eest.</translation>
 <translation id="1260236875608242557">Otsimine ja avastamine</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Peata</translation>
@@ -474,7 +470,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4565377596337484307">Peida parool</translation>
 <translation id="4570913071927164677">Üksikasjad</translation>
 <translation id="4572422548854449519">Logige hallatud kontole sisse</translation>
-<translation id="4581964774250883625">Olete inkognito režiimis.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minut tagasi}other{# minutit tagasi}}</translation>
 <translation id="4587589328781138893">Saidid</translation>
 <translation id="4594952190837476234">Võrguühenduseta leht loodi <ph name="CREATION_TIME" /> ja see võib veebiversioonist erineda.</translation>
@@ -632,9 +627,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5686790454216892815">Faili nimi on liiga pikk</translation>
 <translation id="5689516760719285838">Asukoht</translation>
 <translation id="569536719314091526">Tõlkige leht mis tahes keelde nupuga Rohkem valikuid</translation>
-<translation id="5719837394786370183">Pärast kõikide inkognito režiimis avatud vahelehtede sulgemist ei jää inkognito režiimi vahelehtedel kuvatud lehtedest jälgi teie brauseri ajalukku, salvestatud küpsisefailidesse ega otsinguajalukku. Allalaaditud failid ja loodud järjehoidjad jäävad alles.
-
-Te ei ole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimistegevust tööandja, Interneti-teenusepakkuja ega külastatud veebisaitide eest.</translation>
 <translation id="572328651809341494">Hiljutised vahelehed</translation>
 <translation id="5726692708398506830">Lehel kuvatud sisu suurendamine</translation>
 <translation id="5734520971562437809">Kasutage kuni 60 protsenti vähem andmemahtu ja muutke veeb kiiremaks.</translation>

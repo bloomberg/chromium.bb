@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Date et heure</translation>
 <translation id="3104763887980088552">Journal d'activité</translation>
 <translation id="310671807099593501">Le site utilise le Bluetooth</translation>
-<translation id="3115128645424181617">Impossible de trouver votre téléphone. Assurez-vous qu'il se trouve à proximité et que le Bluetooth est activé.</translation>
 <translation id="3115147772012638511">En attente de l'affichage du cache</translation>
 <translation id="3118319026408854581">Aide <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Chiffrement insuffisant pour une opération donnée sur l'appareil <ph name="DEVICE_NAME" />.</translation>
@@ -2301,7 +2300,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4481530544597605423">Appareils dissociés</translation>
 <translation id="4482194545587547824">Google peut utiliser votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="4495419450179050807">Ne pas afficher sur cette page</translation>
-<translation id="449938344715680828">Appuyez sur |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| et |<ph name="ACCELERATOR3" />| pour quitter la page</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> a planté</translation>
 <translation id="450099669180426158">Icône représentant un point d'exclamation</translation>
 <translation id="4501530680793980440">Confirmer la suppression</translation>
@@ -2622,7 +2620,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4977942889532008999">Confirmer l'accès</translation>
 <translation id="4980805016576257426">Cette extension contient des logiciels malveillants.</translation>
 <translation id="4981449534399733132">Pour effacer les données de navigation sur tous vos appareils synchronisés et dans votre compte Google, <ph name="BEGIN_LINK" />connectez-vous<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Modifier les paramètres qui contrôlent l'accès des sites Web à des fonctionnalités telles que les cookies, le code JavaScript, les plug-ins, la géolocalisation, le micro, la caméra, etc.</translation>
 <translation id="4988205478593450158">Voulez-vous vraiment supprimer "<ph name="FILE_NAME" />" ?</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="49896407730300355">Rotation &amp;antihoraire</translation>

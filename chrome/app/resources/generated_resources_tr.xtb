@@ -1407,7 +1407,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3101709781009526431">Tarih ve saat</translation>
 <translation id="3104763887980088552">Etkinlik Günlüğü</translation>
 <translation id="310671807099593501">Site, Bluetooth bağlantısını kullanıyor</translation>
-<translation id="3115128645424181617">Telefonunuz bulunamıyor. Telefonunuzun yakında olduğundan ve Bluetooth'un açık olduğundan emin olun.</translation>
 <translation id="3115147772012638511">Önbellek bekleniyor...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Yardım</translation>
 <translation id="3120430004221004537">Şu cihazda belirli bir işlem için yetersiz şifreleme: "<ph name="DEVICE_NAME" />".</translation>
@@ -2301,7 +2300,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4481530544597605423">Eşlemesi kaldırılmış cihazlar</translation>
 <translation id="4482194545587547824">Google, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir</translation>
 <translation id="4495419450179050807">Bu sayfada gösterme</translation>
-<translation id="449938344715680828">Çıkmak için |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ve arkasından |<ph name="ACCELERATOR3" />| tuşlarına basın</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> eklentisi kilitlendi</translation>
 <translation id="450099669180426158">Ünlem işareti simgesi</translation>
 <translation id="4501530680793980440">Kaldırmayı Onaylayın</translation>
@@ -2622,7 +2620,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4977942889532008999">Erişimi Onaylayın</translation>
 <translation id="4980805016576257426">Bu uzantı kötü amaçlı yazılım içeriyor.</translation>
 <translation id="4981449534399733132">Tarama verilerini senkronize edilmiş tüm cihazlarınızdan ve Google Hesabınızdan temizlemek için <ph name="BEGIN_LINK" />oturum açın<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Web sitelerinin çerezler, JavaScript, eklentiler, coğrafi konum, mikrofon, kamera vb. özelliklere erişimini denetleyen ayarlarınızı değiştirme</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />" adlı dosyayı silmek istediğinizden emin misiniz?</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
 <translation id="49896407730300355">Saat yönünün &amp;tersine döndür</translation>

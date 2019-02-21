@@ -1403,7 +1403,6 @@
 <translation id="3101709781009526431">Tarehe na wakati</translation>
 <translation id="3104763887980088552">Kumbukumbu ya Shughuli</translation>
 <translation id="310671807099593501">Tovuti inatumia bluetooth</translation>
-<translation id="3115128645424181617">Imeshindwa kupata simu yako. Hakikisha kuwa unayo na umewasha Bluetooth.</translation>
 <translation id="3115147772012638511">Inasubiri akiba...</translation>
 <translation id="3118319026408854581">Usaidizi wa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Usimbaji fiche usiotosha kwa shughuli maalum kwenye: "<ph name="DEVICE_NAME" />".</translation>
@@ -2291,7 +2290,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4481530544597605423">Vifaa visivyooanishwa</translation>
 <translation id="4482194545587547824">Google inaweza kutumia historia yako ya mambo uliyovinjari kuweka mapendeleo ya huduma za Tafuta na huduma nyingine za Google.</translation>
 <translation id="4495419450179050807">Usionyeshe kwenye ukurasa huu</translation>
-<translation id="449938344715680828">Bonyeza |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ikifuatwa na |<ph name="ACCELERATOR3" />| ili ufunge</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> imeacha kufanya kazi</translation>
 <translation id="450099669180426158">Aikoni ya alama hisi</translation>
 <translation id="4501530680793980440">Thibitisha Uondoaji</translation>
@@ -2612,7 +2610,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4977942889532008999">Thibitisha Idhini ya kufikia</translation>
 <translation id="4980805016576257426">Kiendelezi kina programu hasidi.</translation>
 <translation id="4981449534399733132">Ili ufute data ya kuvinjari kwenye vifaa vyako vyote vilivyosawazishwa na Akaunti yako ya Google, <ph name="BEGIN_LINK" />ingia katika akaunti<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Badilisha mipangilio yako inayodhibiti idhini ya kufikia vipengele kama vile vidakuzi, JavaScript, programu jalizi, eneo la kijiografia, maikrofoni, kamera n.k.</translation>
 <translation id="4988205478593450158">Je, una uhakika unataka kufuta "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Kurasa</translation>
 <translation id="49896407730300355">Zungusha kinyume saa</translation>

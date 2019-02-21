@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Datum in ura</translation>
 <translation id="3104763887980088552">Dnevnik dejavnosti</translation>
 <translation id="310671807099593501">Spletno mesto uporablja Bluetooth</translation>
-<translation id="3115128645424181617">Telefona ni mogoče najti. Imeti ga morate pri roki in vklopiti morate Bluetooth.</translation>
 <translation id="3115147772012638511">Čakam predpomnilnik ...</translation>
 <translation id="3118319026408854581">Pomoč za <ph name="PRODUCT_NAME" /> </translation>
 <translation id="3120430004221004537">Nezadostno šifriranje za dano dejanje v tej napravi: »<ph name="DEVICE_NAME" />«.</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Naprave, za katere je bila preklicana seznanitev</translation>
 <translation id="4482194545587547824">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
 <translation id="4495419450179050807">Ne pokaži na tej strani</translation>
-<translation id="449938344715680828">Za izhod pritisnite |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| in |<ph name="ACCELERATOR3" />|</translation>
 <translation id="4500114933761911433">Vtičnik <ph name="PLUGIN_NAME" /> se je zrušil</translation>
 <translation id="450099669180426158">Ikona klicaja</translation>
 <translation id="4501530680793980440">Potrditev odstranitve</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Potrditev dostopa</translation>
 <translation id="4980805016576257426">Ta razširitev vsebuje zlonamerno programsko opremo.</translation>
 <translation id="4981449534399733132">Če želite izbrisati podatke brskanja iz vseh sinhroniziranih naprav in Google Računa, <ph name="BEGIN_LINK" />se prijavite<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Spreminjanje nastavitev, ki nadzirajo dostop spletnih mest do funkcij, kot so piškotki, JavaScript, vtičniki, geolokacija, mikrofon, fotoaparat ipd.</translation>
 <translation id="4988205478593450158">Ali ste prepričani, da želite izbrisati datoteko »<ph name="FILE_NAME" />«?</translation>
 <translation id="4988526792673242964">Strani</translation>
 <translation id="49896407730300355">Zasukaj v o&amp;bratni smeri urinega kazalca</translation>

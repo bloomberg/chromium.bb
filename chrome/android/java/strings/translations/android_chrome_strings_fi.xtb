@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Lisätään <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Verkkosivustoilta</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1054301162707478098">Olet siirtynyt yksityiseen tilaan</translation>
 <translation id="10614374240317010">Ei tallenneta</translation>
 <translation id="1067922213147265141">Muut Google-palvelut</translation>
 <translation id="1068672505746868501">Älä koskaan käännä kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitettuja sivuja.</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Lisää kieliä</translation>
 <translation id="124678866338384709">Sulje nykyinen välilehti</translation>
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Yksityisillä välilehdillä avaamasi sivut eivät jää selaimen historiaan, evästeisiin tai hakuhistoriaan, kun olet sulkenut kaikki yksityiset välilehdet. Kaikki lataamasi tiedostot ja luomasi kirjanmerkit säilytetään.
-
-Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työnantajaltasi, internetpalveluntarjoajaltasi tai avaamiltasi verkkosivustoilta.</translation>
 <translation id="1260236875608242557">Hae ja tutki</translation>
 <translation id="1264974993859112054">Urheilu</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
@@ -474,7 +470,6 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4565377596337484307">Piilota salasana</translation>
 <translation id="4570913071927164677">Tiedot</translation>
 <translation id="4572422548854449519">Kirjaudu hallinnoidulle tilille</translation>
-<translation id="4581964774250883625">Olet siirtynyt incognito-tilaan.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuutti sitten}other{# minuuttia sitten}}</translation>
 <translation id="4587589328781138893">Sivustot</translation>
 <translation id="4594952190837476234">Offline-sivu vastaa tilannetta <ph name="CREATION_TIME" /> ja saattaa poiketa nykyisestä verkkoversiosta.</translation>
@@ -632,9 +627,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5689516760719285838">Sijainti</translation>
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
-<translation id="5719837394786370183">Incognito-välilehdillä avaamasi sivut eivät jää selaimen historiaan, evästeisiin tai hakuhistoriaan, kun olet sulkenut kaikki incognito-välilehdet. Kaikki lataamasi tiedostot ja luomasi kirjanmerkit säilytetään.
-
-Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työnantajaltasi, internetpalveluntarjoajaltasi tai vierailemiltasi verkkosivustoilta.</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
 <translation id="5726692708398506830">Suurenna sivun kaikki sisältö</translation>
 <translation id="5734520971562437809">Vähennä datankäyttöä jopa 60 prosenttia ja selaa verkkoa nopeammin.</translation>

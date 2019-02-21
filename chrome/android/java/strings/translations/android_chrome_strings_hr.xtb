@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Dodavanje stavke <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">S web-lokacija</translation>
 <translation id="1049743911850919806">Anonimno</translation>
-<translation id="1054301162707478098">Sada ste u privatnom načinu.</translation>
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="1067922213147265141">Ostale Googleove usluge</translation>
 <translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Više jezika</translation>
 <translation id="124678866338384709">Zatvaranje trenutačne kartice</translation>
 <translation id="1258753120186372309">Googleov doodle logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Stranice koje gledate na privatnim karticama neće se zadržati u povijesti preglednika, pohrani kolačića i povijesti pretraživanja nakon što zatvorite sve privatne kartice. Sve datoteke koje preuzmete i oznake koje izradite sačuvat će se.
-
-Međutim, niste nevidljivi. Privatni način neće sakriti vaše pregledavanje od vašeg poslodavca, davatelja internetskih usluga i web-lokacija koje posjetite.</translation>
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
@@ -474,7 +470,6 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="4565377596337484307">Sakrij zaporku</translation>
 <translation id="4570913071927164677">Pojedinosti</translation>
 <translation id="4572422548854449519">Prijava na upravljani račun</translation>
-<translation id="4581964774250883625">Sada ste u anonimnom načinu.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{prije # minute}one{prije # minute}few{prije # minute}other{prije # minuta}}</translation>
 <translation id="4587589328781138893">Web-lokacije</translation>
 <translation id="4594952190837476234">Ova offline stranica nastala je <ph name="CREATION_TIME" /> i možda se razlikuje od online verzije.</translation>
@@ -632,9 +627,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5686790454216892815">Datoteka ima predugačak naziv</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik pomoću gumba Više opcija</translation>
-<translation id="5719837394786370183">Stranice koje gledate na anonimnim karticama neće se zadržati u povijesti preglednika, pohrani kolačića i povijesti pretraživanja nakon što zatvorite sve anonimne kartice. Sve datoteke koje preuzmete i oznake koje izradite sačuvat će se.
-
-Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od vašeg poslodavca, davatelja internetskih usluga i web-lokacija koje posjetite.</translation>
 <translation id="572328651809341494">Nedavne kartice</translation>
 <translation id="5726692708398506830">Povećavanje svega na stranici</translation>
 <translation id="5734520971562437809">Trošite do 60 posto manje podataka i ubrzajte web.</translation>

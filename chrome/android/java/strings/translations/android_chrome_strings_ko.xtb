@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> 추가 중...</translation>
 <translation id="1041308826830691739">웹사이트 알림</translation>
 <translation id="1049743911850919806">시크릿</translation>
-<translation id="1054301162707478098">비공개 모드로 전환되었습니다.</translation>
 <translation id="10614374240317010">저장되지 않음</translation>
 <translation id="1067922213147265141">다른 Google 서비스</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">다른 언어</translation>
 <translation id="124678866338384709">현재 탭 닫기</translation>
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">비공개 탭을 모두 닫으면 비공개 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
-
-하지만 완전한 비밀이 보장되는 것은 아닙니다. 비공개 모드로 탐색해도 회사, 인터넷 서비스 제공업체(ISP), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="1260236875608242557">검색 및 탐색</translation>
 <translation id="1264974993859112054">스포츠</translation>
 <translation id="1272079795634619415">중지</translation>
@@ -474,7 +470,6 @@
 <translation id="4565377596337484307">비밀번호 감추기</translation>
 <translation id="4570913071927164677">세부정보</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
-<translation id="4581964774250883625">시크릿 모드로 전환됨</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4587589328781138893">사이트</translation>
 <translation id="4594952190837476234">이 오프라인 페이지는 <ph name="CREATION_TIME" />에 생성되었으며 온라인 버전과 다를 수 있습니다.</translation>
@@ -632,9 +627,6 @@
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
-<translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
-
-하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(ISP), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
 <translation id="5734520971562437809">데이터 사용량을 최대 60퍼센트ㅍ까지 절약하고 웹 속도를 높이세요.</translation>

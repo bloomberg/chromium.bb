@@ -1407,7 +1407,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3101709781009526431">Datums un laiks</translation>
 <translation id="3104763887980088552">Darbību žurnāls</translation>
 <translation id="310671807099593501">Vietne izmanto Bluetooth savienojumu.</translation>
-<translation id="3115128645424181617">Nevar atrast tālruni. Tam ir jābūt rokas stiepiena attālumā, un Bluetooth savienojumam jābūt ieslēgtam.</translation>
 <translation id="3115147772012638511">Gaida krtuvi...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> palīdzība</translation>
 <translation id="3120430004221004537">Nepietiekams attiecīgās darbības šifrējums šajā ierīcē: “<ph name="DEVICE_NAME" />”.</translation>
@@ -2301,7 +2300,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4481530544597605423">Pārī nesavienotās ierīces</translation>
 <translation id="4482194545587547824">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="4495419450179050807">Nerādīt šajā lapā</translation>
-<translation id="449938344715680828">Lai izietu, nospiediet taustiņu kombināciju |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| un pēc tam — |<ph name="ACCELERATOR3" />|</translation>
 <translation id="4500114933761911433">Spraudnis <ph name="PLUGIN_NAME" /> avarēja.</translation>
 <translation id="450099669180426158">Izsaukuma zīmes ikona</translation>
 <translation id="4501530680793980440">Apstiprināt noņemšanu</translation>
@@ -2622,7 +2620,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4977942889532008999">Piekļuves apstiprināšana</translation>
 <translation id="4980805016576257426">Šis paplašinājums satur ļaunprātīgu programmatūru.</translation>
 <translation id="4981449534399733132">Lai notīrītu pārlūkošanas datus no visām savām sinhronizētajām ierīcēm un Google konta, <ph name="BEGIN_LINK" />pierakstieties<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">mainīt iestatījumus, ar kuriem tiek pārvaldīta vietņu piekļuve funkcijām, piemēram, sīkfailiem, JavaScript, spraudņiem, ģeogrāfiskajai atrašanās vietai, mikrofonam, kamerai u.c.</translation>
 <translation id="4988205478593450158">Vai tiesām vēlaties dzēst failu <ph name="FILE_NAME" />?</translation>
 <translation id="4988526792673242964">Lapas</translation>
 <translation id="49896407730300355">Pagriezt &amp;pretēji pulksteņrādītāju kustības virzienam</translation>

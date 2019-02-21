@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> toevoegen...</translation>
 <translation id="1041308826830691739">Van websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1054301162707478098">Je gebruikt de privémodus.</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1067922213147265141">Andere Google-services</translation>
 <translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Meer talen</translation>
 <translation id="124678866338384709">Huidig tabblad sluiten</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Pagina's die je bekijkt op privétabbladen, blijven niet in de geschiedenis, cookie-opslag of zoekgeschiedenis van je browser staan nadat je alle privétabbladen hebt gesloten. Bestanden die je downloadt of bladwijzers die je instelt, blijven behouden.
-
-Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -474,7 +470,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
-<translation id="4581964774250883625">Je bent incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuut geleden}other{# minuten geleden}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Deze offline pagina is van <ph name="CREATION_TIME" /> en kan afwijken van de online versie.</translation>
@@ -632,9 +627,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5686790454216892815">Bestandsnaam te lang</translation>
 <translation id="5689516760719285838">Locatie</translation>
 <translation id="569536719314091526">Vertaal deze pagina in een andere taal via de knop 'Meer opties'</translation>
-<translation id="5719837394786370183">Pagina's die je bekijkt op incognitotabbladen, blijven niet in de geschiedenis, cookie-opslag of zoekgeschiedenis van je browser staan nadat je alle incognitotabbladen hebt gesloten. Bestanden die je downloadt of bladwijzers die je instelt, blijven behouden.
-
-Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="572328651809341494">Recent gebruikte tabbladen</translation>
 <translation id="5726692708398506830">Alles op de pagina vergroten</translation>
 <translation id="5734520971562437809">Gebruik tot 60 procent minder data en maak internet sneller.</translation>

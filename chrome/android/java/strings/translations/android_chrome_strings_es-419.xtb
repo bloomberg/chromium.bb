@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Agregando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
-<translation id="1054301162707478098">Estás en modo privado</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Más idiomas</translation>
 <translation id="124678866338384709">Cerrar la pestaña actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Una vez que cierres todas las pestañas en privado, los datos de las páginas que hayas visitado en ese modo no se guardarán en el historial del navegador, en la lista de cookies ni en el historial de búsquedas. Sí se guardarán los archivos que descargues y los favoritos que crees.
-
-Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación privado no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
@@ -474,7 +470,6 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4565377596337484307">Ocultar contraseña</translation>
 <translation id="4570913071927164677">Detalles</translation>
 <translation id="4572422548854449519">Acceder a una cuenta administrada</translation>
-<translation id="4581964774250883625">Estás en modo incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
 <translation id="4587589328781138893">Sitios</translation>
 <translation id="4594952190837476234">Esta página sin conexión se creó el <ph name="CREATION_TIME" /> y es posible que sea diferente con respecto a la versión en línea.</translation>
@@ -632,9 +627,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="569536719314091526">Traduce esta página a cualquier idioma desde el botón Más opciones</translation>
-<translation id="5719837394786370183">Una vez que cierres todas las pestañas de incógnito, los datos de las páginas que hayas visitado en ese modo no se guardarán en el historial del navegador, en la lista de cookies ni en el historial de búsquedas. Sí se guardarán los archivos que descargues y los favoritos que crees.
-
-Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación de incógnito no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5726692708398506830">Agrandar todos los elementos de la página</translation>
 <translation id="5734520971562437809">Usa hasta un 60 por ciento menos de datos y acelera la navegación en la Web.</translation>

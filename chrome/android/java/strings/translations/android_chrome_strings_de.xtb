@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> wird hinzugefügt...</translation>
 <translation id="1041308826830691739">Von Websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Sie befinden sich jetzt im privaten Modus.</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1067922213147265141">Weitere Google-Dienste</translation>
 <translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Weitere Sprachen</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Seiten, die Sie in privaten Tabs öffnen, werden nicht in Ihrem Browserverlauf, Cookiespeicher oder Suchverlauf gespeichert, nachdem Sie alle privaten Tabs geschlossen haben. Alle heruntergeladenen Dateien und gespeicherten Lesezeichen bleiben aber erhalten.
-
-Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsache, dass Sie im Web surfen, nicht vor Ihrem Arbeitgeber, Internetanbieter oder den besuchten Websites verborgen.</translation>
 <translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -474,7 +470,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
-<translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Vor # Minute}other{Vor # Minuten}}</translation>
 <translation id="4587589328781138893">Websites</translation>
 <translation id="4594952190837476234">Diese Offlineseite ist vom <ph name="CREATION_TIME" /> und unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
@@ -632,9 +627,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5689516760719285838">Ort</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
-<translation id="5719837394786370183">Seiten, die Sie sich auf Inkognito-Tabs ansehen, werden nach dem Schließen aller Inkognito-Tabs nicht in Ihrem Browserverlauf, Cookie-Speicher oder Suchverlauf gespeichert. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben erhalten.
-
-Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
 <translation id="5726692708398506830">Gesamten Seiteninhalt vergrößern</translation>
 <translation id="5734520971562437809">Bis zu 60 Prozent weniger Datenverbrauch und schnelleres Internet.</translation>

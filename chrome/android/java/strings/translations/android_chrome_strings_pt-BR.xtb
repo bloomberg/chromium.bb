@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Adicionando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sites</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
-<translation id="1054301162707478098">Você está em modo privado.</translation>
 <translation id="10614374240317010">Nunca salvas</translation>
 <translation id="1067922213147265141">Outros serviços do Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Mais idiomas</translation>
 <translation id="124678866338384709">Fechar a guia atual</translation>
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">As páginas visitadas em guias privadas não são armazenadas no histórico do navegador, nos cookies nem no histórico de pesquisa depois que todas as guias privadas são fechadas. Todos os arquivos transferidos por download ou favoritos criados serão mantidos.﻿
-
-Porém, você não está invisível, O modo privado não oculta sua navegação do seu empregador, seu provedor de Internet ou dos sites visitados.</translation>
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Esportes</translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -475,7 +471,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4565377596337484307">Ocultar senha</translation>
 <translation id="4570913071927164677">Detalhes</translation>
 <translation id="4572422548854449519">Fazer login em conta gerenciada</translation>
-<translation id="4581964774250883625">Você está navegando sem deixar rastros.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Esta página off-line é de <ph name="CREATION_TIME" /> e pode ser diferente da versão on-line.</translation>
@@ -633,8 +628,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5686790454216892815">Nome do arquivo muito longo</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="569536719314091526">Traduza esta página para qualquer idioma com o botão "Mais opções"</translation>
-<translation id="5719837394786370183">Quando você está no modo invisível, as páginas que você visita não aparecem no seu histórico de navegação e de pesquisa, nem armazenam arquivos "cookies". Mas os downloads e os favoritos continuam funcionando normalmente.﻿
-         No entanto, o modo invisível NÃO oculta seus dados de navegação. Seu empregador, seu provedor de Internet e os websites visitados continuam tendo acesso a essas informações.</translation>
 <translation id="572328651809341494">Guias recentes</translation>
 <translation id="5726692708398506830">Aumentar tudo na página</translation>
 <translation id="5734520971562437809">Diminua o uso de dados em até 60 por cento e deixe a Web mais rápida.</translation>

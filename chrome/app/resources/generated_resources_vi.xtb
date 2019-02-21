@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Ngày và giờ</translation>
 <translation id="3104763887980088552">Nhật ký hoạt động</translation>
 <translation id="310671807099593501">Trang web đang sử dụng Bluetooth</translation>
-<translation id="3115128645424181617">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo rằng điện thoại ở trong tầm tay và Bluetooth đang bật.</translation>
 <translation id="3115147772012638511">Đang chờ bộ nhớ đệm…</translation>
 <translation id="3118319026408854581">Trợ giúp <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Mã hóa không đầy đủ đối với một tác vụ cụ thể trên: "<ph name="DEVICE_NAME" />".</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4482194545587547824">Google có thể sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm và các dịch vụ khác của Google.</translation>
 <translation id="4495419450179050807">Không hiển thị trên trang này</translation>
-<translation id="449938344715680828">Nhấn tổ hợp phím |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, sau đó nhấn phím |<ph name="ACCELERATOR3" />| để thoát</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> đã bị lỗi</translation>
 <translation id="450099669180426158">Biểu tượng dấu chấm than</translation>
 <translation id="4501530680793980440">Xác nhận xóa</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Xác nhận truy cập</translation>
 <translation id="4980805016576257426">Tiện ích này có chứa phần mềm độc hại.</translation>
 <translation id="4981449534399733132">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />đăng nhập<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Thay đổi cài đặt của bạn để kiểm soát quyền truy cập của trang web vào các tính năng như cookie, JavaScript, plugin, vị trí địa lý, micrô, máy ảnh, v.v.</translation>
 <translation id="4988205478593450158">Bạn có chắc chắn muốn xóa "<ph name="FILE_NAME" />" không?</translation>
 <translation id="4988526792673242964">Trang</translation>
 <translation id="49896407730300355">Xoay &amp;ngược chiều kim đồng hồ</translation>

@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
-<translation id="1054301162707478098">Bạn đã chuyển sang chế độ riêng tư.</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
 <translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="124678866338384709">Đóng tab hiện tại</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Các trang mà bạn xem ở tab ẩn danh sẽ không lưu vào lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab riêng tư. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được lưu lại.
-
-Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang chế độ riêng tư sẽ không ẩn hoạt động duyệt web của bạn với chủ lao động, nhà cung cấp dịch vụ Internet hoặc các trang web bạn truy cập.</translation>
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1264974993859112054">Thể thao</translation>
 <translation id="1272079795634619415">Dừng</translation>
@@ -474,7 +470,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4565377596337484307">Ẩn mật khẩu</translation>
 <translation id="4570913071927164677">Chi tiết</translation>
 <translation id="4572422548854449519">Đăng nhập vào tài khoản được quản lý</translation>
-<translation id="4581964774250883625">Bạn đã chuyển sang chế độ ẩn danh.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# phút trước}other{# phút trước}}</translation>
 <translation id="4587589328781138893">Trang web</translation>
 <translation id="4594952190837476234">Trang ngoại tuyến này được tạo từ lúc <ph name="CREATION_TIME" /> và có thể khác với phiên bản trực tuyến.</translation>
@@ -632,9 +627,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5689516760719285838">Vị trí</translation>
 <translation id="569536719314091526">Dịch trang này sang ngôn ngữ bất kỳ từ nút Tùy chọn khác</translation>
-<translation id="5719837394786370183">Trang mà bạn xem ở tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab ẩn danh của bạn. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được giữ nguyên.
-
-Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
 <translation id="5726692708398506830">Phóng to mọi nội dung trên trang</translation>
 <translation id="5734520971562437809">Tiết kiệm tới 60 phần trăm dữ liệu và tăng tốc độ tải trang.</translation>

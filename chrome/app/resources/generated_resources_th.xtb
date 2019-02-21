@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">วันที่และเวลา</translation>
 <translation id="3104763887980088552">บันทึกกิจกรรม</translation>
 <translation id="310671807099593501">เว็บไซต์กำลังใช้บลูทูธ</translation>
-<translation id="3115128645424181617">ไม่พบโทรศัพท์ของคุณ โปรดตรวจสอบว่าโทรศัพท์อยู่ใกล้ๆ มือและเปิดบลูทูธอยู่</translation>
 <translation id="3115147772012638511">กำลังรอแคช...</translation>
 <translation id="3118319026408854581">ความช่วยเหลือของ <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">การเข้ารหัสสำหรับการดำเนินการที่ระบุไม่เพียงพอใน "<ph name="DEVICE_NAME" />"</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">อุปกรณ์ที่ไม่ได้จับคู่</translation>
 <translation id="4482194545587547824">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="4495419450179050807">ไม่แสดงในหน้านี้อีก</translation>
-<translation id="449938344715680828">กด |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ตามด้วย |<ph name="ACCELERATOR3" />| เพื่อออก</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ขัดข้อง</translation>
 <translation id="450099669180426158">ไอคอนเครื่องหมายอัศเจรีย์</translation>
 <translation id="4501530680793980440">ยืนยันการนำออก</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">ยืนยันการเข้าถึง</translation>
 <translation id="4980805016576257426">ส่วนขยายนี้มีมัลแวร์</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />ลงชื่อเข้าใช้<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์ทุกเครื่องที่ซิงค์และบัญชี Google</translation>
-<translation id="498294082491145744">เปลี่ยนการตั้งค่าที่ควบคุมสิทธิ์ของเว็บไซต์ในการเข้าถึงฟีเจอร์อย่างเช่นคุกกี้, JavaScript, ปลั๊กอิน, ตำแหน่งทางภูมิศาสตร์, ไมโครโฟน, กล้องถ่ายรูป ฯลฯ</translation>
 <translation id="4988205478593450158">แน่ใจไหมว่าต้องการลบ "<ph name="FILE_NAME" />"</translation>
 <translation id="4988526792673242964">หน้า</translation>
 <translation id="49896407730300355">หมุน&amp;ทวนเข็มนาฬิกา</translation>

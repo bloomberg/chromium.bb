@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">A adicionar <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De Websites</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
-<translation id="1054301162707478098">Entrou no modo privado.</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1067922213147265141">Outros serviços Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Mais idiomas</translation>
 <translation id="124678866338384709">Fechar o separador atual</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">As páginas que visualizar em separadores privados não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores privados. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
-
-No entanto, a navegação não é invisível. Passar para o modo privado não oculta a navegação do empregador, do fornecedor de serviços de Internet nem dos Websites que visitar.</translation>
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Desporto</translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -474,7 +470,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4565377596337484307">Ocultar palavra-passe</translation>
 <translation id="4570913071927164677">Detalhes</translation>
 <translation id="4572422548854449519">Iniciar sessão na conta gerida</translation>
-<translation id="4581964774250883625">Entrou no modo de navegação anónima.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Há # minuto}other{Há # minutos}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Esta página foi criada a <ph name="CREATION_TIME" /> e pode ser diferente da versão online.</translation>
@@ -632,9 +627,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="569536719314091526">Traduzir esta página para qualquer idioma a partir do botão Mais opções</translation>
-<translation id="5719837394786370183">As páginas que visualizar em separadores de navegação anónima não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
-
-No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Sites que visitar.</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
 <translation id="5734520971562437809">Utilize até menos 60 por cento de dados e acelere a Web.</translation>

@@ -1405,7 +1405,6 @@
 <translation id="3101709781009526431">Data i hora</translation>
 <translation id="3104763887980088552">Registre d'activitat</translation>
 <translation id="310671807099593501">El lloc web està utilitzant el Bluetooth</translation>
-<translation id="3115128645424181617">No es troba el telèfon. Comprova que sigui a prop i que tingui el Bluetooth activat.</translation>
 <translation id="3115147772012638511">Esperant la memòria cau...</translation>
 <translation id="3118319026408854581">Ajuda de <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">El nivell d'encriptació no és prou alt per a una operació determinada a <ph name="DEVICE_NAME" />.</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">Dispositius desvinculats</translation>
 <translation id="4482194545587547824">És possible que Google utilitzi el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google</translation>
 <translation id="4495419450179050807">No la mostris en aquesta pàgina</translation>
-<translation id="449938344715680828">Prem |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| i després |<ph name="ACCELERATOR3" />| per sortir</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ha fallat</translation>
 <translation id="450099669180426158">Icona de signe d'exclamació</translation>
 <translation id="4501530680793980440">Confirmació de la supressió</translation>
@@ -2618,7 +2616,6 @@
 <translation id="4977942889532008999">Confirmació de l'accés</translation>
 <translation id="4980805016576257426">Aquesta extensió conté programari maliciós.</translation>
 <translation id="4981449534399733132">Per esborrar les dades de navegació de tots els dispositius sincronitzats i del Compte de Google, <ph name="BEGIN_LINK" />inicia la sessió<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Modifiqueu la configuració que controla l'accés dels llocs web a elements com les galetes, JavaScript, els connectors, la ubicació, el micròfon, la càmera, etc.</translation>
 <translation id="4988205478593450158">Estàs segur que vols suprimir "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Pàgines</translation>
 <translation id="49896407730300355">Gira en el sentit con&amp;trari a les agulles del rellotge</translation>

@@ -1408,7 +1408,6 @@
 <translation id="3101709781009526431">Tarikh dan masa</translation>
 <translation id="3104763887980088552">Log Aktiviti</translation>
 <translation id="310671807099593501">Tapak sedang menggunakan bluetooth</translation>
-<translation id="3115128645424181617">Tidak dapat mencari telefon anda. Pastikan telefon tersebut ada bersama anda dan Bluetooth dihidupkan.</translation>
 <translation id="3115147772012638511">Menunggu cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Bantuan</translation>
 <translation id="3120430004221004537">Penyulitan tidak mencukupi untuk pengendalian yang dinyatakan pada: "<ph name="DEVICE_NAME" />".</translation>
@@ -2302,7 +2301,6 @@
 <translation id="4481530544597605423">Peranti dinyahganding</translation>
 <translation id="4482194545587547824">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian dan perkhidmatan Google yang lain.</translation>
 <translation id="4495419450179050807">Jangan paparkan pada halaman ini</translation>
-<translation id="449938344715680828">Tekan |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| diikuti oleh |<ph name="ACCELERATOR3" />| untuk keluar</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> telah ranap</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Sahkan Pengalihan Keluar</translation>
@@ -2623,7 +2621,6 @@
 <translation id="4977942889532008999">Sahkan Akses</translation>
 <translation id="4980805016576257426">Sambungan ini mengandungi perisian hasad.</translation>
 <translation id="4981449534399733132">Untuk mengosongkan data semakan imbas daripada semua peranti tersegerak dan Akaun Google anda, <ph name="BEGIN_LINK" />log masuk<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Ubah tetapan anda yang mengawal akses tapak web kepada ciri seperti kuki, JavaScript, pemalam, geolokasi, mikrofon, kamera, dsb.</translation>
 <translation id="4988205478593450158">Adakah anda pasti anda mahu memadamkan "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Halaman</translation>
 <translation id="49896407730300355">Putar m&amp;elawan arah jam</translation>

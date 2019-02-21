@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Pridáva sa <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webov</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Ste v súkromnom režime.</translation>
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="1067922213147265141">Ďalšie služby Googlu</translation>
 <translation id="1068672505746868501">Nikdy neprekladať stránky v jazyku <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Ďalšie jazyky</translation>
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Stránky, ktoré si zobrazíte na súkromných kartách, budú odstránené z histórie prehliadača, z histórie vyhľadávania aj zo súborov cookie okamžite po zatvorení všetkých súkromných kariet. Stiahnuté súbory a záložky, ktoré vytvoríte, ostanú uložené.
-
-Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaše prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb či webmi, ktoré navštívite.</translation>
 <translation id="1260236875608242557">Prehľadať a preskúmať</translation>
 <translation id="1264974993859112054">Šport</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
@@ -474,7 +470,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4565377596337484307">Skryť heslo</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4572422548854449519">Prihlásenie do spravovaného účtu</translation>
-<translation id="4581964774250883625">Ste v režime inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{pred # minútou}few{pred # minútami}many{pred # minútou}other{pred # minútami}}</translation>
 <translation id="4587589328781138893">Weby</translation>
 <translation id="4594952190837476234">Táto offline stránka je z <ph name="CREATION_TIME" /> a líši sa od online verzie.</translation>
@@ -632,9 +627,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
-<translation id="5719837394786370183">Stránky, ktoré si zobrazíte na kartách inkognito, budú odstránené z histórie prehliadača, z histórie vyhľadávania aj zo súborov cookie okamžite po zatvorení všetkých kariet inkognito. Stiahnuté súbory a záložky, ktoré vytvoríte, ostanú uložené.
-
-Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše prehliadanie pred vaším zamestnávateľom, poskytovateľom internetových služieb či webovými stránkami, ktoré navštívite.</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
 <translation id="5726692708398506830">Zväčšenie obsahu na stránke</translation>
 <translation id="5734520971562437809">Ušetrite až 60 percent dát a načítavajte weby rýchlejšie.</translation>

@@ -1402,7 +1402,6 @@
 <translation id="3101709781009526431">日期和时间</translation>
 <translation id="3104763887980088552">活动日志</translation>
 <translation id="310671807099593501">该网站正在使用蓝牙</translation>
-<translation id="3115128645424181617">找不到您的手机。请确保它就在您身边且已开启蓝牙。</translation>
 <translation id="3115147772012638511">正在等待存入缓存...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />帮助</translation>
 <translation id="3120430004221004537">“<ph name="DEVICE_NAME" />”上某项指定操作的加密强度不足。</translation>
@@ -2293,7 +2292,6 @@
 <translation id="4481530544597605423">未配对的设备</translation>
 <translation id="4482194545587547824">Google 可能会使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
-<translation id="449938344715680828">按下 |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|，然后再按 |<ph name="ACCELERATOR3" />| 即可退出</translation>
 <translation id="4500114933761911433">“<ph name="PLUGIN_NAME" />”崩溃了</translation>
 <translation id="450099669180426158">感叹号图标</translation>
 <translation id="4501530680793980440">确认删除</translation>
@@ -2614,7 +2612,6 @@
 <translation id="4977942889532008999">确认访问</translation>
 <translation id="4980805016576257426">此扩展程序包含恶意软件。</translation>
 <translation id="4981449534399733132">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />登录<ph name="END_LINK" />。</translation>
-<translation id="498294082491145744">更改您用于控制以下内容的设置：网站对 Cookie、JavaScript、插件、地理位置信息、麦克风、摄像头等功能的使用权限。</translation>
 <translation id="4988205478593450158">确定要删除“<ph name="FILE_NAME" />”吗？</translation>
 <translation id="4988526792673242964">页码</translation>
 <translation id="49896407730300355">逆时针旋转(&amp;O)</translation>

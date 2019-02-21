@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Kuupäev ja kellaaeg</translation>
 <translation id="3104763887980088552">Tegevuste logi</translation>
 <translation id="310671807099593501">Sait kasutab Bluetoothi</translation>
-<translation id="3115128645424181617">Teie telefoni ei õnnestu leida. Veenduge, et see oleks käepärast ja Bluetooth oleks sisse lülitatud.</translation>
 <translation id="3115147772012638511">Puhvri ootel...</translation>
 <translation id="3118319026408854581">Toote <ph name="PRODUCT_NAME" /> abi</translation>
 <translation id="3120430004221004537">Ebapiisav krüpteerimine antud toimingu puhul seadmes „<ph name="DEVICE_NAME" />”.</translation>
@@ -2301,7 +2300,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4481530544597605423">Sidumata seadmed</translation>
 <translation id="4482194545587547824">Google võib kasutada teie sirvimisajalugu otsingu ja teiste Google'i teenuste isikupärastamiseks</translation>
 <translation id="4495419450179050807">Ära sellel lehel kuva</translation>
-<translation id="449938344715680828">Vajutage klahvikombinatsiooni |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|, seejärel klahvi |<ph name="ACCELERATOR3" />|, et väljuda</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> jooksis kokku</translation>
 <translation id="450099669180426158">Hüüumärgi ikoon</translation>
 <translation id="4501530680793980440">Eemaldamise kinnitamine</translation>
@@ -2622,7 +2620,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4977942889532008999">Juurdepääsu kinnitamine</translation>
 <translation id="4980805016576257426">Laiendus sisaldab pahavara.</translation>
 <translation id="4981449534399733132">Sirvimisandmete kustutamiseks kõigist sünkroonitud seadmetest ja oma Google'i kontolt <ph name="BEGIN_LINK" />logige sisse<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Muutke seadeid, mis juhivad veebisaitide juurdepääsu funktsioonidele (nt küpsistele, JavaScriptile, pistikprogrammidele, geograafilisele asukohale, mikrofonile, kaamerale jne).</translation>
 <translation id="4988205478593450158">Kas soovite kindlasti faili <ph name="FILE_NAME" /> kustutada?</translation>
 <translation id="4988526792673242964">Leheküljed</translation>
 <translation id="49896407730300355">Pööra &amp;vastupäeva</translation>

@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Tiek pievienots <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">No vietnēm</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Jūs esat atvēris privāto režīmu.</translation>
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="1067922213147265141">Citi Google pakalpojumi</translation>
 <translation id="1068672505746868501">Nekad netulkot lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Citas valodas…</translation>
 <translation id="124678866338384709">Aizvērt pašreizējo cilni</translation>
 <translation id="1258753120186372309">Google svētku logotips: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Lapas, ko skatāt privātajās cilnēs, nebūs redzamas pārlūka vēsturē, sīkfailu krātuvē vai meklēšanas vēsturē, kad aizvērsiet visas privātās cilnes. Tomēr visi lejupielādētie faili un izveidotās grāmatzīmes tiks saglabātas.
-
-Ņemiet vērā, ka privātajā režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="1260236875608242557">Meklēšana un izpēte</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Apturēt</translation>
@@ -474,7 +470,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4565377596337484307">Slēpt paroli</translation>
 <translation id="4570913071927164677">Detalizēta informācija</translation>
 <translation id="4572422548854449519">Pierakstīšanās pārvaldītā kontā</translation>
-<translation id="4581964774250883625">Jūs esat atvēris inkognito režīmu.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{pirms # minūtes}zero{pirms # minūtēm}one{pirms # minūtes}other{pirms # minūtēm}}</translation>
 <translation id="4587589328781138893">Vietnes</translation>
 <translation id="4594952190837476234">Šī lapas bezsaistes versija (izveidota: <ph name="CREATION_TIME" />) var atšķirties no tiešsaistes versijas.</translation>
@@ -632,9 +627,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5689516760719285838">Atrašanās vieta</translation>
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
-<translation id="5719837394786370183">Lapas, ko skatāt inkognito cilnēs, nebūs redzamas pārlūka vēsturē, sīkfailu krātuvē vai meklēšanas vēsturē, kad aizvērsiet visas inkognito cilnes. Tomēr visi lejupielādētie faili un izveidotās grāmatzīmes tiks saglabātas.
-
-Ņemiet vērā, ka inkognito režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
 <translation id="5734520971562437809">Izmantojiet līdz pat 60 procentiem mazāk datu un paātriniet tīmekļa darbību.</translation>

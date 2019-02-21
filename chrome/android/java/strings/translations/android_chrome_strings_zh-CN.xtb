@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">隐身</translation>
-<translation id="1054301162707478098">您已进入私密模式。</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1067922213147265141">其他 Google 服务</translation>
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">更多语言</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">在您关闭所有私密标签页后，您在其中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
-
-但是，这并不意味着您能完全隐身。即使您进入私密模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -474,7 +470,6 @@
 <translation id="4565377596337484307">隐藏密码</translation>
 <translation id="4570913071927164677">详情</translation>
 <translation id="4572422548854449519">请登录受管理的帐号</translation>
-<translation id="4581964774250883625">您已进入无痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4587589328781138893">网站</translation>
 <translation id="4594952190837476234">此离线网页是在 <ph name="CREATION_TIME" />创建的，可能与在线版本有所不同。</translation>
@@ -632,9 +627,6 @@
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
-<translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
-
-但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5726692708398506830">放大网页上的所有内容</translation>
 <translation id="5734520971562437809">可节省多达百分之 60 的数据流量，并加快网页加载速度。</translation>

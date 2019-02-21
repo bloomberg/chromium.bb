@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Дата и время</translation>
 <translation id="3104763887980088552">Журнал активности</translation>
 <translation id="310671807099593501">Сайт использует Bluetooth</translation>
-<translation id="3115128645424181617">Не удалось найти телефон. Убедитесь, что он поблизости и на нем включен Bluetooth.</translation>
 <translation id="3115147772012638511">Ожидание кеша…</translation>
 <translation id="3118319026408854581">Справка <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Неполное шифрование операции на устройстве <ph name="DEVICE_NAME" />.</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Отключенные устройства</translation>
 <translation id="4482194545587547824">Google может использовать историю просмотров для персонализации Поиска и других сервисов.</translation>
 <translation id="4495419450179050807">Не показывать на этой странице</translation>
-<translation id="449938344715680828">Чтобы выйти, нажмите |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|, а затем |<ph name="ACCELERATOR3" />|</translation>
 <translation id="4500114933761911433">Сбой в плагине <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Значок восклицательного знака.</translation>
 <translation id="4501530680793980440">Подтверждение удаления</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Подтверждение доступа</translation>
 <translation id="4980805016576257426">Это расширение содержит вредоносное ПО.</translation>
 <translation id="4981449534399733132">Чтобы удалить данные о работе в браузере со всех синхронизированных устройств и из аккаунта Google, <ph name="BEGIN_LINK" />войдите в систему<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Изменить настройки доступа сайтов к файлам cookie, JavaScript, плагинам, геоданным, микрофону, камере и другим функциям</translation>
 <translation id="4988205478593450158">Вы действительно хотите удалить файл "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="49896407730300355">Повернуть п&amp;ротив часовой стрелки</translation>
