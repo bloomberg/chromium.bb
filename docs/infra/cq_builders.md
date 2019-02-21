@@ -238,6 +238,10 @@ as required builders.
 
   * Experimental percentage: 10
 
+* [linux-coverage-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-coverage-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-coverage-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-coverage-rel))
+
+  * Experimental percentage: 10
+
 * [linux-dcheck-off-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-dcheck-off-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-dcheck-off-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-dcheck-off-rel))
 
   https://crbug.com/833482
