@@ -342,7 +342,7 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
       {"foo\nbar\r\n\njunk", 10},
   };
   for (size_t i = 0; i < base::size(tests); ++i) {
-    int input_len = static_cast<int>(strlen(tests[i].input));
+    size_t input_len = strlen(tests[i].input);
     int eoh = HttpUtil::LocateEndOfHeaders(tests[i].input, input_len);
     EXPECT_EQ(tests[i].expected_result, eoh);
   }
@@ -366,7 +366,7 @@ TEST(HttpUtilTest, LocateEndOfAdditionalHeaders) {
       {"foo\nbar\r\n\njunk", 10},
   };
   for (size_t i = 0; i < base::size(tests); ++i) {
-    int input_len = static_cast<int>(strlen(tests[i].input));
+    size_t input_len = strlen(tests[i].input);
     int eoh = HttpUtil::LocateEndOfAdditionalHeaders(tests[i].input, input_len);
     EXPECT_EQ(tests[i].expected_result, eoh);
   }

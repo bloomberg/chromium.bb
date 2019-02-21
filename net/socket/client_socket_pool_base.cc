@@ -530,7 +530,7 @@ void ClientSocketPoolBaseHelper::CloseIdleSocketsInGroup(
     RemoveGroup(it);
 }
 
-int ClientSocketPoolBaseHelper::IdleSocketCountInGroup(
+size_t ClientSocketPoolBaseHelper::IdleSocketCountInGroup(
     const std::string& group_name) const {
   auto i = group_map_.find(group_name);
   CHECK(i != group_map_.end());

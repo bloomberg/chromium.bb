@@ -170,7 +170,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual int IdleSocketCount() const = 0;
 
   // The total number of idle sockets in a connection group.
-  virtual int IdleSocketCountInGroup(const std::string& group_name) const = 0;
+  virtual size_t IdleSocketCountInGroup(
+      const std::string& group_name) const = 0;
 
   // Determine the LoadState of a connecting ClientSocketHandle.
   virtual LoadState GetLoadState(const std::string& group_name,

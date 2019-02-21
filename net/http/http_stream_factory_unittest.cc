@@ -443,7 +443,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
     ADD_FAILURE();
     return 0;
   }
-  int IdleSocketCountInGroup(const std::string& group_name) const override {
+  size_t IdleSocketCountInGroup(const std::string& group_name) const override {
     ADD_FAILURE();
     return 0;
   }

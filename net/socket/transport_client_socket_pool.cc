@@ -301,7 +301,7 @@ int TransportClientSocketPool::IdleSocketCount() const {
   return base_.idle_socket_count();
 }
 
-int TransportClientSocketPool::IdleSocketCountInGroup(
+size_t TransportClientSocketPool::IdleSocketCountInGroup(
     const std::string& group_name) const {
   return base_.IdleSocketCountInGroup(group_name);
 }

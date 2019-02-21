@@ -164,6 +164,7 @@ class NET_EXPORT HttpUtil {
   // Returns the start of the status line, or -1 if no status line was found.
   // This allows for 4 bytes of junk to precede the status line (which is what
   // mozilla does too).
+  // TODO(921389): Convert this to return size_t.
   static int LocateStartOfStatusLine(const char* buf, int buf_len);
 
   // Returns index beyond the end-of-headers marker or -1 if not found.  RFC
@@ -173,12 +174,14 @@ class NET_EXPORT HttpUtil {
   // as end-of-headers (just like Mozilla). The first line of |buf| is
   // considered the status line, even if empty.
   // The parameter |i| is the offset within |buf| to begin searching from.
+  // TODO(921389): Convert this to return size_t.
   static int LocateEndOfHeaders(const char* buf, int buf_len, int i = 0);
 
   // Same as |LocateEndOfHeaders|, but does not expect a status line, so can be
   // used on multi-part responses or HTTP/1.x trailers.  As a result, if |buf|
   // starts with a single [CR]LF,  it is considered an empty header list, as
   // opposed to an empty status line above a header list.
+  // TODO(921389): Convert this to return size_t.
   static int LocateEndOfAdditionalHeaders(const char* buf,
                                           int buf_len,
                                           int i = 0);

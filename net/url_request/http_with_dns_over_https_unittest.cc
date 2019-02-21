@@ -208,7 +208,7 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
   EXPECT_EQ(network_session
                 ->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
                 ->IdleSocketCountInGroup(group_name),
-            1);
+            1u);
 
   // Make a request that will trigger a DoH query as well.
   TestDelegate d;

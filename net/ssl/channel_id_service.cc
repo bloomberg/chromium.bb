@@ -418,7 +418,7 @@ int ChannelIDService::LookupChannelID(
   return err;
 }
 
-int ChannelIDService::channel_id_count() {
+size_t ChannelIDService::channel_id_count() {
   return channel_id_store_->GetChannelIDCount();
 }
 

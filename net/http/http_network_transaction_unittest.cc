@@ -666,7 +666,7 @@ class CaptureGroupNameSocketPool : public ParentPool {
   void CloseIdleSockets() override {}
   void CloseIdleSocketsInGroup(const std::string& group_name) override {}
   int IdleSocketCount() const override { return 0; }
-  int IdleSocketCountInGroup(const std::string& group_name) const override {
+  size_t IdleSocketCountInGroup(const std::string& group_name) const override {
     return 0;
   }
   LoadState GetLoadState(const std::string& group_name,
@@ -13496,18 +13496,15 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
   // and TestRound's created with the default constructor should not be used.
   struct TestRound {
     TestRound()
-        : expected_rv(ERR_UNEXPECTED),
-          extra_write(NULL),
-          extra_read(NULL) {
-    }
-    TestRound(const MockWrite& write_arg, const MockRead& read_arg,
+        : expected_rv(ERR_UNEXPECTED), extra_write(NULL), extra_read(NULL) {}
+    TestRound(const MockWrite& write_arg,
+              const MockRead& read_arg,
               int expected_rv_arg)
         : write(write_arg),
           read(read_arg),
           expected_rv(expected_rv_arg),
           extra_write(NULL),
-          extra_read(NULL) {
-    }
+          extra_read(NULL) {}
     TestRound(const MockWrite& write_arg, const MockRead& read_arg,
               int expected_rv_arg, const MockWrite* extra_write_arg,
               const MockRead* extra_read_arg)
@@ -14456,7 +14453,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_TRUE(response->auth_challenge);
-  EXPECT_EQ(0, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
 
@@ -14481,7 +14478,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(0, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
 
@@ -14494,7 +14491,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(0, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
 
@@ -14507,7 +14504,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(0, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
 
   // In WAIT_FOR_CHALLENGE, although in reality the auth handler is done. A real
   // auth handler should transition to a DONE state in concert with the remote
@@ -14527,7 +14524,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_EQ(0, rv);
   // There are still 0 idle sockets, since the trans_compete transaction
   // will be handed it immediately after trans releases it to the group.
-  EXPECT_EQ(0, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
 
   // The competing request can now finish. Wait for the headers and then
   // read the body.
@@ -14541,7 +14538,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_EQ(0, rv);
 
   // Finally, the socket is released to the group.
-  EXPECT_EQ(1, transport_pool->IdleSocketCountInGroup(kSocketGroup));
+  EXPECT_EQ(1u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
 }
 
 // This tests the case that a request is issued via http instead of spdy after

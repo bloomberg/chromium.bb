@@ -820,12 +820,12 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
     // Accepting truncated headers over HTTPS is a potential security
     // vulnerability, so just return an error in that case.
     //
-    // If response_header_start_offset_ is -1, this may be a < 8 byte HTTP/0.9
-    // response. However, accepting such a response over HTTPS would allow a
-    // MITM to truncate an HTTP/1.x status line to look like a short HTTP/0.9
-    // response if the peer put a record boundary at the first 8 bytes. To
-    // ensure that all response headers received over HTTPS are pristine, treat
-    // such responses as errors.
+    // If response_header_start_offset_ is -1, this may be a < 8
+    // byte HTTP/0.9 response. However, accepting such a response over HTTPS
+    // would allow a MITM to truncate an HTTP/1.x status line to look like a
+    // short HTTP/0.9 response if the peer put a record boundary at the first 8
+    // bytes. To ensure that all response headers received over HTTPS are
+    // pristine, treat such responses as errors.
     //
     // TODO(mmenke):  Returning ERR_RESPONSE_HEADERS_TRUNCATED when a response
     // looks like an HTTP/0.9 response is weird.  Should either come up with

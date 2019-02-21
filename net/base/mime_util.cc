@@ -261,7 +261,8 @@ static bool FindPreferredExtension(const MimeInfo (&mappings)[num_mappings],
     if (mapping.mime_type == mime_type) {
       const char* extensions = mapping.extensions;
       const char* extension_end = strchr(extensions, ',');
-      int len = extension_end ? extension_end - extensions : strlen(extensions);
+      size_t len =
+          extension_end ? extension_end - extensions : strlen(extensions);
       *result = StringToFilePathStringType(base::StringPiece(extensions, len));
       return true;
     }

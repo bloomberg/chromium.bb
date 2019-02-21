@@ -192,7 +192,7 @@ struct DestinationInfo {
   unsigned precedence;
   unsigned label;
   const AddressSorterPosix::SourceAddressInfo* src;
-  unsigned common_prefix_length;
+  size_t common_prefix_length;
 };
 
 // Returns true iff |dst_a| should precede |dst_b| in the address list.

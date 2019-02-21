@@ -218,7 +218,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // See ClientSocketPool::IdleSocketCountInGroup() for documentation on this
   // function.
-  int IdleSocketCountInGroup(const std::string& group_name) const;
+  size_t IdleSocketCountInGroup(const std::string& group_name) const;
 
   // See ClientSocketPool::GetLoadState() for documentation on this function.
   LoadState GetLoadState(const std::string& group_name,
@@ -231,15 +231,16 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
         ClientSocketPool::kMaxConnectRetryIntervalMs);
   }
 
-  int NumNeverAssignedConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumNeverAssignedConnectJobsInGroup(
+      const std::string& group_name) const {
     return group_map_.find(group_name)->second->never_assigned_job_count();
   }
 
-  int NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
     return group_map_.find(group_name)->second->unassigned_job_count();
   }
 
-  int NumConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumConnectJobsInGroup(const std::string& group_name) const {
     return group_map_.find(group_name)->second->jobs().size();
   }
 
@@ -806,7 +807,7 @@ class ClientSocketPoolBase {
 
   int idle_socket_count() const { return helper_.idle_socket_count(); }
 
-  int IdleSocketCountInGroup(const std::string& group_name) const {
+  size_t IdleSocketCountInGroup(const std::string& group_name) const {
     return helper_.IdleSocketCountInGroup(group_name);
   }
 
@@ -824,15 +825,16 @@ class ClientSocketPoolBase {
     return helper_.OnConnectJobComplete(result, job);
   }
 
-  int NumNeverAssignedConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumNeverAssignedConnectJobsInGroup(
+      const std::string& group_name) const {
     return helper_.NumNeverAssignedConnectJobsInGroup(group_name);
   }
 
-  int NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
     return helper_.NumUnassignedConnectJobsInGroup(group_name);
   }
 
-  int NumConnectJobsInGroup(const std::string& group_name) const {
+  size_t NumConnectJobsInGroup(const std::string& group_name) const {
     return helper_.NumConnectJobsInGroup(group_name);
   }
 

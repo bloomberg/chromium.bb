@@ -817,8 +817,8 @@ std::string HttpUtil::ExpandLanguageList(const std::string& language_prefs) {
 
   AcceptLanguageBuilder builder;
 
-  const int size = languages.size();
-  for (int i = 0; i < size; ++i) {
+  const size_t size = languages.size();
+  for (size_t i = 0; i < size; ++i) {
     const std::string& language = languages[i];
     builder.AddLanguageCode(language);
 
@@ -827,7 +827,7 @@ std::string HttpUtil::ExpandLanguageList(const std::string& language_prefs) {
 
     // Look ahead and add the base language if the next language is not part
     // of the same family.
-    const int j = i + 1;
+    const size_t j = i + 1;
     if (j >= size || GetBaseLanguageCode(languages[j]) != base_language) {
       builder.AddLanguageCode(base_language);
     }
