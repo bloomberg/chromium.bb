@@ -634,7 +634,7 @@ ClearBreakpadPipeEnvironmentVariable() {
   env->UnSetVar(kPipeNameVar);
 }
 
-#ifdef _WIN64
+#ifdef _M_X64
 int CrashForExceptionInNonABICompliantCodeRange(
     PEXCEPTION_RECORD ExceptionRecord,
     ULONG64 EstablisherFrame,
