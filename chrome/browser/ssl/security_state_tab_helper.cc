@@ -21,7 +21,6 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/features.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -238,9 +237,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
       case safe_browsing::SB_THREAT_TYPE_BILLING:
-        return base::FeatureList::IsEnabled(safe_browsing::kBillingInterstitial)
-                   ? security_state::MALICIOUS_CONTENT_STATUS_BILLING
-                   : security_state::MALICIOUS_CONTENT_STATUS_NONE;
+        return security_state::MALICIOUS_CONTENT_STATUS_BILLING;
       case safe_browsing::
           DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:

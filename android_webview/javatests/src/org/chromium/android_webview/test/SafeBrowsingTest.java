@@ -498,21 +498,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("disable-features=BillingInterstitial")
-    public void testSafeBrowsingDoesNotBlockBillingPages() throws Throwable {
-        // TODO(ntfschr): this is a temporary check until we launch support for Billing warnings
-        // (http://crbug/887186).
-        loadGreenPage();
-        final String responseUrl = mTestServer.getURL(BILLING_HTML_PATH);
-        mActivityTestRule.loadUrlSync(
-                mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        assertTargetPageHasLoaded(BILLING_PAGE_BACKGROUND_COLOR);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=BillingInterstitial")
     public void testSafeBrowsingBlocksBillingPages() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(BILLING_HTML_PATH);
@@ -525,7 +510,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=BillingInterstitial")
     public void testSafeBrowsingOnSafeBrowsingHitBillingCode() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(BILLING_HTML_PATH);
@@ -810,7 +794,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=BillingInterstitial")
     public void testSafeBrowsingCanShowQuietBillingInterstitial() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         loadGreenPage();
