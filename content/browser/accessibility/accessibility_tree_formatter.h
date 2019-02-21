@@ -24,6 +24,10 @@ namespace {
 const char kChildrenDictAttr[] = "children";
 }
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 
 // A utility class for formatting platform-specific accessibility information,
@@ -67,6 +71,14 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
 
   // Create the appropriate native subclass of AccessibilityTreeFormatter.
   static std::unique_ptr<AccessibilityTreeFormatter> Create();
+
+  // Get a set of factory methods to create tree-formatters, one for each test
+  // pass; see |DumpAccessibilityTestBase|.
+  using FormatterFactory = std::unique_ptr<AccessibilityTreeFormatter> (*)();
+  static std::vector<FormatterFactory> GetTestPasses();
+
+  // Called to allow each test pass to alter the command-line
+  virtual void SetUpCommandLineForTestPass(base::CommandLine* command_line);
 
   static bool MatchesPropertyFilters(
       const std::vector<PropertyFilter>& property_filters,

@@ -138,6 +138,12 @@ AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
 
 AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {}
 
+// static
+std::unique_ptr<AccessibilityTreeFormatter>
+AccessibilityTreeFormatterBlink::CreateBlink() {
+  return std::make_unique<AccessibilityTreeFormatterBlink>();
+}
+
 const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
                                             "TreeData.textSelEndOffset"};
 

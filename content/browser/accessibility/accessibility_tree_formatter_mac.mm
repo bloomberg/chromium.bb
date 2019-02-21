@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -236,6 +237,15 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
 std::unique_ptr<AccessibilityTreeFormatter>
 AccessibilityTreeFormatter::Create() {
   return std::make_unique<AccessibilityTreeFormatterMac>();
+}
+
+// static
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
+AccessibilityTreeFormatter::GetTestPasses() {
+  return {
+      &AccessibilityTreeFormatterBlink::CreateBlink,
+      &AccessibilityTreeFormatter::Create,
+  };
 }
 
 AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {

@@ -86,6 +86,16 @@ AccessibilityTreeFormatter::Create() {
   return std::make_unique<AccessibilityTreeFormatterAndroid>();
 }
 
+// static
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
+AccessibilityTreeFormatter::GetTestPasses() {
+  // Note: Android doesn't do a "blink" pass; the blink tree is different on
+  // Android because we exclude inline text boxes, for performance.
+  return {
+      &AccessibilityTreeFormatter::Create,
+  };
+}
+
 AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {
 }
 

@@ -88,6 +88,7 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
+  FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
 }
 
 void BrowserAccessibilityManagerWin::FireBlinkEvent(
@@ -196,28 +197,13 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {
-  if (!node->CanFireEvents())
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
+  if (!ShouldFireEventForNode(node))
     return;
 
-  // If there's no root delegate, this may be a new frame that hasn't
-  // yet been swapped in or added to the frame tree. Suppress firing events
-  // until then.
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate)
-    return;
-
-  HWND hwnd = root_delegate->AccessibilityGetAcceleratedWidget();
+  HWND hwnd = GetParentHWND();
   if (!hwnd)
-    return;
-
-  // Don't fire events when this document might be stale as the user has
-  // started navigating to a new document.
-  if (user_is_navigating_away_)
-    return;
-
-  // Inline text boxes are an internal implementation detail, we don't
-  // expose them to Windows.
-  if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
     return;
 
   // Pass the negation of this node's unique id in the |child_id|
@@ -226,6 +212,18 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
   // we can use to retrieve the IAccessible for this node.
   LONG child_id = -(ToBrowserAccessibilityWin(node)->GetCOM()->GetUniqueId());
   ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
+    LONG uia_event,
+    BrowserAccessibility* node) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
+  if (!ShouldFireEventForNode(node))
+    return;
+
+  ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
+                            uia_event);
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() {
@@ -343,6 +341,31 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     bool is_subtree_created = key_value.second;
     obj->UpdateStep3FireEvents(is_subtree_created);
   }
+}
+
+bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
+    BrowserAccessibility* node) {
+  if (!node || !node->CanFireEvents())
+    return false;
+
+  // If there's no root delegate, this may be a new frame that hasn't
+  // yet been swapped in or added to the frame tree. Suppress firing events
+  // until then.
+  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+  if (!root_delegate)
+    return false;
+
+  // Don't fire events when this document might be stale as the user has
+  // started navigating to a new document.
+  if (user_is_navigating_away_)
+    return false;
+
+  // Inline text boxes are an internal implementation detail, we don't
+  // expose them to Windows.
+  if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
+    return false;
+
+  return true;
 }
 
 }  // namespace content

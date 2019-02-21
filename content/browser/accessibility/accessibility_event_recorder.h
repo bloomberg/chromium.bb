@@ -44,6 +44,14 @@ class AccessibilityEventRecorder {
       const base::StringPiece& application_name_match_pattern =
           base::StringPiece());
 
+  // Get a set of factory methods to create event-recorders, one for each test
+  // pass; see |DumpAccessibilityTestBase|.
+  using EventRecorderFactory = std::unique_ptr<AccessibilityEventRecorder> (*)(
+      BrowserAccessibilityManager* manager,
+      base::ProcessId pid,
+      const base::StringPiece& application_name_match_pattern);
+  static std::vector<EventRecorderFactory> GetTestPasses();
+
   AccessibilityEventRecorder(BrowserAccessibilityManager* manager);
   virtual ~AccessibilityEventRecorder();
 

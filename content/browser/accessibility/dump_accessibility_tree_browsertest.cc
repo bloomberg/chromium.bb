@@ -130,8 +130,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   }
 
   std::vector<std::string> Dump(std::vector<std::string>& unused) override {
-    std::unique_ptr<AccessibilityTreeFormatter> formatter(
-        CreateAccessibilityTreeFormatter());
+    std::unique_ptr<AccessibilityTreeFormatter> formatter(formatter_factory_());
     formatter->SetPropertyFilters(property_filters_);
     formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;

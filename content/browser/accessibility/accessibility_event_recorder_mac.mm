@@ -73,6 +73,15 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
   return std::make_unique<AccessibilityEventRecorderMac>(manager, pid);
 }
 
+std::vector<AccessibilityEventRecorder::EventRecorderFactory>
+AccessibilityEventRecorder::GetTestPasses() {
+  // Both the Blink pass and native pass use the same recorder
+  return {
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorder::Create,
+  };
+}
+
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid)

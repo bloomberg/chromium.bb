@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -24,10 +25,12 @@
 #include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/hwnd_util.h"
 
@@ -78,6 +81,8 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       LONG window_x = 0,
       LONG window_y = 0);
 
+  void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
+
  private:
   void RecursiveBuildAccessibilityTree(
       const Microsoft::WRL::ComPtr<IAccessible> node,
@@ -119,11 +124,58 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       base::DictionaryValue* filtered_dict_result = nullptr) override;
 };
 
+// This is currently a clone of the base Windows MSAA formatter in order to
+// override the GetExpectedFileSuffix function for UIA tests; it will
+// eventually be replaced with a full UIA implementation.
+class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterWin {
+ public:
+  AccessibilityTreeFormatterUia() {}
+  ~AccessibilityTreeFormatterUia() override {}
+
+  static std::unique_ptr<AccessibilityTreeFormatter> CreateUia();
+
+  void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
+
+  const base::FilePath::StringType GetExpectedFileSuffix() override {
+    return FILE_PATH_LITERAL("-expected-win-uia.txt");
+  }
+};
+
 // static
 std::unique_ptr<AccessibilityTreeFormatter>
 AccessibilityTreeFormatter::Create() {
   base::win::AssertComInitialized();
   return std::make_unique<AccessibilityTreeFormatterWin>();
+}
+
+// static
+std::unique_ptr<AccessibilityTreeFormatter>
+AccessibilityTreeFormatterUia::CreateUia() {
+  base::win::AssertComInitialized();
+  return std::make_unique<AccessibilityTreeFormatterUia>();
+}
+
+// static
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
+AccessibilityTreeFormatter::GetTestPasses() {
+  // In addition to the 'Blink' pass, Windows includes two accessibility APIs
+  // that need to be tested independently (MSAA & UIA).
+  return {
+      &AccessibilityTreeFormatterBlink::CreateBlink,
+      &AccessibilityTreeFormatter::Create,
+      &AccessibilityTreeFormatterUia::CreateUia,
+  };
+}
+
+void AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass(
+    base::CommandLine* command_line) {
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
+}
+void AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass(
+    base::CommandLine* command_line) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
 }
 
 AccessibilityTreeFormatterWin::AccessibilityTreeFormatterWin() {

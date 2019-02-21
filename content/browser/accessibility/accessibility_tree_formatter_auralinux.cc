@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_auralinux.h"
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -63,6 +64,15 @@ class AccessibilityTreeFormatterAuraLinux
 std::unique_ptr<AccessibilityTreeFormatter>
 AccessibilityTreeFormatter::Create() {
   return std::make_unique<AccessibilityTreeFormatterAuraLinux>();
+}
+
+// static
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
+AccessibilityTreeFormatter::GetTestPasses() {
+  return {
+      &AccessibilityTreeFormatterBlink::CreateBlink,
+      &AccessibilityTreeFormatter::Create,
+  };
 }
 
 AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {

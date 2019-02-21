@@ -18,6 +18,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   explicit AccessibilityTreeFormatterBlink();
   ~AccessibilityTreeFormatterBlink() override;
 
+  static std::unique_ptr<AccessibilityTreeFormatter> CreateBlink();
+
  private:
   const base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;

@@ -45,6 +45,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
                           BrowserAccessibility* node) override;
 
   void FireWinAccessibilityEvent(LONG win_event, BrowserAccessibility* node);
+  void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
@@ -60,6 +61,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
       ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
+
+  bool ShouldFireEventForNode(BrowserAccessibility* node);
 
  private:
   // Give BrowserAccessibilityManager::Create access to our constructor.
