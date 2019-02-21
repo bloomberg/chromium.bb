@@ -13,7 +13,6 @@
 
 namespace blink {
 
-using SnapAxis = cc::SnapAxis;
 using SearchAxis = cc::SearchAxis;
 using SnapStrictness = cc::SnapStrictness;
 using SnapAlignment = cc::SnapAlignment;

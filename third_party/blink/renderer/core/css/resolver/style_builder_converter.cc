@@ -29,6 +29,7 @@
 #include <algorithm>
 
 #include "build/build_config.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
@@ -1503,7 +1504,8 @@ ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     snapType.is_none = false;
-    snapType.axis = ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAxis>();
+    snapType.axis =
+        ToCSSIdentifierValue(pair.First()).ConvertTo<cc::SnapAxis>();
     snapType.strictness =
         ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapStrictness>();
     return snapType;
@@ -1515,7 +1517,7 @@ ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
   }
 
   snapType.is_none = false;
-  snapType.axis = ToCSSIdentifierValue(value).ConvertTo<SnapAxis>();
+  snapType.axis = ToCSSIdentifierValue(value).ConvertTo<cc::SnapAxis>();
   return snapType;
 }
 

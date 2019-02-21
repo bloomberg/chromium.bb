@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_MAPPINGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_MAPPINGS_H_
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -1835,45 +1836,45 @@ inline ScrollBehavior CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(SnapAxis axis)
+inline CSSIdentifierValue::CSSIdentifierValue(cc::SnapAxis axis)
     : CSSValue(kIdentifierClass) {
   switch (axis) {
-    case SnapAxis::kX:
+    case cc::SnapAxis::kX:
       value_id_ = CSSValueX;
       break;
-    case SnapAxis::kY:
+    case cc::SnapAxis::kY:
       value_id_ = CSSValueY;
       break;
-    case SnapAxis::kBlock:
+    case cc::SnapAxis::kBlock:
       value_id_ = CSSValueBlock;
       break;
-    case SnapAxis::kInline:
+    case cc::SnapAxis::kInline:
       value_id_ = CSSValueInline;
       break;
-    case SnapAxis::kBoth:
+    case cc::SnapAxis::kBoth:
       value_id_ = CSSValueBoth;
       break;
   }
 }
 
 template <>
-inline SnapAxis CSSIdentifierValue::ConvertTo() const {
+inline cc::SnapAxis CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueX:
-      return SnapAxis::kX;
+      return cc::SnapAxis::kX;
     case CSSValueY:
-      return SnapAxis::kY;
+      return cc::SnapAxis::kY;
     case CSSValueBlock:
-      return SnapAxis::kBlock;
+      return cc::SnapAxis::kBlock;
     case CSSValueInline:
-      return SnapAxis::kInline;
+      return cc::SnapAxis::kInline;
     case CSSValueBoth:
-      return SnapAxis::kBoth;
+      return cc::SnapAxis::kBoth;
     default:
       break;
   }
   NOTREACHED();
-  return SnapAxis::kBoth;
+  return cc::SnapAxis::kBoth;
 }
 
 template <>
