@@ -5747,10 +5747,6 @@ crbug.com/912821 [ Mac ] http/tests/devtools/tracing/user-timing.js [ Pass Failu
 crbug.com/913170 compositing/layer-creation/fixed-position-in-fixed-overflow.html [ Crash Pass ]
 crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pass ]
 
-# ssauleau 2018-12-08
-crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.worker.html [ Pass Failure ]
-
 # Sheriff 2018-12-13
 crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
