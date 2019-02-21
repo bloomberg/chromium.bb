@@ -6340,9 +6340,16 @@ the Bookmarks menu.">
 
       <!-- Managed UI on pages like chrome://settings and chrome://downloads -->
       <if expr="not is_android">
-        <message name="IDS_MANAGED_BY_ORG_WITH_HYPERLINK">
-          Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
-        </message>
+        <if expr="chromeos">
+          <message name="IDS_MANAGED_BY_ORG_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (ChromeOS)">
+            Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
+          </message>
+        </if>
+        <if expr="not chromeos">
+          <message name="IDS_MANAGED_BY_ORG_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (non-ChromeOS)">
+            Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
+          </message>
+        </if>
       </if>
 
       <!-- Cookies Window -->

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -14,10 +15,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/chromeos/devicetype_utils.h"
+#endif
 
 namespace {
 
@@ -113,9 +119,15 @@ void ManagedUIHandler::RemoveObservers() {
 std::unique_ptr<base::DictionaryValue> ManagedUIHandler::GetDataSourceUpdate()
     const {
   auto update = std::make_unique<base::DictionaryValue>();
-  update->SetKey(
-      "managedByOrg",
-      base::Value(l10n_util::GetStringUTF8(IDS_MANAGED_BY_ORG_WITH_HYPERLINK)));
+  update->SetKey("managedByOrg",
+                 base::Value(l10n_util::GetStringFUTF16(
+                     IDS_MANAGED_BY_ORG_WITH_HYPERLINK,
+                     base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)
+#if defined(OS_CHROMEOS)
+                         ,
+                     ui::GetChromeOSDeviceName()
+#endif
+                         )));
   update->SetKey("isManaged", base::Value(managed_));
   return update;
 }

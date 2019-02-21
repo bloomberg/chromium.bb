@@ -42,19 +42,6 @@ suite('managed-footnote', function() {
     assertTrue(footnote.shadowRoot.textContent.includes(message));
   });
 
-  test('Substitutes URL', function() {
-    const message =
-        'Your <a target="_blank" href="$1">browser is managed</a> by your ' +
-        'organization';
-    const targetMessage = 'Your browser is managed by your organization';
-    const supportUrl = 'https://support.google.com/chromebook/answer/1331549';
-
-    const footnote = setupTestElement(true, message);
-    assertTrue(footnote.shadowRoot.textContent.includes(targetMessage));
-    // The <a> element should have the right link.
-    assertEquals(supportUrl, footnote.$$('a').href);
-  });
-
   test('Responds to is-managed-changed events', function() {
     const footnote = setupTestElement(false, '');
     assertEquals('none', getComputedStyle(footnote).display);
