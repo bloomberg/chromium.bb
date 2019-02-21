@@ -454,16 +454,16 @@
       </if>
       <if expr="is_android">
         <then>
-          <include name="IDR_POLICY_CSS" file="resources\policy_android.css" type="BINDATA" compress="gzip" />
+          <include name="IDR_POLICY_CSS" file="resources\policy\policy_android.css" type="BINDATA" compress="gzip" />
         </then>
         <else>
-          <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA" compress="gzip" />
+          <include name="IDR_POLICY_CSS" file="resources\policy\policy.css" type="BINDATA" compress="gzip" />
         </else>
       </if>
-      <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_POLICY_BASE_JS" file="resources\policy_base.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_POLICY_COMMON_CSS" file="resources\policy_common.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_POLICY_HTML" file="resources\policy\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_POLICY_BASE_JS" file="resources\policy\policy_base.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_POLICY_JS" file="resources\policy\policy.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_POLICY_COMMON_CSS" file="resources\policy\policy_common.css" type="BINDATA" compress="gzip" />
       <if expr="not is_android">
         <include name="IDR_MANAGEMENT_HTML" file="resources\management\management.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_MANAGEMENT_UI_HTML" file="resources\management\management_ui.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />

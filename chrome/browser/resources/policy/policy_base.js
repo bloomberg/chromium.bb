@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('policy', function() {
-
   /**
    * A hack to check if we are displaying the mobile version of this page by
    * checking if the first column is hidden.
