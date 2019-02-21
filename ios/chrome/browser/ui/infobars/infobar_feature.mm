@@ -10,3 +10,7 @@
 
 const base::Feature kInfobarUIReboot{"InfobarUIReboot",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsInfobarUIRebootEnabled() {
+  return base::FeatureList::IsEnabled(kInfobarUIReboot);
+}

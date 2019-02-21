@@ -34,6 +34,7 @@ source_set("browsing_data") {
   ]
   deps = [
     ":counters",
+    ":feature_flags",
     "//base",
     "//components/autofill/core/browser",
     "//components/browser_sync",

@@ -16,8 +16,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -31,7 +31,7 @@ namespace {
 std::unique_ptr<browsing_data::BrowsingDataCounter>
 CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
                                     base::StringPiece pref_name) {
-  if (!experimental_flags::IsNewClearBrowsingDataUIEnabled())
+  if (!IsNewClearBrowsingDataUIEnabled())
     return nullptr;
 
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {

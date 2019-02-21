@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential_password_form.h"
@@ -210,7 +210,7 @@ BOOL AreCredentialsAtIndexesConnected(
         [[NSMutableArray alloc] init];
     __weak __typeof(self) weakSelf = self;
 
-    if (experimental_flags::IsAutomaticPasswordGenerationEnabled() &&
+    if (features::IsAutomaticPasswordGenerationEnabled() &&
         [self.contentDelegate canUserInjectInPasswordField:YES
                                              requiresHTTPS:YES]) {
       NSString* generatePasswordTitleString =

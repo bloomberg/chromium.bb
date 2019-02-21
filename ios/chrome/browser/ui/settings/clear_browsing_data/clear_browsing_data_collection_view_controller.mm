@@ -17,12 +17,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -141,7 +141,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     self.collectionViewAccessibilityIdentifier =
         kClearBrowsingDataCollectionViewAccessibilityIdentifier;
 
-    if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+    if (IsNewClearBrowsingDataUIEnabled()) {
       __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
       observer_ = std::make_unique<BrowsingDataRemoverObserverWrapper>(
           ^(BrowsingDataRemoveMask mask) {
@@ -307,14 +307,14 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, true);
         if (itemType == ItemTypeDataTypeCookiesSiteData &&
-            experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+            IsNewClearBrowsingDataUIEnabled()) {
           [self updateCounter:itemType
                    detailText:l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER)];
         }
       } else {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryNone;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, false);
-        if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+        if (IsNewClearBrowsingDataUIEnabled()) {
           [self updateCounter:itemType detailText:@""];
         }
       }

@@ -41,8 +41,8 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -548,7 +548,7 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
     base::Time delete_end,
     BrowsingDataRemoveMask mask) {
-  if (base::FeatureList::IsEnabled(experimental_flags::kWebClearBrowsingData)) {
+  if (base::FeatureList::IsEnabled(kWebClearBrowsingData)) {
     web::ClearBrowsingDataMask types =
         web::ClearBrowsingDataMask::kRemoveNothing;
     if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {

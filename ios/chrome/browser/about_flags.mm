@@ -49,12 +49,12 @@
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -560,7 +560,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerKeepsContentView)},
     {"web-clear-browsing-data", flag_descriptions::kWebClearBrowsingDataName,
      flag_descriptions::kWebClearBrowsingDataDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(experimental_flags::kWebClearBrowsingData)},
+     FEATURE_VALUE_TYPE(kWebClearBrowsingData)},
     {"web-ui-scheme-handling", flag_descriptions::kWebUISchemeHandlingName,
      flag_descriptions::kWebUISchemeHandlingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebUISchemeHandling)},

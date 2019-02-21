@@ -10,4 +10,7 @@
 // Feature to choose whether to use the new Infobar design, or the legacy one.
 extern const base::Feature kInfobarUIReboot;
 
+// Whether the Infobar UI Reboot is enabled.
+bool IsInfobarUIRebootEnabled();
+
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_FEATURE_H_

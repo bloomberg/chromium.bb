@@ -18,8 +18,8 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
@@ -120,7 +120,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
   CheckController();
 
   int section_offset = 0;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     section_offset = 1;
   }
 
@@ -155,7 +155,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
   CheckController();
 
   int section_offset = 0;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     EXPECT_EQ(5, NumberOfSections());
     EXPECT_EQ(1, NumberOfItemsInSection(0));
     section_offset = 1;
@@ -194,7 +194,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
   CheckController();
 
   int section_offset = 0;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     section_offset = 1;
   }
 
@@ -211,8 +211,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestUpdatePrefWithValue) {
   CheckController();
   PrefService* prefs = browser_state_->GetPrefs();
 
-  const int section_offset =
-      experimental_flags::IsNewClearBrowsingDataUIEnabled() ? 1 : 0;
+  const int section_offset = IsNewClearBrowsingDataUIEnabled() ? 1 : 0;
 
   SelectItem(kDeleteBrowsingHistoryItem, 0 + section_offset);
   EXPECT_FALSE(prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
