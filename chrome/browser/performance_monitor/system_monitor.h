@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_SYSTEM_MONITOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_SYSTEM_MONITOR_H_
 
+#include <array>
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -16,8 +18,6 @@
 #include "base/timer/timer.h"
 
 namespace performance_monitor {
-
-class SystemMonitorHelper;
 
 // Monitors various various system metrics such as free memory, disk idle time,
 // etc.
@@ -30,8 +30,8 @@ class SystemMonitorHelper;
 // metrics and frequencies can then be updated at runtime.
 //
 // Platforms that want to use this class need to provide a platform specific
-// implementation of the SystemMonitorHelper class and update
-// SystemMonitor::Create.
+// implementation of the |Evaluate| functions of the various
+// SystemMonitor::MetricEvaluator classes defined in this file.
 class SystemMonitor {
  public:
   // The frequency at which a metric will be collected. Exact frequencies are
@@ -39,8 +39,8 @@ class SystemMonitor {
   //
   // NOTE: Frequencies must be listed in increasing order in this enum.
   enum class SamplingFrequency : uint32_t {
-    kNoSampling = 0,
-    kDefaultFrequency = 1,
+    kNoSampling,
+    kDefaultFrequency,
   };
 
   virtual ~SystemMonitor();
@@ -87,52 +87,107 @@ class SystemMonitor {
   // will not receive notifications for any metric.
   void RemoveObserver(SystemObserver* observer);
 
-  const SystemObserver::MetricRefreshFrequencies&
-  metric_refresh_frequencies_for_testing() const {
-    return metrics_refresh_frequencies_;
-  }
-
-  bool IsRefreshTimerRunningForTesting() { return refresh_timer_.IsRunning(); }
-
-  void SetHelperForTesting(std::unique_ptr<SystemMonitorHelper> helper) {
-    async_helper_.reset(helper.release());
+  const base::OneShotTimer& refresh_timer_for_testing() {
+    return refresh_timer_;
   }
 
  protected:
-  friend class SystemMonitorHelper;
+  // Represents a metric. Overridden for each metric tracked by this monitor.
+  class MetricEvaluator {
+   public:
+    enum class Type : size_t {
+      kFreeMemoryMb,
+      kMax,
+    };
 
-  // Creates SystemMonitor. Only one SystemMonitor instance per
-  // application is allowed.
-  explicit SystemMonitor(std::unique_ptr<SystemMonitorHelper> helper);
+    explicit MetricEvaluator(Type type);
+    virtual ~MetricEvaluator();
 
-  // A struct that stores a refreshed metric and the reason why it has been
-  // refreshed.
-  template <typename T>
-  struct MetricAndRefreshReason {
-    MetricAndRefreshReason() {}
-    MetricAndRefreshReason(T value, SamplingFrequency reason)
-        : metric_value(value), refresh_reason(reason) {}
-    T metric_value = {};
-    SamplingFrequency refresh_reason = SamplingFrequency::kNoSampling;
+    // Called when the metric needs to be evaluated.
+    virtual void Evaluate() = 0;
+
+    // Notify |observer| that a value is available, should only be called after
+    // Evaluate().
+    virtual void NotifyObserver(SystemObserver* observer) = 0;
+
+    // Returns the metric type.
+    Type type() const { return type_; }
+
+    // Indicates if the metric has a valid value.
+    bool has_value() const { return has_value_; }
+
+   protected:
+    bool has_value_ = false;
+
+   private:
+    const Type type_;
+
+    DISALLOW_COPY_AND_ASSIGN(MetricEvaluator);
   };
 
-  // Struct that will receive the refreshed metrics in the refresh callback.
-  struct MetricsRefresh {
-    MetricsRefresh();
-    MetricsRefresh(MetricsRefresh&& o);
-    MetricAndRefreshReason<int> free_phys_memory_mb;
+  // Structure storing all the functions specific to a metric.
+  struct MetricMetadata {
+    MetricMetadata() = delete;
+    MetricMetadata(std::unique_ptr<MetricEvaluator> (*create_function)(),
+                   SamplingFrequency (*get_refresh_field_function)(
+                       const SystemObserver::MetricRefreshFrequencies&));
+    // A pointer to the function that creates the appropriate |MetricEvaluator|
+    // instance for a given metric.
+    // TODO(sebmarchand): Make this a const member.
+    std::unique_ptr<MetricEvaluator> (*create_metric_evaluator_function)();
+    // A pointer to the function that extract the sampling frequency for a given
+    // metric from a MetricRefreshFrequencies struct.
+    SamplingFrequency (*get_refresh_frequency_field_function)(
+        const SystemObserver::MetricRefreshFrequencies&);
   };
+
+  class FreePhysMemoryMetricEvaluator;
+  using MetricVector = std::vector<std::unique_ptr<MetricEvaluator>>;
+  using MetricSamplingFrequencyArray =
+      std::array<SamplingFrequency,
+                 static_cast<size_t>(MetricEvaluator::Type::kMax)>;
+
+  // Creates SystemMonitor. Only one SystemMonitor instance per application is
+  // allowed.
+  SystemMonitor();
+
+  // Returns a vector with all the metrics that should be evaluated given the
+  // current list of observers.
+  SystemMonitor::MetricVector GetMetricsToEvaluate() const;
+
+  const MetricSamplingFrequencyArray&
+  GetMetricSamplingFrequencyArrayForTesting() {
+    return metrics_refresh_frequencies_;
+  }
+
+  MetricMetadata* GetMetricEvaluatorMetadataForTesting(
+      MetricEvaluator::Type type) {
+    DCHECK_LT(static_cast<size_t>(type), metric_evaluators_metadata_.size());
+    return const_cast<MetricMetadata*>(
+        &metric_evaluators_metadata_[static_cast<size_t>(type)]);
+  }
 
  private:
+  using MetricMetadataArray =
+      const std::array<const MetricMetadata,
+                       static_cast<size_t>(MetricEvaluator::Type::kMax)>;
+  // Evaluate the metrics in |metric_vector|.
+  static SystemMonitor::MetricVector EvaluateMetrics(
+      MetricVector metric_vector);
+
+  // Create the array of MetricMetadata used to initialize
+  // |metric_evaluators_metadata_|.
+  static MetricMetadataArray CreateMetricMetadataArray();
+
   // Updates |observed_metrics_| with the list of metrics that need to be
-  // tracked.
-  void UpdateObservedMetricsSet();
+  // tracked. Starts or stop |refresh_timer_| if needed.
+  void UpdateObservedMetrics();
 
   // Function that gets called by every time the refresh callback triggers.
   void RefreshCallback();
 
   // Notify the observers with the refreshed metrics.
-  void NotifyObservers(const MetricsRefresh& metrics);
+  void NotifyObservers(SystemMonitor::MetricVector metrics);
 
   // The list of observers.
   base::ObserverList<SystemObserver> observers_;
@@ -142,18 +197,18 @@ class SystemMonitor {
 
   // The current metrics that are being observed and the corresponding refresh
   // frequency.
-  SystemObserver::MetricRefreshFrequencies metrics_refresh_frequencies_;
+  MetricSamplingFrequencyArray metrics_refresh_frequencies_ = {};
 
   // The timer responsible of refreshing the metrics and notifying the
   // observers.
   base::OneShotTimer refresh_timer_;
 
+  // There should be one |MetricMetadata| for each value of
+  // |MetricEvaluator::Type|.
+  MetricMetadataArray metric_evaluators_metadata_;
+
   // The task runner used to run all the blocking operations.
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
-  // The SystemMonitorHelper instance responsible for running all asynchronous
-  // operations.
-  std::unique_ptr<SystemMonitorHelper, base::OnTaskRunnerDeleter> async_helper_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -162,39 +217,25 @@ class SystemMonitor {
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };
 
-// Helper class used to run all the blocking operations posted by SystemMonitor
-// on a sequence with the |MayBlock()| trait.
-//
-// Instances of this class should only be destructed once all the posted tasks
-// have been run, in practice it means that they should ideally be stored in a
-// std::unique_ptr<AsyncHelper, base::OnTaskRunnerDeleter>.
-class SystemMonitorHelper {
+// Implementation of the |MetricEvaluator| interface that tracks the amount of
+// free physical memory.
+class SystemMonitor::FreePhysMemoryMetricEvaluator
+    : public SystemMonitor::MetricEvaluator {
  public:
-  using MetricsRefresh = SystemMonitor::MetricsRefresh;
-  template <typename T>
-  using MetricAndRefreshReason = SystemMonitor::MetricAndRefreshReason<T>;
+  FreePhysMemoryMetricEvaluator();
+  ~FreePhysMemoryMetricEvaluator() override = default;
 
-  SystemMonitorHelper() = default;
-  virtual ~SystemMonitorHelper() = default;
+  // SystemMonitor::MetricEvaluator:
+  void Evaluate() override;
+  void NotifyObserver(SystemObserver* observer) override;
 
-  // Returns the refresh interval that should be used by the SystemMonitor
-  // refresh timer based on the current configuration of its observers. If no
-  // metrics are being observed then this returns base::TimeDelta::Max().
-  //
-  // This can be called from any sequence.
-  virtual base::TimeDelta GetRefreshInterval(
-      const SystemMonitor::SystemObserver::MetricRefreshFrequencies&
-          metrics_and_frequencies) = 0;
-
-  // Refresh the metrics according to |metrics_and_frequencies|. |refresh_time|
-  // indicates at which time the refresh has been requested.
-  virtual MetricsRefresh RefreshMetrics(
-      const SystemMonitor::SystemObserver::MetricRefreshFrequencies
-          metrics_and_frequencies,
-      const base::TimeTicks& refresh_time) = 0;
+  int value() const { return value_; }
+  void set_value_for_testing(int value) { value_ = value; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SystemMonitorHelper);
+  int value_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FreePhysMemoryMetricEvaluator);
 };
 
 }  // namespace performance_monitor
