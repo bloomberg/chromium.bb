@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_OR_RESOURCE_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_OR_RESOURCE_CONTEXT_H_
 
+#include <cstddef>
 #include <type_traits>
 
 #include "base/logging.h"
@@ -43,7 +44,7 @@ class BrowserOrResourceContext final {
     union_.resource_context_ = resource_context;
     flavour_ = kResourceContextFlavour;
   }
-  BrowserOrResourceContext(nullptr_t) = delete;
+  BrowserOrResourceContext(std::nullptr_t) = delete;
 
   // BrowserOrResourceContext has a trivial, default destructor.
   ~BrowserOrResourceContext() = default;
