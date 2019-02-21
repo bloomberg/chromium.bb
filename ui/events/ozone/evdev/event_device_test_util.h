@@ -79,6 +79,8 @@ extern const DeviceCapabilities kWilsonBeachActiveStylus;
 extern const DeviceCapabilities kEveStylus;
 extern const DeviceCapabilities kHammerKeyboard;
 extern const DeviceCapabilities kHammerTouchpad;
+extern const DeviceCapabilities kIlitekTP_Mouse;
+extern const DeviceCapabilities kIlitekTP;
 
 }  // namspace ui
 
