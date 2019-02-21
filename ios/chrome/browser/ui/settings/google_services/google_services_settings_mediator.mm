@@ -70,6 +70,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BetterSearchAndBrowsingItemType,
 };
 
+NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
+
 }  // namespace
 
 @interface GoogleServicesSettingsMediator () <
@@ -517,15 +519,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
-  {
-    // TODO(crbug.com/889470): Needs asset for the sync error.
-    CGSize size = CGSizeMake(40, 40);
-    UIGraphicsBeginImageContextWithOptions(size, YES, 0);
-    [[UIColor grayColor] setFill];
-    UIRectFill(CGRectMake(0, 0, size.width, size.height));
-    syncErrorItem.image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-  }
+  syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
 }
 

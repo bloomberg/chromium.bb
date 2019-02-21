@@ -30,6 +30,7 @@ source_set("google_services") {
     "manage_sync_settings_view_controller_model_delegate.h",
   ]
   deps = [
+    "resources:google_services_sync_error",
     "//base",
     "//components/metrics",
     "//components/prefs",
