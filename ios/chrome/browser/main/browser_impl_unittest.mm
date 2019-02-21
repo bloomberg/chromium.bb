@@ -29,6 +29,8 @@ class TestWebStateListDelegate : public WebStateListDelegate {
   void WebStateDetached(web::WebState* web_state) override {}
 };
 
+}  // namespace
+
 class BrowserImplTest : public PlatformTest {
  protected:
   BrowserImplTest()
@@ -55,5 +57,3 @@ TEST_F(BrowserImplTest, TestAccessors) {
   EXPECT_EQ(tab_model_, browser.GetTabModel());
   EXPECT_EQ(&web_state_list_, browser.GetWebStateList());
 }
-
-}  // namespace

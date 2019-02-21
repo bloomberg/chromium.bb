@@ -153,14 +153,11 @@
 }
 
 - (void)createMainBrowser {
-  TabModel* tabModel =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:_browserState];
-  [self setUpTabModel:tabModel
+  _mainBrowser = Browser::Create(_browserState);
+  [self setUpTabModel:_mainBrowser->GetTabModel()
            withBrowserState:_browserState
       restorePersistedState:YES];
 
-  _mainBrowser = Browser::Create(_browserState, tabModel);
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
   breakpad::MonitorURLsForTabModel(self.mainBrowser->GetTabModel());
@@ -377,13 +374,12 @@
   ios::ChromeBrowserState* otrBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
   DCHECK(otrBrowserState);
-  TabModel* tabModel =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:otrBrowserState];
-  [self setUpTabModel:tabModel
+
+  std::unique_ptr<Browser> browser = Browser::Create(otrBrowserState);
+  [self setUpTabModel:browser->GetTabModel()
            withBrowserState:otrBrowserState
       restorePersistedState:restorePersistedState];
-  return Browser::Create(otrBrowserState, tabModel);
+  return browser;
 }
 
 - (void)setUpTabModel:(TabModel*)tabModel
