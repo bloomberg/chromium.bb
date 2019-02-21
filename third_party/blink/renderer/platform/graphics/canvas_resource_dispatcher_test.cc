@@ -57,7 +57,7 @@ class CanvasResourceDispatcherTest
       public ::testing::WithParamInterface<TestParams> {
  public:
   void DispatchOneFrame() {
-    dispatcher_->DispatchFrame(resource_provider_->ProduceFrame(),
+    dispatcher_->DispatchFrame(resource_provider_->ProduceCanvasResource(),
                                base::TimeTicks(), SkIRect::MakeEmpty(),
                                false /* needs_vertical_flip */,
                                false /* is-opaque */);

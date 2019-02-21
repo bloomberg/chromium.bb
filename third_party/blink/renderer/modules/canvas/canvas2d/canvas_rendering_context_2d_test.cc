@@ -290,7 +290,7 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
         is_accelerated_(hint != kPreferNoAcceleration) {}
   ~FakeCanvasResourceProvider() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
-  scoped_refptr<CanvasResource> ProduceFrame() override {
+  scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     return scoped_refptr<CanvasResource>();
   }
   bool SupportsDirectCompositing() const override { return false; }
@@ -1254,13 +1254,13 @@ TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
   auto frame1_resource =
       CanvasElement()
           .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
-          ->ProduceFrame();
+          ->ProduceCanvasResource();
   EXPECT_TRUE(!!frame1_resource);
   DrawSomething();
   auto frame2_resource =
       CanvasElement()
           .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
-          ->ProduceFrame();
+          ->ProduceCanvasResource();
   EXPECT_TRUE(!!frame2_resource);
   EXPECT_EQ(frame1_resource.get(), frame2_resource.get());
 }

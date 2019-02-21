@@ -89,8 +89,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
-  // TransferableResource should call ProduceFrame() instead.
-  virtual scoped_refptr<CanvasResource> ProduceFrame() = 0;
+  // TransferableResource should call ProduceCanvasResource() instead.
+  virtual scoped_refptr<CanvasResource> ProduceCanvasResource() = 0;
   virtual scoped_refptr<StaticBitmapImage> Snapshot() = 0;
 
   // WebGraphicsContext3DProvider::DestructionObserver implementation.
@@ -112,11 +112,12 @@ class PLATFORM_EXPORT CanvasResourceProvider
   }
 
   // Indicates that the compositing path is single buffered, meaning that
-  // ProduceFrame() return a reference to the same resource each time, which
-  // implies that Producing an animation frame may overwrite the resource used
-  // by the previous frame. This results in graphics updates skipping the queue,
-  // thus reducing latency, but with the possible side effects of tearing (in
-  // cases where the resource is scanned out directly) and irregular frame rate.
+  // ProduceCanvasResource() return a reference to the same resource each time,
+  // which implies that Producing an animation frame may overwrite the resource
+  // used by the previous frame. This results in graphics updates skipping the
+  // queue, thus reducing latency, but with the possible side effects of tearing
+  // (in cases where the resource is scanned out directly) and irregular frame
+  // rate.
   bool IsSingleBuffered() { return !resource_recycling_enabled_; }
 
   // Attempt to enable single buffering mode on this resource provider.  May
