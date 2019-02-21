@@ -3827,6 +3827,14 @@ be describing additional metrics about the same event.
       start to the time the parser started, for main frame documents.
     </summary>
   </metric>
+  <metric name="SiteEngagementScore">
+    <owner>mcrouse@chromium.org</owner>
+    <owner>tbansal@chromium.org</owner>
+    <summary>
+      Measures the Site Engagement Score for the commited URL rounded to the
+      nearest 10.
+    </summary>
+  </metric>
   <metric name="WasCached">
     <summary>
       Set to 1 if the main resource was served from cache.

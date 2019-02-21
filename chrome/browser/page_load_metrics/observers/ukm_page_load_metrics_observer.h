@@ -12,6 +12,10 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace network {
 class NetworkQualityTracker;
 }
@@ -85,6 +89,11 @@ class UkmPageLoadMetricsObserver
 
   void ReportLayoutStability(const page_load_metrics::PageLoadExtraInfo& info);
 
+  // Captures the site engagement score for the commited URL and
+  // returns the score rounded to the nearest 10.
+  base::Optional<int64_t> GetRoundedSiteEngagementScore(
+      const page_load_metrics::PageLoadExtraInfo& info) const;
+
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
 
@@ -118,6 +127,9 @@ class UkmPageLoadMetricsObserver
 
   // The number of main frame redirects that occurred before commit.
   uint32_t main_frame_request_redirect_count_ = 0;
+
+  // The browser context this navigation is operating in.
+  content::BrowserContext* browser_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
