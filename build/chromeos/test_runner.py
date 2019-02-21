@@ -230,6 +230,9 @@ class GTestTest(RemoteTest):
 
     self._on_vm_script = None
 
+    # If set, pass this value to the LLVM_PROFILE_FILE env var in the vm.
+    self._vm_profile_var = None
+
   @property
   def suite_name(self):
     return self._test_exe
@@ -258,6 +261,21 @@ class GTestTest(RemoteTest):
           '--results-dest-dir', result_dir,
       ]
 
+      # This environment variable is set for tests that have been instrumented
+      # for code coverage. Its incoming value is expected to be a location
+      # inside a subdirectory of result_dir above. This is converted to an
+      # absolute path that the vm is able to write to, and passed in the
+      # --results-src flag to cros_run_vm_test for copying out of the vm before
+      # its termination.
+      if os.environ.get('LLVM_PROFILE_FILE'):
+        _, vm_profile_file = os.path.split(os.environ['LLVM_PROFILE_FILE'])
+        self._vm_profile_var = '/tmp/profraw/%s' % vm_profile_file
+
+        # This should make the vm test runner exfil the profiling data.
+        self._vm_test_cmd += [
+            '--results-src', '/tmp/profraw'
+        ]
+
     # Build the shell script that will be used on the VM to invoke the test.
     vm_test_script_contents = ['#!/bin/sh']
 
@@ -267,6 +285,11 @@ class GTestTest(RemoteTest):
     # restriction, so change the location of the home dir for the
     # duration of the test.
     vm_test_script_contents.append('export HOME=/tmp')
+
+    if self._vm_profile_var:
+      vm_test_script_contents += [
+          'export LLVM_PROFILE_FILE=%s'% self._vm_profile_var,
+      ]
 
     if self._vpython_dir:
       vpython_spec_path = os.path.relpath(
