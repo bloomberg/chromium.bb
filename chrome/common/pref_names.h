@@ -398,9 +398,11 @@ extern const char kUserNativePrintersAllowed[];
 
 extern const char kPrintingAllowedColorModes[];
 extern const char kPrintingAllowedDuplexModes[];
+extern const char kPrintingAllowedPinModes[];
 extern const char kPrintingAllowedPageSizes[];
 extern const char kPrintingColorDefault[];
 extern const char kPrintingDuplexDefault[];
+extern const char kPrintingPinDefault[];
 extern const char kPrintingSizeDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
 #endif  // OS_CHROMEOS

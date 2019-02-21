@@ -15493,6 +15493,8 @@ Called by update_net_error_codes.py.-->
   <int value="522" label="SchedulerConfiguration"/>
   <int value="523" label="CrostiniExportImportUIAllowed"/>
   <int value="524" label="BrowserSwitcherDelay"/>
+  <int value="525" label="PrintingAllowedPinModes"/>
+  <int value="526" label="PrintingPinDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
