@@ -57,6 +57,7 @@ const char kExternalDeviceKeyDeviceType[] = "device_type";
 const char kExternalDeviceKeyBeaconSeeds[] = "beacon_seeds";
 const char kExternalDeviceKeyArcPlusPlus[] = "arc_plus_plus";
 const char kExternalDeviceKeyPixelPhone[] = "pixel_phone";
+const char kExternalDeviceKeyNoPiiDeviceName[] = "no_pii_device_name";
 
 // Keys for cryptauth::ExternalDeviceInfo's BeaconSeed.
 const char kExternalDeviceKeyBeaconSeedData[] = "beacon_seed_data";
@@ -263,6 +264,15 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
 
   if (device.has_pixel_phone()) {
     dictionary->SetBoolean(kExternalDeviceKeyPixelPhone, device.pixel_phone());
+  }
+
+  if (device.has_no_pii_device_name()) {
+    std::string no_pii_device_name_b64;
+    base::Base64UrlEncode(device.no_pii_device_name(),
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &no_pii_device_name_b64);
+    dictionary->SetString(kExternalDeviceKeyNoPiiDeviceName,
+                          no_pii_device_name_b64);
   }
 
   // In the case that the CryptAuth server is not yet serving SoftwareFeatures,
@@ -483,6 +493,17 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   bool pixel_phone;
   if (dictionary.GetBoolean(kExternalDeviceKeyPixelPhone, &pixel_phone))
     external_device->set_pixel_phone(pixel_phone);
+
+  std::string no_pii_device_name_b64;
+  if (dictionary.GetString(kExternalDeviceKeyNoPiiDeviceName,
+                           &no_pii_device_name_b64)) {
+    std::string no_pii_device_name;
+    if (base::Base64UrlDecode(no_pii_device_name_b64,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &no_pii_device_name)) {
+      external_device->set_no_pii_device_name(no_pii_device_name);
+    }
+  }
 
   bool unlock_key = false;
   dictionary.GetBoolean(kExternalDeviceKeyUnlockKey, &unlock_key);

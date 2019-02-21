@@ -113,6 +113,9 @@ message ExternalDeviceInfo {
   // A list of multi-device software features currently enabled (active) on the
   // device.
   repeated string enabled_software_features = 13;
+
+  // A device model name that's guaranteed not to contain any PII.
+  optional string no_pii_device_name = 14;
 }
 
 // Determine if the calling device is allowed to promote the SmartLock
