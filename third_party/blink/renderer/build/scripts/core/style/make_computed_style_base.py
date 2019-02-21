@@ -62,7 +62,7 @@ ALIGNMENT_ORDER = [
     'float',
     # Aligns like int
     'cc::ScrollSnapType',
-    'ScrollSnapAlign',
+    'cc::ScrollSnapAlign',
     'BorderValue',
     'StyleColor',
     'Color',

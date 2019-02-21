@@ -232,6 +232,7 @@ _CONFIG = [
             'cc::AnimationHost',
 
             # Scrolling
+            'cc::ScrollSnapAlign',
             'cc::ScrollSnapType',
             'cc::ScrollOffsetAnimationCurve',
             'cc::ScrollStateData',

@@ -51,7 +51,7 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
 }
 
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
-                                        ScrollSnapAlign scroll_snap_align) {
+                                        cc::ScrollSnapAlign scroll_snap_align) {
   LayoutBox* old_container = snap_area.SnapContainer();
   if (scroll_snap_align.alignment_inline == cc::SnapAlignment::kNone &&
       scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {
@@ -172,10 +172,10 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   snap_container_map_.Set(&snap_container, snap_container_data);
 }
 
-static ScrollSnapAlign GetPhysicalAlignment(
+static cc::ScrollSnapAlign GetPhysicalAlignment(
     const ComputedStyle& area_style,
     const ComputedStyle& container_style) {
-  ScrollSnapAlign align = area_style.GetScrollSnapAlign();
+  cc::ScrollSnapAlign align = area_style.GetScrollSnapAlign();
   if (container_style.IsHorizontalWritingMode())
     return align;
 
@@ -227,7 +227,8 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   area_rect.Expand(area_margin);
   snap_area_data.rect = FloatRect(area_rect);
 
-  ScrollSnapAlign align = GetPhysicalAlignment(*area_style, *container_style);
+  cc::ScrollSnapAlign align =
+      GetPhysicalAlignment(*area_style, *container_style);
   snap_area_data.scroll_snap_align = align;
 
   snap_area_data.must_snap =

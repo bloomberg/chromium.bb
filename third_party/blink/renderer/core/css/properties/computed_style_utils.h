@@ -167,7 +167,7 @@ class ComputedStyleUtils {
                                   const FilterOperations&);
   static CSSValue* ValueForScrollSnapType(const cc::ScrollSnapType&,
                                           const ComputedStyle&);
-  static CSSValue* ValueForScrollSnapAlign(const ScrollSnapAlign&,
+  static CSSValue* ValueForScrollSnapAlign(const cc::ScrollSnapAlign&,
                                            const ComputedStyle&);
   static CSSValue* ValueForPageBreakBetween(EBreakBetween);
   static CSSValue* ValueForWebkitColumnBreakBetween(EBreakBetween);

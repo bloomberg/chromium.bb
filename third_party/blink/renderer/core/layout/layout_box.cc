@@ -468,11 +468,11 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
   if (old_snap_type != new_snap_type)
     snap_coordinator->SnapContainerDidChange(*this, new_snap_type);
 
-  ScrollSnapAlign old_snap_align =
-      old_style ? old_style->GetScrollSnapAlign() : ScrollSnapAlign();
-  ScrollSnapAlign new_snap_align = new_style && allows_snap_container
-                                       ? new_style->GetScrollSnapAlign()
-                                       : ScrollSnapAlign();
+  cc::ScrollSnapAlign old_snap_align =
+      old_style ? old_style->GetScrollSnapAlign() : cc::ScrollSnapAlign();
+  cc::ScrollSnapAlign new_snap_align = new_style && allows_snap_container
+                                           ? new_style->GetScrollSnapAlign()
+                                           : cc::ScrollSnapAlign();
   if (old_snap_align != new_snap_align)
     snap_coordinator->SnapAreaDidChange(*this, new_snap_align);
 }

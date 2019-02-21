@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ class CORE_EXPORT SnapCoordinator final
   void Trace(blink::Visitor* visitor) {}
 
   void SnapContainerDidChange(LayoutBox&, cc::ScrollSnapType);
-  void SnapAreaDidChange(LayoutBox&, ScrollSnapAlign);
+  void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
 
   // Returns the SnapContainerData if the snap container has one.
   base::Optional<SnapContainerData> GetSnapContainerData(
