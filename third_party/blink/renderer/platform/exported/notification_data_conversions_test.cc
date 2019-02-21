@@ -48,7 +48,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
 
   PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);
-  platform_data.direction = PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+  platform_data.direction = mojom::NotificationDirection::LEFT_TO_RIGHT;
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;

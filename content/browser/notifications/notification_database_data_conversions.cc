@@ -70,15 +70,14 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   switch (payload.direction()) {
     case NotificationDatabaseDataProto::NotificationData::LEFT_TO_RIGHT:
       notification_data->direction =
-          blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+          blink::mojom::NotificationDirection::LEFT_TO_RIGHT;
       break;
     case NotificationDatabaseDataProto::NotificationData::RIGHT_TO_LEFT:
       notification_data->direction =
-          blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+          blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
       break;
     case NotificationDatabaseDataProto::NotificationData::AUTO:
-      notification_data->direction =
-          blink::PlatformNotificationData::DIRECTION_AUTO;
+      notification_data->direction = blink::mojom::NotificationDirection::AUTO;
       break;
   }
 
@@ -151,15 +150,15 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   payload->set_title(base::UTF16ToUTF8(notification_data.title));
 
   switch (notification_data.direction) {
-    case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+    case blink::mojom::NotificationDirection::LEFT_TO_RIGHT:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::LEFT_TO_RIGHT);
       break;
-    case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+    case blink::mojom::NotificationDirection::RIGHT_TO_LEFT:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::RIGHT_TO_LEFT);
       break;
-    case blink::PlatformNotificationData::DIRECTION_AUTO:
+    case blink::mojom::NotificationDirection::AUTO:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::AUTO);
       break;

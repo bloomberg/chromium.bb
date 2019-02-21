@@ -18,18 +18,7 @@ WebNotificationData ToWebNotificationData(
     const PlatformNotificationData& platform_data) {
   WebNotificationData web_data;
   web_data.title = WebString::FromUTF16(platform_data.title);
-  switch (platform_data.direction) {
-    case PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
-      web_data.direction = mojom::NotificationDirection::LEFT_TO_RIGHT;
-      break;
-    case PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
-      web_data.direction = mojom::NotificationDirection::RIGHT_TO_LEFT;
-      break;
-    case PlatformNotificationData::DIRECTION_AUTO:
-      web_data.direction = mojom::NotificationDirection::AUTO;
-      break;
-  }
-
+  web_data.direction = platform_data.direction;
   web_data.lang = WebString::FromUTF8(platform_data.lang);
   web_data.body = WebString::FromUTF16(platform_data.body);
   web_data.tag = WebString::FromUTF8(platform_data.tag);

@@ -39,8 +39,7 @@ bool ImagesShareDimensionsAndColor(const SkBitmap& lhs, const SkBitmap& rhs) {
 TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("Title of my notification");
-  notification_data.direction =
-      PlatformNotificationData::Direction::DIRECTION_AUTO;
+  notification_data.direction = mojom::NotificationDirection::AUTO;
   notification_data.lang = "test-lang";
   notification_data.body = base::ASCIIToUTF16("Notification body.");
   notification_data.tag = "notification-tag";

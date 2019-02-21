@@ -57,7 +57,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   blink::PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
   notification_data.direction =
-      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
   notification_data.lang = kNotificationLang;
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
@@ -226,10 +226,10 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeActionTypes) {
 }
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
-  blink::PlatformNotificationData::Direction directions[] = {
-      blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
-      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
-      blink::PlatformNotificationData::DIRECTION_AUTO};
+  blink::mojom::NotificationDirection directions[] = {
+      blink::mojom::NotificationDirection::LEFT_TO_RIGHT,
+      blink::mojom::NotificationDirection::RIGHT_TO_LEFT,
+      blink::mojom::NotificationDirection::AUTO};
 
   for (size_t i = 0; i < base::size(directions); ++i) {
     blink::PlatformNotificationData notification_data;
