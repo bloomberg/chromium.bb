@@ -121,7 +121,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
     EXPECT_FALSE(http_server_props_manager_->IsInitialized());
     pref_delegate_->SetPrefs(base::DictionaryValue());
     EXPECT_TRUE(http_server_props_manager_->IsInitialized());
-    EXPECT_FALSE(MainThreadHasPendingTask());
+    EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
     EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   }
 
@@ -277,7 +277,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   // Should be a delayed task to update the cache from the prefs file.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
 
   // Verify SupportsSpdy.
@@ -401,7 +401,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   // Prefs should have been overwritten, due to the bad data.
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -463,7 +463,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   // Prefs should have been overwritten, due to the bad data.
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -485,7 +485,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -493,7 +493,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
   // update.
   http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
 }
@@ -527,7 +527,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   FastForwardBy(base::TimeDelta::FromMilliseconds(20));
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
   EXPECT_TRUE(
@@ -558,7 +558,7 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -611,7 +611,7 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   http_server_props_manager_->SetAlternativeServices(
       spdy_server_mail, AlternativeServiceInfoVector());
 
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
@@ -653,7 +653,7 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   // Run the task.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -702,7 +702,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   // Run the task.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -751,7 +751,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   // Run the task.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -797,7 +797,7 @@ TEST_P(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   // Run the task.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -818,7 +818,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -828,7 +828,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   // Another task should not be scheduled.
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
@@ -844,14 +844,14 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Another task should not be scheduled.
   http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(GetPendingMainThreadTaskCount(), 0u);
 
   const ServerNetworkStats* stats2 =
       http_server_props_manager_->GetServerNetworkStats(mail_server);
@@ -861,7 +861,7 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -882,7 +882,7 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -893,7 +893,7 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
   http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
                                                 quic_server_info1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, Clear) {
@@ -930,7 +930,7 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
   // Advance time by just enough so that the prefs update task is executed but
   // not the task to expire the brokenness of |broken_alternative_service|.
   FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -1230,7 +1230,7 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Since this test has no pref corruption, there shouldn't be any pref update.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
   // Schedule one more cache update. The task should be successfully scheduled
   // on the task runner.
@@ -1487,7 +1487,7 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1590,7 +1590,7 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1625,7 +1625,7 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1654,7 +1654,7 @@ TEST_P(HttpServerPropertiesManagerTest,
       server_www, alternative_service_info_vector_3));
 
   // No Prefs update.
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
@@ -1672,11 +1672,11 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       cached_recently_broken_service);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   // Run the prefs update task but not the expiration task for
   // |cached_broken_service|.
   FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Load the |pref_delegate_| with some JSON to verify updating the cache from
@@ -1730,11 +1730,11 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   pref_delegate_->SetPrefs(*server_dict);
 
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   // Run the cache update task but not the expiration task for
   // |cached_broken_service|.
   FastForwardBy(NextMainThreadPendingTaskDelay());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
 
   //
   // Verify alternative service info for https://www.google.com
@@ -1848,7 +1848,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   http_server_props_manager_->MarkAlternativeServiceBroken(
       prefs_broken_service);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(10) -
                 base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -1860,7 +1860,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // when marked broken.
   http_server_props_manager_->MarkAlternativeServiceBroken(
       cached_recently_broken_service);
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(40) -
                 base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -1872,7 +1872,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // marked broken.
     http_server_props_manager_->MarkAlternativeServiceBroken(
         cached_broken_service);
-    EXPECT_TRUE(MainThreadHasPendingTask());
+    EXPECT_NE(0u, GetPendingMainThreadTaskCount());
     FastForwardBy(base::TimeDelta::FromMinutes(20) -
                   base::TimeDelta::FromInternalValue(1));
     EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -1884,7 +1884,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
     // marked broken.
     http_server_props_manager_->MarkAlternativeServiceBroken(
         cached_broken_service2);
-    EXPECT_TRUE(MainThreadHasPendingTask());
+    EXPECT_NE(0u, GetPendingMainThreadTaskCount());
     FastForwardBy(base::TimeDelta::FromMinutes(10) -
                   base::TimeDelta::FromInternalValue(1));
     EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(

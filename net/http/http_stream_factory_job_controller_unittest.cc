@@ -1708,7 +1708,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
   session_deps_.host_resolver->ResolveAllPending();
 
   // Task to resume main job in 15 microseconds should be posted.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
@@ -1774,7 +1774,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCP) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
@@ -1913,7 +1913,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 3 seconds should be posted.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(kMaxDelayTimeForMainJob - base::TimeDelta::FromMicroseconds(1));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
@@ -1973,7 +1973,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
 
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(base::TimeDelta::FromMicroseconds(1));
@@ -1990,7 +1990,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Verify there is another task to resume main job with delay but should
   // not call Resume() on the main job as main job has been resumed.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(base::TimeDelta::FromMicroseconds(15));
 
@@ -2094,7 +2094,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   FastForwardBy(base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
@@ -2452,7 +2452,7 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
     EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
 
-  EXPECT_TRUE(MainThreadHasPendingTask());
+  EXPECT_GT(GetPendingMainThreadTaskCount(), 0u);
   FastForwardBy(base::TimeDelta::FromMilliseconds(
       HttpStreamFactory::Job::kHTTP2ThrottleMs));
   base::RunLoop().RunUntilIdle();

@@ -350,14 +350,14 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
   // executor_callback_.Run() not expected to be run just yet, as the action is
   // delayed.
   executor_->Run(executor_callback_.Get());
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment_.NextTaskIsDelayed());
 
   // Moving forward in time triggers action execution.
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   scoped_task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(1000));
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {

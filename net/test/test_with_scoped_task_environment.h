@@ -34,8 +34,8 @@ class WithScopedTaskEnvironment {
       base::test::ScopedTaskEnvironment::NowSource now_source)
       : scoped_task_environment_(type, now_source) {}
 
-  bool MainThreadHasPendingTask() const WARN_UNUSED_RESULT {
-    return scoped_task_environment_.MainThreadHasPendingTask();
+  bool MainThreadIsIdle() const WARN_UNUSED_RESULT {
+    return scoped_task_environment_.MainThreadIsIdle();
   }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }

@@ -163,7 +163,7 @@ class SequenceManager {
   // run. This method ignores any pending delayed tasks that might have become
   // eligible to run since the last task was executed. This is important because
   // if it did tests would become flaky depending on the exact timing of this
-  // call.
+  // call. This is moderately expensive.
   virtual bool IsIdleForTesting() = 0;
 
   // The total number of posted tasks that haven't executed yet.

@@ -54,7 +54,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
     // blocked upon it could make a test flaky whereas by flushing we guarantee
     // it will blow up).
     RunAllTasksUntilIdle();
-    CHECK(!MainThreadHasPendingTask());
+    CHECK(MainThreadIsIdle());
   }
 
   BrowserTaskExecutor::ResetForTesting();

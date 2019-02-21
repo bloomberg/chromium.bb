@@ -562,34 +562,49 @@ TEST_P(ScopedTaskEnvironmentMockedTime, CancelPendingTask) {
   ScopedTaskEnvironment scoped_task_environment(
       GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
 
-  CancelableOnceClosure task1(Bind([]() {}));
+  CancelableOnceClosure task1(BindOnce([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task1.callback(),
                                                  TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(scoped_task_environment.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
   EXPECT_EQ(1u, scoped_task_environment.GetPendingMainThreadTaskCount());
   EXPECT_EQ(TimeDelta::FromSeconds(1),
             scoped_task_environment.NextMainThreadPendingTaskDelay());
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
   task1.Cancel();
-  EXPECT_FALSE(scoped_task_environment.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
+  EXPECT_EQ(TimeDelta::Max(),
+            scoped_task_environment.NextMainThreadPendingTaskDelay());
 
-  CancelableClosure task2(Bind([]() {}));
+  CancelableClosure task2(BindRepeating([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task2.callback(),
                                                  TimeDelta::FromSeconds(1));
   task2.Cancel();
   EXPECT_EQ(0u, scoped_task_environment.GetPendingMainThreadTaskCount());
 
-  CancelableClosure task3(Bind([]() {}));
+  CancelableClosure task3(BindRepeating([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task3.callback(),
                                                  TimeDelta::FromSeconds(1));
   task3.Cancel();
   EXPECT_EQ(TimeDelta::Max(),
             scoped_task_environment.NextMainThreadPendingTaskDelay());
 
-  CancelableClosure task4(Bind([]() {}));
+  CancelableClosure task4(BindRepeating([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task4.callback(),
                                                  TimeDelta::FromSeconds(1));
   task4.Cancel();
-  EXPECT_FALSE(scoped_task_environment.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
+}
+
+TEST_P(ScopedTaskEnvironmentMockedTime, CancelPendingImmediateTask) {
+  ScopedTaskEnvironment scoped_task_environment(GetParam());
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
+
+  CancelableOnceClosure task1(BindOnce([]() {}));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task1.callback());
+  EXPECT_FALSE(scoped_task_environment.MainThreadIsIdle());
+
+  task1.Cancel();
+  EXPECT_TRUE(scoped_task_environment.MainThreadIsIdle());
 }
 
 TEST_P(ScopedTaskEnvironmentMockedTime, NoFastForwardToCancelledTask) {
@@ -597,7 +612,7 @@ TEST_P(ScopedTaskEnvironmentMockedTime, NoFastForwardToCancelledTask) {
       GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
 
   TimeTicks start_time = scoped_task_environment.NowTicks();
-  CancelableClosure task(Bind([]() {}));
+  CancelableClosure task(BindRepeating([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task.callback(),
                                                  TimeDelta::FromSeconds(1));
   EXPECT_EQ(TimeDelta::FromSeconds(1),
@@ -617,6 +632,38 @@ TEST_P(ScopedTaskEnvironmentMockedTime, NowSource) {
   constexpr TimeDelta delay = TimeDelta::FromSeconds(10);
   scoped_task_environment.FastForwardBy(delay);
   EXPECT_EQ(TimeTicks::Now(), start_time + delay);
+}
+
+TEST_P(ScopedTaskEnvironmentMockedTime, NextTaskIsDelayed) {
+  ScopedTaskEnvironment scoped_task_environment(GetParam());
+
+  EXPECT_FALSE(scoped_task_environment.NextTaskIsDelayed());
+  CancelableClosure task(BindRepeating([]() {}));
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task.callback(),
+                                                 TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(scoped_task_environment.NextTaskIsDelayed());
+  task.Cancel();
+  EXPECT_FALSE(scoped_task_environment.NextTaskIsDelayed());
+
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, BindOnce([]() {}),
+                                                 TimeDelta::FromSeconds(2));
+  EXPECT_TRUE(scoped_task_environment.NextTaskIsDelayed());
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(scoped_task_environment.NextTaskIsDelayed());
+
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce([]() {}));
+  EXPECT_FALSE(scoped_task_environment.NextTaskIsDelayed());
+}
+
+TEST_P(ScopedTaskEnvironmentMockedTime,
+       NextMainThreadPendingTaskDelayWithImmediateTask) {
+  ScopedTaskEnvironment scoped_task_environment(GetParam());
+
+  EXPECT_EQ(TimeDelta::Max(),
+            scoped_task_environment.NextMainThreadPendingTaskDelay());
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce([]() {}));
+  EXPECT_EQ(TimeDelta(),
+            scoped_task_environment.NextMainThreadPendingTaskDelay());
 }
 
 INSTANTIATE_TEST_SUITE_P(

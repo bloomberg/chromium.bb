@@ -272,7 +272,7 @@ TEST_F(BatchElementCheckerTest, EventuallyFindAll) {
 
   // The first try should have run, not fully successful, and should now be
   // waiting for the second try.
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment_.NextTaskIsDelayed());
   EXPECT_THAT(element_exists_results_, Contains(Pair("1", true)));
   EXPECT_THAT(element_exists_results_, Not(Contains(Key("2"))));
   EXPECT_THAT(all_done_, Not(Contains("all_done")));
@@ -280,7 +280,7 @@ TEST_F(BatchElementCheckerTest, EventuallyFindAll) {
 
   // The second try should have found 2 and finished.
   AdvanceTime();
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   EXPECT_THAT(element_exists_results_, Contains(Pair("2", true)));
   EXPECT_THAT(all_done_, Contains("all_done"));
   EXPECT_TRUE(checks_.all_found());
@@ -306,19 +306,19 @@ TEST_F(BatchElementCheckerTest, EventuallyFindSome) {
 
   // The first try should have run, not fully successful, and should now be
   // waiting for the second try.
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment_.NextTaskIsDelayed());
   EXPECT_THAT(element_exists_results_, Contains(Pair("1", true)));
   EXPECT_THAT(element_exists_results_, Not(Contains(Key("2"))));
   EXPECT_THAT(all_done_, Not(Contains("all_done")));
 
   // The second try still doesn't work'
   AdvanceTime();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(scoped_task_environment_.NextTaskIsDelayed());
   EXPECT_THAT(element_exists_results_, Not(Contains(Key("2"))));
 
   // Give up after the third try
   AdvanceTime();
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   EXPECT_THAT(element_exists_results_, Contains(Pair("2", false)));
   EXPECT_THAT(all_done_, Contains("all_done"));
   EXPECT_FALSE(checks_.all_found());
@@ -356,7 +356,7 @@ TEST_F(BatchElementCheckerTest, TryOnceGivenSmallDuration) {
   checks_.Run(base::TimeDelta::FromMilliseconds(10), base::DoNothing(),
               DoneCallback("all_done"));
 
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   EXPECT_THAT(element_exists_results_, Contains(Pair("does_not_exist", false)));
   EXPECT_THAT(all_done_, Contains("all_done"));
   EXPECT_FALSE(checks_.all_found());
