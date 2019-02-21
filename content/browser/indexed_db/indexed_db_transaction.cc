@@ -119,6 +119,8 @@ IndexedDBTransaction::IndexedDBTransaction(
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();
+  if (database_)
+    database_->TransactionCreated();
 
   diagnostics_.tasks_scheduled = 0;
   diagnostics_.tasks_completed = 0;
@@ -237,7 +239,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
 
-  database_->TransactionFinished(this, false);
+  database_->TransactionFinished(mode_, false);
 
   // RemoveTransaction will delete |this|.
   // Note: During force-close situations, the connection can be destroyed during
@@ -460,7 +462,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     if (!pending_observers_.empty() && connection_)
       connection_->ActivatePendingObservers(std::move(pending_observers_));
 
-    database_->TransactionFinished(this, true);
+    database_->TransactionFinished(mode_, true);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
     return s;
@@ -479,7 +481,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
                                  "Internal error committing transaction.");
     }
     callbacks_->OnAbort(*this, error);
-    database_->TransactionFinished(this, false);
+    database_->TransactionFinished(mode_, false);
   }
   return s;
 }
