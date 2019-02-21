@@ -506,6 +506,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Helper function: Widens the width of |source| by the specified margins
   // while keeping it smaller than page width.
+  //
+  // This method can only be called if the main frame is local.
   WebRect WidenRectWithinPageBounds(const WebRect& source,
                                     int target_margin,
                                     int minimum_margin);
