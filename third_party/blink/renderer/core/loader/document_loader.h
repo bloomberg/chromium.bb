@@ -289,6 +289,8 @@ class CORE_EXPORT DocumentLoader
 
   void CommitData(const char* bytes, size_t length);
 
+  ContentSecurityPolicy* CreateCSP(const ResourceResponse&,
+                                   const String& origin_policy_string);
   void StartLoadingInternal();
   void FinishedLoading(TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
@@ -427,6 +429,7 @@ class CORE_EXPORT DocumentLoader
   bool listing_ftp_directory_ = false;
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
+  bool loading_url_as_empty_document_ = false;
   unsigned long main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;
