@@ -143,9 +143,9 @@ MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIMediaEngagementHost));
   source->AddResourcePath("media-engagement.js", IDR_MEDIA_ENGAGEMENT_JS);
   source->AddResourcePath(
-      "chrome/browser/media/media_engagement_score_details.mojom-lite.js",
-      IDR_MEDIA_ENGAGEMENT_SCORE_DETAILS_MOJOM_LITE_JS);
-  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
+      "chrome/browser/media/media_engagement_score_details.mojom.js",
+      IDR_MEDIA_ENGAGEMENT_MOJO_JS);
+  source->AddResourcePath("url/mojom/url.mojom.js", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_MEDIA_ENGAGEMENT_HTML);
   source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());

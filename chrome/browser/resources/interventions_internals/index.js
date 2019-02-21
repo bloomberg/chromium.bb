@@ -450,7 +450,10 @@ function setupLogClear() {
 }
 
 /** @constructor */
-const InterventionsInternalPageImpl = function() {};
+const InterventionsInternalPageImpl = function(request) {
+  this.binding_ =
+      new mojo.Binding(mojom.InterventionsInternalsPage, this, request);
+};
 
 InterventionsInternalPageImpl.prototype = {
   /**
@@ -699,12 +702,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.testPageHandler) {
       pageHandler = window.testPageHandler;
     } else {
-      pageHandler = mojom.InterventionsInternalsPageHandler.getProxy();
+      pageHandler = new mojom.InterventionsInternalsPageHandlerPtr;
+      Mojo.bindInterface(
+          mojom.InterventionsInternalsPageHandler.name,
+          mojo.makeRequest(pageHandler).handle);
 
       // Set up client side mojo interface.
-      pageImpl = new InterventionsInternalPageImpl();
-      const client = new mojom.InterventionsInternalsPage(pageImpl);
-      pageHandler.setClientPage(client.createProxy());
+      const client = new mojom.InterventionsInternalsPagePtr;
+      pageImpl = new InterventionsInternalPageImpl(mojo.makeRequest(client));
+      pageHandler.setClientPage(client);
     }
 
     interventions_internals.init(pageHandler);

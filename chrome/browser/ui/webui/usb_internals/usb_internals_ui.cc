@@ -24,7 +24,7 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath(
       "chrome/browser/ui/webui/usb_internals/usb_internals.mojom-lite.js",
       IDR_USB_INTERNALS_MOJO_JS);
-  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
+  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJO_LITE_JS);
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
   source->UseGzip();
 
