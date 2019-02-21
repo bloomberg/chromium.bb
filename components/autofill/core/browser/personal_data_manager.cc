@@ -1122,7 +1122,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
     bool field_is_autofilled,
-    const std::vector<ServerFieldType>& other_field_types) {
+    const std::vector<ServerFieldType>& field_types) {
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
@@ -1159,15 +1159,15 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
   std::vector<Suggestion> unique_suggestions =
-      suggestion_selection::GetUniqueSuggestions(other_field_types, app_locale_,
+      suggestion_selection::GetUniqueSuggestions(field_types, app_locale_,
                                                  matched_profiles, suggestions,
                                                  &unique_matched_profiles);
 
   // Generate disambiguating labels based on the list of matches.
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(
-      unique_matched_profiles, &other_field_types, type.GetStorableType(), 1,
-      app_locale_, &labels);
+  AutofillProfile::CreateInferredLabels(unique_matched_profiles, &field_types,
+                                        type.GetStorableType(), 1, app_locale_,
+                                        &labels);
   DCHECK_EQ(unique_suggestions.size(), labels.size());
   for (size_t i = 0; i < labels.size(); i++) {
     unique_suggestions[i].label = labels[i];
