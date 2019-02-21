@@ -14,13 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/video/jpeg_decode_accelerator.h"
-#include "ui/gfx/geometry/size.h"
-
-// This data type is defined in va/va.h using typedef, reproduced here.
-// TODO(andrescj): remove this once VaapiJpegDecoder is responsible for
-// obtaining the VAImage.
-using VASurfaceID = unsigned int;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -29,8 +24,8 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class BitstreamBuffer;
+class ScopedVAImage;
 class UnalignedSharedMemory;
-class VaapiWrapper;
 class VideoFrame;
 
 // Class to provide JPEG decode acceleration for Intel systems with hardware
@@ -69,13 +64,11 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
                   std::unique_ptr<UnalignedSharedMemory> shm,
                   scoped_refptr<VideoFrame> video_frame);
 
-  // Puts contents of |va_surface| into given |video_frame|, releases the
-  // surface and passes the |input_buffer_id| of the resulting picture to
-  // client for output.
-  bool OutputPicture(VASurfaceID va_surface_id,
-                     uint32_t va_surface_format,
-                     int32_t input_buffer_id,
-                     const scoped_refptr<VideoFrame>& video_frame);
+  // Puts contents of |image| into given |video_frame| and passes the
+  // |input_buffer_id| of the resulting picture to client for output.
+  bool OutputPictureOnTaskRunner(std::unique_ptr<ScopedVAImage> image,
+                                 int32_t input_buffer_id,
+                                 const scoped_refptr<VideoFrame>& video_frame);
 
   // ChildThread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -86,22 +79,15 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   // The client of this class.
   Client* client_;
 
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  VaapiJpegDecoder decoder_;
 
-  // Comes after vaapi_wrapper_ to ensure its destructor is executed before
-  // |vaapi_wrapper_| is destroyed.
+  // Comes after |decoder_| to ensure its destructor is executed before
+  // |decoder_| is destroyed.
   base::Thread decoder_thread_;
   // Use this to post tasks to |decoder_thread_| instead of
   // |decoder_thread_.task_runner()| because the latter will be NULL once
   // |decoder_thread_.Stop()| returns.
   scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
-
-  // The current VA surface for decoding.
-  VASurfaceID va_surface_id_;
-  // The coded size associated with |va_surface_id_|.
-  gfx::Size coded_size_;
-  // The VA RT format associated with |va_surface_id_|.
-  unsigned int va_rt_format_;
 
   // WeakPtr factory for use in posting tasks from |decoder_task_runner_| back
   // to |task_runner_|.  Since |decoder_thread_| is a fully owned member of

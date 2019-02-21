@@ -7,39 +7,73 @@
 
 #include <stdint.h>
 
-// These data types are defined in va/va.h using typedef, reproduced here.
-// TODO(andrescj): revisit this once VaSurfaceFormatToImageFormat() and
-// VaSurfaceFormatForJpeg() are moved to the anonymous namespace in the .cc
-// file.
-using VAImageFormat = struct _VAImageFormat;
-using VASurfaceID = unsigned int;
+#include <memory>
+
+#include "base/callback_forward.h"
+#include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "ui/gfx/geometry/size.h"
+
+// This data type is defined in va/va.h using typedef, reproduced here.
+typedef unsigned int VASurfaceID;
 
 namespace media {
 
-struct JpegFrameHeader;
-struct JpegParseResult;
+class ScopedVAImage;
 class VaapiWrapper;
 
-// Convert the specified surface format to the associated output image format.
-bool VaSurfaceFormatToImageFormat(uint32_t va_rt_format,
-                                  VAImageFormat* va_image_format);
+enum class VaapiJpegDecodeStatus {
+  kSuccess,
+  kParseJpegFailed,
+  kUnsupportedJpeg,
+  kUnsupportedSubsampling,
+  kSurfaceCreationFailed,
+  kSubmitPicParamsFailed,
+  kSubmitIQMatrixFailed,
+  kSubmitHuffmanFailed,
+  kSubmitSliceParamsFailed,
+  kSubmitSliceDataFailed,
+  kExecuteDecodeFailed,
+  kUnsupportedSurfaceFormat,
+  kCannotGetImage,
+  kInvalidState,
+};
 
-unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
-
-class VaapiJpegDecoder {
+class VaapiJpegDecoder final {
  public:
-  VaapiJpegDecoder() = default;
-  virtual ~VaapiJpegDecoder() = default;
+  VaapiJpegDecoder();
+  ~VaapiJpegDecoder();
 
-  // Decodes a JPEG picture. It will fill VA-API parameters and call
-  // corresponding VA-API methods according to the JPEG |parse_result|. Decoded
-  // data will be outputted to the given |va_surface|. Returns false on failure.
-  // |vaapi_wrapper| should be initialized in kDecode mode with
-  // VAProfileJPEGBaseline profile. |va_surface| should be created with size at
-  // least as large as the picture size.
-  static bool DoDecode(VaapiWrapper* vaapi_wrapper,
-                       const JpegParseResult& parse_result,
-                       VASurfaceID va_surface);
+  // Initializes |vaapi_wrapper_| in kDecode mode with VAProfileJPEGBaseline
+  // profile and |error_uma_cb| for error reporting.
+  bool Initialize(const base::RepeatingClosure& error_uma_cb);
+
+  // Decodes a JPEG picture. It will fill VA-API parameters and call the
+  // corresponding VA-API methods according to the JPEG in |encoded_image|.
+  // Decoded data will be returned as a ScopedVAImage. Returns nullptr on
+  // failure and sets *|status| to the reason for failure.
+  std::unique_ptr<ScopedVAImage> DoDecode(
+      base::span<const uint8_t> encoded_image,
+      VaapiJpegDecodeStatus* status);
+
+ private:
+  // TODO(andrescj): move vaapi_utils tests out of vaapi_jpeg_decoder_unittest
+  // and remove this friend declaration.
+  friend class VaapiJpegDecoderTest;
+  FRIEND_TEST_ALL_PREFIXES(VaapiJpegDecoderTest, ScopedVAImage);
+
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+
+  // The current VA surface for decoding.
+  VASurfaceID va_surface_id_;
+  // The coded size associated with |va_surface_id_|.
+  gfx::Size coded_size_;
+  // The VA RT format associated with |va_surface_id_|.
+  unsigned int va_rt_format_;
+
+  DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecoder);
 };
 
 }  // namespace media
