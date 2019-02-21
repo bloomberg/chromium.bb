@@ -50,7 +50,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     perfetto::TraceConfig trace_config;
     size_t size_limit = chrome_trace_config_obj.GetTraceBufferSizeInKb();
     if (size_limit == 0) {
-      size_limit = 400 * 1024;
+      size_limit = 100 * 1024;
     }
     trace_config.add_buffers()->set_size_kb(size_limit);
 
