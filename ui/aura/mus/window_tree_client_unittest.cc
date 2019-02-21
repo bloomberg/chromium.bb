@@ -2886,6 +2886,10 @@ TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
   // No new bounds changes should be generated.
   EXPECT_EQ(0u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+
+  // As the server supplied a new LocalSurfaceId the pending LocalSurfaceId
+  // should be cleared.
+  EXPECT_FALSE(top_level->host->has_pending_local_surface_id_from_server());
 }
 
 TEST_F(WindowTreeClientTest, OnEmbedGetsLocalSurfaceId) {
