@@ -568,6 +568,12 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const ResourceResponse& response,
     base::Optional<url::Origin> request_initiator_site_lock,
     mojom::FetchRequestMode fetch_request_mode) {
+  // TODO(lukasza): Remove |initiator_compatibility_| field once the UMAs
+  // depending on it are expired (e.g. see
+  // SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility).
+  initiator_compatibility_ = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request.initiator());
+
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
@@ -600,16 +606,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     return kAllow;
   }
 
-  // Treat a missing initiator as an empty origin to be safe, though we don't
-  // expect this to happen.  Unfortunately, this requires a copy.
-  url::Origin initiator;
-  initiator_compatibility_ = VerifyRequestInitiatorLock(
-      request_initiator_site_lock_, request.initiator());
-  bool block_untrustworthy_initiator =
-      ShouldEnforceInitiatorLock() &&
-      initiator_compatibility_ == InitiatorLockCompatibility::kIncorrectLock;
-  if (request.initiator().has_value() && !block_untrustworthy_initiator)
-    initiator = request.initiator().value();
+  // Compute the |initiator| of the request, falling back to a unique origin if
+  // there was no initiator or if it was incompatible with the lock. Using a
+  // unique origin makes CORB treat the response as cross-origin and thus
+  // considers it eligible for blocking (based on content-type, sniffing, etc.).
+  url::Origin initiator = GetTrustworthyInitiator(
+      ShouldEnforceInitiatorLock() ? request_initiator_site_lock_
+                                   : base::nullopt,
+      request);
 
   // Don't block same-origin documents.
   if (initiator.IsSameOriginWith(target_origin))

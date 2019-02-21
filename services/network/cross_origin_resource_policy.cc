@@ -124,22 +124,12 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
     return kAllow;
   }
 
-  // Compute |target_origin| and |initiator|.  Initial, opaque |initiator| will
-  // be used unless request.initiator() has a value that is compatible with the
-  // |request_initiator_site_lock|.
-  url::Origin target_origin = url::Origin::Create(request.url());
-  url::Origin initiator;
-  InitiatorLockCompatibility initiator_compatibility =
-      VerifyRequestInitiatorLock(request_initiator_site_lock,
-                                 request.initiator());
-  if (request.initiator().has_value() &&
-      initiator_compatibility != InitiatorLockCompatibility::kIncorrectLock) {
-    initiator = request.initiator().value();
-  }
-
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:
   // > 2. If request’s origin is same origin with request’s current URL’s
   //      origin, then return allowed.
+  url::Origin target_origin = url::Origin::Create(request.url());
+  url::Origin initiator =
+      GetTrustworthyInitiator(request_initiator_site_lock, request);
   if (initiator == target_origin)
     return kAllow;
 

@@ -9,6 +9,10 @@
 #include "base/optional.h"
 #include "url/origin.h"
 
+namespace net {
+class URLRequest;
+}  // namespace net
+
 namespace network {
 
 struct ResourceRequest;
@@ -58,6 +62,16 @@ COMPONENT_EXPORT(NETWORK_SERVICE)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
+
+// Gets initiator of |request|, falling back to a unique origin if
+// 1) |request.initiator()| is missing or
+// 2) |request.initiator()| is incompatible with |request_initiator_site_lock|.
+//
+// |request_initiator_site_lock| should come from
+// URLLoaderFactoryParams::request_initiator_site_lock.
+url::Origin GetTrustworthyInitiator(
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const net::URLRequest& request);
 
 }  // namespace network
 
