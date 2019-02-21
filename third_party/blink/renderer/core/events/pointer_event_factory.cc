@@ -34,10 +34,10 @@ const char* PointerTypeNameForWebPointPointerType(
   }
 }
 
-unsigned short ButtonToButtonsBitfield(WebPointerProperties::Button button) {
+uint16_t ButtonToButtonsBitfield(WebPointerProperties::Button button) {
 #define CASE_BUTTON_TO_BUTTONS(enumLabel)       \
   case WebPointerProperties::Button::enumLabel: \
-    return static_cast<unsigned short>(WebPointerProperties::Buttons::enumLabel)
+    return static_cast<uint16_t>(WebPointerProperties::Buttons::enumLabel)
 
   switch (button) {
     CASE_BUTTON_TO_BUTTONS(kNoButton);
@@ -73,7 +73,7 @@ const AtomicString& PointerEventNameForEventType(WebInputEvent::Type type) {
   }
 }
 
-float GetPointerEventPressure(float force, int buttons) {
+float GetPointerEventPressure(float force, uint16_t buttons) {
   if (!buttons)
     return 0;
   if (std::isnan(force))

@@ -83,23 +83,18 @@ const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
   return layout_object;
 }
 
-unsigned ButtonsToWebInputEventModifiers(unsigned short buttons) {
+unsigned ButtonsToWebInputEventModifiers(uint16_t buttons) {
   unsigned modifiers = 0;
 
-  if (buttons &
-      static_cast<unsigned short>(WebPointerProperties::Buttons::kLeft))
+  if (buttons & static_cast<uint16_t>(WebPointerProperties::Buttons::kLeft))
     modifiers |= WebInputEvent::kLeftButtonDown;
-  if (buttons &
-      static_cast<unsigned short>(WebPointerProperties::Buttons::kRight))
+  if (buttons & static_cast<uint16_t>(WebPointerProperties::Buttons::kRight))
     modifiers |= WebInputEvent::kRightButtonDown;
-  if (buttons &
-      static_cast<unsigned short>(WebPointerProperties::Buttons::kMiddle))
+  if (buttons & static_cast<uint16_t>(WebPointerProperties::Buttons::kMiddle))
     modifiers |= WebInputEvent::kMiddleButtonDown;
-  if (buttons &
-      static_cast<unsigned short>(WebPointerProperties::Buttons::kBack))
+  if (buttons & static_cast<uint16_t>(WebPointerProperties::Buttons::kBack))
     modifiers |= WebInputEvent::kBackButtonDown;
-  if (buttons &
-      static_cast<unsigned short>(WebPointerProperties::Buttons::kForward))
+  if (buttons & static_cast<uint16_t>(WebPointerProperties::Buttons::kForward))
     modifiers |= WebInputEvent::kForwardButtonDown;
 
   return modifiers;
@@ -248,26 +243,21 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
 
 MouseEvent::~MouseEvent() = default;
 
-unsigned short MouseEvent::WebInputEventModifiersToButtons(unsigned modifiers) {
-  unsigned short buttons = 0;
+uint16_t MouseEvent::WebInputEventModifiersToButtons(unsigned modifiers) {
+  uint16_t buttons = 0;
 
   if (modifiers & WebInputEvent::kLeftButtonDown)
-    buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::kLeft);
+    buttons |= static_cast<uint16_t>(WebPointerProperties::Buttons::kLeft);
   if (modifiers & WebInputEvent::kRightButtonDown) {
-    buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::kRight);
+    buttons |= static_cast<uint16_t>(WebPointerProperties::Buttons::kRight);
   }
   if (modifiers & WebInputEvent::kMiddleButtonDown) {
-    buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::kMiddle);
+    buttons |= static_cast<uint16_t>(WebPointerProperties::Buttons::kMiddle);
   }
   if (modifiers & WebInputEvent::kBackButtonDown)
-    buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::kBack);
+    buttons |= static_cast<uint16_t>(WebPointerProperties::Buttons::kBack);
   if (modifiers & WebInputEvent::kForwardButtonDown) {
-    buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::kForward);
+    buttons |= static_cast<uint16_t>(WebPointerProperties::Buttons::kForward);
   }
 
   return buttons;
@@ -289,7 +279,7 @@ void MouseEvent::initMouseEvent(ScriptState* script_state,
                                 bool meta_key,
                                 short button,
                                 EventTarget* related_target,
-                                unsigned short buttons) {
+                                uint16_t buttons) {
   if (IsBeingDispatched())
     return;
 
@@ -317,7 +307,7 @@ void MouseEvent::InitMouseEventInternal(
     short button,
     EventTarget* related_target,
     InputDeviceCapabilities* source_capabilities,
-    unsigned short buttons) {
+    uint16_t buttons) {
   InitUIEventInternal(type, bubbles, cancelable, related_target, view, detail,
                       source_capabilities);
 
