@@ -21,6 +21,7 @@ enum class RankingItemType {
   kFile,
   kApp,
   kOmnibox,
+  kArcAppShortcut
 };
 
 // Convert the enum used by |ChromeSearchResult|s into a |RankingItemType|.

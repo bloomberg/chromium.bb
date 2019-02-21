@@ -30,6 +30,8 @@ RankingItemType RankingItemTypeFromSearchResultType(
     case SearchResultType::kPlayStoreReinstallApp:
     case SearchResultType::kWebStoreSearch:
       return RankingItemType::kIgnored;
+    case SearchResultType::kArcAppShortcut:
+      return RankingItemType::kArcAppShortcut;
   }
 }
 

@@ -48,6 +48,7 @@ enum class SearchResultType {
   kLauncher,        // Results from launcher search (currently only from Files).
   kAnswerCard,      // WebContents based answer card.
   kPlayStoreReinstallApp,  // Reinstall recommendations from PlayStore.
+  kArcAppShortcut,         // ARC++ app shortcuts.
   // Add new values here.
 };
 
