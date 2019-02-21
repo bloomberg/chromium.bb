@@ -171,9 +171,8 @@ void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
 }
 
 MediaControlPopupMenuElement::MediaControlPopupMenuElement(
-    MediaControlsImpl& media_controls,
-    MediaControlElementType type)
-    : MediaControlDivElement(media_controls, type) {
+    MediaControlsImpl& media_controls)
+    : MediaControlDivElement(media_controls, kMediaIgnore) {
   SetIsWanted(false);
 }
 

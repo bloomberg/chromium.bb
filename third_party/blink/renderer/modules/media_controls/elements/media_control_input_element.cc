@@ -64,6 +64,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   HTMLLabelElement* element = HTMLLabelElement::Create(GetDocument());
   element->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
+  element->setAttribute(html_names::kRoleAttr, "menuitem");
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
   element->ParserAppendChild(button);

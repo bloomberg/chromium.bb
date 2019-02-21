@@ -18,9 +18,10 @@ namespace blink {
 
 MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(
     MediaControlsImpl& media_controls)
-    : MediaControlPopupMenuElement(media_controls, kMediaOverflowList) {
+    : MediaControlPopupMenuElement(media_controls) {
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list"));
+  setAttribute(html_names::kRoleAttr, "menu");
   CloseOverflowMenu();
 }
 
