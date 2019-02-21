@@ -585,9 +585,11 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
                            signin_metrics::SourceForRefreshTokenOperation::
                                kAccountReconcilor_GaiaCookiesUpdated);
 
+  std::vector<std::string> chrome_accounts =
+      LoadValidAccountsFromTokenService();
+
   if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
-      identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
-          primary_account)) {
+      !base::ContainsValue(chrome_accounts, primary_account)) {
     VLOG(1) << "Primary account has error, abort.";
     DCHECK(is_reconcile_started_);
     AbortReconcile();
@@ -595,11 +597,10 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
   }
 
   if (IsMultiloginEndpointEnabled()) {
-    FinishReconcileWithMultiloginEndpoint(primary_account,
-                                          LoadValidAccountsFromTokenService(),
+    FinishReconcileWithMultiloginEndpoint(primary_account, chrome_accounts,
                                           std::move(verified_gaia_accounts));
   } else {
-    FinishReconcile(primary_account, LoadValidAccountsFromTokenService(),
+    FinishReconcile(primary_account, chrome_accounts,
                     std::move(verified_gaia_accounts));
   }
 }
