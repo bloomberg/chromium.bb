@@ -152,7 +152,7 @@ void EventSource::Connect() {
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  probe::willSendEventSourceRequest(&execution_context, this);
+  probe::willSendEventSourceRequest(&execution_context);
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
   loader_->Start(request);

@@ -57,7 +57,6 @@ interface CoreProbes {
   class FontCustomPlatformData;
   class FontFace;
   class HTMLDocumentParser;
-  class ThreadableLoaderClient;
   class WorkerInspectorProxy;
   class XMLHttpRequest;
 
@@ -102,7 +101,7 @@ interface CoreProbes {
   void didFinishLoading(CoreProbeSink*, unsigned long identifier, DocumentLoader*, TimeTicks finishTime, int64_t encoded_data_length, int64_t decodedBodyLength, bool should_report_corb_blocking);
   void didReceiveCorsRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didFailLoading(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceError&);
-  void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
+  void willSendEventSourceRequest(ExecutionContext*);
   void willDispatchEventSourceEvent(ExecutionContext*, unsigned long identifier, const AtomicString& eventName, const AtomicString& eventId, const String& data);
   void willLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, EncodedFormData* form_data, const HTTPHeaderMap& headers, bool includeCredentials);
   void didFinishXHR(ExecutionContext*, XMLHttpRequest* xhr);
