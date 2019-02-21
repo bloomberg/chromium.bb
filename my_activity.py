@@ -857,7 +857,8 @@ def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-u', '--user', metavar='<email>',
-      default=os.environ.get('USER'),
+      # Look for USER and USERNAME (Windows) environment variables.
+      default=os.environ.get('USER', os.environ.get('USERNAME')),
       help='Filter on user, default=%default')
   parser.add_option(
       '-b', '--begin', metavar='<date>',
@@ -1008,7 +1009,7 @@ def main():
   if args:
     parser.error('Args unsupported')
   if not options.user:
-    parser.error('USER is not set, please use -u')
+    parser.error('USER/USERNAME is not set, please use -u')
   options.user = username(options.user)
 
   logging.basicConfig(level=options.verbosity)
