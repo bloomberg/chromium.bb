@@ -181,6 +181,65 @@ TEST_F(ScopedFeatureListTest, OverrideWithFeatureParameters) {
   EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
 }
 
+TEST_F(ScopedFeatureListTest, OverrideMultipleFeaturesWithParameters) {
+  FieldTrialList field_trial_list(nullptr);
+  scoped_refptr<FieldTrial> trial1 =
+      FieldTrialList::CreateFieldTrial("foo1", "bar1");
+  const char kParam[] = "param_1";
+  const char kValue1[] = "value_1";
+  const char kValue2[] = "value_2";
+  std::map<std::string, std::string> parameters1;
+  parameters1[kParam] = kValue1;
+  std::map<std::string, std::string> parameters2;
+  parameters2[kParam] = kValue2;
+
+  test::ScopedFeatureList feature_list1;
+  feature_list1.InitFromCommandLine("TestFeature1<foo1,TestFeature2",
+                                    std::string());
+
+  // Check initial state.
+  ExpectFeatures("TestFeature1<foo1,TestFeature2", std::string());
+  EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));
+  EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature2));
+  EXPECT_EQ(trial1.get(), FeatureList::GetFieldTrial(kTestFeature1));
+  EXPECT_EQ(nullptr, FeatureList::GetFieldTrial(kTestFeature2));
+  EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+  EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
+
+  {
+    // Override multiple features with parameters.
+    test::ScopedFeatureList feature_list2;
+    feature_list2.InitWithFeaturesAndParameters(
+        {{kTestFeature1, parameters1}, {kTestFeature2, parameters2}}, {});
+
+    EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));
+    EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature2));
+    EXPECT_EQ(kValue1, GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+    EXPECT_EQ(kValue2, GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
+  }
+
+  {
+    // Override a feature with a parameter and disable another one.
+    test::ScopedFeatureList feature_list2;
+    feature_list2.InitWithFeaturesAndParameters({{kTestFeature1, parameters2}},
+                                                {kTestFeature2});
+
+    EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));
+    EXPECT_FALSE(FeatureList::IsEnabled(kTestFeature2));
+    EXPECT_EQ(kValue2, GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+    EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
+  }
+
+  // Check that initial state is restored.
+  ExpectFeatures("TestFeature1<foo1,TestFeature2", std::string());
+  EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));
+  EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature2));
+  EXPECT_EQ(trial1.get(), FeatureList::GetFieldTrial(kTestFeature1));
+  EXPECT_EQ(nullptr, FeatureList::GetFieldTrial(kTestFeature2));
+  EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+  EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
+}
+
 TEST_F(ScopedFeatureListTest, EnableFeatureOverrideDisable) {
   test::ScopedFeatureList feature_list1;
   feature_list1.InitWithFeatures({}, {kTestFeature1});
