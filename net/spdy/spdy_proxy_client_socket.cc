@@ -80,7 +80,7 @@ int SpdyProxyClientSocket::RestartWithAuth(CompletionOnceCallback callback) {
   // stream may not be reused and a new SpdyProxyClientSocket must be
   // created (possibly on top of the same SPDY Session).
   next_state_ = STATE_DISCONNECTED;
-  return OK;
+  return ERR_UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH;
 }
 
 bool SpdyProxyClientSocket::IsUsingSpdy() const {
