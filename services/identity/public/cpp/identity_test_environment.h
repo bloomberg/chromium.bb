@@ -285,6 +285,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
                                             const std::string& locale,
                                             const std::string& picture_url);
 
+  // Simulates a merge session failure with |auth_error| as the error.
+  void SimulateMergeSessionFailure(const GoogleServiceAuthError& auth_error);
+
  private:
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;

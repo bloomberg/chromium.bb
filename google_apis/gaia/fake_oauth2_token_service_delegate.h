@@ -59,6 +59,8 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
     fix_request_if_possible_ = value;
   }
 
+  const net::BackoffEntry* BackoffEntry() const override;
+
  private:
   struct AccountInfo {
     AccountInfo(const std::string& refresh_token);
@@ -76,6 +78,8 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   bool fix_request_if_possible_ = false;
+
+  net::BackoffEntry backoff_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
 };
