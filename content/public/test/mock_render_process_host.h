@@ -133,7 +133,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() override;
-  std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+  std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;

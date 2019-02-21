@@ -347,7 +347,7 @@ const service_manager::Identity& MockRenderProcessHost::GetChildIdentity() {
   return child_identity_;
 }
 
-std::unique_ptr<base::SharedPersistentMemoryAllocator>
+std::unique_ptr<base::PersistentMemoryAllocator>
 MockRenderProcessHost::TakeMetricsAllocator() {
   return nullptr;
 }

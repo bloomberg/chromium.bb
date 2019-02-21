@@ -73,7 +73,7 @@
 
 namespace base {
 class CommandLine;
-class SharedPersistentMemoryAllocator;
+class PersistentMemoryAllocator;
 }
 
 namespace viz {
@@ -207,7 +207,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() override;
-  std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+  std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;
@@ -863,7 +863,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
   // The memory allocator, if any, in which the renderer will write its metrics.
-  std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
+  std::unique_ptr<base::PersistentMemoryAllocator> metrics_allocator_;
 
   std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter>
       indexed_db_factory_;
