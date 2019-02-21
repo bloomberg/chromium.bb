@@ -456,10 +456,11 @@ void TracedValue::SetWriterFactoryCallback(WriterFactoryCallback callback) {
 
 TracedValue::TracedValue() : TracedValue(0) {}
 
-TracedValue::TracedValue(size_t capacity) {
+TracedValue::TracedValue(size_t capacity, bool force_json) {
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
 
-  writer_ = CreateWriter(capacity);
+  writer_ = force_json ? std::make_unique<PickleWriter>(capacity)
+                       : CreateWriter(capacity);
 }
 
 TracedValue::~TracedValue() {
