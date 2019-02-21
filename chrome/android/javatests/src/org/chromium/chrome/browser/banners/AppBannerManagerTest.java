@@ -216,11 +216,15 @@ public class AppBannerManagerTest {
         });
     }
 
+    private AppBannerManager getAppBannerManager(Tab tab) {
+        return AppBannerManager.forTab(tab);
+    }
+
     private void waitForBannerManager(Tab tab) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !tab.getAppBannerManager().isRunningForTesting();
+                return !getAppBannerManager(tab).isRunningForTesting();
             }
         });
     }
@@ -237,8 +241,7 @@ public class AppBannerManagerTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        rule.getActivity().getActivityTab().getAppBannerManager();
+                AppBannerManager manager = getAppBannerManager(rule.getActivity().getActivityTab());
                 return mDetailsDelegate.mNumRetrieved == numExpected
                         && !manager.isRunningForTesting();
             }
@@ -371,7 +374,7 @@ public class AppBannerManagerTest {
             @Override
             public boolean isSatisfied() {
                 AddToHomescreenDialog dialog =
-                        tab.getAppBannerManager().getAddToHomescreenDialogForTesting();
+                        getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
                 return dialog == null || dialog.getAlertDialogForTesting() == null;
             }
         });
@@ -384,7 +387,7 @@ public class AppBannerManagerTest {
             @Override
             public boolean isSatisfied() {
                 AddToHomescreenDialog dialog =
-                        tab.getAppBannerManager().getAddToHomescreenDialogForTesting();
+                        getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
                 if (dialog != null) {
                     AlertDialog alertDialog = dialog.getAlertDialogForTesting();
                     return alertDialog != null && alertDialog.isShowing();
@@ -431,7 +434,7 @@ public class AppBannerManagerTest {
         instrumentation.addMonitor(activityMonitor);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Button button = tab.getAppBannerManager()
+            Button button = getAppBannerManager(tab)
                                     .getAddToHomescreenDialogForTesting()
                                     .getAlertDialogForTesting()
                                     .getButton(DialogInterface.BUTTON_POSITIVE);
@@ -471,7 +474,7 @@ public class AppBannerManagerTest {
 
     private void clickButton(final Tab tab, final int button) {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            tab.getAppBannerManager()
+            getAppBannerManager(tab)
                     .getAddToHomescreenDialogForTesting()
                     .getAlertDialogForTesting()
                     .getButton(button)
@@ -922,7 +925,7 @@ public class AppBannerManagerTest {
         // Verify metrics calling in the successful case.
         ThreadUtils.runOnUiThread(() -> {
             AppBannerManager manager =
-                    mTabbedActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
+                    getAppBannerManager(mTabbedActivityTestRule.getActivity().getActivityTab());
             manager.recordMenuItemAddToHomescreen();
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(

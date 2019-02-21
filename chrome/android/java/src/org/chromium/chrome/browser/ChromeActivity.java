@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -2236,7 +2237,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // Record whether or not we have finished installability checks for this page when the
             // user clicks the add to homescren menu item. This will let us determine how effective
             // an on page-load check will be in speeding up WebAPK installation.
-            currentTab.getAppBannerManager().recordMenuItemAddToHomescreen();
+            AppBannerManager.forTab(currentTab).recordMenuItemAddToHomescreen();
 
             AddToHomescreenManager addToHomescreenManager =
                     new AddToHomescreenManager(this, currentTab);

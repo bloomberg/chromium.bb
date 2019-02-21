@@ -110,7 +110,7 @@ class AppBannerManagerAndroid
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;
 
   // Creates the Java-side AppBannerManager.
-  void CreateJavaBannerManager();
+  void CreateJavaBannerManager(content::WebContents* web_contents);
 
   // Returns the query value for |name| in |url|, e.g. example.com?name=value.
   std::string ExtractQueryValueForName(const GURL& url,

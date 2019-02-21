@@ -42,11 +42,10 @@ public class TabDelegateFactory {
     }
 
     /**
-     * Return true if app banners are to be permitted in this tab.
-     * @param tab The associated {@link Tab}.
+     * Return true if app banners are to be permitted in this tab. May need to be overridden.
      * @return true if app banners are permitted, and false otherwise.
      */
-    public boolean canShowAppBanners(Tab tab) {
+    public boolean canShowAppBanners() {
         return true;
     }
 

@@ -86,7 +86,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public boolean canShowAppBanners(Tab tab) {
+    public boolean canShowAppBanners() {
         // Do not show banners when we are in a standalone activity.
         return false;
     }

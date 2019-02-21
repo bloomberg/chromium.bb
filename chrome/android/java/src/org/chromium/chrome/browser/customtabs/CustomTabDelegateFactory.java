@@ -288,7 +288,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public boolean canShowAppBanners(Tab tab) {
+    public boolean canShowAppBanners() {
         return mShouldAllowAppBanners;
     }
 
