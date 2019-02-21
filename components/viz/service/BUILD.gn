@@ -6,6 +6,7 @@ import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 config("viz_service_implementation") {
 }
@@ -471,6 +472,32 @@ viz_source_set("perf_tests") {
     "//components/viz/test:test_support",
     "//testing/gtest",
     "//testing/perf",
+  ]
+}
+
+proto_library("compositor_frame_fuzzer_proto") {
+  sources = [
+    "compositor_frame_fuzzer/compositor_frame_fuzzer.proto",
+  ]
+}
+
+fuzzer_test("compositor_frame_fuzzer") {
+  sources = [
+    "compositor_frame_fuzzer/compositor_frame_fuzzer.cc",
+    "compositor_frame_fuzzer/compositor_frame_fuzzer_util.cc",
+    "compositor_frame_fuzzer/compositor_frame_fuzzer_util.h",
+    "compositor_frame_fuzzer/fuzzer_browser_process.cc",
+    "compositor_frame_fuzzer/fuzzer_browser_process.h",
+    "compositor_frame_fuzzer/fuzzer_software_display_provider.cc",
+    "compositor_frame_fuzzer/fuzzer_software_display_provider.h",
+  ]
+
+  deps = [
+    ":compositor_frame_fuzzer_proto",
+    ":service",
+    "//components/viz/test:test_support",
+    "//mojo/core/embedder",
+    "//third_party/libprotobuf-mutator",
   ]
 }
 

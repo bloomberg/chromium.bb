@@ -6,7 +6,8 @@
 
 namespace viz {
 
-FakeCompositorFrameSinkClient::FakeCompositorFrameSinkClient() = default;
+FakeCompositorFrameSinkClient::FakeCompositorFrameSinkClient()
+    : binding_(this) {}
 FakeCompositorFrameSinkClient::~FakeCompositorFrameSinkClient() = default;
 
 void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck(
@@ -29,6 +30,13 @@ void FakeCompositorFrameSinkClient::InsertResources(
     const std::vector<ReturnedResource>& resources) {
   returned_resources_.insert(returned_resources_.end(), resources.begin(),
                              resources.end());
+}
+
+mojom::CompositorFrameSinkClientPtr
+FakeCompositorFrameSinkClient::BindInterfacePtr() {
+  mojom::CompositorFrameSinkClientPtr ptr;
+  binding_.Bind(MakeRequest(&ptr));
+  return ptr;
 }
 
 }  // namespace viz

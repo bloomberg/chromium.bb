@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
@@ -16,6 +17,8 @@ class FakeCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
  public:
   FakeCompositorFrameSinkClient();
   ~FakeCompositorFrameSinkClient() override;
+
+  mojom::CompositorFrameSinkClientPtr BindInterfacePtr();
 
   // mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -36,6 +39,8 @@ class FakeCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   void InsertResources(const std::vector<ReturnedResource>& resources);
 
   std::vector<ReturnedResource> returned_resources_;
+
+  mojo::Binding<mojom::CompositorFrameSinkClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkClient);
 };
