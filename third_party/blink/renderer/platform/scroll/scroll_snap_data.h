@@ -14,7 +14,6 @@
 namespace blink {
 
 using SearchAxis = cc::SearchAxis;
-using SnapAreaData = cc::SnapAreaData;
 using SnapContainerData = cc::SnapContainerData;
 using SnapFlingController = cc::SnapFlingController;
 using SnapFlingClient = cc::SnapFlingClient;
