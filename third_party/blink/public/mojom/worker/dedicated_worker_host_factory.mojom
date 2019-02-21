@@ -27,9 +27,10 @@ interface DedicatedWorkerHostFactoryClient {
       // Used for accessing services from the worker.
       service_manager.mojom.InterfaceProvider interface_provider);
 
-  // Called when the main worker script is successfully loaded. This is called
-  // after OnWorkerHostCreated().
-  OnScriptLoaded(
+  // Called when the worker host started loading the main worker script. This
+  // is called after OnWorkerHostCreated(). This is never called when
+  // OnScriptLoadStartFailed() is called.
+  OnScriptLoadStarted(
       // The info about the service worker provider in the browser process that
       // provides support for this worker to be a service worker client.
       ServiceWorkerProviderInfoForWorker service_worker_provider_info,
@@ -47,36 +48,40 @@ interface DedicatedWorkerHostFactoryClient {
       // worker. This is null when there're no controller service worker.
       ControllerServiceWorkerInfo? controller_info);
 
-  // Called when the host fails to load the main worker script. This is called
-  // after OnWorkerHostCreated().
-  OnScriptLoadFailed();
+  // Called when the worker host fails to start loading the main worker script.
+  // This is called after OnWorkerHostCreated(). This is never called when
+  // OnScriptLoadStarted() is called.
+  OnScriptLoadStartFailed();
 };
 
 // An interface used to instantiate a dedicated worker host. The implementation
 // of this interface lives in the browser process.
 interface DedicatedWorkerHostFactory {
   // Non-PlzDedicatedWorker:
-  // The factory client should call this instead of CreateAndStartLoad() when
-  // PlzDedicatedWorker is disabled.
+  // The factory client should call this instead of
+  // CreateWorkerHostAndStartScriptLoad() when PlzDedicatedWorker is disabled.
   //
-  // Informs the browser that the renderer has created a new dedicated worker,
-  // requesting |worker_interface_provider| to provide the worker access to mojo
-  // interfaces. |origin| must either be unique or match the origin of the
-  // creating context (Document or DedicatedWorkerGlobalScope).
-  CreateDedicatedWorker(
+  // Creates a new DedicatedWorkerHost, and requests |worker_interface_provider|
+  // to provide the worker access to mojo interfaces. |origin| must either be
+  // unique or match the origin of the creating context (Document or
+  // DedicatedWorkerGlobalScope).
+  CreateWorkerHost(
       url.mojom.Origin origin,
       service_manager.mojom.InterfaceProvider& worker_interface_provider);
 
   // PlzDedicatedWorker:
-  // The factory client should call this instead of CreateDedicatedWorker() when
+  // The factory client should call this instead of CreateWorkerHost() when
   // PlzDedicatedWorker is enabled.
   //
-  // Informs the browser that the renderer has created a new dedicated worker,
-  // and requests to start worker script loading. |origin| must either be unique
-  // or match the origin of the creating context (Document or
-  // DedicatedWorkerGlobalScope).
-  CreateAndStartLoad(url.mojom.Url script_url,
-                     url.mojom.Origin origin,
-                     blink.mojom.BlobURLToken? blob_url_token,
-                     DedicatedWorkerHostFactoryClient client);
+  // Creates a new DedicatedWorkerHost, and requests to start top-level worker
+  // script loading for |script_url|. |origin| must either be unique or match
+  // the origin of the creating context (Document or
+  // DedicatedWorkerGlobalScope). |blob_url_token| should be non-null when
+  // |script_url| is a blob URL. |client| is used for notifying the renderer
+  // process of results of worker host creation and script loading.
+  CreateWorkerHostAndStartScriptLoad(
+      url.mojom.Url script_url,
+      url.mojom.Origin origin,
+      blink.mojom.BlobURLToken? blob_url_token,
+      DedicatedWorkerHostFactoryClient client);
 };

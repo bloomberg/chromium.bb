@@ -68,7 +68,7 @@ ConnectToWorkerInterfaceProviderForThreadPool(
   execution_context->GetInterfaceProvider()->GetInterface(&worker_host_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_ptr;
-  worker_host_factory->CreateDedicatedWorker(
+  worker_host_factory->CreateWorkerHost(
       script_origin, mojo::MakeRequest(&interface_provider_ptr));
   return interface_provider_ptr;
 }

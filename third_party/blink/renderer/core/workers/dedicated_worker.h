@@ -60,7 +60,7 @@ class WorkerClients;
 //      kNetworkService)
 //  - DedicatedWorker::Start()
 //    - (Start script loading in the browser)
-//      - DedicatedWorker::OnScriptLoaded()
+//      - DedicatedWorker::OnScriptLoadStarted()
 //        - DedicatedWorker::ContinueStart()
 //          - (Async script loading on the worker thread)
 class CORE_EXPORT DedicatedWorker final
@@ -106,8 +106,8 @@ class CORE_EXPORT DedicatedWorker final
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
       mojo::ScopedMessagePipeHandle interface_provider) override;
-  void OnScriptLoaded() override;
-  void OnScriptLoadFailed() override;
+  void OnScriptLoadStarted() override;
+  void OnScriptLoadStartFailed() override;
 
   void DispatchErrorEventForScriptFetchFailure();
 
