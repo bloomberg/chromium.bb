@@ -86,7 +86,8 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   } else {
     VLOG(1) << "Waiting for OAuth2 refresh token being loaded from database.";
 
-    AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+    const CoreAccountInfo account_info =
+        identity_manager->GetPrimaryAccountInfo();
     // Flag user with unknown token status in case there are no saved tokens
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
@@ -161,7 +162,8 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   // IdentityManager::SetPrimaryAccountSynchronously(), which seeds the account
   // info with AccountTrackerService. Hence, the primary account info will be
   // available at this point.
-  AccountInfo primary_account_info = identity_manager->GetPrimaryAccountInfo();
+  const CoreAccountInfo primary_account_info =
+      identity_manager->GetPrimaryAccountInfo();
   identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       primary_account_info.gaia, primary_account_info.email, refresh_token_,
       primary_account_info.is_under_advanced_protection,
