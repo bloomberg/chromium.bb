@@ -45,12 +45,18 @@ except NotImplementedError:
 
 
 def download(directory):
-  subprocess.check_call([
-      'download_from_google_storage',
-      '--bucket', STORAGE_BUCKET,
-      '-d', directory,
-      '-t', str(THREAD_COUNT),
-  ])
+  # Downloading the files can be very spammy, so only show the output if
+  # something actually goes wrong.
+  try:
+    subprocess.check_output([
+        'download_from_google_storage',
+        '--bucket', STORAGE_BUCKET,
+        '-d', directory,
+        '-t', str(THREAD_COUNT),
+    ], stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    print ('Downloading RenderTest goldens in directory %s failed with error '
+           '%d: %s') % (directory, e.returncode, e.output)
 
 
 def upload(directory):
