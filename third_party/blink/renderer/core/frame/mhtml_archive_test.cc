@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
-#include "third_party/blink/renderer/platform/serialized_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
