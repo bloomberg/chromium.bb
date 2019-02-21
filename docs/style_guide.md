@@ -39,11 +39,20 @@ for details on how to do that.
 We prefer to use `noexcept` on move constructors.  Although exceptions are not
 allowed, this declaration [enables STL optimizations](https://en.cppreference.com/w/cpp/language/noexcept_spec).
 
+Additionally, GCC requires that any type using a defaulted `noexcept` move
+constructor/operator= has a `noexcept` copy or move constructor/operator= for
+all of its members.
+
 ## Disallowed Styles and Features
 
 Blink style is *not allowed* anywhere in the Open Screen Library.
 
 C++17-only features are currently *not allowed* in the Open Screen Library.
+
+GCC does not support designated initializers for non-trivial types.  This means
+that the `.member = value` struct initialization syntax is not supported unless
+all struct members are primitive types or structs of primitive types (i.e. no
+unions, complex constructors, etc.).
 
 ## OSP_CHECK and OSP_DCHECK
 

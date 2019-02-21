@@ -408,12 +408,11 @@ Error UdpSocket::SendMessage(const void* data,
     }
 
     case UdpSocket::Version::kV6: {
-      struct sockaddr_in6 sa = {
-          .sin6_family = AF_INET6,
-          .sin6_port = htons(dest.port),
-          .sin6_flowinfo = 0,
-          .sin6_scope_id = 0,
-      };
+      struct sockaddr_in6 sa = {};
+      sa.sin6_family = AF_INET6;
+      sa.sin6_flowinfo = 0;
+      sa.sin6_scope_id = 0;
+      sa.sin6_port = htons(dest.port);
       dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
       msg.msg_name = &sa;
       msg.msg_namelen = sizeof(sa);

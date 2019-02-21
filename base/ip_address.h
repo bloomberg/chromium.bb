@@ -53,10 +53,10 @@ class IPAddress {
             uint8_t b14,
             uint8_t b15,
             uint8_t b16);
-  IPAddress(const IPAddress& o);
+  IPAddress(const IPAddress& o) noexcept;
   ~IPAddress() = default;
 
-  IPAddress& operator=(const IPAddress& o);
+  IPAddress& operator=(const IPAddress& o) noexcept;
 
   bool operator==(const IPAddress& o) const;
   bool operator!=(const IPAddress& o) const;

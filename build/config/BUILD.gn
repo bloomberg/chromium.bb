@@ -54,6 +54,10 @@ config("openscreen_code") {
 
   ldflags = [ "-Werror" ]
 
+  if (is_gcc) {
+    cflags += [ "-Wno-maybe-uninitialized" ]
+  }
+
   if (is_clang) {
     cflags += [
       "-Wextra",
