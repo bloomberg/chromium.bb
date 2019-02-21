@@ -897,8 +897,7 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       bool is_reshow,
-      bool is_requesting_cardholder_name,
-      bool is_requesting_expiration_date_from_user,
+      AutofillClient::SaveCreditCardOptions options,
       int previous_save_credit_card_prompt_user_decision,
       security_state::SecurityLevel security_level,
       AutofillSyncSigninState sync_state);

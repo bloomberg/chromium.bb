@@ -287,15 +287,14 @@ void ChromeAutofillClient::ConfirmSaveAutofillProfile(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
-  DCHECK(show_prompt);
+  DCHECK(options.show_prompt);
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/false, /*should_request_name_from_user=*/false,
-              /*should_request_expiration_date_from_user=*/false, card,
+              /*upload=*/false, options, card,
               std::make_unique<base::DictionaryValue>(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
@@ -307,7 +306,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
       web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->OfferLocalSave(card, show_prompt, std::move(callback));
+  controller->OfferLocalSave(card, options, std::move(callback));
 #endif
 }
 
@@ -345,18 +344,14 @@ void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
-  DCHECK(show_prompt);
+  DCHECK(options.show_prompt);
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/true, should_request_name_from_user,
-              should_request_expiration_date_from_user, card,
-              std::move(legal_message),
+              /*upload=*/true, options, card, std::move(legal_message),
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/
               AutofillClient::LocalSaveCardPromptCallback(), GetPrefs(),
@@ -371,10 +366,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->OfferUploadSave(card, std::move(legal_message),
-                              should_request_name_from_user,
-                              should_request_expiration_date_from_user,
-                              show_prompt, std::move(callback));
+  controller->OfferUploadSave(card, std::move(legal_message), options,
+                              std::move(callback));
 #endif
 }
 

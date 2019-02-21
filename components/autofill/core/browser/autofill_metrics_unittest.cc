@@ -8370,8 +8370,7 @@ TEST_F(AutofillMetricsTest,
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
         /*is_uploading=*/true, /*is_reshow=*/false,
-        /*is_requesting_cardholder_name=*/false,
-        /*is_requesting_expiration_date=*/false,
+        AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/1,
         security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
@@ -8383,8 +8382,7 @@ TEST_F(AutofillMetricsTest,
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
-        /*is_reshow=*/true, /*is_requesting_cardholder_name=*/false,
-        /*is_requesting_expiration_date=*/false,
+        /*is_reshow=*/true, AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
@@ -8489,8 +8487,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
         /*is_uploading=*/true, /*is_reshow=*/false,
-        /*is_requesting_cardholder_name=*/false,
-        /*is_requesting_expiration_date_from_user=*/false,
+        AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/1,
         security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedIn);
     histogram_tester.ExpectBucketCount(
@@ -8501,8 +8498,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
-        /*is_reshow=*/true, /*is_requesting_cardholder_name=*/false,
-        /*is_requesting_expiration_date_from_user=*/false,
+        /*is_reshow=*/true, AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE,
         SyncSigninState::kSignedInAndSyncFeature);

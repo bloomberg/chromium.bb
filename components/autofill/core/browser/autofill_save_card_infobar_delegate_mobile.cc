@@ -28,8 +28,7 @@ namespace autofill {
 
 AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
+    AutofillClient::SaveCreditCardOptions options,
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     AutofillClient::UploadSaveCardPromptCallback
@@ -39,9 +38,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool is_off_the_record)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
-      should_request_name_from_user_(should_request_name_from_user),
-      should_request_expiration_date_from_user_(
-          should_request_expiration_date_from_user),
+      options_(options),
       upload_save_card_prompt_callback_(
           std::move(upload_save_card_prompt_callback)),
       local_save_card_prompt_callback_(
@@ -62,8 +59,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
                                  /*escape_apostrophes=*/true)) {
       AutofillMetrics::LogCreditCardInfoBarMetric(
           AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
-          should_request_name_from_user_,
-          should_request_expiration_date_from_user_,
+          options_.should_request_name_from_user,
+          options_.should_request_expiration_date_from_user,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState));
       return;
@@ -71,8 +68,9 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
   }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
-      AutofillMetrics::INFOBAR_SHOWN, upload_, should_request_name_from_user_,
-      should_request_expiration_date_from_user_,
+      AutofillMetrics::INFOBAR_SHOWN, upload_,
+      options_.should_request_name_from_user,
+      options_.should_request_expiration_date_from_user,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
 }
@@ -160,8 +158,8 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
 
   // Requesting name or expiration date from the user makes the save prompt a
   // 2-step fix flow.
-  return should_request_name_from_user_ ||
-                 should_request_expiration_date_from_user_
+  return options_.should_request_name_from_user ||
+                 options_.should_request_expiration_date_from_user
              ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
              : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
 }
@@ -186,8 +184,8 @@ void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
   DCHECK(!had_user_interaction_);
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
-      user_action, upload_, should_request_name_from_user_,
-      should_request_expiration_date_from_user_,
+      user_action, upload_, options_.should_request_name_from_user,
+      options_.should_request_expiration_date_from_user,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
   pref_service_->SetInteger(

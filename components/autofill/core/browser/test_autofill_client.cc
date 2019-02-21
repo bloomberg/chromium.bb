@@ -122,10 +122,10 @@ void TestAutofillClient::ConfirmSaveAutofillProfile(
 
 void TestAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
   confirm_save_credit_card_locally_called_ = true;
-  offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
+  offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
   std::move(callback).Run(AutofillClient::ACCEPTED);
 }
 
@@ -149,11 +149,9 @@ void TestAutofillClient::ConfirmExpirationDateFixFlow(
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
-  offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
+  offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
   std::move(callback).Run(AutofillClient::ACCEPTED, {});
 }
 

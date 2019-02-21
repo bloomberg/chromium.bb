@@ -468,7 +468,9 @@ void CreditCardSaveManager::OfferCardLocalSave() {
     if (observer_for_testing_)
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
-        local_card_save_candidate_, show_save_prompt_.value(),
+        local_card_save_candidate_,
+        AutofillClient::SaveCreditCardOptions().with_show_prompt(
+            show_save_prompt_.value()),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
 
@@ -489,17 +491,18 @@ void CreditCardSaveManager::OfferCardUploadSave() {
 #else
   bool is_mobile_build = false;
 #endif  // #if defined(OS_ANDROID) || defined(OS_IOS)
-
   // If |show_save_prompt_.value()| is false, desktop builds will still offer
   // save in the omnibox without popping-up the bubble. Mobile builds, however,
   // should not display the offer-to-save infobar at all.
   if (!is_mobile_build || show_save_prompt_.value()) {
     user_did_accept_upload_prompt_ = false;
-
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message_),
-        should_request_name_from_user_,
-        should_request_expiration_date_from_user_, show_save_prompt_.value(),
+        AutofillClient::SaveCreditCardOptions()
+            .with_should_request_name_from_user(should_request_name_from_user_)
+            .with_should_request_expiration_date_from_user(
+                should_request_expiration_date_from_user_)
+            .with_show_prompt(show_save_prompt_.value()),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnUploadSave,
                        weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(

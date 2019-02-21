@@ -99,7 +99,7 @@ class AwAutofillClient : public autofill::AutofillClient,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const autofill::CreditCard& card,
-      bool show_prompt,
+      SaveCreditCardOptions options,
       LocalSaveCardPromptCallback callback) override;
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
@@ -109,9 +109,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ConfirmSaveCreditCardToCloud(
       const autofill::CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      bool should_request_name_from_user,
-      bool should_request_expiration_date_from_user,
-      bool show_prompt,
+      SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
