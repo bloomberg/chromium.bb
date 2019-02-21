@@ -7,30 +7,25 @@
 #include <AppKit/AppKit.h>
 #include <Foundation/Foundation.h>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
+#include "base/stl_util.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace skia {
 
 void ConfigureTestFont() {
   // Load font files in the resource folder.
-  static const char* const kFontFileNames[] = {"Ahem.TTF",
+  static const char* const kFontFileNames[] = {"Ahem.ttf",
                                                "ChromiumAATTest.ttf"};
-
-  // mainBundle is Content Shell Helper.app.  Go two levels up to find
-  // Content Shell.app. Due to DumpRenderTree injecting the font files into
-  // its direct dependents, it's not easily possible to put the ttf files into
-  // the helper's resource directory instead of the outer bundle's resource
-  // directory.
-  NSString* bundle = [base::mac::FrameworkBundle() bundlePath];
-  bundle = [bundle stringByAppendingPathComponent:@"../.."];
-  NSURL* resources_directory = [[NSBundle bundleWithPath:bundle] resourceURL];
 
   NSMutableArray* font_urls = [NSMutableArray array];
   for (unsigned i = 0; i < base::size(kFontFileNames); ++i) {
-    NSURL* font_url = [resources_directory
-        URLByAppendingPathComponent:
-            [NSString stringWithUTF8String:kFontFileNames[i]]];
+    base::ScopedCFTypeRef<CFStringRef> file_name(
+        base::SysUTF8ToCFStringRef(kFontFileNames[i]));
+    NSURL* font_url = base::mac::FilePathToNSURL(
+        base::mac::PathForFrameworkBundleResource(file_name));
     [font_urls addObject:[font_url absoluteURL]];
   }
 
