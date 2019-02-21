@@ -69,6 +69,7 @@ bool IsContainerWithSelectableChildren(const ax::mojom::Role role) {
     case ax::mojom::Role::kListGrid:
     case ax::mojom::Role::kMenu:
     case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMenuListPopup:
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kTabList:
     case ax::mojom::Role::kToolbar:
