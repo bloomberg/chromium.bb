@@ -20,19 +20,6 @@ using blink::WebGestureEvent;
 namespace content {
 namespace {
 
-bool TouchActionRequiredToFilterGestureEvent(
-    const WebGestureEvent* gesture_event) {
-  switch (gesture_event->GetType()) {
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchUpdate:
-    case WebInputEvent::kGesturePinchEnd:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
 // Actions on an axis are disallowed if the perpendicular axis has a filter set
 // and no filter is set for the queried axis.
 bool IsYAxisActionDisallowed(cc::TouchAction action) {
@@ -119,12 +106,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
   if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
     return FilterGestureEventResult::kFilterGestureEventAllowed;
-
-  if (TouchActionRequiredToFilterGestureEvent(gesture_event) &&
-      !active_touch_action_.has_value() && compositor_touch_action_enabled_) {
-    has_deferred_events_ = true;
-    return FilterGestureEventResult::kFilterGestureEventDelayed;
-  }
 
   if (compositor_touch_action_enabled_ && has_deferred_events_) {
     WebInputEvent::Type type = gesture_event->GetType();
@@ -263,9 +244,14 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       FALLTHROUGH;
     case WebInputEvent::kGesturePinchUpdate:
       gesture_sequence_.append("P");
-      return drop_pinch_events_
-                 ? FilterGestureEventResult::kFilterGestureEventFiltered
-                 : FilterGestureEventResult::kFilterGestureEventAllowed;
+      if (!drop_pinch_events_)
+        return FilterGestureEventResult::kFilterGestureEventAllowed;
+      if (compositor_touch_action_enabled_ &&
+          !active_touch_action_.has_value()) {
+        has_deferred_events_ = true;
+        return FilterGestureEventResult::kFilterGestureEventDelayed;
+      }
+      return FilterGestureEventResult::kFilterGestureEventFiltered;
     case WebInputEvent::kGesturePinchEnd:
       ReportGestureEventFiltered(drop_pinch_events_);
       return FilterPinchEventAndResetState();
