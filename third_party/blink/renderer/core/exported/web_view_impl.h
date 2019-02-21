@@ -74,7 +74,6 @@ class ScopedDeferMainFrameUpdate;
 }
 
 namespace blink {
-class AnimationWorkletMutatorDispatcherImpl;
 class BrowserControls;
 class DevToolsEmulator;
 class Frame;
@@ -535,12 +534,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   LocalFrame* FocusedLocalFrameInWidget() const;
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
-  // Create or return cached mutation distributor.  The WeakPtr must only be
-  // dereferenced on the returned |mutator_task_runner|.
-  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-  EnsureCompositorMutatorDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
-
   bool ScrollFocusedEditableElementIntoView();
   // Finds the zoom and scroll parameters for zooming into an editable element
   // with bounds |element_bounds_in_document| and caret bounds
@@ -690,12 +683,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebDisplayMode display_mode_ = kWebDisplayModeBrowser;
 
   FloatSize elastic_overscroll_;
-
-  // This is owned by the LayerTreeHostImpl, and should only be used on the
-  // compositor thread, so we keep the TaskRunner where you post tasks to
-  // make that happen.
-  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
-  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
 

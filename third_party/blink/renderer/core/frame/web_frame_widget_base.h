@@ -55,9 +55,13 @@ class CORE_EXPORT WebFrameWidgetBase
 
   virtual bool ForSubframe() const = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
-  virtual base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+
+  // Creates or returns cached mutator dispatcher. This usually requires a
+  // round trip to the compositor. The returned WeakPtr must only be
+  // dereferenced on the output |mutator_task_runner|.
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureCompositorMutatorDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
@@ -186,6 +190,12 @@ class CORE_EXPORT WebFrameWidgetBase
 
   static bool ignore_input_events_;
   scoped_refptr<UserGestureToken> pointer_lock_gesture_token_;
+
+  // This is owned by the LayerTreeHostImpl, and should only be used on the
+  // compositor thread, so we keep the TaskRunner where you post tasks to
+  // make that happen.
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   friend class WebViewImpl;
 };

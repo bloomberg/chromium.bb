@@ -173,12 +173,6 @@ void WebViewFrameWidget::SetLayerTreeView(WebLayerTreeView*,
   NOTREACHED();
 }
 
-base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-WebViewFrameWidget::EnsureCompositorMutatorDispatcher(
-    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
-  return web_view_->EnsureCompositorMutatorDispatcher(mutator_task_runner);
-}
-
 void WebViewFrameWidget::SetRootGraphicsLayer(GraphicsLayer* layer) {
   web_view_->SetRootGraphicsLayer(layer);
 }

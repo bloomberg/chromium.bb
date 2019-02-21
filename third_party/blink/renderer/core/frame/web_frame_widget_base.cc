@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -60,6 +62,7 @@ void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
 }
 
 void WebFrameWidgetBase::Close() {
+  mutator_dispatcher_ = nullptr;
   local_root_->SetFrameWidget(nullptr);
   local_root_ = nullptr;
   client_ = nullptr;
@@ -446,6 +449,20 @@ LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
 
 WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
+}
+
+base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
+  if (!mutator_task_runner_) {
+    GetLayerTreeView()->SetMutatorClient(
+        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
+            &mutator_dispatcher_, &mutator_task_runner_));
+  }
+
+  DCHECK(mutator_task_runner_);
+  *mutator_task_runner = mutator_task_runner_;
+  return mutator_dispatcher_;
 }
 
 }  // namespace blink
