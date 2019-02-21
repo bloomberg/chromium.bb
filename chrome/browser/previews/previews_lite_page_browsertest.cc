@@ -966,6 +966,29 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                              kExceededMaxNavigationRestarts),
         1);
   }
+
+  {
+    // Verify a subframe navigation does not trigger a preview.
+    const base::string16 kSubframeTitle = base::ASCIIToUTF16("Subframe");
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), subframe_url());
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 0);
+
+    // Navigate in the subframe and wait for it to finish. The waiting is
+    // accomplished by |ExecuteScriptAndExtractString| which waits for
+    // |window.domAutomationController.send| in the HTML page.
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        GetWebContents()->GetMainFrame(),
+        "window.open(\"" + HttpsLitePageURL(kSuccess).spec() +
+            "\", \"subframe\")",
+        &result));
+    EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
+
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 0);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
