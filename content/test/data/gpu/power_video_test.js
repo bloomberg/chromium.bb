@@ -4,12 +4,10 @@
 
 var video = null;
 var box = null;
+var video_in_fullscreen = false;
 
 function main() {
   video = document.getElementById("video");
-  // This is necessary for us to insert a colored box on top of the video
-  // and position it to the corner correctly so video becomes underlay.
-  video.parentNode.style.position = "relative";
   video.loop = true;
   video.muted = true;
   video.addEventListener('timeupdate', waitForVideoToPlay);
@@ -24,11 +22,26 @@ function waitForVideoToPlay() {
 }
 
 function goFullscreen() {
-  if (video.requestFullscreen) {
-    video.requestFullscreen();
-  } else if (video.webkitRequestFullscreen) {
-    video.webkitRequestFullscreen();
+  // Call requestFullscreen() on video's parent element, so we could add
+  // colored box on top of the video.
+  var container = video.parentNode;
+  video.style.width="100%";
+  video.style.height="100%";
+  if (container.requestFullscreen) {
+    container.requestFullscreen();
+    container.addEventListener("fullscreenchange", function() {
+      video_in_fullscreen = true;
+    });
+  } else if (container.webkitRequestFullscreen) {
+    container.webkitRequestFullscreen();
+    container.addEventListener("webkitfullscreenchange", function() {
+      video_in_fullscreen = true;
+    });
   }
+}
+
+function isVideoInFullscreen() {
+  return video_in_fullscreen;
 }
 
 function goUnderlay() {
@@ -36,12 +49,11 @@ function goUnderlay() {
     // Draw a solid color box in the top left corner of the video, so the
     // video becomes an underlay.
     box = document.createElement("div");
-    //redbox.style.border = "thick solid rgb(0,0,255)";
     box.style.backgroundColor = "red";
     box.style.width = "100px";
     box.style.height = "50px";
     box.style.position = "absolute";
-    box.style.zIndex = "1000";
+    box.style.zIndex = "2147483647";  // max zIndex value
     var vid_rect = video.getBoundingClientRect();
     var parent_rect = video.parentNode.getBoundingClientRect();
     var top = vid_rect.top - parent_rect.top + 10;
