@@ -32,9 +32,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::test::DemoModeSetupResult;
-using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
-using chromeos::test::MockDemoModeOnlineEnrollmentHelperCreator;
 using chromeos::test::SetupDummyOfflinePolicyDir;
+using chromeos::test::SetupMockDemoModeNoEnrollmentHelper;
+using chromeos::test::SetupMockDemoModeOfflineEnrollmentHelper;
+using chromeos::test::SetupMockDemoModeOnlineEnrollmentHelper;
 using testing::_;
 
 namespace chromeos {
@@ -110,6 +111,7 @@ class DemoSetupControllerTest : public testing::Test {
   }
 
   void TearDown() override {
+    EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(nullptr);
     DBusThreadManager::Shutdown();
     SystemSaltGetter::Shutdown();
     DeviceSettingsService::Shutdown();
@@ -138,10 +140,7 @@ class DemoSetupControllerTest : public testing::Test {
 TEST_F(DemoSetupControllerTest, OfflineSuccess) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
-
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult::SUCCESS);
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -165,10 +164,8 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
 TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
+  SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult::SUCCESS);
 
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -193,10 +190,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
 TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("", &temp_dir));
-
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+  SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult::SUCCESS);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
@@ -217,9 +211,7 @@ TEST_F(DemoSetupControllerTest, OfflineErrorDefault) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_DEFAULT>);
+  SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult::ERROR_DEFAULT);
 
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_)).Times(0);
@@ -244,9 +236,8 @@ TEST_F(DemoSetupControllerTest, OfflineErrorPowerwashRequired) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
+  SetupMockDemoModeOfflineEnrollmentHelper(
+      DemoModeSetupResult::ERROR_POWERWASH_REQUIRED);
 
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_)).Times(0);
@@ -268,8 +259,7 @@ TEST_F(DemoSetupControllerTest, OfflineErrorPowerwashRequired) {
 }
 
 TEST_F(DemoSetupControllerTest, OnlineSuccess) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult::SUCCESS);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
@@ -283,9 +273,7 @@ TEST_F(DemoSetupControllerTest, OnlineSuccess) {
 }
 
 TEST_F(DemoSetupControllerTest, OnlineErrorDefault) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_DEFAULT>);
+  SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult::ERROR_DEFAULT);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
@@ -300,9 +288,8 @@ TEST_F(DemoSetupControllerTest, OnlineErrorDefault) {
 }
 
 TEST_F(DemoSetupControllerTest, OnlineErrorPowerwashRequired) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
+  SetupMockDemoModeOnlineEnrollmentHelper(
+      DemoModeSetupResult::ERROR_POWERWASH_REQUIRED);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
@@ -317,8 +304,8 @@ TEST_F(DemoSetupControllerTest, OnlineErrorPowerwashRequired) {
 }
 
 TEST_F(DemoSetupControllerTest, OnlineComponentError) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  // Expect no enrollment attempt.
+  SetupMockDemoModeNoEnrollmentHelper();
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->SetCrOSComponentLoadErrorForTest(
@@ -336,9 +323,7 @@ TEST_F(DemoSetupControllerTest, OnlineComponentError) {
 }
 
 TEST_F(DemoSetupControllerTest, EnrollTwice) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<
-          DemoModeSetupResult::ERROR_DEFAULT>);
+  SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult::ERROR_DEFAULT);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
@@ -353,8 +338,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
 
   helper_->Reset();
 
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+  SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult::SUCCESS);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(

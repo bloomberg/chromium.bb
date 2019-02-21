@@ -1864,6 +1864,8 @@ test("browser_tests") {
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",
         "../browser/chromeos/login/signin/oauth2_browsertest.cc",
+        "../browser/chromeos/login/test/enrollment_helper_mixin.cc",
+        "../browser/chromeos/login/test/enrollment_helper_mixin.h",
         "../browser/chromeos/login/test/hid_controller_mixin.cc",
         "../browser/chromeos/login/test/hid_controller_mixin.h",
         "../browser/chromeos/login/test/https_forwarder.cc",

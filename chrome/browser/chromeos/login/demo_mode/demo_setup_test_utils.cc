@@ -9,9 +9,89 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
+using testing::_;
+
+namespace {
+
+MATCHER(ConfigIsAttestation, "") {
+  return arg.mode == policy::EnrollmentConfig::MODE_ATTESTATION;
+}
+
+MATCHER(ConfigIsOfflineDemo, "") {
+  return arg.mode == policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
+}
+
+}  // namespace
+
 namespace chromeos {
 
 namespace test {
+
+void SetupMockDemoModeNoEnrollmentHelper() {
+  std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
+      std::make_unique<EnterpriseEnrollmentHelperMock>();
+  EXPECT_CALL(*mock, Setup(_, _, _)).Times(0);
+  EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
+}
+
+void SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult result) {
+  std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
+      std::make_unique<EnterpriseEnrollmentHelperMock>();
+  auto* mock_ptr = mock.get();
+  EXPECT_CALL(*mock, Setup(_, ConfigIsAttestation(), _));
+
+  EXPECT_CALL(*mock, EnrollUsingAttestation())
+      .WillRepeatedly(testing::Invoke([mock_ptr, result]() {
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock_ptr->status_consumer()->OnDeviceEnrolled();
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock_ptr->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_ALREADY_LOCKED));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock_ptr->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForRegistrationError(
+                    policy::DeviceManagementStatus::
+                        DM_STATUS_TEMPORARY_UNAVAILABLE));
+            break;
+          default:
+            NOTREACHED();
+        }
+      }));
+  EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
+};
+
+void SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult result) {
+  std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
+      std::make_unique<EnterpriseEnrollmentHelperMock>();
+  auto* mock_ptr = mock.get();
+  EXPECT_CALL(*mock, Setup(_, ConfigIsOfflineDemo(), _));
+
+  EXPECT_CALL(*mock, EnrollForOfflineDemo())
+      .WillRepeatedly(testing::Invoke([mock_ptr, result]() {
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock_ptr->status_consumer()->OnDeviceEnrolled();
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock_ptr->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_READBACK_ERROR));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock_ptr->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForStatus(
+                    policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED));
+            break;
+          default:
+            NOTREACHED();
+        }
+      }));
+  EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
+};
 
 bool SetupDummyOfflinePolicyDir(const std::string& account_id,
                                 base::ScopedTempDir* temp_dir) {
