@@ -141,13 +141,11 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       client->OnScriptLoadFailed();
       return;
     }
-    auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-        render_process_host->GetStoragePartition());
 
     // Set up the default network loader factory.
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     CreateNetworkFactory(mojo::MakeRequest(&default_factory_info),
-                         storage_partition_impl->GetNetworkContext());
+                         render_process_host);
     subresource_loader_factories->default_factory_info() =
         std::move(default_factory_info);
 
@@ -196,16 +194,11 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // |default_factory_connection_error_handler_holder_| for reference.
   // (https://crbug.com/906991)
   void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
-                            network::mojom::NetworkContext* network_context) {
+                            RenderProcessHost* process) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    network::mojom::URLLoaderFactoryParamsPtr params =
-        network::mojom::URLLoaderFactoryParams::New();
-    params->process_id = process_id_;
-    // TODO(lukasza): https://crbug.com/792546: Start using CORB.
-    params->is_corb_enabled = false;
-
-    network_context->CreateURLLoaderFactory(std::move(request),
-                                            std::move(params));
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
+    process->CreateURLLoaderFactory(origin_, std::move(no_header_client),
+                                    std::move(request));
   }
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request) {
