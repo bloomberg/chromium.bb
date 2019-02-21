@@ -89,9 +89,10 @@ Polymer({
     'onSettingsChanged_(settings.color.value, settings.cssBackground.value, ' +
         'settings.fitToPage.value, settings.headerFooter.value, ' +
         'settings.layout.value, settings.ranges.value, ' +
-        'settings.selectionOnly.value, settings.customScaling.value, ' +
-        'settings.scaling.value, settings.rasterize.value, destination)',
+        'settings.selectionOnly.value, settings.scaling.value, ' +
+        'settings.rasterize.value, destination)',
     'onMarginsChanged_(settings.margins.value)',
+    'onCustomScalingChanged_(settings.customScaling.value)',
     'onCustomMarginsChanged_(settings.customMargins.value)',
     'onMediaSizeChanged_(settings.mediaSize.value)',
     'onPagesPerSheetChanged_(settings.pagesPerSheet.value)',
@@ -552,6 +553,15 @@ Polymer({
         }
       }
       this.lastCustomMargins_ = customMargins;
+    }
+  },
+
+  /** @private */
+  onCustomScalingChanged_: function() {
+    // If the scaling value is 100, changing between default and custom scaling
+    // has no effect on the preview ticket. Only regenerate for scaling != 100.
+    if (this.getSettingValue('scaling') !== '100') {
+      this.onSettingsChanged_();
     }
   },
 
