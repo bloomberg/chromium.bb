@@ -50,6 +50,10 @@ default_chrome_public_jinja_variables = [
 #     final APK or bundle.
 #   is_modern: If true, indicates this corresponds to a chrome_modern_XXX
 #     target that can only run on Android L-M.
+#   is_monochrome: Indicates that this target contains chrome and webview
+#     packaged together and can only run on Android N+.
+#   is_trichrome: Indicates this target relies on a trichrome static library
+#     target and can only run on Android P+.
 #   png_to_webp: Optional. If true, convert image resources to webp format.
 #     requires Android K+, since these were not supported by Android properly
 #     before 4.3.0.
@@ -57,7 +61,6 @@ default_chrome_public_jinja_variables = [
 #     directly from the APK (and stored zipaligned and uncompressed). This
 #     requires either the Chromium linker, or Android M+.
 #   version_name: Application version name (e.g. "Developer Build").
-#   is_modern: Optional. true iff this is a chrome_modern derived build.
 #
 #   Plus all other variables accepted by android_apk() or
 #   android_app_bundle_module(), depending on the target type.
@@ -69,6 +72,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
           invoker.target_type == "android_app_bundle_module" ||
           invoker.target_type == "instrumentation_test_apk",
       "Invalid target_type definition, should be 'android_apk' or 'android_app_bundle_module'")
+  assert(!(defined(invoker.is_trichrome) && invoker.is_trichrome) ||
+             !(defined(invoker.is_monochrome) && invoker.is_monochrome),
+         "Cannot be both trichrome and monochrome!")
 
   # Adds unwind table asset to the chrome apk for the given library target. This
   # is not part of generic apk assets target since it depends on the main shared
@@ -96,10 +102,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
   assert(_is_modern || !_is_modern)  # Mark as used.
 
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
-
-  _use_trichrome_library =
-      defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
-  assert(_use_trichrome_library || !_use_trichrome_library)  # Mark as used.
+  _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
+  assert(_is_trichrome || !_is_trichrome)  # Mark as used.
 
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
@@ -145,7 +149,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       }
     }
 
-    if (!_is_monochrome) {
+    if (!_is_monochrome && !_is_trichrome) {
       deps += [
         "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
       ]
@@ -237,7 +241,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
 
     if (!defined(version_code)) {
-      if (_use_trichrome_library) {
+      if (_is_trichrome) {
         version_code = trichrome_version_code
       } else if (_is_monochrome) {
         version_code = monochrome_version_code
@@ -252,7 +256,12 @@ template("chrome_public_common_apk_or_module_tmpl") {
 }
 
 # The equivalent of chrome_common_apk_or_module_tmpl for all builds of
-# monochrome.
+# monochrome and trichrome chrome.
+
+# Variables:
+#   use_trichrome_library: Specifies that this target depends on a trichrome
+#     static library target to provide certain shared library deps, and that
+#     this target should not package webview deps.
 template("monochrome_public_common_apk_or_module_tmpl") {
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
@@ -260,11 +269,11 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     _enable_multidex = is_java_debug || multidex_in_release
   }
   chrome_public_common_apk_or_module_tmpl(target_name) {
-    is_monochrome = true
-    use_trichrome_library =
+    is_trichrome =
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
+    is_monochrome = !is_trichrome
 
-    if (!use_trichrome_library) {
+    if (!is_trichrome) {
       if (invoker.target_type == "android_app_bundle_module") {
         _suffix = bundle_library_suffix
       } else {
@@ -303,10 +312,15 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
     }
 
-    alternative_android_sdk_dep = webview_framework_dep
-    app_as_shared_lib = true
+    if (is_monochrome) {
+      alternative_android_sdk_dep = webview_framework_dep
+      app_as_shared_lib = true
+      min_sdk_version = 24
+    }
+    if (is_trichrome) {
+      min_sdk_version = 28
+    }
     use_chromium_linker = false
-    min_sdk_version = 24
 
     # Resources config for blocklisting resource names from obfuscation
     resources_config_path = "//android_webview/aapt2.config"
@@ -335,18 +349,28 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       deps = []
     }
     deps += [
-      "//android_webview:monochrome_webview_assets",
-      "//android_webview/apk:webview_license_activity_java",
-      "//android_webview/glue",
       "//chrome/android:chrome_public_non_pak_assets",
-      "//chrome/android/monochrome:monochrome_license_provider_java",
       "//components/crash/android:handler_java",
     ]
+    _pak_prefix = "chrome"
+    if (is_monochrome) {
+      deps += [
+        "//android_webview:monochrome_webview_assets",
+        "//android_webview/apk:webview_license_activity_java",
+        "//android_webview/glue",
+        "//chrome/android:monochrome_java",
+        "//chrome/android/monochrome:monochrome_license_provider_java",
+      ]
+      _pak_prefix = "monochrome"
+    } else if (is_trichrome) {
+      _pak_prefix = "trichrome_chrome"
+    }
     if (invoker.target_type == "android_app_bundle_module") {
-      deps +=
-          [ "//chrome/android:monochrome_${bundle_pak_asset_type}_pak_assets" ]
+      deps += [
+        "//chrome/android:${_pak_prefix}_${bundle_pak_asset_type}_pak_assets",
+      ]
     } else {
-      deps += [ "//chrome/android:monochrome_apk_pak_assets" ]
+      deps += [ "//chrome/android:${_pak_prefix}_apk_pak_assets" ]
     }
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
@@ -364,7 +388,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (!defined(proguard_configs)) {
         proguard_configs = []
       }
-      proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
+      if (is_monochrome) {
+        proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
+      }
       png_to_webp = true
     }
 
