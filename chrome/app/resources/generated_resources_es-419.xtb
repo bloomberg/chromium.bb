@@ -1404,7 +1404,6 @@
 <translation id="3101709781009526431">Fecha y hora</translation>
 <translation id="3104763887980088552">Registro de actividad</translation>
 <translation id="310671807099593501">El sitio está usando la conexión Bluetooth</translation>
-<translation id="3115128645424181617">No se puede encontrar el teléfono. Asegúrate de que esté cerca y de que Bluetooth esté activado.</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Ayuda</translation>
 <translation id="3120430004221004537">La encriptación no fue suficiente para una operación en: "<ph name="DEVICE_NAME" />".</translation>
@@ -2298,7 +2297,6 @@
 <translation id="4481530544597605423">Dispositivos no sincronizados</translation>
 <translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
-<translation id="449938344715680828">Presiona |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| y, luego, |<ph name="ACCELERATOR3" />| para salir</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> se bloqueó</translation>
 <translation id="450099669180426158">Ícono de signo de exclamación</translation>
 <translation id="4501530680793980440">Confirmar eliminación</translation>
@@ -2619,7 +2617,6 @@
 <translation id="4977942889532008999">Confirmar acceso</translation>
 <translation id="4980805016576257426">Esta extensión contiene software malicioso.</translation>
 <translation id="4981449534399733132">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />accede a ella<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Permite cambiar la configuración que controla el acceso de los sitios web a ciertas funciones, como las cookies, JavaScript, los complementos, la geolocalización, el micrófono, la cámara, etc.</translation>
 <translation id="4988205478593450158">¿Estás seguro de que deseas borrar "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar &amp;a la izquierda</translation>

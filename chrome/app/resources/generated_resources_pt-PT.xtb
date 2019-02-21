@@ -187,7 +187,7 @@
 <translation id="1244147615850840081">Operador</translation>
 <translation id="1244303850296295656">Erro de extensão</translation>
 <translation id="1249250836236328755">Género</translation>
-<translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> foi bloqueado porque foi descontinuado.</translation>
+<translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> foi bloqueado por ter sido descontinuado.</translation>
 <translation id="1252987234827889034">Ocorreu um erro do perfil</translation>
 <translation id="1254593899333212300">Ligação directa à internet</translation>
 <translation id="1260240842868558614">Mostrar:</translation>
@@ -477,7 +477,7 @@
 <translation id="1692602667007917253">Ups! Algo correu mal.</translation>
 <translation id="1692799361700686467">Permitidos cookies de vários sites.</translation>
 <translation id="169515659049020177">Shift</translation>
-<translation id="1697150536837697295">Art</translation>
+<translation id="1697150536837697295">Arte</translation>
 <translation id="1698122934742150150">Apenas para a sessão no modo de navegação anónima atual</translation>
 <translation id="1698650002254827833">Não é possível carregar a lista de aplicações. Tente novamente.</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
@@ -1407,7 +1407,6 @@ Pretende pará-lo?</translation>
 <translation id="3101709781009526431">Data e hora</translation>
 <translation id="3104763887980088552">Registo de atividade</translation>
 <translation id="310671807099593501">O site está a utilizar o Bluetooth.</translation>
-<translation id="3115128645424181617">Não é possível localizar o telemóvel. Certifique-se de que o mesmo está próximo e que o Bluetooth está ativado.</translation>
 <translation id="3115147772012638511">A aguardar pela cache...</translation>
 <translation id="3118319026408854581">Ajuda do <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Encriptação insuficiente para uma operação indicada em: "<ph name="DEVICE_NAME" />".</translation>
@@ -2223,7 +2222,7 @@ Pretende pará-lo?</translation>
 <translation id="4356334633973342967">Em alternativa, especifique o seu próprio controlador:</translation>
 <translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Instalada devido a extensão(ões) dependente(s).</translation>
-<translation id="4359717112757026264">Cityscape</translation>
+<translation id="4359717112757026264">Paisagens urbanas</translation>
 <translation id="4361142739114356624">A chave privada para este certificado de cliente está em falta ou é inválida</translation>
 <translation id="4363771538994847871">Não foi encontrado nenhum destino do Cast. Precisa de ajuda?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
@@ -2301,7 +2300,6 @@ Pretende pará-lo?</translation>
 <translation id="4481530544597605423">Dispositivos dessincronizados</translation>
 <translation id="4482194545587547824">A Google pode utilizar o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google</translation>
 <translation id="4495419450179050807">Não mostrar nesta página</translation>
-<translation id="449938344715680828">Prima |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| seguido de |<ph name="ACCELERATOR3" />| para sair.</translation>
 <translation id="4500114933761911433">O plug-in <ph name="PLUGIN_NAME" /> falhou.</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar Remoção</translation>
@@ -2622,7 +2620,6 @@ Pretende pará-lo?</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém um software malicioso.</translation>
 <translation id="4981449534399733132">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />inicie a sessão<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Altere as definições que controlam o acesso dos Sites a funcionalidades como cookies, JavaScript, plug-ins, geolocalização, microfone, câmara, etc.</translation>
 <translation id="4988205478593450158">Tem a certeza de que pretende eliminar "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="49896407730300355">Rodar para a &amp;esquerda</translation>

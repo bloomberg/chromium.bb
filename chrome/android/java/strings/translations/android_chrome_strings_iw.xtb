@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">מוסיף את <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">מאתרים</translation>
 <translation id="1049743911850919806">גלישה פרטית</translation>
-<translation id="1054301162707478098">עברת למצב פרטיות.</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1067922213147265141">‏שירותי Google אחרים</translation>
 <translation id="1068672505746868501">אף פעם אל תתרגם דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">שפות נוספות</translation>
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">‏דפים שמציגים בכרטיסיות פרטיות לא נשמרים בהיסטוריית הדפדפן, במאגר קובצי ה-Cookie או בהיסטוריית החיפושים אחרי שסוגרים את כל הכרטיסיות הפרטיות. המערכת שומרת את הקבצים שמורידים ואת הסימניות שיוצרים.
-
-עם זאת, גורמים מסוימים יכולים לראות את הפעילות שלך. מעבר למצב פרטי אינו מסתיר את פעילות הגלישה מהמעסיק, מספק האינטרנט או מהאתרים שמבקרים בהם.</translation>
 <translation id="1260236875608242557">חיפוש ודפדוף</translation>
 <translation id="1264974993859112054">ספורט</translation>
 <translation id="1272079795634619415">הפסק</translation>
@@ -474,7 +470,6 @@
 <translation id="4565377596337484307">הסתר סיסמה</translation>
 <translation id="4570913071927164677">פרטים</translation>
 <translation id="4572422548854449519">כניסה אל חשבון מנוהל</translation>
-<translation id="4581964774250883625">עברת למצב גלישה בסתר</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{לפני דקה}two{לפני # דקות}many{לפני # דקות}other{לפני # דקות}}</translation>
 <translation id="4587589328781138893">אתרים</translation>
 <translation id="4594952190837476234">הדף הלא מקוון הזה נוצר ב-<ph name="CREATION_TIME" /> ויכול להיות שהגירסה המקוונת שלו שונה.</translation>
@@ -632,9 +627,6 @@
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
-<translation id="5719837394786370183">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישמרו בהיסטוריית הדפדפן, אחסון קובצי ה-cookie או היסטוריית החיפושים לאחר שתסגור את כל הכרטיסיות של גלישה בסתר. קבצים שתוריד או סימניות שתיצור יישמרו.
-
-עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
 <translation id="5734520971562437809">צריכת הנתונים מצטמצמת בשיעור של עד 60 אחוזים והגלישה באינטרנט מהירה יותר.</translation>

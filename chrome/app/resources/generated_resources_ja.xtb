@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">日時</translation>
 <translation id="3104763887980088552">アクティビティ ログ</translation>
 <translation id="310671807099593501">サイトで Bluetooth が使用されています</translation>
-<translation id="3115128645424181617">スマートフォンが見つかりません。スマートフォンが手の届く範囲にあり、Bluetooth がオンになっていることを確認してください。</translation>
 <translation id="3115147772012638511">キャッシュを待機しています...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> ヘルプ</translation>
 <translation id="3120430004221004537">「<ph name="DEVICE_NAME" />」で、指定された操作に必要な暗号化が行われていません。</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
-<translation id="449938344715680828">終了するには |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|+|<ph name="ACCELERATOR3" />| キーを押してください</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> で問題が発生しました</translation>
 <translation id="450099669180426158">感嘆符アイコン</translation>
 <translation id="4501530680793980440">削除の確認</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">アクセスの確認</translation>
 <translation id="4980805016576257426">この拡張機能には不正なソフトウェアが含まれています。</translation>
 <translation id="4981449534399733132">同期しているすべての端末と Google アカウントから閲覧データを削除するには、<ph name="BEGIN_LINK" />ログイン<ph name="END_LINK" />してください。</translation>
-<translation id="498294082491145744">Cookie、JavaScript、プラグイン、位置情報、マイク、カメラなどの機能へのウェブサイトからのアクセスを制御する設定を変更します。</translation>
 <translation id="4988205478593450158">「<ph name="FILE_NAME" />」を削除してもよろしいですか？</translation>
 <translation id="4988526792673242964">ページ</translation>
 <translation id="49896407730300355">反時計回りに回転(&amp;O)</translation>

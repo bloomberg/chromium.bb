@@ -1407,7 +1407,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3101709781009526431">Data și ora</translation>
 <translation id="3104763887980088552">Jurnal de activități</translation>
 <translation id="310671807099593501">Site-ul folosește Bluetooth</translation>
-<translation id="3115128645424181617">Telefonul nu poate fi găsit. Asigură-te că este la îndemână și că ai activat Bluetooth.</translation>
 <translation id="3115147772012638511">Se așteaptă cache-ul...</translation>
 <translation id="3118319026408854581">Ajutor <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Criptare insuficientă pentru o operațiune pe: „<ph name="DEVICE_NAME" />”.</translation>
@@ -2301,7 +2300,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4481530544597605423">Dispozitive neasociate</translation>
 <translation id="4482194545587547824">Google poate folosi istoricul de navigare pentru a personaliza Căutarea și alte servicii Google</translation>
 <translation id="4495419450179050807">Nu afișa pe această pagină</translation>
-<translation id="449938344715680828">Apasă |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| și |<ph name="ACCELERATOR3" />| pentru a ieși</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> s-a blocat</translation>
 <translation id="450099669180426158">Pictogramă semn de exclamare</translation>
 <translation id="4501530680793980440">Confirmați eliminarea</translation>
@@ -2622,7 +2620,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4977942889532008999">Confirmați accesul</translation>
 <translation id="4980805016576257426">Această extensie conține programe malware.</translation>
 <translation id="4981449534399733132">Pentru a șterge datele de navigare de pe toate dispozitivele sincronizate și din Contul Google, <ph name="BEGIN_LINK" />conectează-te<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Modifică setările care controlează accesul site-ului la funcții cum ar fi cookie-urile, JavaScript, pluginurile, localizarea geografică, microfonul, camera foto etc.</translation>
 <translation id="4988205478593450158">Sigur vrei să ștergi „<ph name="FILE_NAME" />”?</translation>
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="49896407730300355">Rotiți în sens &amp;invers acelor de ceasornic</translation>

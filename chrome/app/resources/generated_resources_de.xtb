@@ -1402,7 +1402,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3101709781009526431">Datum und Uhrzeit</translation>
 <translation id="3104763887980088552">Aktivitätsprotokoll</translation>
 <translation id="310671807099593501">Die Website verwendet Bluetooth</translation>
-<translation id="3115128645424181617">Smartphone wurde nicht gefunden. Vergewissern Sie sich, dass es sich in Reichweite befindet und dass Bluetooth aktiviert ist.</translation>
 <translation id="3115147772012638511">Warten auf den Cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />-Hilfe</translation>
 <translation id="3120430004221004537">Unzureichende Verschlüsselung für einen bestimmten Vorgang auf folgendem Gerät: "<ph name="DEVICE_NAME" />".</translation>
@@ -2296,7 +2295,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4481530544597605423">Entkoppelte Geräte</translation>
 <translation id="4482194545587547824">Google kann die Suche und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren.</translation>
 <translation id="4495419450179050807">Nicht auf dieser Seite anzeigen</translation>
-<translation id="449938344715680828">Zum Beenden |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| gefolgt von |<ph name="ACCELERATOR3" />| drücken</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ist abgestürzt</translation>
 <translation id="450099669180426158">Ausrufezeichensymbol</translation>
 <translation id="4501530680793980440">Entfernen bestätigen</translation>
@@ -2617,7 +2615,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4977942889532008999">Zugriff bestätigen</translation>
 <translation id="4980805016576257426">Diese Erweiterung enthält Malware.</translation>
 <translation id="4981449534399733132">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />melden Sie sich an<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Einstellungen ändern, über die der Websitezugriff auf Cookies, JavaScript, Plug-ins, Standort, Mikrofon, Kamera und ähnliche Funktionen gesteuert wird</translation>
 <translation id="4988205478593450158">Soll "<ph name="FILE_NAME" />" wirklich gelöscht werden?</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="49896407730300355">&amp;Gegen den Uhrzeigersinn drehen</translation>

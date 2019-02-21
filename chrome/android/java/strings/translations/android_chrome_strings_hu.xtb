@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> hozzáadása…</translation>
 <translation id="1041308826830691739">Webhelyekről</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
-<translation id="1054301162707478098">Ön privát módra váltott.</translation>
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1067922213147265141">Egyéb Google-szolgáltatások</translation>
 <translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">További nyelvek…</translation>
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
 <translation id="1258753120186372309">Google ünnepi embléma: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">A privát lapokon megtekintett oldalak nem maradnak meg a böngészési előzményekben, a cookie-k tárolójában vagy a keresési előzményekben, miután bezárta az összes privát lapot. A letöltött fájlok és a létrehozott könyvjelzők azonban megmaradnak.
-
-Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti el böngészési tevékenységét munkaadója, internetszolgáltatója vagy a felkeresett webhelyek elől.</translation>
 <translation id="1260236875608242557">Keresés és felfedezés</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Leállítás</translation>
@@ -474,7 +470,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4565377596337484307">Jelszó elrejtése</translation>
 <translation id="4570913071927164677">Részletek</translation>
 <translation id="4572422548854449519">Bejelentkezés a kezelt fiókba</translation>
-<translation id="4581964774250883625">Ön inkognitómódra váltott.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# perce}other{# perce}}</translation>
 <translation id="4587589328781138893">Webhelyek</translation>
 <translation id="4594952190837476234">Az offline oldal létrehozási ideje: <ph name="CREATION_TIME" />. Az oldal eltérhet az online változattól.</translation>
@@ -632,9 +627,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5689516760719285838">Tartózkodási hely</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
-<translation id="5719837394786370183">Az inkognitólapokon megtekintett oldalak nem maradnak meg a böngészési előzményekben, a cookie-k tárolójában vagy a keresési előzményekben, miután bezárta az összes inkognitólapot. A letöltött fájlok és a létrehozott könyvjelzők azonban megmaradnak.
-
-Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem rejtheti el böngészési tevékenységét munkaadója, internetszolgáltatója vagy a felkeresett webhelyek elől.</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
 <translation id="5734520971562437809">Akár 60 százalékkal kevesebb adatforgalom és gyorsabb webhelyek.</translation>

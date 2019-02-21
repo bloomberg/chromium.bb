@@ -6,7 +6,6 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ን በማከል ላይ...</translation>
 <translation id="1041308826830691739">ከድር ጣቢያዎች</translation>
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
-<translation id="1054301162707478098">እርስዎ የግል ሆነዋል።</translation>
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="1067922213147265141">ሌሎች የGoogle አገልግሎቶች</translation>
 <translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
 <translation id="124678866338384709">የአሁኑን ትር ዝጋ</translation>
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">በግል ትሮች ላይ የሚያዩዋቸው ገጾች ሁሉንም የግል ትሮችዎን ከዘጉ በኋላ በእርስዎ የአሳሽ ታሪክ፣ የኩኪ ማከማቻ ወይም የፍለጋ ታሪክ ውስጥ አይቆዩም። የሚያወርዷቸው ማንኛቸውም ፋይሎች ወይም ዕልባቶች ይቀመጣሉ።
-
-ይሁንና እርስዎ ስውር አይደሉም። የግል መሆን የእርስዎን አሰሳ ከአሰሪዎ፣ ከበይነመረብ አገልጋይዎ ወይም ከሚጎበኟቸው ድር ጣቢያዎች አይደብቁዎውም።</translation>
 <translation id="1260236875608242557">ይፈልጉ እና ያስሱ</translation>
 <translation id="1264974993859112054">ሰፖርቶች</translation>
 <translation id="1272079795634619415">አቁም</translation>
@@ -474,7 +470,6 @@
 <translation id="4565377596337484307">የይለፍ ቃል ደብቅ</translation>
 <translation id="4570913071927164677">ዝርዝሮች</translation>
 <translation id="4572422548854449519">ወደ የሚተዳደር መለያ ይግቡ</translation>
-<translation id="4581964774250883625">ወደ ማንነት የማያሳውቅ ሁነታ ሄደዋል።</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{ከ# ደቂቃ በፊት}one{ከ# ደቂቃዎች በፊት}other{ከ# ደቂቃዎች በፊት}}</translation>
 <translation id="4587589328781138893">ጣቢያዎች</translation>
 <translation id="4594952190837476234">ይህ የ<ph name="CREATION_TIME" />  የመስመር ውጭ ገጽ ከመስመር ላይ ስሪቱ የተለየ ሊሆን ይችላል።</translation>
@@ -632,9 +627,6 @@
 <translation id="5686790454216892815">የፋይሉ ስም በጣም ረጅም ነው</translation>
 <translation id="5689516760719285838">አካባቢ</translation>
 <translation id="569536719314091526">ከተጨማሪ አማራጮች አዝራርሩ ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
-<translation id="5719837394786370183">ማንነት በማያሳውቁ ትሮች ላይ የሚያዩዋቸው ገጾች ሁሉንም ማንነት የማያሳውቁ ትሮችዎን ከዘጉ በኋላ በእርስዎ የአሳሽ ታሪክ፣ የኩኪ ማከማቻ ወይም የፍለጋ ታሪክ ውስጥ አይቆዩም። የሚያወርዷቸው ማንኛቸውም ፋይሎች ወይም ዕልባቶች ይቀመጣሉ።
-
-ይሁንና እርስዎ ስውር አይደሉም። ማንነት በማያሳውቅ ሁነታ ላይ መሆን የእርስዎን አሰሳ ከአሰሪዎ፣ ከበይነመረብ አገልጋይዎ ወይም ከሚጎበኟቸው ድር ጣቢያዎች አይደብቁዎውም።</translation>
 <translation id="572328651809341494">የቅርብ ጊዜ ትሮች</translation>
 <translation id="5726692708398506830">በገጹ ላይ ያለውን ሁሉንም ነገር ይበልጥ አተልቅ</translation>
 <translation id="5734520971562437809">እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀሙና ድሩን ያፍጥኑት።</translation>

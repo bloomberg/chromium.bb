@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Data i godzina</translation>
 <translation id="3104763887980088552">Historia aktywności</translation>
 <translation id="310671807099593501">Strona używa Bluetootha</translation>
-<translation id="3115128645424181617">Nie można znaleźć telefonu. Upewnij się, że masz go w zasięgu ręki i włączony jest na nim Bluetooth.</translation>
 <translation id="3115147772012638511">Czekam na pamięć podręczną...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> – pomoc</translation>
 <translation id="3120430004221004537">Zbyt słabe szyfrowanie tej operacji na: „<ph name="DEVICE_NAME" />”.</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Niesparowane urządzenia</translation>
 <translation id="4482194545587547824">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług</translation>
 <translation id="4495419450179050807">Nie pokazuj na tej stronie</translation>
-<translation id="449938344715680828">Naciśnij |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, a potem |<ph name="ACCELERATOR3" />|, by wyjść</translation>
 <translation id="4500114933761911433">We wtyczce <ph name="PLUGIN_NAME" /> wystąpił poważny błąd</translation>
 <translation id="450099669180426158">Ikona wykrzyknika</translation>
 <translation id="4501530680793980440">Potwierdź usunięcie</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Potwierdź dostęp</translation>
 <translation id="4980805016576257426">To rozszerzenie zawiera złośliwe oprogramowanie.</translation>
 <translation id="4981449534399733132">Aby wyczyścić dane przeglądania ze wszystkich zsynchronizowanych urządzeń i z konta Google, <ph name="BEGIN_LINK" />zaloguj się<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Zmiana ustawień kontrolujących dostęp stron internetowych do takich funkcji jak pliki cookie, JavaScript, wtyczki, geolokalizacja, mikrofon, kamera itp.</translation>
 <translation id="4988205478593450158">Czy na pewno chcesz usunąć plik „<ph name="FILE_NAME" />”?</translation>
 <translation id="4988526792673242964">Strony</translation>
 <translation id="49896407730300355">&amp;Obróć w lewo</translation>

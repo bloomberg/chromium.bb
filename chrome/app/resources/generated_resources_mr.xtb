@@ -1406,7 +1406,6 @@
 <translation id="3101709781009526431">तारीख आणि वेळ</translation>
 <translation id="3104763887980088552">अ‍ॅक्टिव्हिटी लॉग</translation>
 <translation id="310671807099593501">साइट ब्लूटूथ वापरत आहे</translation>
-<translation id="3115128645424181617">तुमचा फोन आढळला नाही. तो सोयीस्कर असल्याची आणि ब्लूटूथ सुरू असल्याची खात्री करा.</translation>
 <translation id="3115147772012638511">कॅशेसाठी प्रतीक्षा करत आहे...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मदत</translation>
 <translation id="3120430004221004537">दिलेल्या ऑपरेशनसाठी यावर अपुरे एंक्रिप्शन आहे: "<ph name="DEVICE_NAME" />".</translation>
@@ -2300,7 +2299,6 @@
 <translation id="4481530544597605423">जोडणी वेगळी केलेली डिव्हाइस</translation>
 <translation id="4482194545587547824">शोध आणि इतर Google सेवा वैयक्तीकृत करण्यासाठी Google आपल्या ब्राउझिंग इतिहासाचा वापर करू शकते</translation>
 <translation id="4495419450179050807">या पेजवर दर्शवू नका</translation>
-<translation id="449938344715680828">बाहेर पडण्यासाठी |<ph name="ACCELERATOR3" />| नंतर |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| दाबा</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> क्रॅश झाले आहे</translation>
 <translation id="450099669180426158">उद्गारवाचक चिन्हाचा आयकन</translation>
 <translation id="4501530680793980440">काढून टाकण्याची पुष्टी करा</translation>
@@ -2621,7 +2619,6 @@
 <translation id="4977942889532008999">प्रवेश पुष्टी करा</translation>
 <translation id="4980805016576257426">या विस्तारामध्ये मालवेयर आहे.</translation>
 <translation id="4981449534399733132">तुमच्या सिंक केलेल्या सर्व डिव्हाइसमधून आणि तुमच्या Google खात्यामधून ब्राउझ केलेला डेटा साफ करण्यासाठी, <ph name="BEGIN_LINK" />साइन इन करा<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">कुकीज, JavaScript, प्लगिन, भौगोलिक स्थान, मायक्रोफोन, कॅमेरा इ. सारख्या वैशिष्ट्यांवरील वेबसाइटचे प्रवेश नियंत्रित करणार्‍या आपल्या सेटिंग्ज बदला.</translation>
 <translation id="4988205478593450158">तुम्हाला "<ph name="FILE_NAME" />" नक्की हटवायची आहे का?</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="49896407730300355">घड्याळाच्या वि&amp;रूद्ध दिशेने फिरवा</translation>

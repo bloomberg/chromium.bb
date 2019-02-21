@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Legger til <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Fra nettsteder</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Nå er du i privatmodus.</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1067922213147265141">Andre Google-tjenester</translation>
 <translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Flere språk</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Når du åpner sider i privatfaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
-
-Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
 <translation id="1260236875608242557">Søk og utforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -474,7 +470,6 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="4565377596337484307">Skjul passord</translation>
 <translation id="4570913071927164677">Detaljer</translation>
 <translation id="4572422548854449519">Logg på en administrert konto</translation>
-<translation id="4581964774250883625">Du er nå i inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{for # minutt siden}other{for # minutter siden}}</translation>
 <translation id="4587589328781138893">Nettsteder</translation>
 <translation id="4594952190837476234">Denne siden uten nett er fra <ph name="CREATION_TIME" /> og kan avvike fra nettversjonen.</translation>
@@ -632,9 +627,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
-<translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
-
-Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
 <translation id="572328651809341494">Nylige faner</translation>
 <translation id="5726692708398506830">Gjør alt på siden større</translation>
 <translation id="5734520971562437809">Bruk opptil 60 prosent mindre data, og surf raskere.</translation>
@@ -937,7 +929,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7929962904089429003">Åpne menyen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er utdatert.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
-<translation id="7960977077911686065">Hvis du fortsetter, godtar du at Chrome sender nettstedets nettadresse og innhold samt data fra Chrome autofyll til Google, slik at vi kan levere denne tjenesten. Du godtar også at Chrome sender personopplysningene du valgte, til nettstedet via Chrome autofyll. \n\nÅpne Chrome-innstillingene for å slå av Google-assistenten i Chrome og Chrome autofyll.  <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
+<translation id="7960977077911686065">Hvis du fortsetter, godtar du at Chrome sender nettstedets nettadresse og innhold samt data fra Chrome autofyll til Google, slik at vi kan levere denne tjenesten. Du godtar også at Chrome sender personopplysningene du har valgt, til nettstedet via Chrome autofyll. \n\nÅpne Chrome-innstillingene for å slå av Google-assistenten i Chrome og Chrome autofyll.  <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7975379999046275268">Forhåndsvis siden <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Last inn sider på forhånd for raskere nettlesing og søk</translation>

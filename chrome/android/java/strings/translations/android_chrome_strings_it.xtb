@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Aggiunta di <ph name="WEBAPK_NAME" /> in corso…</translation>
 <translation id="1041308826830691739">Da siti web</translation>
 <translation id="1049743911850919806">In incognito</translation>
-<translation id="1054301162707478098">Sei passato alla navigazione privata.</translation>
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1067922213147265141">Altri servizi Google</translation>
 <translation id="1068672505746868501">Non tradurre mai le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Altre lingue</translation>
 <translation id="124678866338384709">Chiudi scheda corrente</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Le pagine visualizzate nelle schede di navigazione privata non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
-
-Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione privata non consente di nascondere la navigazione al datore di lavoro, al provider di servizi Internet o ai siti web che visiti.</translation>
 <translation id="1260236875608242557">Cerca ed esplora</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Interrompi</translation>
@@ -474,7 +470,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4565377596337484307">Nascondi password</translation>
 <translation id="4570913071927164677">Dettagli</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
-<translation id="4581964774250883625">Sei passato alla navigazione in incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto fa}other{# minuti fa}}</translation>
 <translation id="4587589328781138893">Siti</translation>
 <translation id="4594952190837476234">Questa pagina offline risale al giorno <ph name="CREATION_TIME" /> e potrebbe essere diversa dalla versione online.</translation>
@@ -632,9 +627,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5686790454216892815">Nome file troppo lungo</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
-<translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
-
-Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
 <translation id="572328651809341494">Schede recenti</translation>
 <translation id="5726692708398506830">Ingrandisci i contenuti della pagina</translation>
 <translation id="5734520971562437809">Utilizza fino al 60 percento di dati in meno e velocizza il Web.</translation>

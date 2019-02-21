@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Daripada tapak web</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Anda menggunakan mod peribadi.</translation>
 <translation id="10614374240317010">Tidak pernah disimpan</translation>
 <translation id="1067922213147265141">Perkhidmatan Google yang lain</translation>
 <translation id="1068672505746868501">Jangan sekali-kali terjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Lagi bahasa</translation>
 <translation id="124678866338384709">Tutup tab semasa</translation>
 <translation id="1258753120186372309">Coretan Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Halaman yang anda lihat dalam tab peribadi tidak akan kekal dalam sejarah, simpanan kuki atau sejarah carian penyemak imbas anda selepas anda menutup semua tab peribadi anda. Sebarang fail yang dimuat turun atau penanda halaman yang anda buat akan disimpan.
-
-Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyikan penyemakan imbas anda daripada majikan anda, penyedia perkhidmatan Internet anda atau tapak web yang anda lawati.</translation>
 <translation id="1260236875608242557">Cari &amp; teroka</translation>
 <translation id="1264974993859112054">Sukan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -474,7 +470,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4570913071927164677">Butiran</translation>
 <translation id="4572422548854449519">Log masuk ke akaun terurus</translation>
-<translation id="4581964774250883625">Anda menggunakan mod inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minit yang lalu}other{# minit yang lalu}}</translation>
 <translation id="4587589328781138893">Tapak</translation>
 <translation id="4594952190837476234">Halaman luar talian ini dari <ph name="CREATION_TIME" /> dan mungkin berbeza daripada versi dalam talian.</translation>
@@ -632,9 +627,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5686790454216892815">Nama fail terlalu panjang</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="569536719314091526">Terjemahkan halaman ini ke dalam sebarang bahasa lain daripada butang Lagi pilihan</translation>
-<translation id="5719837394786370183">Halaman yang anda lihat dalam tab inkognito tidak akan kekal dalam sejarah penyemak imbas, simpanan kuki atau sejarah carian anda selepas anda menutup semua tab inkognoti anda. Sebarang fail yang dimuat turun dan penanda halaman yang anda buat akan disimpan.
-
-Namun begitu, anda boleh dilihat. Menggunakan mod inkognoti tidak menyembunyikan penyemakan imbas anda daripada majikan anda, penyedia perkhidmatan Internet anda atau tapak web yang anda lawati.</translation>
 <translation id="572328651809341494">Tab terbaharu</translation>
 <translation id="5726692708398506830">Jadikan semua yang ada pada halaman lebih besar</translation>
 <translation id="5734520971562437809">Menggunakan sehingga 60 peratus lebih sedikit data dan mempercepat web.</translation>

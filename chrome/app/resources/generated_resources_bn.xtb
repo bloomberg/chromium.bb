@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">তারিখ এবং সময়</translation>
 <translation id="3104763887980088552">অ্যাক্টিভিটি লগ</translation>
 <translation id="310671807099593501">সাইটটি ব্লুটুথ ব্যবহার করছে</translation>
-<translation id="3115128645424181617">আপনার ফোন খুঁজে পাওয়া যায়নি। এটি সহজে ব্যবহার করা যায় এবং বুলুটুথ চালু রয়েছে সেটি নিশ্চিত করুন।</translation>
 <translation id="3115147772012638511">ক্যাশের অপেক্ষা করা হচ্ছে...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> সহায়তা</translation>
 <translation id="3120430004221004537">এখানে একটি নির্দিষ্ট ক্রিয়াকলাপের জন্য অপর্যাপ্ত এনক্রিপশান: "<ph name="DEVICE_NAME" />"।</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
 <translation id="4482194545587547824">সার্চ এবং অন্যান্য Google পরিষেবাগুলি ব্যক্তিগতকৃত করতে Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে</translation>
 <translation id="4495419450179050807">এই পৃষ্ঠাতে দেখাবেন না</translation>
-<translation id="449938344715680828">বেরিয়ে যাওয়ার জন্য |<ph name="ACCELERATOR3" />| এর পর |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| প্রেস করুন</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ক্র্যাশ করে গেছে</translation>
 <translation id="450099669180426158">বিস্ময়বোধক চিহ্ন আইকন</translation>
 <translation id="4501530680793980440">সরানো নিশ্চিত করুন</translation>
@@ -2618,7 +2616,6 @@
 <translation id="4977942889532008999">অ্যাক্সেস নিশ্চিত করুন</translation>
 <translation id="4980805016576257426">এই এক্সটেনশনটিতে ম্যালওয়্যার আছে।</translation>
 <translation id="4981449534399733132">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />সাইন-ইন করুন<ph name="END_LINK" />।</translation>
-<translation id="498294082491145744">কুকিজ, JavaScript, প্লাগ ইন, ভূ-লোকেশন, মাইক্রোফোন, ক্যামেরা ইত্যাদির মতো বৈশিষ্ট্যগুলিতে ওয়েবসাইটগুলির অ্যাক্সেস নিয়ন্ত্রণ করে, আপনার সেই সেটিংস পরিবর্তন করুন।</translation>
 <translation id="4988205478593450158">আপনি কি "<ph name="FILE_NAME" />" মুছে ফেলার ব্যাপারে নিশ্চিত?</translation>
 <translation id="4988526792673242964">পৃষ্ঠাসমূহ</translation>
 <translation id="49896407730300355">ঘড়ির কাঁটার &amp;বিপরীত দিকে ঘোরান</translation>

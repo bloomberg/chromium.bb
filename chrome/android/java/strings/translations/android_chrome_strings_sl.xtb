@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Dodajanje <ph name="WEBAPK_NAME" /> ...</translation>
 <translation id="1041308826830691739">S spletnih mest</translation>
 <translation id="1049743911850919806">Način brez beleženja zgodovine</translation>
-<translation id="1054301162707478098">Uporabljate zasebni način.</translation>
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="1067922213147265141">Druge Googlove storitve</translation>
 <translation id="1068672505746868501">Nikoli ne prevedi strani v jeziku <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Več jezikov</translation>
 <translation id="124678866338384709">Zapiranje trenutnega zavihka</translation>
 <translation id="1258753120186372309">Googlov priložnostni logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Strani, ki si jih ogledate na zasebnih zavihkih, ne bodo pustile sledi v zgodovini brskalnika, shrambi piškotkov ali zgodovini iskanja, ko zaprete vse zasebne zavihke. Prenesene datoteke ali ustvarjeni zaznamki se bodo ohranili.
-
-Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiščete.</translation>
 <translation id="1260236875608242557">Iščite in raziskujte</translation>
 <translation id="1264974993859112054">Šport</translation>
 <translation id="1272079795634619415">Ustavi</translation>
@@ -474,7 +470,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4565377596337484307">Skrij geslo</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
-<translation id="4581964774250883625">Zdaj se vaše brskanje ne shranjuje v zgodovino.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Pred # minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
 <translation id="4587589328781138893">Spletna mesta</translation>
 <translation id="4594952190837476234">Ta stran brez povezave je bila ustvarjena <ph name="CREATION_TIME" /> in se morda razlikuje od spletne različice.</translation>
@@ -631,9 +626,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="569536719314091526">Prevedite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
-<translation id="5719837394786370183">Strani, ki si jih ogledate na zavihkih brez beleženja zgodovine, ne bodo pustile sledi v zgodovini brskalnika, shrambi piškotkov ali zgodovini iskanja, ko zaprete vse zavihke brez beleženja zgodovine. Prenesene datoteke ali ustvarjeni zaznamki se bodo ohranili.
-
-Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne skrijete brskanja pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiskujete.</translation>
 <translation id="572328651809341494">Nedavni zavihki</translation>
 <translation id="5726692708398506830">Povečanje vsebine strani</translation>
 <translation id="5734520971562437809">Prenesite do 60 odstotkov manj podatkov in zagotovite hitrejše delovanje spleta.</translation>

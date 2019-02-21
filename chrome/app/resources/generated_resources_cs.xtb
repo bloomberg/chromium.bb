@@ -1406,7 +1406,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3101709781009526431">Datum a čas</translation>
 <translation id="3104763887980088552">Protokol aktivit</translation>
 <translation id="310671807099593501">Web používá Bluetooth</translation>
-<translation id="3115128645424181617">Telefon nebyl nalezen. Zkontrolujte, zda jej máte u sebe a zda je zapnutý Bluetooth.</translation>
 <translation id="3115147772012638511">Čekání na mezipaměť</translation>
 <translation id="3118319026408854581">Nápověda aplikace <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Šifrování je pro danou operaci na zařízení <ph name="DEVICE_NAME" /> nedostatečné.</translation>
@@ -2297,7 +2296,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
 <translation id="4482194545587547824">Google vaši historii procházení může používat k přizpůsobení Vyhledávání a dalších služeb Google.</translation>
 <translation id="4495419450179050807">Nezobrazovat na této stránce</translation>
-<translation id="449938344715680828">Ukončení provedete stisknutím kláves |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| a poté |<ph name="ACCELERATOR3" />|</translation>
 <translation id="4500114933761911433">Plugin <ph name="PLUGIN_NAME" /> selhal</translation>
 <translation id="450099669180426158">Ikona vykřičníku</translation>
 <translation id="4501530680793980440">Potvrdit odstranění</translation>
@@ -2618,7 +2616,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4977942889532008999">Potvrzení přístupu</translation>
 <translation id="4980805016576257426">Toto rozšíření obsahuje malware.</translation>
 <translation id="4981449534399733132">Chcete-li vymazat údaje o prohlížení ze všech synchronizovaných zařízení i z účtu Google, <ph name="BEGIN_LINK" />přihlaste se<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Změnit vaše nastavení, která řídí přístup webů k funkcím, jako jsou soubory cookie, JavaScript, pluginy, určování geografické polohy, mikrofon, fotoaparát apod.</translation>
 <translation id="4988205478593450158">Opravdu soubor <ph name="FILE_NAME" /> chcete odstranit?</translation>
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="49896407730300355">Otočit &amp;proti směru hodinových ručiček</translation>

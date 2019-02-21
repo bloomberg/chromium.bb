@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Pridedamas APK „<ph name="WEBAPK_NAME" />“...</translation>
 <translation id="1041308826830691739">Iš svetainių</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Įjungėte privatų režimą.</translation>
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="1067922213147265141">Kitos „Google“ paslaugos</translation>
 <translation id="1068672505746868501">Niekada neversti puslapių, parašytų <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Daugiau kalbų</translation>
 <translation id="124678866338384709">Uždaryti dabartinį skirtuką</translation>
 <translation id="1258753120186372309">„Google“ papuoštas logotipas: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Kai uždarysite visus privačius skirtukus, puslapiai, kuriuos žiūrite privačiu režimu, nebus saugomi naršyklės istorijoje, slapukų saugykloje ar paieškos istorijoje. Bus išsaugoti visi atsisiųsti failai ar sukurtos žymės.
-
-Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, interneto paslaugų teikėjas ar lankomos svetainės vis tiek gali pasiekti naršymo informaciją.</translation>
 <translation id="1260236875608242557">Paieška ir naršymas</translation>
 <translation id="1264974993859112054">Sportas</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
@@ -474,7 +470,6 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4565377596337484307">Slėpti slaptažodį</translation>
 <translation id="4570913071927164677">Išsami informacija</translation>
 <translation id="4572422548854449519">Prisijungimas prie tvarkomos paskyros</translation>
-<translation id="4581964774250883625">Veikia inkognito režimas.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Prieš 1 minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}</translation>
 <translation id="4587589328781138893">Svetainės</translation>
 <translation id="4594952190837476234">Šis neprisijungus naudojamas puslapis sukurtas <ph name="CREATION_TIME" />, todėl gali skirtis nuo prisijungus pateiktos versijos.</translation>
@@ -632,9 +627,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
 <translation id="5689516760719285838">Vieta</translation>
 <translation id="569536719314091526">Išverskite šį puslapį į bet kokią kalbą spustelėję mygtuką „Daugiau parinkčių“</translation>
-<translation id="5719837394786370183">Kai uždarysite visus inkognito skirtukų lapus, puslapiai, kuriuos žiūrite inkognito režimu, nebus saugomi naršyklės istorijoje, slapukų saugykloje ar paieškos istorijoje. Bus išsaugoti visi atsisiųsti failai ar sukurtos žymės.
-
-Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, interneto paslaugų teikėjas ar lankomos svetainės vis tiek gali pasiekti naršymo informaciją.</translation>
 <translation id="572328651809341494">Naujausi skirtukai</translation>
 <translation id="5726692708398506830">Padidinti visą puslapio turinį</translation>
 <translation id="5734520971562437809">Naudojama iki 60 procentų mažiau duomenų ir paspartinamas žiniatinklis.</translation>

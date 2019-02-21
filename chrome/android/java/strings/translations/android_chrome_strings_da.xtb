@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1054301162707478098">Du er nu i privat tilstand.</translation>
 <translation id="10614374240317010">Aldrig gemt</translation>
 <translation id="1067922213147265141">Andre Google-tjenester</translation>
 <translation id="1068672505746868501">Oversæt aldrig sider på <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Flere sprog</translation>
 <translation id="124678866338384709">Luk aktuel fane</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Når du har lukket alle dine private faner, gemmes der hverken cookies, browser- eller søgehistorik for de sider, du besøger i privat tilstand. Dog gemmes alle de filer, du downloader, og bogmærker, du opretter.
-
-Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="1260236875608242557">Søg, og udforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -474,7 +470,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4565377596337484307">Skjul adgangskode</translation>
 <translation id="4570913071927164677">Info</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
-<translation id="4581964774250883625">Du er nu i inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{For # minut siden}one{For # minut siden}other{For # minutter siden}}</translation>
 <translation id="4587589328781138893">Websites</translation>
 <translation id="4594952190837476234">Denne offlineside er fra <ph name="CREATION_TIME" /> og kan afvige fra onlineversionen.</translation>
@@ -632,9 +627,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="569536719314091526">Oversæt denne side til et hvilket som helst sprog via knappen Flere valgmuligheder</translation>
-<translation id="5719837394786370183">De sider, du ser på inkognitofaner, gemmes ikke i browserhistorikken, cookielageret eller søgehistorikken, når du har lukket alle dine inkognitofaner. Alle de filer, du downloader, eller bogmærker, du opretter, vil blive gemt.
-
-Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="572328651809341494">Seneste faner</translation>
 <translation id="5726692708398506830">Gør alting på siden større</translation>
 <translation id="5734520971562437809">Brug op til 60 procent færre data, og surf hurtigere på nettet.</translation>

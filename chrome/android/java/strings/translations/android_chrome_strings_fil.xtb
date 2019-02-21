@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">Idinaragdag ang <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Mula sa mga website</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1054301162707478098">Nakapribado ka.</translation>
 <translation id="10614374240317010">Hindi kailanman nag-save</translation>
 <translation id="1067922213147265141">Iba pang serbisyo ng Google</translation>
 <translation id="1068672505746868501">Huwag kailanman isalin ang mga page sa <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Higit pang wika</translation>
 <translation id="124678866338384709">Isara ang kasalukuyang tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Ang mga page na tinitingnan mo sa mga pribadong tab ay hindi mananatili sa iyong history ng browser, cookie store, o history ng paghahanap pagkatapos mong isara ang lahat ng iyong pribadong tab. Itatago ang anumang file na ida-download mo o anumang bookmark na gagawin mo.
-
-Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyong employer, internet service provider, o mga binibisita mong website ang aktibidad mo sa pag-browse.</translation>
 <translation id="1260236875608242557">Maghanap at mag-explore</translation>
 <translation id="1264974993859112054">Pampalakasan</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -474,7 +470,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4565377596337484307">Itago ang password</translation>
 <translation id="4570913071927164677">Mga Detalye</translation>
 <translation id="4572422548854449519">Mag-sign in sa pinamamahalaang account</translation>
-<translation id="4581964774250883625">Naging incognito ka.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="4587589328781138893">Mga Site</translation>
 <translation id="4594952190837476234">Naka-offline ang page na ito mula noong <ph name="CREATION_TIME" /> at maaaring iba ito sa online na bersyon.</translation>
@@ -632,9 +627,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5686790454216892815">Masyadong mahaba ang pangalan ng file</translation>
 <translation id="5689516760719285838">Lokasyon</translation>
 <translation id="569536719314091526">Isalin ang page na ito sa anumang wika mula sa button na Higit pang opsyon</translation>
-<translation id="5719837394786370183">Hindi mananatili ang mga page na tiningnan mo sa mga tab na incognito sa iyong history ng browser, cookie store o history ng paghahanap pagkatapos mong isara ang lahat ng iyong tab na incognito. Itatabi ang anumang file na iyong na-download o bookmark na iyong ginawa.
-
-Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong pagba-browse sa iyong employer, iyong internet service provider o sa mga binibisita mong website.</translation>
 <translation id="572328651809341494">Mga kamakailang tab</translation>
 <translation id="5726692708398506830">Palakihin ang lahat ng nasa page</translation>
 <translation id="5734520971562437809">Makatipid ng hanggang 60 porsyentong data at pabilisin ang web.</translation>

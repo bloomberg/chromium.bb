@@ -6,7 +6,6 @@
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
 <translation id="1049743911850919806">Incògnit</translation>
-<translation id="1054301162707478098">Has passat al mode privat.</translation>
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1067922213147265141">Altres serveis de Google</translation>
 <translation id="1068672505746868501">No tradueixis mai les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
@@ -37,9 +36,6 @@
 <translation id="124116460088058876">Més idiomes</translation>
 <translation id="124678866338384709">Tanca la pestanya actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1259100630977430756">Les pàgines que visualitzes a les pestanyes privades no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanquis totes les pestanyes privades. Tots els fitxers que baixis o les adreces d'interès que creïs es conservaran.
-
-Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet i els llocs web que visitis poden veure la teva navegació privada.</translation>
 <translation id="1260236875608242557">Fes cerques i explora contingut</translation>
 <translation id="1264974993859112054">Esports</translation>
 <translation id="1272079795634619415">Atura</translation>
@@ -474,7 +470,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4565377596337484307">Oculta la contrasenya</translation>
 <translation id="4570913071927164677">Detalls</translation>
 <translation id="4572422548854449519">Inicia la sessió al compte gestionat</translation>
-<translation id="4581964774250883625">Has passat al mode d'incògnit.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{fa # minut}other{fa # minuts}}</translation>
 <translation id="4587589328781138893">Llocs</translation>
 <translation id="4594952190837476234">Aquesta pàgina sense connexió és del dia <ph name="CREATION_TIME" /> i pot ser diferent de la versió en línia.</translation>
@@ -632,9 +627,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5686790454216892815">El nom del fitxer és massa llarg</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="569536719314091526">Tradueix aquesta pàgina a qualsevol idioma des del botó Més opcions</translation>
-<translation id="5719837394786370183">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanqueu totes les pestanyes d'incògnit. Tots els fitxers que baixeu o les adreces d'interès que creeu es conservaran.
-
-Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="572328651809341494">Pestanyes recents</translation>
 <translation id="5726692708398506830">Augmenta la mida de tots els elements de la pàgina</translation>
 <translation id="5734520971562437809">Utilitza fins a un 60 per cent menys de dades i navega més de pressa.</translation>

@@ -1403,7 +1403,6 @@
 <translation id="3101709781009526431">ದಿನಾಂಕ  ಮತ್ತು  ಸಮಯ</translation>
 <translation id="3104763887980088552">ಚಟುವಟಿಕೆ ಲಾಗ್</translation>
 <translation id="310671807099593501">ಸೈಟ್‌ ಬ್ಲೂಟೂತ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
-<translation id="3115128645424181617">ನಿಮ್ಮ ಫೋನ್‌ ಹುಡುಕಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅದು ಸುಲಭವಾಗಿ ಲಭ್ಯವಿರುತ್ತದೆಯೇ ಮತ್ತು ಬ್ಲೂಟೂತ್‌ ಆನ್‌ ಮಾಡಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಕೊಳ್ಳಿ.</translation>
 <translation id="3115147772012638511">ಕ್ಯಾಶ್‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸುತ್ತಿದೆ...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> ಸಹಾಯ</translation>
 <translation id="3120430004221004537">ನೀಡಿರುವ ಕಾರ್ಯಾಚರಣೆಗೆ ಈ ಸಾಧನದಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಸಾಕಷ್ಟಿಲ್ಲ: "<ph name="DEVICE_NAME" />".</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">ಜೋಡಿಯಾಗಿರದ ಸಾಧನಗಳು</translation>
 <translation id="4482194545587547824">ಶೋಧ ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು</translation>
 <translation id="4495419450179050807">ಈ ಪುಟದಲ್ಲಿ ತೋರಿಸಬೇಡ</translation>
-<translation id="449938344715680828">ನಿರ್ಗಮಿಸಲು, |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ಒತ್ತಿರಿ, ನಂತರ |<ph name="ACCELERATOR3" />| ಒತ್ತಿರಿ</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ</translation>
 <translation id="450099669180426158">ಆಶ್ಚರ್ಯಕರ ಚಿಹ್ನೆಯ ಐಕಾನ್</translation>
 <translation id="4501530680793980440">ತೆಗೆದುಹಾಕುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ</translation>
@@ -2619,7 +2617,6 @@
 <translation id="4977942889532008999">ಪ್ರವೇಶ ದೃಢೀಕರಿಸಿ</translation>
 <translation id="4980805016576257426">ಈ ವಿಸ್ತರಣೆಯು ಮಾಲ್‌‌ವೇರ್ ಅನ್ನು ಹೊಂದಿದೆ.</translation>
 <translation id="4981449534399733132">ಸಿಂಕ್ ಮಾಡಿರುವ ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳು ಮತ್ತು ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲು, <ph name="BEGIN_LINK" />ಸೈನ್ ಇನ್<ph name="END_LINK" /> ಮಾಡಿ.</translation>
-<translation id="498294082491145744">ಕುಕೀಗಳು, JavaScript, ಪ್ಲಗ್ಇನ್‌ಗಳು, ಜಿಯೊಲೊಕೇಶನ್, ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮರಾ ಇತ್ಯಾದಿಗಳಂತಹ ವೈಶಿಷ್ಟ್ಯಗಳಿಗೆ ವೆಬ್‌‌ಸೈಟ್‌ಗಳ ಪ್ರವೇಶವನ್ನು ನಿಯಂತ್ರಿಸುವ ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ.</translation>
 <translation id="4988205478593450158">ನೀವು ಖಂಡಿತವಾಗಿಯೂ "<ph name="FILE_NAME" />" ಅನ್ನು ಅಳಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="4988526792673242964">ಪುಟಗಳು</translation>
 <translation id="49896407730300355">ಅಪ್ರ&amp;ದಕ್ಷಿಣೆಯಂತೆ ತಿರುಗಿಸಿ</translation>

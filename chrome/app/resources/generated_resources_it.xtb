@@ -1405,7 +1405,6 @@
 <translation id="3101709781009526431">Data e ora</translation>
 <translation id="3104763887980088552">Log attività</translation>
 <translation id="310671807099593501">Il sito sta usando il Bluetooth</translation>
-<translation id="3115128645424181617">Impossibile trovare il telefono. Assicurati che sia a portata di mano e che il Bluetooth sia attivo.</translation>
 <translation id="3115147772012638511">In attesa di elaborazione cache...</translation>
 <translation id="3118319026408854581">Guida di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Crittografia insufficiente per un'operazione specifica su: "<ph name="DEVICE_NAME" />".</translation>
@@ -2297,7 +2296,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4481530544597605423">Dispositivi disaccoppiati</translation>
 <translation id="4482194545587547824">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca e altri servizi Google</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
-<translation id="449938344715680828">Premi |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| seguito da |<ph name="ACCELERATOR3" />| per uscire</translation>
 <translation id="4500114933761911433">Arresto anomalo di <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Icona punto esclamativo</translation>
 <translation id="4501530680793980440">Conferma rimozione</translation>
@@ -2618,7 +2616,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4977942889532008999">Conferma accesso</translation>
 <translation id="4980805016576257426">Questa estensione contiene malware.</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />Accedi<ph name="END_LINK" /> per cancellare i dati di navigazione da tutti i dispositivi sincronizzati e dal tuo Account Google.</translation>
-<translation id="498294082491145744">Modifica delle impostazioni che controllano l'accesso dei siti web a funzioni quali cookie, JavaScript, plug-in, geolocalizzazione, microfono, videocamera ecc.</translation>
 <translation id="4988205478593450158">Vuoi eliminare "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Pagine</translation>
 <translation id="49896407730300355">Ruota in senso anti&amp;orario</translation>

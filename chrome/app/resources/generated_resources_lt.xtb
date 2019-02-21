@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Data ir laikas</translation>
 <translation id="3104763887980088552">Veiklos žurnalas</translation>
 <translation id="310671807099593501">Svetainė naudoja „Bluetooth“</translation>
-<translation id="3115128645424181617">Nepavyksta rasti jūsų telefono. Įsitikinkite, kad jis netoliese ir įjungėte „Bluetooth“.</translation>
 <translation id="3115147772012638511">Laukiama talpyklos...</translation>
 <translation id="3118319026408854581">„<ph name="PRODUCT_NAME" />“ pagalba</translation>
 <translation id="3120430004221004537">Nepakankama nurodytos operacijos šifruotė įrenginyje „<ph name="DEVICE_NAME" />“.</translation>
@@ -2301,7 +2300,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4481530544597605423">Atsieti įrenginiai</translation>
 <translation id="4482194545587547824">„Google“ gali naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką ir kitas „Google“ paslaugas</translation>
 <translation id="4495419450179050807">Nerodyti šiame puslapyje</translation>
-<translation id="449938344715680828">Paspauskite |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| ir |<ph name="ACCELERATOR3" />|, kad išeitumėte</translation>
 <translation id="4500114933761911433">Papildinys „<ph name="PLUGIN_NAME" />“ užstrigo</translation>
 <translation id="450099669180426158">Šauktuko piktograma</translation>
 <translation id="4501530680793980440">Patvirtinti pašalinimą</translation>
@@ -2622,7 +2620,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4977942889532008999">Patvirtinti prieigą</translation>
 <translation id="4980805016576257426">Šiame plėtinyje yra kenkėjiškų programų.</translation>
 <translation id="4981449534399733132">Norėdami išvalyti naršymo duomenis iš sinchronizuotų įrenginių ir „Google“ paskyros, <ph name="BEGIN_LINK" />prisijunkite<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Pakeisti nustatymus, pagal kuriuos tvarkoma svetainių prieiga prie funkcijų, pvz., slapukų, „JavaScript“, papildinių, geografinės vietovės, mikrofono, fotoaparato ir kt.</translation>
 <translation id="4988205478593450158">Ar tikrai norite ištrinti „<ph name="FILE_NAME" />“?</translation>
 <translation id="4988526792673242964">Psl.</translation>
 <translation id="49896407730300355">Sukti prieš l&amp;aikrodžio rodyklę</translation>

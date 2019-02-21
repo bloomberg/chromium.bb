@@ -1406,7 +1406,6 @@
 <translation id="3101709781009526431">Date and time</translation>
 <translation id="3104763887980088552">Activity log</translation>
 <translation id="310671807099593501">Site is using Bluetooth</translation>
-<translation id="3115128645424181617">Can’t find your phone. Make sure that it’s handy and Bluetooth is turned on.</translation>
 <translation id="3115147772012638511">Waiting for cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
 <translation id="3120430004221004537">Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME" />".</translation>
@@ -2300,7 +2299,6 @@
 <translation id="4481530544597605423">Unpaired devices</translation>
 <translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
-<translation id="449938344715680828">Press |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| followed by |<ph name="ACCELERATOR3" />| to exit</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> has crashed</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
 <translation id="4501530680793980440">Confirm Removal</translation>
@@ -2621,7 +2619,6 @@
 <translation id="4977942889532008999">Confirm Access</translation>
 <translation id="4980805016576257426">This extension contains malware.</translation>
 <translation id="4981449534399733132">To clear browsing data from all of your synced devices and your Google Account, <ph name="BEGIN_LINK" />sign in<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Change your settings that control websites' access to features such as cookies, JavaScript, plug-ins, geo-location, microphone, camera etc.</translation>
 <translation id="4988205478593450158">Are you sure that you want to delete '<ph name="FILE_NAME" />'?</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="49896407730300355">Rotate a&amp;nti-clockwise</translation>

@@ -1408,7 +1408,6 @@
 <translation id="3101709781009526431">Dátum és idő</translation>
 <translation id="3104763887980088552">Tevékenységnapló</translation>
 <translation id="310671807099593501">A webhely Bluetooth-t használ</translation>
-<translation id="3115128645424181617">A telefon nem található. Győződjön meg arról, hogy kéznél van, és hogy a Bluetooth be van kapcsolva.</translation>
 <translation id="3115147772012638511">Betöltés a gyorsítótárból folyamatban...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Súgó</translation>
 <translation id="3120430004221004537">Elégtelen titkosítás egy adott művelet esetében a következőn: „<ph name="DEVICE_NAME" />”.</translation>
@@ -2301,7 +2300,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4481530544597605423">Párosítatlan eszközök</translation>
 <translation id="4482194545587547824">A Google felhasználhatja a böngészési előzményeket a Keresés és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="4495419450179050807">Ne jelenjen meg ezen az oldalon</translation>
-<translation id="449938344715680828">A kilépéshez nyomja meg a következőket: |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, majd |<ph name="ACCELERATOR3" />|</translation>
 <translation id="4500114933761911433">A(z) <ph name="PLUGIN_NAME" /> összeomlott</translation>
 <translation id="450099669180426158">Felkiáltójel ikon</translation>
 <translation id="4501530680793980440">Eltávolítás megerősítése</translation>
@@ -2622,7 +2620,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4977942889532008999">Hozzáférés megerősítése</translation>
 <translation id="4980805016576257426">Ez a bővítmény rosszindulatú programot tartalmaz.</translation>
 <translation id="4981449534399733132">Ha az összes szinkronizált eszközéről és a Google-fiókjából is törölni szeretné böngészési adatait, <ph name="BEGIN_LINK" />jelentkezzen be<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">A weboldalak cookie-khoz, JavaScripthez, beépülő modulokhoz, tartózkodási helyhez, mikrofonhoz, kamerához stb. való hozzáférését vezérlő beállítások módosítása.</translation>
 <translation id="4988205478593450158">Biztosan törli a(z) „<ph name="FILE_NAME" />” fájlt?</translation>
 <translation id="4988526792673242964">Oldal</translation>
 <translation id="49896407730300355">Forgatás &amp;balra</translation>

@@ -1403,7 +1403,6 @@
 <translation id="3101709781009526431">Датум и време</translation>
 <translation id="3104763887980088552">Евиденција активности</translation>
 <translation id="310671807099593501">Сајт користи Bluetooth</translation>
-<translation id="3115128645424181617">Не можемо да пронађемо телефон. Проверите да ли је у близини и да ли је Bluetooth укључен.</translation>
 <translation id="3115147772012638511">Чека се кеш меморија...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> – помоћ</translation>
 <translation id="3120430004221004537">Недовољно шифровање за дату операцију на: „<ph name="DEVICE_NAME" />“.</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">Уређаји чије је упаривање опозвано</translation>
 <translation id="4482194545587547824">Google може да користи историју прегледања за персонализацију Претраге и других Google услуга</translation>
 <translation id="4495419450179050807">Не приказуј на овој страници</translation>
-<translation id="449938344715680828">Прво притисните |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, па |<ph name="ACCELERATOR3" />| да бисте изашли</translation>
 <translation id="4500114933761911433">Додатна компонента <ph name="PLUGIN_NAME" /> је отказала</translation>
 <translation id="450099669180426158">Икона узвичника</translation>
 <translation id="4501530680793980440">Потврда уклањања</translation>
@@ -2618,7 +2616,6 @@
 <translation id="4977942889532008999">Потврдите приступ</translation>
 <translation id="4980805016576257426">Овај додатак садржи малвер.</translation>
 <translation id="4981449534399733132">Да бисте обрисали податке прегледања са свих синхронизованих уређаја и са Google налога, <ph name="BEGIN_LINK" />пријавите се<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Промените подешавања која контролишу приступ веб-сајтова функцијама попут колачића, JavaScript-а, додатних компонената, географске локације, микрофона, камере итд.</translation>
 <translation id="4988205478593450158">Желите ли стварно да избришете „<ph name="FILE_NAME" />“?</translation>
 <translation id="4988526792673242964">Странице</translation>
 <translation id="49896407730300355">Окрећи у с&amp;меру супротном од кретања казаљке на сату</translation>

@@ -1405,7 +1405,6 @@
 <translation id="3101709781009526431">Dato og klokkeslæt</translation>
 <translation id="3104763887980088552">Aktivitetshistorik</translation>
 <translation id="310671807099593501">Websitet anvender Bluetooth</translation>
-<translation id="3115128645424181617">Din telefon blev ikke fundet. Sørg for, at den er ved hånden, og at Bluetooth er slået til.</translation>
 <translation id="3115147772012638511">Venter på cache...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Hjælp</translation>
 <translation id="3120430004221004537">Utilstrækkelig kryptering til en angivet handling på: "<ph name="DEVICE_NAME" />".</translation>
@@ -2299,7 +2298,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4481530544597605423">Ikke-parrede enheder</translation>
 <translation id="4482194545587547824">Google bruger muligvis din browserhistorik til at personliggøre Søgning og andre Google-tjenester</translation>
 <translation id="4495419450179050807">Vis ikke på denne side</translation>
-<translation id="449938344715680828">Tryk på |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| efterfulgt af |<ph name="ACCELERATOR3" />| for at afslutte</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> er gået ned</translation>
 <translation id="450099669180426158">Ikon for udråbstegn</translation>
 <translation id="4501530680793980440">Bekræft fjernelse</translation>
@@ -2620,7 +2618,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4977942889532008999">Bekræft adgang</translation>
 <translation id="4980805016576257426">Denne udvidelse indeholder malware.</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />Log ind<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
-<translation id="498294082491145744">Skift de indstillinger, der kontrollerer websites' adgang til funktioner, som f.eks. cookies, JavaScript, plugins, geoplacering, mikrofon, kamera osv.</translation>
 <translation id="4988205478593450158">Er du sikker på, at du vil slette "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Sider</translation>
 <translation id="49896407730300355">Roter m&amp;od uret</translation>

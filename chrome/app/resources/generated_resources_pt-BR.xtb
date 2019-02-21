@@ -1407,7 +1407,6 @@
 <translation id="3101709781009526431">Data e hora</translation>
 <translation id="3104763887980088552">Registro de atividades</translation>
 <translation id="310671807099593501">O site está usando o Bluetooth</translation>
-<translation id="3115128645424181617">Não foi possível encontrar seu smartphone. Certifique-se de que ele esteja acessível e com o Bluetooth ativado.</translation>
 <translation id="3115147772012638511">Aguardando o cache...</translation>
 <translation id="3118319026408854581">Ajuda do <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Criptografia insuficiente para uma determinada operação em "<ph name="DEVICE_NAME" />".</translation>
@@ -2301,7 +2300,6 @@
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
 <translation id="4482194545587547824">O Google pode usar seu histórico de navegação para personalizar a Pesquisa e outros serviços Google</translation>
 <translation id="4495419450179050807">Não mostrar esta página</translation>
-<translation id="449938344715680828">Pressione |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| seguido de |<ph name="ACCELERATOR3" />| para sair</translation>
 <translation id="4500114933761911433">O plug-in <ph name="PLUGIN_NAME" /> falhou</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar remoção</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém malware.</translation>
 <translation id="4981449534399733132">Para limpar os dados de navegação de todos os dispositivos sincronizados e da sua Conta do Google, <ph name="BEGIN_LINK" />faça login<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">Alterar configurações que controlam o acesso dos websites a recursos como cookies, JavaScript, plug-ins, geolocalização, microfone, câmera etc.</translation>
 <translation id="4988205478593450158">Tem certeza de que quer excluir "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar no s&amp;entido anti-horário</translation>

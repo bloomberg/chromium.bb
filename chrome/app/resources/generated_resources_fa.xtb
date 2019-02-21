@@ -1403,7 +1403,6 @@
 <translation id="3101709781009526431">تاریخ و ساعت</translation>
 <translation id="3104763887980088552">گزارش فعالیت</translation>
 <translation id="310671807099593501">سایت درحال استفاده از بلوتوث شما است</translation>
-<translation id="3115128645424181617">تلفنتان پیدا نمی‌شود. مطمئن شوید در دسترس است و بلوتوث روشن است.</translation>
 <translation id="3115147772012638511">منتظر حافظهٔ پنهان...</translation>
 <translation id="3118319026408854581">راهنمای <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">رمزگذاری برای عملیات موردنظر در این دستگاه کافی نیست: «<ph name="DEVICE_NAME" />».</translation>
@@ -2297,7 +2296,6 @@
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
 <translation id="4482194545587547824">‏Google ممکن است از سابقه مرورتان برای شخصی‌سازی جستجو و سایر سرویس‌های Google استفاده کند.</translation>
 <translation id="4495419450179050807">در این صفحه نشان داده نشود</translation>
-<translation id="449938344715680828">برای خروج، |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| و پس از آن |<ph name="ACCELERATOR3" />| را فشار دهید</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> خراب شده است</translation>
 <translation id="450099669180426158">نماد علامت تعجب</translation>
 <translation id="4501530680793980440">تأیید حذف</translation>
@@ -2618,7 +2616,6 @@
 <translation id="4977942889532008999">تأیید دسترسی</translation>
 <translation id="4980805016576257426">این افزونه بدافزار دارد.</translation>
 <translation id="4981449534399733132">‏برای اینکه داده‌های محصول مرور را از همه دستگاه‌های همگام‌سازی‌شده و حساب Google خود پاک کنید، <ph name="BEGIN_LINK" />به سیستم وارد شوید<ph name="END_LINK" />.</translation>
-<translation id="498294082491145744">تغییر تنظیمات که دسترسی وب‌سایت‌ها به قابلیت‌هایی مثل کوکی‌ها، جاوا اسکرپیت، افزایه‌ها، موقعیت جغرافیایی، میکروفن، دوربین و غیره را کنترل می‌کنند.</translation>
 <translation id="4988205478593450158">آیا مطمئنید می‌خواهید «<ph name="FILE_NAME" />» را حذف کنید؟</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="49896407730300355">چرخاندن خلاف جهت ع&amp;قربه‌های ساعت</translation>
