@@ -1236,6 +1236,10 @@ const char kMessageCenterNewStyleNotificationName[] = "New style notification";
 const char kMessageCenterNewStyleNotificationDescription[] =
     "Enables the experiment style of material-design notification";
 
+const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
+const char kMobileIdentityConsistencyDescription[] =
+    "Enables stronger identity consistency on mobile";
+
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";
 const char kNewAudioRenderingMixingStrategyDescription[] =

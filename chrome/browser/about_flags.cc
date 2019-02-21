@@ -4202,6 +4202,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kManualPasswordGenerationAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kManualPasswordGenerationAndroid)},
+    {"mobile-identity-consistency",
+     flag_descriptions::kMobileIdentityConsistencyName,
+     flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(signin::kMiceFeature)},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-show-full-disclosure-label",

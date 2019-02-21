@@ -120,7 +120,8 @@ bool RevokeAllSecondaryTokens(
 }
 
 // Returns true if current array of existing accounts in cookie is different
-// from the desired one.
+// from the desired one. If this returns false, the multilogin call would be a
+// no-op.
 bool AccountsNeedUpdate(
     const signin::MultiloginParameters& parameters,
     const std::vector<gaia::ListedAccount>& existing_accounts) {
@@ -949,5 +950,10 @@ bool AccountReconcilor::IsMultiloginEndpointEnabled() const {
   if (!is_wkhttp_system_cookie_store_enabled_)
     return false;
 #endif  // defined(OS_IOS)
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(signin::kMiceFeature))
+    return true;  // Mice is only implemented with multilogin.
+#endif
   return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
 }
