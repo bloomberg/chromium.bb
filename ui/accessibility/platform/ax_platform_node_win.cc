@@ -357,6 +357,9 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::vector<int32_t> id_list = GetIntListAttribute(attribute);
+  base::EraseIf(id_list, [&](int32_t node_id) {
+    return !GetDelegate()->GetFromNodeID(node_id);
+  });
   SAFEARRAY* propertyvalue = CreateUIAElementsArrayFromIdVector(id_list);
   return propertyvalue;
 }
@@ -3533,13 +3536,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_DescribedByPropertyId:
-      result->vt = VT_ARRAY;
+      result->vt = VT_ARRAY | VT_UNKNOWN;
       relation_attribute = ax::mojom::IntListAttribute::kDescribedbyIds;
       result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
       break;
 
     case UIA_FlowsToPropertyId:
-      result->vt = VT_ARRAY;
+      result->vt = VT_ARRAY | VT_UNKNOWN;
       relation_attribute = ax::mojom::IntListAttribute::kFlowtoIds;
       result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
       break;
@@ -3553,6 +3556,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       result->boolVal = (delegate_->GetFocus() == GetNativeViewAccessible())
                             ? VARIANT_TRUE
                             : VARIANT_FALSE;
+      break;
+
+    case UIA_FullDescriptionPropertyId:
+      result->vt = VT_BSTR;
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kDescription,
+                               &result->bstrVal);
       break;
 
     case UIA_IsContentElementPropertyId:
@@ -3598,6 +3607,15 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId:
+      if (HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
+                                 &V_BSTR(result));
+      }
+      // If a role description has not been provided, leave as VT_EMPTY.
+      // UIA core handles Localized Control type for some built-in types and
+      // also has a mapping for ARIA roles. To get these defaults, we need to
+      // have returned VT_EMPTY.
       break;
 
     case UIA_NamePropertyId:
@@ -3627,19 +3645,97 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
+    case UIA_IsEnabledPropertyId:
+      result->vt = VT_BOOL;
+      switch (data.GetRestriction()) {
+        case ax::mojom::Restriction::kReadOnly:
+        case ax::mojom::Restriction::kDisabled:
+          result->boolVal = VARIANT_FALSE;
+          break;
+
+        case ax::mojom::Restriction::kNone:
+          result->boolVal = VARIANT_TRUE;
+          break;
+      }
+      break;
+
+    case UIA_IsPasswordPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = data.HasState(ax::mojom::State::kProtected)
+                            ? VARIANT_TRUE
+                            : VARIANT_FALSE;
+      break;
+
+    case UIA_AcceleratorKeyPropertyId:
+      if (HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
+        result->vt = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kKeyShortcuts,
+                                 &result->bstrVal);
+      }
+      break;
+
+    case UIA_AccessKeyPropertyId:
+      if (HasStringAttribute(ax::mojom::StringAttribute::kAccessKey)) {
+        result->vt = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kAccessKey,
+                                 &result->bstrVal);
+      }
+      break;
+
+    case UIA_IsPeripheralPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = VARIANT_FALSE;
+      break;
+
+    case UIA_LevelPropertyId:
+      if (HasIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel)) {
+        result->vt = VT_I4;
+        result->intVal =
+            GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+      }
+      break;
+
+    case UIA_LiveSettingPropertyId:
+      result->vt = VT_I4;
+      result->intVal = LiveSetting::Off;
+      if (HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus)) {
+        std::string live =
+            GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus);
+        if (live == "polite")
+          result->intVal = LiveSetting::Polite;
+        else if (live == "assertive")
+          result->intVal = LiveSetting::Assertive;
+      }
+      break;
+
+    case UIA_OptimizeForVisualContentPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = VARIANT_FALSE;
+      break;
+
+    case UIA_PositionInSetPropertyId:
+      if (GetDelegate()->IsOrderedSetItem()) {
+        result->vt = VT_I4;
+        result->intVal = GetDelegate()->GetPosInSet();
+      }
+      break;
+
+    case UIA_SizeOfSetPropertyId:
+      if (HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
+        result->vt = VT_I4;
+        result->intVal = GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+      }
+      break;
+
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
     case UIA_HelpTextPropertyId:
-    case UIA_IsEnabledPropertyId:
     case UIA_IsOffscreenPropertyId:
-    case UIA_IsPasswordPropertyId:
     case UIA_NativeWindowHandlePropertyId:
     case UIA_ProcessIdPropertyId:
       break;
 
     // Overlap with MSAA, not supported.
-    case UIA_AcceleratorKeyPropertyId:
-    case UIA_AccessKeyPropertyId:
     case UIA_AnnotationObjectsPropertyId:
     case UIA_AnnotationTypesPropertyId:
     case UIA_CenterPointPropertyId:
@@ -3647,24 +3743,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_FillColorPropertyId:
     case UIA_FillTypePropertyId:
     case UIA_FlowsFromPropertyId:
-    case UIA_FullDescriptionPropertyId:
     case UIA_GroupControlTypeId:
     case UIA_HeadingLevelPropertyId:
-    case UIA_IsPeripheralPropertyId:
     case UIA_LandmarkTypePropertyId:
-    case UIA_LevelPropertyId:
-    case UIA_LiveSettingPropertyId:
     case UIA_LocalizedLandmarkTypePropertyId:
     case UIA_MenuControlTypeId:
-    case UIA_OptimizeForVisualContentPropertyId:
     case UIA_OutlineColorPropertyId:
     case UIA_OutlineThicknessPropertyId:
     case UIA_PaneControlTypeId:
-    case UIA_PositionInSetPropertyId:
     case UIA_ProviderDescriptionPropertyId:
     case UIA_RotationPropertyId:
     case UIA_RuntimeIdPropertyId:
-    case UIA_SizeOfSetPropertyId:
     case UIA_SizePropertyId:
     case UIA_ToolBarControlTypeId:
     case UIA_ToolTipControlTypeId:
