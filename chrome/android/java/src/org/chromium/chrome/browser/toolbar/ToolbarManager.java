@@ -1691,7 +1691,6 @@ public class ToolbarManager
             if (previousTab != tab) {
                 if (previousTab != null) {
                     previousTab.removeObserver(mTabObserver);
-                    previousTab.setIsAllowedToReturnToExternalApp(false);
                 }
                 if (tab != null) tab.addObserver(mTabObserver);
             }

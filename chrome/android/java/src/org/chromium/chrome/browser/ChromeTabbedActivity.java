@@ -739,8 +739,6 @@ public class ChromeTabbedActivity
     public void onStopWithNative() {
         super.onStopWithNative();
 
-        if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
-
         mTabModelSelectorImpl.saveState();
         mActivityStopMetrics.onStopWithNative(this);
 
@@ -1363,21 +1361,8 @@ public class ChromeTabbedActivity
          */
         private void openNewTab(String url, String referer, String headers,
                 String externalAppId, Intent intent, boolean forceNewTab) {
-            boolean isAllowedToReturnToExternalApp = IntentUtils.safeGetBooleanExtra(
-                    intent, LaunchIntentDispatcher.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
-
             // Create a new tab.
-            Tab newTab =
-                    launchIntent(url, referer, headers, externalAppId, forceNewTab, intent);
-            if (newTab != null) {
-                newTab.setIsAllowedToReturnToExternalApp(isAllowedToReturnToExternalApp);
-            } else {
-                // TODO(twellington): This should only happen for NTPs created in Chrome Home.  See
-                //                    if we should be caching setIsAllowedToReturnToExternalApp
-                //                    in those cases.
-                assert NewTabPage.isNTPUrl(url);
-                assert getBottomSheet() != null;
-            }
+            launchIntent(url, referer, headers, externalAppId, forceNewTab, intent);
             logMobileReceivedExternalIntent(externalAppId, intent);
         }
 
