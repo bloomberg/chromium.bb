@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -137,7 +138,8 @@ class FilteringNetworkManagerTest : public testing::Test,
     if (multiple_routes_requested) {
       FilteringNetworkManager* filtering_network_manager =
           new FilteringNetworkManager(mock_network_manager_.get(), GURL(),
-                                      media_permission_.get());
+                                      media_permission_.get(),
+                                      base::DoNothing());
       filtering_network_manager->Initialize();
       network_manager_.reset(filtering_network_manager);
     } else {
