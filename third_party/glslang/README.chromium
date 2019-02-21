@@ -1,6 +1,6 @@
-Name: Google fork of Khronos reference front-end for GLSL and ESSL
+Name: Khronos reference front-end for GLSL and ESSL
 Short Name: glslang
-URL: https://github.com/google/glslang
+URL: https://github.com/KhronosGroup/glslang
 Version: Unknown
 Security Critical: yes
 License: MIT
