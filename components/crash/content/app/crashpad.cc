@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -169,6 +170,9 @@ void InitializeCrashpadImpl(bool initial_client,
 #elif defined(OS_WIN)
   pid_key.Set(base::NumberToString(::GetCurrentProcessId()));
 #endif
+
+  static crashpad::StringAnnotation<24> osarch_key("osarch");
+  osarch_key.Set(base::SysInfo::OperatingSystemArchitecture());
 
   logging::SetLogMessageHandler(LogMessageHandler);
 
