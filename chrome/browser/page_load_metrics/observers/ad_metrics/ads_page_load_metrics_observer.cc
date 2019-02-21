@@ -18,10 +18,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/download/download_stats.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -110,10 +112,6 @@ AdsPageLoadMetricsObserver::OnStart(
   if (observer_manager)
     subresource_observer_.Add(observer_manager);
   web_contents_ = navigation_handle->GetWebContents();
-  main_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
-  aggregate_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
   return CONTINUE_OBSERVING;
 }
 
@@ -124,10 +122,6 @@ AdsPageLoadMetricsObserver::OnCommit(
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;
-  aggregate_frame_data_->UpdateForNavigation(
-      navigation_handle->GetRenderFrameHost(), true /* frame_navigated */);
-  main_frame_data_->UpdateForNavigation(navigation_handle->GetRenderFrameHost(),
-                                        true /* frame_navigated */);
 
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] = nullptr;
@@ -344,7 +338,6 @@ void AdsPageLoadMetricsObserver::OnPageInteractive(
   if (timing.interactive_timing->interactive) {
     time_interactive_ =
         timing.navigation_start + *timing.interactive_timing->interactive;
-    page_ad_bytes_at_interactive_ = aggregate_frame_data_->ad_network_bytes();
   }
 }
 
@@ -431,9 +424,19 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   }
 
-  aggregate_frame_data_->ProcessResourceLoadInFrame(resource);
-  if (resource->is_main_frame_resource)
-    main_frame_data_->ProcessResourceLoadInFrame(resource);
+  bool is_same_origin_to_main_frame =
+      web_contents_->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
+          resource->origin);
+  // |delta_bytes| only includes bytes used by the network.
+  page_bytes_ += resource->delta_bytes;
+  page_network_bytes_ += resource->delta_bytes;
+  if (is_same_origin_to_main_frame)
+    page_same_origin_bytes_ += resource->delta_bytes;
+  if (resource->is_complete && resource->was_fetched_via_cache) {
+    page_bytes_ += resource->encoded_body_length;
+    if (is_same_origin_to_main_frame)
+      page_same_origin_bytes_ += resource->encoded_body_length;
+  }
 
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
@@ -450,16 +453,29 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
   }
 }
 
-void AdsPageLoadMetricsObserver::AdjustAdBytesForFrame(
-    FrameTreeNodeId frame_tree_node_id,
-    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
-    int64_t unaccounted_ad_bytes) {
-  const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
-  FrameData* ancestor_data = id_and_data->second;
-  if (!ancestor_data)
-    return;
-  ancestor_data->AdjustAdBytes(unaccounted_ad_bytes,
-                               FrameData::GetResourceMimeType(resource));
+AdsPageLoadMetricsObserver::ResourceMimeType
+AdsPageLoadMetricsObserver::GetResourceMimeType(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  if (blink::IsSupportedImageMimeType(resource->mime_type))
+    return ResourceMimeType::kImage;
+  if (blink::IsSupportedJavascriptMimeType(resource->mime_type))
+    return ResourceMimeType::kJavascript;
+
+  std::string top_level_type;
+  std::string subtype;
+  // Categorize invalid mime types as "Other".
+  if (!net::ParseMimeTypeWithoutParameter(resource->mime_type, &top_level_type,
+                                          &subtype)) {
+    return ResourceMimeType::kOther;
+  }
+  if (top_level_type.compare("video") == 0)
+    return ResourceMimeType::kVideo;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("css") == 0)
+    return ResourceMimeType::kCss;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("html") == 0)
+    return ResourceMimeType::kHtml;
+  else
+    return ResourceMimeType::kOther;
 }
 
 void AdsPageLoadMetricsObserver::UpdateResource(
@@ -467,6 +483,9 @@ void AdsPageLoadMetricsObserver::UpdateResource(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   ProcessResourceForFrame(frame_tree_node_id, resource);
   auto it = page_resources_.find(resource->request_id);
+  // A new resource has been observed.
+  if (it == page_resources_.end())
+    total_number_page_resources_++;
 
   if (resource->reported_as_ad_resource) {
     // If the resource had already started loading, and is now labeled as an ad,
@@ -476,8 +495,20 @@ void AdsPageLoadMetricsObserver::UpdateResource(
         (it != page_resources_.end()) && !it->second->reported_as_ad_resource;
     int unaccounted_ad_bytes =
         is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
-    if (unaccounted_ad_bytes)
-      AdjustAdBytesForFrame(frame_tree_node_id, resource, unaccounted_ad_bytes);
+    page_ad_resource_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (resource->is_main_frame_resource) {
+      page_main_frame_ad_resource_bytes_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+    if (!time_interactive_.is_null()) {
+      page_ad_resource_bytes_since_interactive_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+    ResourceMimeType mime_type = GetResourceMimeType(resource);
+    if (mime_type == ResourceMimeType::kVideo)
+      page_ad_video_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (mime_type == ResourceMimeType::kJavascript)
+      page_ad_javascript_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
   }
 
   // Update resource map.
@@ -503,7 +534,7 @@ void AdsPageLoadMetricsObserver::RecordResourceMimeHistograms(
   int64_t data_length = resource->was_fetched_via_cache
                             ? resource->encoded_body_length
                             : resource->received_data_length;
-  ResourceMimeType mime_type = FrameData::GetResourceMimeType(resource);
+  ResourceMimeType mime_type = GetResourceMimeType(resource);
   if (mime_type == ResourceMimeType::kImage) {
     RESOURCE_BYTES_HISTOGRAM("Mime.Image", resource->was_fetched_via_cache,
                              data_length);
@@ -552,10 +583,12 @@ void AdsPageLoadMetricsObserver::RecordResourceHistograms(
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
     ukm::SourceId source_id) {
   // Only records histograms on pages that have some ad bytes.
-  if (aggregate_frame_data_->ad_bytes() == 0)
+  if (page_ad_resource_bytes_ == 0)
     return;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
-                       aggregate_frame_data_->ad_bytes());
+                       page_ad_resource_bytes_);
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds",
+                       page_main_frame_ad_resource_bytes_);
   size_t unfinished_bytes = 0;
   for (auto const& kv : page_resources_)
     unfinished_bytes += kv.second->received_data_length;
@@ -564,30 +597,26 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdPageLoad builder(source_id);
-  builder.SetTotalBytes(aggregate_frame_data_->network_bytes() >> 10)
-      .SetAdBytes(aggregate_frame_data_->ad_network_bytes() >> 10)
-      .SetAdJavascriptBytes(
-          aggregate_frame_data_->ad_javascript_network_bytes() >> 10)
-      .SetAdVideoBytes(aggregate_frame_data_->ad_video_network_bytes() >> 10);
+  builder.SetTotalBytes(page_bytes_ >> 10)
+      .SetAdBytes(page_ad_resource_bytes_ >> 10)
+      .SetAdJavascriptBytes(page_ad_javascript_bytes_ >> 10)
+      .SetAdVideoBytes(page_ad_video_bytes_ >> 10);
   base::Time current_time = base::Time::Now();
   if (!time_commit_.is_null()) {
     int time_since_commit = (current_time - time_commit_).InMicroseconds();
     if (time_since_commit > 0) {
       int ad_kbps_from_commit =
-          (aggregate_frame_data_->ad_network_bytes() >> 10) * 1000 * 1000 /
-          time_since_commit;
+          (page_ad_resource_bytes_ >> 10) * 1000 * 1000 / time_since_commit;
       builder.SetAdBytesPerSecond(ad_kbps_from_commit);
     }
   }
   if (!time_interactive_.is_null()) {
     int time_since_interactive =
         (current_time - time_interactive_).InMicroseconds();
-    int64_t bytes_since_interactive =
-        aggregate_frame_data_->ad_network_bytes() -
-        page_ad_bytes_at_interactive_;
     if (time_since_interactive > 0) {
-      int ad_kbps_since_interactive = (bytes_since_interactive >> 10) * 1000 *
-                                      1000 / time_since_interactive;
+      int ad_kbps_since_interactive =
+          (page_ad_resource_bytes_since_interactive_ >> 10) * 1000 * 1000 /
+          time_since_interactive;
       builder.SetAdBytesPerSecondAfterInteractive(ad_kbps_since_interactive);
     }
   }
@@ -605,7 +634,7 @@ void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
 
 void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
     FrameData::FrameVisibility visibility) {
-  if (aggregate_frame_data_->bytes() == 0)
+  if (page_bytes_ == 0)
     return;
 
   int non_zero_ad_frames = 0;
@@ -613,7 +642,7 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
   size_t ad_frame_network_bytes = 0;
 
   for (const FrameData& ad_frame_data : ad_frames_data_storage_) {
-    if (ad_frame_data.bytes() == 0)
+    if (ad_frame_data.frame_bytes() == 0)
       continue;
 
     if (visibility != FrameData::FrameVisibility::kAnyVisibility &&
@@ -632,22 +661,23 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
                   ad_frame_data.size_intervention_status());
 
     non_zero_ad_frames += 1;
-    total_ad_frame_bytes += ad_frame_data.bytes();
-    ad_frame_network_bytes += ad_frame_data.network_bytes();
+    total_ad_frame_bytes += ad_frame_data.frame_bytes();
+    ad_frame_network_bytes += ad_frame_data.frame_network_bytes();
 
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
-                  visibility, ad_frame_data.bytes());
+                  visibility, ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
-                  visibility, ad_frame_data.network_bytes());
+                  visibility, ad_frame_data.frame_network_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.same_origin_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
                   UMA_HISTOGRAM_PERCENTAGE, visibility,
-                  ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
+                  ad_frame_data.frame_network_bytes() * 100 /
+                      ad_frame_data.frame_bytes());
     ADS_HISTOGRAM(
         "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
-        ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
+        ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.origin_status());
@@ -666,24 +696,33 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
     return;
 
   ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                visibility,
-                aggregate_frame_data_->bytes() - total_ad_frame_bytes);
+                visibility, page_bytes_ - total_ad_frame_bytes);
 
   ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->bytes());
+                page_bytes_);
   ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->network_bytes());
+                page_network_bytes_);
 
-  if (aggregate_frame_data_->bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
-                  total_ad_frame_bytes * 100 / aggregate_frame_data_->bytes());
+  // Only record same origin totals for the AnyVisibility suffix as these
+  // numbers do not change for different visibility types.
+  if (visibility == FrameData::FrameVisibility::kAnyVisibility) {
+    ADS_HISTOGRAM("Bytes.FullPage.SameOrigin", PAGE_BYTES_HISTOGRAM, visibility,
+                  page_same_origin_bytes_);
+    if (page_bytes_) {
+      ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin",
+                    UMA_HISTOGRAM_PERCENTAGE, visibility,
+                    page_same_origin_bytes_ * 100 / page_bytes_);
+    }
   }
-  if (aggregate_frame_data_->network_bytes()) {
-    ADS_HISTOGRAM(
-        "Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-        visibility,
-        ad_frame_network_bytes * 100 / aggregate_frame_data_->network_bytes());
+
+  if (page_bytes_) {
+    ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility, total_ad_frame_bytes * 100 / page_bytes_);
+  }
+  if (page_network_bytes_) {
+    ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  ad_frame_network_bytes * 100 / page_network_bytes_);
   }
 
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
@@ -696,27 +735,6 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
                   UMA_HISTOGRAM_PERCENTAGE, visibility,
                   ad_frame_network_bytes * 100 / total_ad_frame_bytes);
   }
-
-  // Only record same origin and main frame totals for the AnyVisibility suffix
-  // as these numbers do not change for different visibility types.
-  if (visibility != FrameData::FrameVisibility::kAnyVisibility)
-    return;
-  ADS_HISTOGRAM("Bytes.FullPage.SameOrigin", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->same_origin_bytes());
-  if (aggregate_frame_data_->bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
-                  aggregate_frame_data_->same_origin_bytes() * 100 /
-                      aggregate_frame_data_->bytes());
-  }
-  ADS_HISTOGRAM("Bytes.MainFrame.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->ad_network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->ad_bytes());
 }
 
 void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(

@@ -51,28 +51,11 @@ class FrameData {
     kMaxValue = kReceivedActivation,
   };
 
-  // High level categories of mime types for resources loaded by the frame.
-  enum class ResourceMimeType {
-    kJavascript = 0,
-    kVideo = 1,
-    kImage = 2,
-    kCss = 3,
-    kHtml = 4,
-    kOther = 5,
-    kMaxValue = kOther,
-  };
-
   // Maximum number of bytes allowed to be loaded by a frame.
   static const int kFrameSizeInterventionByteThreshold = 1050 * 1024;
 
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
-
-  // Get the mime type of a resource. This only returns a subset of mime types,
-  // grouped at a higher level. For example, all video mime types return the
-  // same value.
-  static ResourceMimeType GetResourceMimeType(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
   explicit FrameData(FrameTreeNodeId frame_tree_node_id);
   ~FrameData();
@@ -84,11 +67,6 @@ class FrameData {
   // Updates the number of bytes loaded in the frame given a resource load.
   void ProcessResourceLoadInFrame(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
-
-  // Adds additional bytes to the ad resource byte counts. This
-  // is used to notify the frame that some bytes were tagged as ad bytes after
-  // they were loaded.
-  void AdjustAdBytes(int64_t unaccounted_ad_bytes, ResourceMimeType mime_type);
 
   // Sets the size of the frame and updates its visibility state.
   void SetFrameSize(gfx::Size frame_size_);
@@ -106,21 +84,11 @@ class FrameData {
 
   OriginStatus origin_status() const { return origin_status_; }
 
-  size_t bytes() const { return bytes_; }
+  size_t frame_bytes() const { return frame_bytes_; }
 
-  size_t network_bytes() const { return network_bytes_; }
+  size_t frame_network_bytes() const { return frame_network_bytes_; }
 
   size_t same_origin_bytes() const { return same_origin_bytes_; }
-
-  size_t ad_bytes() const { return ad_bytes_; }
-
-  size_t ad_network_bytes() const { return ad_network_bytes_; }
-
-  size_t ad_video_network_bytes() const { return ad_video_network_bytes_; }
-
-  size_t ad_javascript_network_bytes() const {
-    return ad_javascript_network_bytes_;
-  }
 
   UserActivationStatus user_activation_status() const {
     return user_activation_status_;
@@ -140,20 +108,9 @@ class FrameData {
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
 
-  // Total bytes used to load resources in the frame, including headers.
-  size_t bytes_;
-  size_t network_bytes_;
-
-  // Tallies for bytes and counts observed in resource data updates for the
-  // frame.
-  size_t ad_javascript_network_bytes_ = 0u;
-  size_t ad_video_network_bytes_ = 0u;
-
-  // Tracks the number of bytes that were used to load resources which were
-  // detected to be ads inside of this frame. For ad frames, these counts should
-  // match |frame_bytes| and |frame_network_bytes|.
-  size_t ad_bytes_ = 0u;
-  size_t ad_network_bytes_ = 0u;
+  // Total bytes used to load resources on the page, including headers.
+  size_t frame_bytes_;
+  size_t frame_network_bytes_;
 
   // The number of bytes that are same origin to the root ad frame.
   size_t same_origin_bytes_;
