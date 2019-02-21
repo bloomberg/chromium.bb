@@ -236,7 +236,6 @@ class AccountReconcilorTest : public ::testing::Test {
     return &identity_test_env_;
   }
   TestSigninClient* test_signin_client() { return &test_signin_client_; }
-  AccountTrackerService* account_tracker() { return &account_tracker_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   MockAccountReconcilor* GetMockReconcilor();
@@ -413,13 +412,18 @@ AccountInfo AccountReconcilorTest::ConnectProfileToAccount(
 std::string AccountReconcilorTest::PickAccountIdForAccount(
     const std::string& gaia_id,
     const std::string& username) {
-  return account_tracker()->PickAccountIdForAccount(gaia_id, username);
+  return identity_test_env()->identity_manager()->LegacyPickAccountIdForAccount(
+      gaia_id, username);
 }
 
 std::string AccountReconcilorTest::SeedAccountInfo(
     const std::string& gaia_id,
     const std::string& username) {
-  return account_tracker()->SeedAccountInfo(gaia_id, username);
+  AccountInfo account_info;
+  account_info.gaia = gaia_id;
+  account_info.email = username;
+  return identity_test_env()->identity_manager()->LegacySeedAccountInfo(
+      account_info);
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
@@ -926,8 +930,8 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
     if (token.is_authenticated) {
       account_id = ConnectProfileToAccount(token.email).account_id;
     } else {
-      account_id = SeedAccountInfo(token.gaia_id, token.email);
-      identity_test_env()->SetRefreshTokenForAccount(account_id);
+      account_id =
+          identity_test_env()->MakeAccountAvailable(token.email).account_id;
     }
     if (token.has_error) {
       identity::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -1045,8 +1049,8 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
     if (token.is_authenticated) {
       account_id = ConnectProfileToAccount(token.email).account_id;
     } else {
-      account_id = SeedAccountInfo(token.gaia_id, token.email);
-      identity_test_env()->SetRefreshTokenForAccount(account_id);
+      account_id =
+          identity_test_env()->MakeAccountAvailable(token.email).account_id;
     }
     if (token.has_error) {
       identity::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -1746,8 +1750,8 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
     if (token.is_authenticated) {
       account_id = ConnectProfileToAccount(token.email).account_id;
     } else {
-      account_id = SeedAccountInfo(token.gaia_id, token.email);
-      identity_test_env()->SetRefreshTokenForAccount(account_id);
+      account_id =
+          identity_test_env()->MakeAccountAvailable(token.email).account_id;
     }
     if (token.has_error) {
       identity::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -2093,8 +2097,9 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
 // token service, will be considered the same as "dots@gmail.com" as returned
 // by gaia::ParseListAccountsData().
 TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileNoopWithDots) {
-  if (account_tracker()->GetMigrationState() !=
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
+  if (identity_test_env()->identity_manager()->GetAccountIdMigrationState() !=
+      identity::IdentityManager::AccountIdMigrationState::
+          MIGRATION_NOT_STARTED) {
     return;
   }
 
