@@ -167,8 +167,13 @@ class WebAppInstallManagerTest : public WebAppTest {
     data_retriever_->SetIcons(std::move(icons_map));
   }
 
-  AppId InstallWebApp() {
+  struct InstallResult {
     AppId app_id;
+    InstallResultCode code;
+  };
+
+  InstallResult InstallWebAppAndGetResults() {
+    InstallResult result;
     base::RunLoop run_loop;
     const bool force_shortcut_app = false;
     install_manager_->InstallWebApp(
@@ -177,12 +182,29 @@ class WebAppInstallManagerTest : public WebAppTest {
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
-              EXPECT_EQ(InstallResultCode::kSuccess, code);
-              app_id = installed_app_id;
+              result.app_id = installed_app_id;
+              result.code = code;
               run_loop.Quit();
             }));
     run_loop.Run();
-    return app_id;
+    return result;
+  }
+
+  AppId InstallWebApp() {
+    InstallResult result = InstallWebAppAndGetResults();
+    DCHECK_EQ(InstallResultCode::kSuccess, result.code);
+    return result.app_id;
+  }
+
+  void PrepareTestAppInstall() {
+    CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
+                          "Description");
+    CreateDefaultInstallableManager();
+
+    SetInstallFinalizerForTesting();
+
+    IconsMap icons_map;
+    SetIconsMapToRetrieve(std::move(icons_map));
   }
 
  protected:
@@ -583,6 +605,29 @@ TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
 
   WebApp* web_app = registrar_->GetAppById(app_id);
   EXPECT_EQ(nullptr, web_app);
+}
+
+TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
+  PrepareTestAppInstall();
+
+  InstallWebApp();
+
+  EXPECT_EQ(1, install_finalizer_->num_create_os_shortcuts_calls());
+  EXPECT_EQ(1, install_finalizer_->num_reparent_tab_num_calls());
+}
+
+TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
+  PrepareTestAppInstall();
+  install_finalizer_->SetNextFinalizeInstallResult(
+      AppId(), InstallResultCode::kFailedUnknownReason);
+
+  InstallResult result = InstallWebAppAndGetResults();
+
+  EXPECT_TRUE(result.app_id.empty());
+  EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
+
+  EXPECT_EQ(0, install_finalizer_->num_create_os_shortcuts_calls());
+  EXPECT_EQ(0, install_finalizer_->num_reparent_tab_num_calls());
 }
 
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc

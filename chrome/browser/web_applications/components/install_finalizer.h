@@ -12,6 +12,10 @@
 
 struct WebApplicationInfo;
 
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
 enum class InstallResultCode;
@@ -24,8 +28,14 @@ class InstallFinalizer {
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
 
-  virtual void FinalizeInstall(std::unique_ptr<WebApplicationInfo> web_app_info,
+  // Write the WebApp data to disk and register the app.
+  virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
                                InstallFinalizedCallback callback) = 0;
+
+  virtual void CreateOsShortcuts(const AppId& app_id) = 0;
+  virtual void ReparentTab(const WebApplicationInfo& web_app_info,
+                           const AppId& app_id,
+                           content::WebContents* web_contents) = 0;
 
   virtual ~InstallFinalizer() = default;
 };

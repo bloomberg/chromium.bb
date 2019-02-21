@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,11 +17,29 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/extension_set.h"
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace {
+
+LaunchType GetLaunchType(const WebApplicationInfo& web_app_info) {
+  return web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
+}
+
+const Extension* GetExtensionById(Profile* profile,
+                                  const web_app::AppId& app_id) {
+  const Extension* app =
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
+  DCHECK(app);
+  return app;
+}
+
+}  // namespace
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
     : profile_(profile) {}
@@ -28,11 +47,8 @@ BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
 BookmarkAppInstallFinalizer::~BookmarkAppInstallFinalizer() = default;
 
 void BookmarkAppInstallFinalizer::FinalizeInstall(
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
-  // Concurrent calls are not allowed.
-  DCHECK(!web_app_info_);
-
   if (!crx_installer_) {
     ExtensionService* extension_service =
         ExtensionSystem::Get(profile_)->extension_service();
@@ -40,13 +56,11 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
     crx_installer_ = CrxInstaller::CreateSilent(extension_service);
   }
 
-  web_app_info_ = std::move(web_app_info);
-
-  crx_installer_->set_installer_callback(
-      base::BindOnce(&BookmarkAppInstallFinalizer::OnExtensionInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     web_app_info_->app_url));
-  crx_installer_->InstallWebApp(*web_app_info_);
+  crx_installer_->set_installer_callback(base::BindOnce(
+      &BookmarkAppInstallFinalizer::OnExtensionInstalled,
+      weak_ptr_factory_.GetWeakPtr(),
+      std::make_unique<WebApplicationInfo>(web_app_info), std::move(callback)));
+  crx_installer_->InstallWebApp(web_app_info);
 }
 
 void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
@@ -55,35 +69,46 @@ void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
 }
 
 void BookmarkAppInstallFinalizer::OnExtensionInstalled(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     InstallFinalizedCallback callback,
-    const GURL& app_url,
     const base::Optional<CrxInstallError>& error) {
-  DCHECK(web_app_info_);
-
   if (error) {
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kFailedUnknownReason);
-  } else {
-    auto* extension = crx_installer_->extension();
-    DCHECK(extension);
-    DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), app_url);
-
-    LaunchType launch_type = web_app_info_->open_as_window
-                                 ? LAUNCH_TYPE_WINDOW
-                                 : LAUNCH_TYPE_REGULAR;
-
-    // Set the launcher type for the app.
-    SetLaunchType(profile_, extension->id(), launch_type);
-
-    // Set this app to be locally installed, as it was installed from this
-    // machine.
-    SetBookmarkAppIsLocallyInstalled(profile_, extension, true);
-
-    std::move(callback).Run(extension->id(),
-                            web_app::InstallResultCode::kSuccess);
+    return;
   }
 
-  web_app_info_ = nullptr;
+  auto* extension = crx_installer_->extension();
+  DCHECK(extension);
+  DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), web_app_info->app_url);
+
+  const LaunchType launch_type = GetLaunchType(*web_app_info);
+
+  // Set the launcher type for the app.
+  SetLaunchType(profile_, extension->id(), launch_type);
+
+  // Set this app to be locally installed, as it was installed from this
+  // machine.
+  SetBookmarkAppIsLocallyInstalled(profile_, extension, true);
+
+  std::move(callback).Run(extension->id(),
+                          web_app::InstallResultCode::kSuccess);
+}
+
+void BookmarkAppInstallFinalizer::CreateOsShortcuts(
+    const web_app::AppId& app_id) {
+  const Extension* app = GetExtensionById(profile_, app_id);
+  BookmarkAppCreateOsShortcuts(profile_, app);
+}
+
+void BookmarkAppInstallFinalizer::ReparentTab(
+    const WebApplicationInfo& web_app_info,
+    const web_app::AppId& app_id,
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  const Extension* app = GetExtensionById(profile_, app_id);
+  const LaunchType launch_type = GetLaunchType(web_app_info);
+  BookmarkAppReparentTab(profile_, web_contents, app, launch_type);
 }
 
 }  // namespace extensions

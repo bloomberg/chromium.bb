@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
 struct WebApplicationInfo;
@@ -20,15 +21,31 @@ class TestInstallFinalizer final : public InstallFinalizer {
   ~TestInstallFinalizer() override;
 
   // InstallFinalizer:
-  void FinalizeInstall(std::unique_ptr<WebApplicationInfo> web_app_info,
+  void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
+  void CreateOsShortcuts(const AppId& app_id) override;
+  void ReparentTab(const WebApplicationInfo& web_app_info,
+                   const AppId& app_id,
+                   content::WebContents* web_contents) override;
+
+  void SetNextFinalizeInstallResult(const AppId& app_id,
+                                    InstallResultCode code);
 
   std::unique_ptr<WebApplicationInfo> web_app_info() {
-    return std::move(web_app_info_);
+    return std::move(web_app_info_copy_);
   }
 
+  int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
+  int num_reparent_tab_num_calls() { return num_reparent_tab_num_calls_; }
+
  private:
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
+  std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
+
+  base::Optional<AppId> next_app_id_;
+  base::Optional<InstallResultCode> next_result_code_;
+
+  int num_create_os_shortcuts_calls_ = 0;
+  int num_reparent_tab_num_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestInstallFinalizer);
 };

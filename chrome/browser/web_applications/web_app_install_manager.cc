@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,7 +109,6 @@ void WebAppInstallManager::OnGetWebApplicationInfo(
     bool force_shortcut_app,
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If interrupted, install_callback_ is already invoked or may invoke later.
   if (InstallInterrupted())
     return;
 
@@ -127,7 +127,6 @@ void WebAppInstallManager::OnDidPerformInstallableCheck(
     bool force_shortcut_app,
     const blink::Manifest& manifest,
     bool is_installable) {
-  // If interrupted, install_callback_ is already invoked or may invoke later.
   if (InstallInterrupted())
     return;
 
@@ -162,7 +161,6 @@ void WebAppInstallManager::OnIconsRetrieved(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
     IconsMap icons_map) {
-  // If interrupted, install_callback_ is already invoked or may invoke later.
   if (InstallInterrupted())
     return;
 
@@ -184,31 +182,48 @@ void WebAppInstallManager::OnDialogCompleted(
     ForInstallableSite for_installable_site,
     bool user_accepted,
     std::unique_ptr<WebApplicationInfo> web_app_info) {
-  // If interrupted, install_callback_ is already invoked or may invoke later.
   if (InstallInterrupted())
     return;
 
   if (!user_accepted)
     return ReturnError(InstallResultCode::kUserInstallDeclined);
 
+  WebApplicationInfo web_app_info_copy = *web_app_info;
+
   install_finalizer_->FinalizeInstall(
-      std::move(web_app_info),
+      web_app_info_copy,
       base::BindOnce(&WebAppInstallManager::OnInstallFinalized,
-                     weak_ptr_factory_.GetWeakPtr(), for_installable_site));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info),
+                     for_installable_site));
 
   // Check that the finalizer hasn't called OnInstallFinalized synchronously:
   DCHECK(install_callback_);
+  DCHECK(install_source_ != kNoInstallSource);
+
+  // In BookmarkAppHelper this tracking happens right after
+  // crx_installer_->InstallWebApp call (not in FinishInstallation).
+  // TODO(loyso): Consider to shift this recording to OnInstallFinalized.
+  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
+      for_installable_site == ForInstallableSite::kYes) {
+    InstallableMetrics::TrackInstallEvent(install_source_);
+  }
 }
 
 void WebAppInstallManager::OnInstallFinalized(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
     const AppId& app_id,
     InstallResultCode code) {
-  DCHECK(install_source_ != kNoInstallSource);
+  if (InstallInterrupted())
+    return;
 
-  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
-      for_installable_site == web_app::ForInstallableSite::kYes) {
-    InstallableMetrics::TrackInstallEvent(install_source_);
+  if (code == InstallResultCode::kSuccess) {
+    RecordAppBanner(web_contents(), web_app_info->app_url);
+
+    // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
+    install_finalizer_->CreateOsShortcuts(app_id);
+    // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
+    install_finalizer_->ReparentTab(*web_app_info, app_id, web_contents());
   }
 
   CallInstallCallback(app_id, code);

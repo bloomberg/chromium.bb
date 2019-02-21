@@ -11,10 +11,13 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
-class GURL;
 class Profile;
 
 struct WebApplicationInfo;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 
@@ -30,17 +33,20 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   ~BookmarkAppInstallFinalizer() override;
 
   // InstallFinalizer:
-  void FinalizeInstall(std::unique_ptr<WebApplicationInfo> web_app_info,
+  void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
+  void CreateOsShortcuts(const web_app::AppId& app_id) override;
+  void ReparentTab(const WebApplicationInfo& web_app_info,
+                   const web_app::AppId& app_id,
+                   content::WebContents* web_contents) override;
 
   void SetCrxInstallerForTesting(scoped_refptr<CrxInstaller> crx_installer);
 
  private:
-  void OnExtensionInstalled(InstallFinalizedCallback callback,
-                            const GURL& app_url,
+  void OnExtensionInstalled(std::unique_ptr<WebApplicationInfo> web_app_info,
+                            InstallFinalizedCallback callback,
                             const base::Optional<CrxInstallError>& error);
 
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
   scoped_refptr<CrxInstaller> crx_installer_;
   Profile* profile_;
 

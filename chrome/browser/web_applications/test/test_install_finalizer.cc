@@ -19,15 +19,42 @@ TestInstallFinalizer::TestInstallFinalizer() {}
 TestInstallFinalizer::~TestInstallFinalizer() = default;
 
 void TestInstallFinalizer::FinalizeInstall(
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
-  const AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
+  AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
+  if (next_app_id_.has_value()) {
+    app_id = next_app_id_.value();
+    next_app_id_.reset();
+  }
 
-  web_app_info_ = std::move(web_app_info);
+  InstallResultCode code = InstallResultCode::kSuccess;
+  if (next_result_code_.has_value()) {
+    code = next_result_code_.value();
+    next_result_code_.reset();
+  }
+
+  // Store a copy for inspecting in tests.
+  web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), app_id, InstallResultCode::kSuccess));
+      FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+}
+
+void TestInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
+  ++num_create_os_shortcuts_calls_;
+}
+
+void TestInstallFinalizer::ReparentTab(const WebApplicationInfo& web_app_info,
+                                       const AppId& app_id,
+                                       content::WebContents* web_contents) {
+  ++num_reparent_tab_num_calls_;
+}
+
+void TestInstallFinalizer::SetNextFinalizeInstallResult(
+    const AppId& app_id,
+    InstallResultCode code) {
+  next_app_id_ = app_id;
+  next_result_code_ = code;
 }
 
 }  // namespace web_app

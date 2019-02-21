@@ -52,11 +52,11 @@ WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppRegistrar* registrar,
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
 void WebAppInstallFinalizer::FinalizeInstall(
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
+  AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   if (registrar_->GetAppById(app_id)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), app_id,
@@ -66,15 +66,15 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   auto web_app = std::make_unique<WebApp>(app_id);
 
-  web_app->SetName(base::UTF16ToUTF8(web_app_info->title));
-  web_app->SetDescription(base::UTF16ToUTF8(web_app_info->description));
-  web_app->SetLaunchUrl(web_app_info->app_url);
-  web_app->SetScope(web_app_info->scope);
-  web_app->SetThemeColor(web_app_info->theme_color);
-  SetIcons(*web_app_info, web_app.get());
+  web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
+  web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
+  web_app->SetLaunchUrl(web_app_info.app_url);
+  web_app->SetScope(web_app_info.scope);
+  web_app->SetThemeColor(web_app_info.theme_color);
+  SetIcons(web_app_info, web_app.get());
 
   icon_manager_->WriteData(
-      std::move(app_id), std::move(web_app_info),
+      std::move(app_id), std::make_unique<WebApplicationInfo>(web_app_info),
       base::BindOnce(&WebAppInstallFinalizer::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(web_app)));
@@ -94,6 +94,18 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
   registrar_->RegisterApp(std::move(web_app));
 
   std::move(callback).Run(std::move(app_id), InstallResultCode::kSuccess);
+}
+
+void WebAppInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
+void WebAppInstallFinalizer::ReparentTab(const WebApplicationInfo& web_app_info,
+                                         const AppId& app_id,
+                                         content::WebContents* web_contents) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace web_app
