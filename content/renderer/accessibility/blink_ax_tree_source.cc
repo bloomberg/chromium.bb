@@ -480,32 +480,32 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);
 
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<WebAXObject> nameObjects;
-  blink::WebString web_name = src.GetName(nameFrom, nameObjects);
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<WebAXObject> name_objects;
+  blink::WebString web_name = src.GetName(name_from, name_objects);
   if ((!web_name.IsEmpty() && !web_name.IsNull()) ||
-      nameFrom == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
+      name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
     int max_length = dst->role == ax::mojom::Role::kStaticText
                          ? kMaxStaticTextLength
                          : kMaxStringAttributeLength;
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kName,
                                   web_name.Utf8(), max_length);
-    dst->SetNameFrom(nameFrom);
+    dst->SetNameFrom(name_from);
     AddIntListAttributeFromWebObjects(
-        ax::mojom::IntListAttribute::kLabelledbyIds, nameObjects, dst);
+        ax::mojom::IntListAttribute::kLabelledbyIds, name_objects, dst);
   }
 
-  ax::mojom::DescriptionFrom descriptionFrom;
-  blink::WebVector<WebAXObject> descriptionObjects;
+  ax::mojom::DescriptionFrom description_from;
+  blink::WebVector<WebAXObject> description_objects;
   blink::WebString web_description =
-      src.Description(nameFrom, descriptionFrom, descriptionObjects);
+      src.Description(name_from, description_from, description_objects);
   if (!web_description.IsEmpty()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDescription,
                                   web_description.Utf8());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom,
-                         static_cast<int32_t>(descriptionFrom));
+                         static_cast<int32_t>(description_from));
     AddIntListAttributeFromWebObjects(
-        ax::mojom::IntListAttribute::kDescribedbyIds, descriptionObjects, dst);
+        ax::mojom::IntListAttribute::kDescribedbyIds, description_objects, dst);
   }
 
   if (src.ValueDescription().length()) {
@@ -537,7 +537,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   // mode is set to screen reader mode, otherwise only the more basic
   // attributes are populated.
   if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
-    blink::WebString web_placeholder = src.Placeholder(nameFrom);
+    blink::WebString web_placeholder = src.Placeholder(name_from);
     if (!web_placeholder.IsEmpty())
       TruncateAndAddStringAttribute(dst,
                                     ax::mojom::StringAttribute::kPlaceholder,
