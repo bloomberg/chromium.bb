@@ -36,7 +36,8 @@ class CONTENT_EXPORT NavigationState {
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
           per_navigation_mojo_interface_callback,
-      std::unique_ptr<NavigationClient> navigation_client);
+      std::unique_ptr<NavigationClient> navigation_client,
+      bool was_initiated_in_this_frame);
 
   static std::unique_ptr<NavigationState> CreateContentInitiated();
 
@@ -58,6 +59,10 @@ class CONTENT_EXPORT NavigationState {
   void set_request_committed(bool value) { request_committed_ = value; }
   void set_was_within_same_document(bool value) {
     was_within_same_document_ = value;
+  }
+
+  bool was_initiated_in_this_frame() const {
+    return was_initiated_in_this_frame_;
   }
 
   void set_transition_type(ui::PageTransition transition) {
@@ -93,10 +98,19 @@ class CONTENT_EXPORT NavigationState {
       content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
       content::mojom::NavigationClient::CommitNavigationCallback
           per_navigation_mojo_interface_callback,
-      std::unique_ptr<NavigationClient> navigation_client);
+      std::unique_ptr<NavigationClient> navigation_client,
+      bool was_initiated_in_this_frame);
 
   bool request_committed_;
   bool was_within_same_document_;
+
+  // Indicates whether the navigation was initiated by the same RenderFrame
+  // it is about to commit in. An example would be a link click.
+  // A counter-example would be user typing in the url bar (browser-initiated
+  // navigation), or a link click leading to a process swap (different
+  // RenderFrame instance).
+  // Used to ensure consistent observer notifications about a navigation.
+  bool was_initiated_in_this_frame_;
 
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   const bool is_content_initiated_;

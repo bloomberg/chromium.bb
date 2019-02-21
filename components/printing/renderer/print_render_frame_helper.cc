@@ -1068,9 +1068,9 @@ bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
          scripting_throttler_.IsAllowed(frame);
 }
 
-void PrintRenderFrameHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
+void PrintRenderFrameHelper::DidStartNavigation(
+    const GURL& url,
+    base::Optional<blink::WebNavigationType> navigation_type) {
   is_loading_ = true;
 }
 

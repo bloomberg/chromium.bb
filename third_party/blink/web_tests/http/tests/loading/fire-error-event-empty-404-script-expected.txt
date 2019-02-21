@@ -1,4 +1,5 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame

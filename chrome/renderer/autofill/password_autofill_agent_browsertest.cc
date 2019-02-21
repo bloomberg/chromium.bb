@@ -3772,7 +3772,7 @@ TEST_F(PasswordAutofillAgentTest, AutofillsAfterUserGesture) {
 
   password_autofill_agent_->UserGestureObserved();
   // It's a way to call PasswordValueGatekeeper::Reset().
-  password_autofill_agent_->DidStartProvisionalLoad(nullptr, false);
+  password_autofill_agent_->ReadyToCommitNavigation(nullptr);
 
   fill_data_.username_may_use_prefilled_placeholder = true;
   fill_data_.password_field.value = ASCIIToUTF16(kBobPassword);

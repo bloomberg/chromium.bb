@@ -85,8 +85,9 @@ class NetErrorHelper
   void Feedback() override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,
-                               bool is_content_initiated) override;
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void DidFinishLoad() override;

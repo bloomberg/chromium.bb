@@ -86,9 +86,7 @@ namespace {
 // suggestions.  If it takes too long, just use the local error page.
 const int kNavigationCorrectionFetchTimeoutSec = 3;
 
-NetErrorHelperCore::PageType GetLoadingPageType(
-    blink::WebDocumentLoader* document_loader) {
-  GURL url = document_loader->GetUrl();
+NetErrorHelperCore::PageType GetLoadingPageType(const GURL& url) {
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
@@ -308,11 +306,10 @@ void NetErrorHelper::Feedback() {
     supervised_user_interface_->Feedback();
 }
 
-void NetErrorHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
-  core_->OnStartLoad(GetFrameType(render_frame()),
-                     GetLoadingPageType(document_loader));
+void NetErrorHelper::DidStartNavigation(
+    const GURL& url,
+    base::Optional<blink::WebNavigationType> navigation_type) {
+  core_->OnStartLoad(GetFrameType(render_frame()), GetLoadingPageType(url));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "ui/base/page_transition_types.h"
 #include "v8/include/v8.h"
 
@@ -69,17 +71,43 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when associated widget is about to close.
   virtual void WidgetWillClose() {}
 
+  // Navigation callbacks.
+  //
+  // Each navigation starts with a DidStartNavigation call. Then it may be
+  // followed by a ReadyToCommitNavigation (if the navigation has succeeded),
+  // and should always end with a DidFinishNavigation.
+  //
+  // Unfortunately, this is currently a mess. For example, some started
+  // navigations which did not commit won't receive any further notifications.
+  // DidCommitProvisionalLoad will be called for same-document navigations,
+  // without any other notifications. DidFailProvisionalLoad will be called
+  // when committing error pages, in addition to all the methods (start, ready,
+  // commit) for the error page load itself.
+
+  // Called when the RenderFrame has started a navigation.
+  // |url| is a url being navigated to. Note that final url might be different
+  // due to redirects.
+  // |navigation_type| is only present for renderer-initiated navigations, e.g.
+  // JavaScript call, link click, form submit. User-initiated navigations from
+  // the browser process (e.g. by typing a url) won't have a navigation type.
+  virtual void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) {}
+
+  // Called when a navigation is about to be committed and |document_loader|
+  // will start loading a new document in the RenderFrame.
+  virtual void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) {}
+
   // These match the Blink API notifications
   virtual void DidCreateNewDocument() {}
   virtual void DidCreateDocumentElement() {}
   // Called when a provisional load is about to commit in a frame. This is
   // dispatched just before the Javascript unload event.
   virtual void WillCommitProvisionalLoad() {}
+  // TODO(dgozman): replace next two methods with DidFinishNavigation.
   virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                         ui::PageTransition transition) {}
-  virtual void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader,
-      bool is_content_initiated) {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}

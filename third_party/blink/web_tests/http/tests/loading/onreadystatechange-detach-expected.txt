@@ -1,12 +1,14 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 frame "iframe" - didReceiveTitle: 
-frame "iframe" - didStartProvisionalLoadForFrame
+frame "iframe" - DidStartNavigation
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
-frame "iframe" - didStartProvisionalLoadForFrame
+frame "iframe" - ReadyToCommitNavigation
 frame "iframe" - didCommitLoadForFrame
 CONSOLE MESSAGE: line 12: iframe: clicking
+frame "iframe" - DidStartNavigation
 CONSOLE MESSAGE: line 5: iframe: onreadystatechange
 frame "iframe" - didFailLoadWithError
 main frame - didHandleOnloadEventsForFrame

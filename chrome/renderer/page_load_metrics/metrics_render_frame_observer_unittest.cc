@@ -14,6 +14,7 @@
 #include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
 #include "chrome/renderer/page_load_metrics/fake_page_timing_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace page_load_metrics {
 
@@ -81,7 +82,8 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidStartNavigation(GURL(), base::nullopt);
+  observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
@@ -104,7 +106,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidStartNavigation(GURL(), base::nullopt);
+  observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
@@ -151,7 +154,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidStartNavigation(GURL(), base::nullopt);
+  observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
@@ -178,7 +182,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.SetMockTimer(nullptr);
 
   observer.ExpectPageLoadTiming(timing_2);
-  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidStartNavigation(GURL(), base::nullopt);
+  observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 

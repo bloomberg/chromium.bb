@@ -815,7 +815,8 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
         per_navigation_mojo_interface_commit_callback,
     const network::ResourceResponseHead* head,
     std::unique_ptr<NavigationClient> navigation_client,
-    int request_id) {
+    int request_id,
+    bool was_initiated_in_this_frame) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state.get());
@@ -876,7 +877,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
           common_params, commit_params, time_commit_requested,
           std::move(commit_callback),
           std::move(per_navigation_mojo_interface_commit_callback),
-          std::move(navigation_client)));
+          std::move(navigation_client), was_initiated_in_this_frame));
   return document_state;
 }
 
@@ -2870,12 +2871,16 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   if (inherit_document_state) {
     NavigationState* navigation_state =
         NavigationState::FromDocumentLoader(document_loader);
+    // The error page load (not to confuse with a failed load of original page)
+    // was not initiated through BeginNavigation, therefore
+    // |was_initiated_in_this_frame| is false.
     document_state = BuildDocumentStateFromParams(
         navigation_state->common_params(), navigation_state->commit_params(),
         base::TimeTicks(),  // Not used for failed navigation.
         mojom::FrameNavigationControl::CommitNavigationCallback(),
         mojom::NavigationClient::CommitNavigationCallback(), nullptr, nullptr,
-        ResourceDispatcher::MakeRequestID());
+        ResourceDispatcher::MakeRequestID(),
+        false /* was_initiated_in_this_frame */);
     FillMiscNavigationParams(navigation_state->common_params(),
                              navigation_state->commit_params(),
                              navigation_params.get());
@@ -3313,6 +3318,18 @@ void RenderFrameImpl::CommitNavigationInternal(
     return;
   }
 
+  bool was_initiated_in_this_frame = false;
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    was_initiated_in_this_frame =
+        navigation_client_impl_ &&
+        navigation_client_impl_->was_initiated_in_this_frame();
+  } else {
+    was_initiated_in_this_frame =
+        browser_side_navigation_pending_ &&
+        browser_side_navigation_pending_url_ == commit_params.original_url &&
+        commit_params.nav_entry_id == 0;
+  }
+
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations with the Network Service enabled.
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
@@ -3330,7 +3347,8 @@ void RenderFrameImpl::CommitNavigationInternal(
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks::Now(), std::move(callback),
       std::move(per_navigation_mojo_interface_callback), response_head,
-      std::move(navigation_client_impl_), request_id);
+      std::move(navigation_client_impl_), request_id,
+      was_initiated_in_this_frame);
 
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
@@ -3680,10 +3698,14 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
                                           "UTF-8", error_html);
   navigation_params->unreachable_url = error.url();
 
+  // The error page load (not to confuse with a failed load of original page)
+  // was not initiated through BeginNavigation, therefore
+  // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks(), std::move(callback),
       std::move(per_navigation_mojo_interface_callback), nullptr,
-      std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID());
+      std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
+      false /* was_initiated_in_this_frame */);
 
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
@@ -3742,11 +3764,14 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
         InternalDocumentStateData::FromDocumentState(document_state.get());
     internal_data->CopyFrom(
         InternalDocumentStateData::FromDocumentState(original_document_state));
+    // This is a browser-initiated same-document navigation (as opposed to a
+    // fragment link click), therefore |was_initiated_in_this_frame| is false.
     internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
         common_params, commit_params,
         base::TimeTicks(),  // Not used for same-document navigation.
         mojom::FrameNavigationControl::CommitNavigationCallback(),
-        mojom::NavigationClient::CommitNavigationCallback(), nullptr));
+        mojom::NavigationClient::CommitNavigationCallback(), nullptr,
+        false /* was_initiated_in_this_frame */));
 
     // Load the request.
     commit_status = frame_->CommitSameDocumentNavigation(
@@ -4438,10 +4463,18 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
-  for (auto& observer : observers_) {
-    observer.DidStartProvisionalLoad(document_loader,
-                                     navigation_state->IsContentInitiated());
+  // TODO(dgozman): call DidStartNavigation in various places where we call
+  // CommitNavigation() on the frame. This will happen naturally once we remove
+  // WebLocalFrameClient::DidStartProvisionalLoad.
+  if (!navigation_state->was_initiated_in_this_frame()) {
+    // Navigation initiated in this frame has been already reported in
+    // BeginNavigation.
+    for (auto& observer : observers_)
+      observer.DidStartNavigation(document_loader->GetUrl(), base::nullopt);
   }
+
+  for (auto& observer : observers_)
+    observer.ReadyToCommitNavigation(document_loader);
 }
 
 void RenderFrameImpl::DidCommitProvisionalLoad(
@@ -6281,6 +6314,9 @@ void RenderFrameImpl::BeginNavigation(
     sync_navigation_callback_.Cancel();
     mhtml_body_loader_client_.reset();
 
+    for (auto& observer : observers_)
+      observer.DidStartNavigation(url, info->navigation_type);
+
     // When an MHTML Archive is present, it should be used to serve iframe
     // content instead of doing a network request.
     bool use_archive = (info->archive_status ==
@@ -6834,10 +6870,6 @@ void RenderFrameImpl::BeginNavigationInternal(
   if (!CreatePlaceholderDocumentLoader(*info))
     return;
 
-  WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
-  NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(document_loader);
-
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info->url_request.Url();
 
@@ -6925,8 +6957,10 @@ void RenderFrameImpl::BeginNavigationInternal(
                     : base::nullopt);
 
   mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
-  if (IsPerNavigationMojoInterfaceEnabled())
+  if (IsPerNavigationMojoInterfaceEnabled()) {
     BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
+    navigation_client_impl_->MarkWasInitiatedInThisFrame();
+  }
 
   blink::mojom::NavigationInitiatorPtr initiator_ptr(
       blink::mojom::NavigationInitiatorPtrInfo(
@@ -6943,12 +6977,6 @@ void RenderFrameImpl::BeginNavigationInternal(
                                  load_flags, prevent_sandboxed_download),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
-
-  DCHECK(navigation_state->IsContentInitiated());
-  for (auto& observer : observers_) {
-    observer.DidStartProvisionalLoad(document_loader,
-                                     true /* is_content_initiated */);
-  }
 }
 
 void RenderFrameImpl::DecodeDataURL(const CommonNavigationParams& common_params,
