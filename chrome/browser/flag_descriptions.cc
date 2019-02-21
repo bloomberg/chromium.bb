@@ -3299,11 +3299,6 @@ const char kImeServiceName[] = "Enable IME service";
 const char kImeServiceDescription[] =
     "Enable IME service to provide the IME functionality instead of NaCl";
 
-const char kInputViewName[] = "Input views";
-const char kInputViewDescription[] =
-    "Enable IME extensions to supply custom views for user input such as "
-    "virtual keyboards.";
-
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";

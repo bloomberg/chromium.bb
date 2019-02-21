@@ -10,10 +10,6 @@
 namespace keyboard {
 namespace switches {
 
-// Disables IME extension APIs from overriding the URL for specifying the
-// contents of the virtual keyboard container.
-KEYBOARD_EXPORT extern const char kDisableInputView[];
-
 // Disables voice input.
 KEYBOARD_EXPORT extern const char kDisableVoiceInput[];
 
