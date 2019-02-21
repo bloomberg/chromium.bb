@@ -104,6 +104,7 @@ js_library("test_importer_common") {
   deps = [
     ":importer_common",
     ":unittest_util",
+    "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/base/js:test_error_reporting",
   ]
   visibility = []

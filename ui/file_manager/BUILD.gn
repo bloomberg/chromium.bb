@@ -66,5 +66,6 @@ group("unit_test_data") {
     "gallery/js:unit_tests",
     "gallery/js/image_editor:unit_tests",
     "image_loader:unit_tests",
+    "video_player/js:unit_tests",
   ]
 }
