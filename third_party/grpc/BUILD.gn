@@ -582,6 +582,7 @@ fuzzer_test("grpc_api_fuzzer") {
     ":grpc_internal_config",
   ]
   seed_corpus = "src/test/core/end2end/fuzzers/api_fuzzer_corpus"
+  dict = "src/test/core/end2end/fuzzers/api_fuzzer.dictionary"
 }
 
 fuzzer_test("grpc_client_fuzzer") {
@@ -598,6 +599,7 @@ fuzzer_test("grpc_client_fuzzer") {
     ":grpc_internal_config",
   ]
   seed_corpus = "src/test/core/end2end/fuzzers/client_fuzzer_corpus"
+  dict = "src/test/core/end2end/fuzzers/hpack.dictionary"
 }
 
 fuzzer_test("grpc_hpack_parser_fuzzer_test") {
