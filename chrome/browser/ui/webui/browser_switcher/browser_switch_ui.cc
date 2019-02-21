@@ -68,7 +68,7 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBrowserSwitchHost);
 
-  const auto* service = GetBrowserSwitcherService(web_ui);
+  auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
 
   source->AddLocalizedString("countdownTitle",
