@@ -1053,22 +1053,6 @@ config("compiler_codegen") {
           "-momit-leaf-frame-pointer",
         ]
       }
-    } else if (current_cpu == "arm") {
-      if (is_android && !is_clang) {
-        # Clang doesn't support these flags.
-        cflags += [
-          # The tree-sra optimization (scalar replacement for
-          # aggregates enabling subsequent optimizations) leads to
-          # invalid code generation when using the Android NDK's
-          # compiler (r5-r7). This can be verified using
-          # blink_unittests' WTF.Checked_int8_t test.
-          "-fno-tree-sra",
-
-          # The following option is disabled to improve binary
-          # size and performance in gcc 4.9.
-          "-fno-caller-saves",
-        ]
-      }
     }
   }
 
@@ -1178,10 +1162,6 @@ config("compiler_arm_thumb") {
   if (current_cpu == "arm" && arm_use_thumb && is_posix &&
       !(is_mac || is_ios || is_nacl)) {
     cflags = [ "-mthumb" ]
-    if (is_android && !is_clang) {
-      # Clang doesn't support this option.
-      cflags += [ "-mthumb-interwork" ]
-    }
   }
 }
 
