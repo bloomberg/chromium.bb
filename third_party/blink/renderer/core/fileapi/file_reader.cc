@@ -57,7 +57,7 @@ const CString Utf8BlobUUID(Blob* blob) {
 }
 
 const CString Utf8FilePath(Blob* blob) {
-  return blob->HasBackingFile() ? ToFile(blob)->GetPath().Utf8() : "";
+  return blob->HasBackingFile() ? To<File>(blob)->GetPath().Utf8() : "";
 }
 
 }  // namespace

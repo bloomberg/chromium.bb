@@ -327,8 +327,8 @@ FileList* DataTransfer::files() const {
   for (uint32_t i = 0; i < data_object_->length(); ++i) {
     if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
       Blob* blob = data_object_->Item(i)->GetAsFile();
-      if (blob && blob->IsFile())
-        files->Append(ToFile(blob));
+      if (auto* file = DynamicTo<File>(blob))
+        files->Append(file);
     }
   }
 
