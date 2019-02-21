@@ -43,6 +43,8 @@ MdnsResponderAdapter::MdnsResponderAdapter() {
   auto request = mojo::MakeRequest(&client);
   thread_safe_client_ =
       network::mojom::ThreadSafeMdnsResponderPtr::Create(std::move(client));
+  DCHECK(ChildThreadImpl::current());
+  DCHECK(ChildThreadImpl::current()->GetConnector());
   ChildThreadImpl::current()->GetConnector()->BindInterface(
       mojom::kBrowserServiceName, std::move(request));
 }

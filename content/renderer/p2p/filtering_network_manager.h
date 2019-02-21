@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_P2P_FILTERING_NETWORK_MANAGER_H_
 #define CONTENT_RENDERER_P2P_FILTERING_NETWORK_MANAGER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -37,12 +39,17 @@ namespace content {
 class FilteringNetworkManager : public rtc::NetworkManagerBase,
                                 public sigslot::has_slots<> {
  public:
+  // A callback that will be executed when |enumeration_permission_| changes.
+  using OnEnumerationPermissionCallback =
+      base::RepeatingCallback<void(EnumerationPermission)>;
+
   // This class is created by WebRTC's signaling thread but used by WebRTC's
   // worker thread |task_runner|.
   CONTENT_EXPORT FilteringNetworkManager(
       rtc::NetworkManager* network_manager,
       const GURL& requesting_origin,
-      media::MediaPermission* media_permission);
+      media::MediaPermission* media_permission,
+      OnEnumerationPermissionCallback callback);
 
   CONTENT_EXPORT ~FilteringNetworkManager() override;
 
@@ -63,6 +70,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   // Receive callback from MediaPermission when the permission status is
   // available.
   void OnPermissionStatus(bool granted);
+
+  void SetEnumerationPermissionAndNotify(EnumerationPermission state);
 
   base::WeakPtr<FilteringNetworkManager> GetWeakPtr();
 
@@ -116,6 +125,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   base::TimeTicks start_updating_time_;
 
   GURL requesting_origin_;
+
+  OnEnumerationPermissionCallback on_enumeration_permission_cb_;
 
   base::WeakPtrFactory<FilteringNetworkManager> weak_ptr_factory_;
 

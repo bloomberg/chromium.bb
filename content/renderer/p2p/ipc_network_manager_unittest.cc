@@ -41,8 +41,7 @@ class IpcNetworkManagerTest : public testing::Test {
  public:
   IpcNetworkManagerTest()
       : network_list_manager_(new MockP2PSocketDispatcher()),
-        network_manager_(
-            new IpcNetworkManager(network_list_manager_.get(), nullptr)) {}
+        network_manager_(new IpcNetworkManager(network_list_manager_.get())) {}
 
  protected:
   std::unique_ptr<MockP2PSocketDispatcher> network_list_manager_;
