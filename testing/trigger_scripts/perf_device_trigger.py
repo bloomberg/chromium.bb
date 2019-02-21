@@ -115,10 +115,12 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def select_config_indices(self, args, verbose):
     if args.multiple_trigger_configs:
+      configs = []
       # If specific bot ids were passed in, we want to trigger a job for
       # every valid config regardless of health status since
       # each config represents exactly one bot in the perf swarming pool.
-      return range(len(self.indices_to_trigger(args)))
+      for index in range(len(self.indices_to_trigger(args))):
+        configs.append((index, index))
     return self._select_config_indices_with_soft_affinity(args, verbose)
 
   def _select_config_indices_with_soft_affinity(self, args, verbose):
@@ -176,8 +178,8 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     # Now populate the indices into the bot_configs array
     selected_configs = []
     for shard_index in self.indices_to_trigger(args):
-      selected_configs.append(self._find_bot_config_index(
-          shard_to_bot_assignment_map[shard_index].id()))
+      selected_configs.append((shard_index, self._find_bot_config_index(
+          shard_to_bot_assignment_map[shard_index].id())))
     if verbose:
       self._print_device_affinity_info(
         shard_to_bot_assignment_map,
