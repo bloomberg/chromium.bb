@@ -187,8 +187,8 @@ void OmniboxResult::InvokeAction(int action_index, int event_flags) {
   }
 }
 
-AutocompleteMatch::Type OmniboxResult::type() const {
-  return match_.type;
+int OmniboxResult::GetSubType() const {
+  return static_cast<int>(match_.type);
 }
 
 void OmniboxResult::UpdateIcon() {
