@@ -22,8 +22,8 @@ var testProcessTotal = 2;
 var testProcessCount = 0;
 var testProcesses = [];
 
-function TestProcess(pid, type) {
-  this.pid_ = pid;
+function TestProcess(id, type) {
+  this.id_ = id;
   this.type_= type;
 
   this.lineExpectation_ = '';
@@ -81,8 +81,8 @@ TestProcess.prototype.testOutputType = function(receivedType) {
     chrome.test.assertEq('stdout', receivedType);
 };
 
-TestProcess.prototype.pid = function() {
-  return this.pid_;
+TestProcess.prototype.id = function() {
+  return this.id_;
 };
 
 TestProcess.prototype.started = function() {
@@ -148,7 +148,7 @@ TestProcess.prototype.kickOffTest_ = function(line, lineNum) {
   this.addLineExpectation(line, lineNum * 2);
 
   for (var i = 0; i < lineNum; i++)
-    chrome.terminalPrivate.sendInput(this.pid_, line,
+    chrome.terminalPrivate.sendInput(this.id_, line,
         function (result) {
           chrome.test.assertTrue(result);
         }
@@ -156,16 +156,16 @@ TestProcess.prototype.kickOffTest_ = function(line, lineNum) {
 };
 
 
-function getProcessIndexForPid(pid) {
+function getProcessIndexForId(id) {
   for (var i = 0; i < testProcessTotal; i++) {
-    if (testProcesses[i] && pid == testProcesses[i].pid())
+    if (testProcesses[i] && id == testProcesses[i].id())
       return i;
   }
   return undefined;
 };
 
-function processOutputListener(pid, type, text) {
-  var processIndex = getProcessIndexForPid(pid);
+function processOutputListener(id, type, text) {
+  var processIndex = getProcessIndexForId(id);
   if (processIndex == undefined)
     return;
 
@@ -196,7 +196,7 @@ function maybeEndTest() {
 function closeTerminal(index) {
   var process = testProcesses[index];
   chrome.terminalPrivate.closeTerminalProcess(
-      process.pid(),
+      process.id(),
       function(result) {
         chrome.test.assertTrue(result);
         process.setClosed();
@@ -208,7 +208,7 @@ function closeTerminal(index) {
 function initTest(process) {
   var sendStartCharacter = function() {
       chrome.terminalPrivate.sendInput(
-          process.pid(),
+          process.id(),
           startCharacter + '\n',
           function(result) {
               chrome.test.assertTrue(result);
@@ -218,7 +218,7 @@ function initTest(process) {
 
   var startCat = function() {
       chrome.terminalPrivate.sendInput(
-          process.pid(),
+          process.id(),
           process.getCatCommand(),
           function(result) {
             chrome.test.assertTrue(result);
@@ -228,7 +228,7 @@ function initTest(process) {
   };
 
   chrome.terminalPrivate.sendInput(
-      process.pid(),
+      process.id(),
       shellCommand,
       function(result) {
         chrome.test.assertTrue(result);
@@ -243,7 +243,11 @@ chrome.test.runTests([
 
     for (var i = 0; i < testProcessTotal; i++) {
       chrome.terminalPrivate.openTerminalProcess(croshName, function(result) {
-          chrome.test.assertTrue(result >= 0);
+          chrome.test.assertTrue(typeof result == 'string');
+          // The handled returned is basically a guid, but we don't want to
+          // enforce that API, so just enforce the string contains at least a
+          // certain number of bytes for general randomness/uniqueness.
+          chrome.test.assertTrue(result.length > 18);
           var type = (testProcessCount % 2) ? 'stderr' : 'stdout';
           var newProcess = new TestProcess(result, type);
           testProcesses[testProcessCount] = newProcess;

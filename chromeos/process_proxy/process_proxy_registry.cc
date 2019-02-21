@@ -80,20 +80,19 @@ scoped_refptr<base::SequencedTaskRunner> ProcessProxyRegistry::GetTaskRunner() {
   return task_runner.Get();
 }
 
-int ProcessProxyRegistry::OpenProcess(const base::CommandLine& cmdline,
-                                      const std::string& user_id_hash,
-                                      const OutputCallback& output_callback) {
+bool ProcessProxyRegistry::OpenProcess(const base::CommandLine& cmdline,
+                                       const std::string& user_id_hash,
+                                       const OutputCallback& output_callback,
+                                       std::string* id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!EnsureWatcherThreadStarted())
-    return -1;
+    return false;
 
   // Create and open new proxy.
   scoped_refptr<ProcessProxy> proxy(new ProcessProxy());
-  // TODO(tbarzic): Use a random int as an id here instead of process pid.
-  int terminal_id = proxy->Open(cmdline, user_id_hash);
-  if (terminal_id < 0)
-    return -1;
+  if (!proxy->Open(cmdline, user_id_hash, id))
+    return false;
 
   // Kick off watcher.
   // We can use Unretained because proxy will stop calling callback after it is
@@ -101,31 +100,32 @@ int ProcessProxyRegistry::OpenProcess(const base::CommandLine& cmdline,
   if (!proxy->StartWatchingOutput(
           watcher_thread_->task_runner(), GetTaskRunner(),
           base::Bind(&ProcessProxyRegistry::OnProcessOutput,
-                     base::Unretained(this), terminal_id))) {
+                     base::Unretained(this), *id))) {
     proxy->Close();
-    return -1;
+    return false;
   }
 
-  ProcessProxyInfo& info = proxy_map_[terminal_id];
+  ProcessProxyInfo& info = proxy_map_[*id];
   info.proxy.swap(proxy);
   info.callback = output_callback;
 
-  return terminal_id;
+  return true;
 }
 
-bool ProcessProxyRegistry::SendInput(int id, const std::string& data) {
+bool ProcessProxyRegistry::SendInput(const std::string& id,
+                                     const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
   return it->second.proxy->Write(data);
 }
 
-bool ProcessProxyRegistry::CloseProcess(int id) {
+bool ProcessProxyRegistry::CloseProcess(const std::string& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
 
@@ -134,27 +134,29 @@ bool ProcessProxyRegistry::CloseProcess(int id) {
   return true;
 }
 
-bool ProcessProxyRegistry::OnTerminalResize(int id, int width, int height) {
+bool ProcessProxyRegistry::OnTerminalResize(const std::string& id,
+                                            int width,
+                                            int height) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
 
   return it->second.proxy->OnTerminalResize(width, height);
 }
 
-void ProcessProxyRegistry::AckOutput(int id) {
+void ProcessProxyRegistry::AckOutput(const std::string& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return;
 
   it->second.proxy->AckOutput();
 }
 
-void ProcessProxyRegistry::OnProcessOutput(int id,
+void ProcessProxyRegistry::OnProcessOutput(const std::string& id,
                                            ProcessOutputType type,
                                            const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -162,7 +164,7 @@ void ProcessProxyRegistry::OnProcessOutput(int id,
   const char* type_str = ProcessOutputTypeToString(type);
   DCHECK(type_str);
 
-  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return;
   it->second.callback.Run(id, std::string(type_str), data);
@@ -183,6 +185,15 @@ bool ProcessProxyRegistry::EnsureWatcherThreadStarted() {
   watcher_thread_.reset(new base::Thread(kWatcherThreadName));
   return watcher_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+}
+
+base::ProcessHandle ProcessProxyRegistry::GetProcessHandleForTesting(
+    const std::string& id) {
+  std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  if (it == proxy_map_.end())
+    return base::kNullProcessHandle;
+
+  return it->second.proxy->GetProcessHandleForTesting();
 }
 
 }  // namespace chromeos
