@@ -28,6 +28,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
@@ -121,6 +122,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
     params->background_color = SK_ColorTRANSPARENT;
     contents_ = std::make_unique<content::NavigableContents>(
         contents_factory_.get(), std::move(params));
+    if (features::IsUsingWindowService())
+      contents_->ForceUseWindowService();
     contents_->AddObserver(this);
   }
 

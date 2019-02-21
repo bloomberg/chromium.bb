@@ -37,14 +37,13 @@ interface NavigableContents {
   // be given to Mus in order to authorize embedding of that visual
   // representation within the client application's own window tree.
   //
-  // |in_service_process| must be true iff the client calling this method is
-  // running in the same process as the Content Service. This can be known in
-  // the client by calling
-  // |NavigableContentsView::IsClientRunningInServiceProcess()|.
+  // |use_window_service| is true when the client calling this method wants to
+  // use Window Service for embedding. This is the case when the client and the
+  // Content Service are using different window trees.
   //
-  // TODO(https://crbug.com/874143): Remove the |in_service_process| flag once
+  // TODO(https://crbug.com/874143): Remove the |use_window_service| flag once
   // we have more widely available UI Service support.
-  CreateView(bool in_service_process)
+  CreateView(bool use_window_service)
       => (mojo_base.mojom.UnguessableToken embed_token);
 
   // Attempts to transfer global input focus to the navigated contents if they
