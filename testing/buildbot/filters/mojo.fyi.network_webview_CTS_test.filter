@@ -20,9 +20,6 @@
 -android.webkit.cts.CookieManagerTest.testAcceptCookie
 -android.webkit.cts.CookieManagerTest.testRemoveCookies
 -android.webkit.cts.CookieManagerTest.testThirdPartyCookie
--android.webkit.cts.HttpAuthHandlerTest.testCancel
--android.webkit.cts.HttpAuthHandlerTest.testProceed
--android.webkit.cts.HttpAuthHandlerTest.testUseHttpAuthUsernamePassword
 -android.webkit.cts.WebChromeClientTest.testOnJsBeforeUnloadIsCalled
 -android.webkit.cts.WebViewClientTest.testOnReceivedError
 -android.webkit.cts.WebViewClientTest.testShouldOverrideUrlLoading
