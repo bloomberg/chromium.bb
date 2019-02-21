@@ -18,13 +18,13 @@ test(() => {
   assert_equals(navigator.clipboard, navigator.clipboard);
 }, "navigator.clipboard exists");
 
-/* clipboard.write(Blob/text) */
+/* clipboard.write(text/plain Blob) */
 
 promise_test(async () => {
   await getPermissions();
   const blob = new Blob(["hello"], {type: 'text/plain'});
   await navigator.clipboard.write(blob);
-}, "navigator.clipboard.write(Blob) succeeds");
+}, "navigator.clipboard.write(text/plain Blob) succeeds");
 
 promise_test(async t => {
   await getPermissions();
@@ -58,7 +58,7 @@ promise_test(async t => {
                          navigator.clipboard.writeText());
 }, "navigator.clipboard.writeText() fails (expect DOMString)");
 
-/* Blob/text or Blob/imageclipboard.read() */
+/* text/plain or image/png Blob clipboard.read() */
 
 promise_test(async () => {
   await getPermissions();
