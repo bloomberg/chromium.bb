@@ -34,12 +34,10 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
     return;
   }
 
-  Details details;
-  details.proto = proto_.show_details().details();
-  details.changes = proto_.show_details().change_flags();
+  Details details(proto_.show_details());
   delegate->SetDetails(details);
 
-  if (!details.changes.user_approval_required()) {
+  if (!details.proto().change_flags().user_approval_required()) {
     OnActionProcessed(ACTION_APPLIED);
     return;
   }
@@ -83,8 +81,8 @@ void ShowDetailsAction::OnUserResponse(
     OnActionProcessed(MANUAL_FALLBACK);
   } else {
     // Same details, without highlights.
-    Details details;
-    details.proto = proto_.show_details().details();
+    Details details(proto_.show_details());
+    details.ClearChanges();
     delegate->SetDetails(details);
     // Restore status message
     delegate->SetStatusMessage(previous_status_message);

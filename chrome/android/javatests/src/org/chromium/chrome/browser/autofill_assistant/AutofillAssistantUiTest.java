@@ -165,22 +165,26 @@ public class AutofillAssistantUiTest {
 
         // Show movie details.
         String movieTitle = "testTitle";
-        String movieDescription = "This is a fancy test movie";
+        String descriptionLine1 = "This is a fancy line1";
+        String descriptionLine2 = "This is a fancy line2";
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> assistantCoordinator.getModel().getDetailsModel().set(
                                 AssistantDetailsModel.DETAILS,
-                                new AssistantDetails(movieTitle, /* url = */ "",
-                                        Calendar.getInstance().getTime(), movieDescription,
-                                        /* mId = */ "",
-                                        /* price = */ null,
+                                new AssistantDetails(movieTitle, /* imageUrl = */ "",
+                                        /* totalPriceLabel = */ "",
+                                        /* totalPrice = */ "", Calendar.getInstance().getTime(),
+                                        descriptionLine1, descriptionLine2,
                                         /* userApprovalRequired= */ false,
-                                        /* highlightTitle= */ false, /* highlightDate= */
-                                        false, /* showPlaceholdersForEmptyFields= */ false)));
-        TextView detailsTitle = (TextView) bottomSheet.findViewById(R.id.details_title);
-        TextView detailsText = (TextView) bottomSheet.findViewById(R.id.details_text);
+                                        /* highlightTitle= */ false, /* highlightLine1= */
+                                        false, /* highlightLine1 = */ false,
+                                        /* showPlaceholdersForEmptyFields= */ false)));
+        TextView detailsTitle = bottomSheet.findViewById(R.id.details_title);
+        TextView detailsLine1 = bottomSheet.findViewById(R.id.details_line1);
+        TextView detailsLine2 = bottomSheet.findViewById(R.id.details_line2);
         Assert.assertEquals(detailsTitle.getText(), movieTitle);
-        Assert.assertTrue(detailsText.getText().toString().contains(movieDescription));
+        Assert.assertTrue(detailsLine1.getText().toString().contains(descriptionLine1));
+        Assert.assertTrue(detailsLine2.getText().toString().contains(descriptionLine2));
 
         // Progress bar must be shown.
         Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());
