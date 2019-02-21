@@ -112,6 +112,21 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   EXPECT_EQ(1, submit_action_);
 }
 
+// Tests that access code can be entered with numpad.
+TEST_F(ParentAccessViewTest, Numpad) {
+  ParentAccessView::TestApi test_api(view_);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 6; ++i)
+    generator->PressKey(ui::KeyboardCode(ui::VKEY_NUMPAD0 + i), ui::EF_NONE);
+  EXPECT_TRUE(test_api.submit_button()->enabled());
+
+  SimulateButtonPress(test_api.submit_button());
+  ASSERT_TRUE(code_.has_value());
+  EXPECT_EQ("012345", *code_);
+  EXPECT_EQ(1, submit_action_);
+}
+
 // Tests that backspace button works.
 TEST_F(ParentAccessViewTest, Backspace) {
   ParentAccessView::TestApi test_api(view_);
