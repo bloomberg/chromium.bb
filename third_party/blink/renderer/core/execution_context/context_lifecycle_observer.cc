@@ -18,7 +18,7 @@ ContextClient::ContextClient(LocalFrame* frame)
 
 ExecutionContext* ContextClient::GetExecutionContext() const {
   return execution_context_ && !execution_context_->IsContextDestroyed()
-             ? execution_context_
+             ? execution_context_.Get()
              : nullptr;
 }
 
