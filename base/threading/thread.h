@@ -248,16 +248,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   static void SetThreadWasQuitProperly(bool flag);
   static bool GetThreadWasQuitProperly();
 
-  // Bind this Thread to an existing MessageLoop instead of starting a new one.
-  // TODO(gab): Remove this after ios/ has undergone the same surgery as
-  // BrowserThreadImpl (ref.
-  // https://chromium-review.googlesource.com/c/chromium/src/+/969104).
-  void SetMessageLoop(MessageLoop* message_loop);
-
-  bool using_external_message_loop() const {
-    return using_external_message_loop_;
-  }
-
   // Returns the message loop for this thread.  Use the MessageLoop's
   // PostTask methods to execute code on the thread.  This only returns
   // non-null after a successful call to Start.  After Stop has been called,
@@ -330,13 +320,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // alive. Set by the created thread.
   MessageLoopBase* message_loop_base_ = nullptr;
   RunLoop* run_loop_ = nullptr;
-
-  // True only if |message_loop_base_| was externally provided by |
-  // SetMessageLoop()| in which case this Thread has no underlying |thread_| and
-  // should merely drop |message_loop_base_| on Stop(). In that event, this
-  // remains true after Stop() was invoked so that subclasses can use this state
-  // to build their own cleanup logic as required.
-  bool using_external_message_loop_ = false;
 
   // Stores Options::timer_slack_ until the sequence manager has been bound to
   // a thread.

@@ -522,61 +522,6 @@ TEST_F(ThreadTest, FlushForTesting) {
   a.FlushForTesting();
 }
 
-namespace {
-
-// A Thread which uses a MessageLoop on the stack. It won't start a real
-// underlying thread (instead its messages can be processed by a RunLoop on the
-// stack).
-class ExternalMessageLoopThread : public Thread {
- public:
-  ExternalMessageLoopThread() : Thread("ExternalMessageLoopThread") {}
-
-  ~ExternalMessageLoopThread() override { Stop(); }
-
-  void InstallMessageLoop() { SetMessageLoop(&external_message_loop_); }
-
-  void VerifyUsingExternalMessageLoop(
-      bool expected_using_external_message_loop) {
-    EXPECT_EQ(expected_using_external_message_loop,
-              using_external_message_loop());
-  }
-
- private:
-  base::MessageLoop external_message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalMessageLoopThread);
-};
-
-}  // namespace
-
-TEST_F(ThreadTest, ExternalMessageLoop) {
-  ExternalMessageLoopThread a;
-  EXPECT_FALSE(a.task_runner());
-  EXPECT_FALSE(a.IsRunning());
-  a.VerifyUsingExternalMessageLoop(false);
-
-  a.InstallMessageLoop();
-  EXPECT_TRUE(a.task_runner());
-  EXPECT_TRUE(a.IsRunning());
-  a.VerifyUsingExternalMessageLoop(true);
-
-  bool ran = false;
-  a.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce([](bool* toggled) { *toggled = true; }, &ran));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(ran);
-
-  a.Stop();
-  EXPECT_FALSE(a.task_runner());
-  EXPECT_FALSE(a.IsRunning());
-  a.VerifyUsingExternalMessageLoop(true);
-
-  // Confirm that running any remaining tasks posted from Stop() goes smoothly
-  // (e.g. https://codereview.chromium.org/2135413003/#ps300001 crashed if
-  // StopSoon() posted Thread::ThreadQuitHelper() while |run_loop_| was null).
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ThreadTest, ProvidedMessageLoopBase) {
   Thread thread("ProvidedMessageLoopBase");
   std::unique_ptr<base::sequence_manager::internal::SequenceManagerImpl>
