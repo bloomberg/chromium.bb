@@ -64,9 +64,15 @@ public class TabListCoordinator implements Destroyable {
                     "Attempting to create a tab list UI with invalid mode");
         }
 
-        LayoutInflater.from(context).inflate(
-                R.layout.tab_list_recycler_view_layout, parentView, true);
-        mRecyclerView = parentView.findViewById(R.id.tab_list_view);
+        if (parentView != null) {
+            mRecyclerView = (TabListRecyclerView) LayoutInflater.from(context).inflate(
+                    R.layout.tab_list_recycler_view_layout, parentView, false);
+        } else {
+            LayoutInflater.from(context).inflate(
+                    R.layout.tab_list_recycler_view_layout, parentView, true);
+            mRecyclerView = parentView.findViewById(R.id.tab_list_view);
+        }
+
         mRecyclerView.setAdapter(adapter);
 
         if (mode == TabListMode.GRID) {
