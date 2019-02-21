@@ -18,48 +18,26 @@
 
 namespace content {
 
-namespace {
-
-class MockAppCacheFrontend : public blink::mojom::AppCacheFrontend {
- public:
-  void CacheSelected(int32_t host_id,
-                     blink::mojom::AppCacheInfoPtr info) override {}
-  void EventRaised(const std::vector<int32_t>& host_ids,
-                   blink::mojom::AppCacheEventID event_id) override {}
-  void ProgressEventRaised(const std::vector<int32_t>& host_ids,
-                           const GURL& url,
-                           int32_t num_total,
-                           int32_t num_complete) override {}
-  void ErrorEventRaised(
-      const std::vector<int32_t>& host_ids,
-      blink::mojom::AppCacheErrorDetailsPtr details) override {}
-  void LogMessage(int32_t host_id,
-                  blink::mojom::ConsoleMessageLevel log_level,
-                  const std::string& message) override {}
-  void SetSubresourceFactory(
-      int32_t host_id,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
-};
-
-}  // namespace
-
 class AppCacheTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(AppCacheTest, CleanupUnusedCache) {
   MockAppCacheService service;
-  MockAppCacheFrontend frontend;
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
   group->AddCache(cache.get());
 
+  blink::mojom::AppCacheFrontendPtr frontend1;
+  mojo::MakeRequest(&frontend1);
   AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
-                     &frontend, &service);
+                     std::move(frontend1), &service);
+  blink::mojom::AppCacheFrontendPtr frontend2;
+  mojo::MakeRequest(&frontend2);
   AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
-                     &frontend, &service);
+                     std::move(frontend2), &service);
 
   host1.AssociateCompleteCache(cache.get());
   host2.AssociateCompleteCache(cache.get());

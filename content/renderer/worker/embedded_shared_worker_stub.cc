@@ -15,7 +15,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
-#include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
@@ -57,9 +56,6 @@ class SharedWorkerWebApplicationCacheHostImpl
       blink::WebApplicationCacheHostClient* client,
       int appcache_host_id)
       : WebApplicationCacheHostImpl(client,
-                                    RenderThreadImpl::current()
-                                        ->appcache_frontend_impl()
-                                        ->backend_proxy(),
                                     appcache_host_id,
                                     MSG_ROUTING_NONE) {}
 
@@ -80,6 +76,12 @@ class SharedWorkerWebApplicationCacheHostImpl
   bool SelectCacheWithManifest(const blink::WebURL& manifestURL) override {
     return true;
   }
+
+  // blink::mojom::AppCacheFrontend:
+  void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override {}
+  void SetSubresourceFactory(
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 };
 
 }  // namespace

@@ -23,7 +23,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
           .ExposeCapability(
               "browser",
               std::set<const char*>{
-                  "blink.mojom.AppCacheFrontend",
                   "blink.mojom.CodeCacheHost",
                   "blink.mojom.CrashMemoryMetricsReporter",
                   "blink.mojom.LeakDetector",

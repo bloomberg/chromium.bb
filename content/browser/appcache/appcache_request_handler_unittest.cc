@@ -71,32 +71,6 @@ enum RequestHandlerType {
 class AppCacheRequestHandlerTest
     : public testing::TestWithParam<RequestHandlerType> {
  public:
-  class MockFrontend : public blink::mojom::AppCacheFrontend {
-   public:
-    void CacheSelected(int32_t host_id,
-                       blink::mojom::AppCacheInfoPtr info) override {}
-
-    void EventRaised(const std::vector<int32_t>& host_ids,
-                     blink::mojom::AppCacheEventID event_id) override {}
-
-    void ErrorEventRaised(
-        const std::vector<int32_t>& host_ids,
-        blink::mojom::AppCacheErrorDetailsPtr details) override {}
-
-    void ProgressEventRaised(const std::vector<int32_t>& host_ids,
-                             const GURL& url,
-                             int32_t num_total,
-                             int32_t num_complete) override {}
-
-    void LogMessage(int32_t host_id,
-                    blink::mojom::ConsoleMessageLevel log_level,
-                    const std::string& message) override {}
-
-    void SetSubresourceFactory(
-        int32_t host_id,
-        network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
-  };
-
   // Helper callback to run a test on our io_thread. The io_thread is spun up
   // once and reused for all tests.
   template <class Method>
@@ -248,14 +222,14 @@ class AppCacheRequestHandlerTest
     mock_service_->set_request_context(empty_context_.get());
     mock_policy_.reset(new MockAppCachePolicy);
     mock_service_->set_appcache_policy(mock_policy_.get());
-    mock_frontend_.reset(new MockFrontend);
     backend_impl_ = std::make_unique<AppCacheBackendImpl>(mock_service_.get(),
                                                           kMockProcessId);
-    backend_impl_->set_frontend_for_testing(mock_frontend_.get());
     const int kHostId = 1;
     const int kRenderFrameId = 2;
-    backend_impl_->RegisterHost(mojo::MakeRequest(&host_ptr_), kHostId,
-                                kRenderFrameId);
+    blink::mojom::AppCacheFrontendPtr frontend;
+    mojo::MakeRequest(&frontend);
+    backend_impl_->RegisterHost(mojo::MakeRequest(&host_ptr_),
+                                std::move(frontend), kHostId, kRenderFrameId);
     host_ = backend_impl_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
     empty_context_->set_job_factory(job_factory_.get());
@@ -271,7 +245,6 @@ class AppCacheRequestHandlerTest
     request_ = nullptr;
     url_request_.reset();
     backend_impl_.reset();
-    mock_frontend_.reset();
     mock_service_.reset();
     mock_policy_.reset();
     job_factory_.reset();
@@ -382,9 +355,8 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        GURL(), AppCacheEntry(),
-        1, 2, GURL("http://blah/manifest/"));
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), GURL(), AppCacheEntry(), 1,
+        2, GURL("http://blah/manifest/"));
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -408,8 +380,7 @@ class AppCacheRequestHandlerTest
     SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
     EXPECT_FALSE(job());
 
-    EXPECT_EQ(GURL("http://blah/manifest/"),
-              host_->preferred_manifest_url());
+    EXPECT_EQ(GURL("http://blah/manifest/"), host_->preferred_manifest_url());
 
     TestFinished();
   }
@@ -426,10 +397,9 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(),
-        GURL("http://blah/fallbackurl"),
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        1, 2, GURL("http://blah/manifest/"));
+        AppCacheEntry(), GURL("http://blah/fallbackurl"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), 1, 2,
+        GURL("http://blah/manifest/"));
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -504,8 +474,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(host_->main_resource_was_namespace_entry_);
     EXPECT_EQ(GURL("http://blah/fallbackurl"), host_->namespace_entry_url_);
 
-    EXPECT_EQ(GURL("http://blah/manifest/"),
-              host_->preferred_manifest_url());
+    EXPECT_EQ(GURL("http://blah/manifest/"), host_->preferred_manifest_url());
 
     TestFinished();
   }
@@ -522,10 +491,9 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(),
-        GURL("http://blah/fallbackurl"),
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        1, 2, GURL("http://blah/manifest/"));
+        AppCacheEntry(), GURL("http://blah/fallbackurl"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), 1, 2,
+        GURL("http://blah/manifest/"));
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -725,8 +693,8 @@ class AppCacheRequestHandlerTest
     // retrieval.
     host_->AssociateCompleteCache(MakeNewCache());
 
-    mock_storage()->SimulateFindSubResource(
-        AppCacheEntry(), AppCacheEntry(), true);
+    mock_storage()->SimulateFindSubResource(AppCacheEntry(), AppCacheEntry(),
+                                            true);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
                                         RESOURCE_TYPE_SUB_RESOURCE));
@@ -809,7 +777,6 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
 
     backend_impl_.reset();
-    mock_frontend_.reset();
     mock_service_.reset();
     mock_policy_.reset();
     host_ = nullptr;
@@ -888,9 +855,8 @@ class AppCacheRequestHandlerTest
 
     mock_policy_->can_load_return_value_ = false;
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        GURL(), AppCacheEntry(),
-        1, 2, GURL("http://blah/manifest/"));
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), GURL(), AppCacheEntry(), 1,
+        2, GURL("http://blah/manifest/"));
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -917,12 +883,12 @@ class AppCacheRequestHandlerTest
   // Test case helpers --------------------------------------------------
 
   AppCache* MakeNewCache() {
-    AppCache* cache = new AppCache(
-        mock_storage(), mock_storage()->NewCacheId());
+    AppCache* cache =
+        new AppCache(mock_storage(), mock_storage()->NewCacheId());
     cache->set_complete(true);
-    AppCacheGroup* group = new AppCacheGroup(
-        mock_storage(), GURL("http://blah/manifest"),
-        mock_storage()->NewGroupId());
+    AppCacheGroup* group =
+        new AppCacheGroup(mock_storage(), GURL("http://blah/manifest"),
+                          mock_storage()->NewGroupId());
     group->AddCache(cache);
     return cache;
   }
@@ -964,7 +930,6 @@ class AppCacheRequestHandlerTest
   base::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<MockAppCacheService> mock_service_;
   std::unique_ptr<AppCacheBackendImpl> backend_impl_;
-  std::unique_ptr<MockFrontend> mock_frontend_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
   blink::mojom::AppCacheHostPtr host_ptr_;
@@ -1003,8 +968,7 @@ TEST_P(AppCacheRequestHandlerTest, MainResource_Fallback) {
 }
 
 TEST_P(AppCacheRequestHandlerTest, MainResource_FallbackOverride) {
-  RunTestOnIOThread(
-      &AppCacheRequestHandlerTest::MainResource_FallbackOverride);
+  RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_FallbackOverride);
 }
 
 TEST_P(AppCacheRequestHandlerTest, SubResource_Miss_WithNoCacheSelected) {
@@ -1032,7 +996,7 @@ TEST_P(AppCacheRequestHandlerTest, SubResource_RedirectFallback) {
 
 TEST_P(AppCacheRequestHandlerTest, SubResource_NoRedirectFallback) {
   RunTestOnIOThread(
-    &AppCacheRequestHandlerTest::SubResource_NoRedirectFallback);
+      &AppCacheRequestHandlerTest::SubResource_NoRedirectFallback);
 }
 
 TEST_P(AppCacheRequestHandlerTest, SubResource_Network) {

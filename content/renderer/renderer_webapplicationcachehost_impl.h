@@ -19,13 +19,12 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      blink::mojom::AppCacheBackend* backend,
       int appcache_host_id,
       int frame_routing_id);
 
-  // WebApplicationCacheHostImpl:
-  void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
-                    const std::string& message) override;
+  // blink::mojom::AppCacheHostFrontend:
+  void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override;
 
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;

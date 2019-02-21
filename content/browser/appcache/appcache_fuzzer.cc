@@ -157,8 +157,10 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
     switch (command.command_case()) {
       case fuzzing::proto::Command::kRegisterHost: {
         int32_t host_id = command.register_host().host_id();
+        blink::mojom::AppCacheFrontendPtr frontend;
+        mojo::MakeRequest(&frontend);
         host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
-                           host_id, MSG_ROUTING_NONE);
+                           std::move(frontend), host_id, MSG_ROUTING_NONE);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {

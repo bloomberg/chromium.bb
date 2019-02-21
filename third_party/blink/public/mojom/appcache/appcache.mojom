@@ -62,7 +62,8 @@ interface AppCacheBackend {
   //
   // TODO(mek): Move this method to DocumentInterfaceBroker to stop passing
   // frame ID over mojo.
-  RegisterHost(AppCacheHost& host_request, int32 host_id, int32 render_frame_id);
+  RegisterHost(AppCacheHost& host_request, AppCacheFrontend frontend,
+               int32 host_id, int32 render_frame_id);
 };
 
 interface AppCacheHost {
@@ -115,28 +116,26 @@ interface AppCacheHost {
 // AppCache messages sent from the browser to the renderer process.
 interface AppCacheFrontend {
   // Notifies the renderer of the appcache that has been selected for a
-  // a particular host. This is sent in reply to AppCacheHostMsg_SelectCache.
-  CacheSelected(int32 host_id, AppCacheInfo info);
+  // a particular host. This is sent in reply to AppCacheHost.SelectCache.
+  CacheSelected(AppCacheInfo info);
 
   // Notifies the renderer of an AppCache event other than the
   // progress event which has a seperate message.
-  EventRaised(array<int32> host_ids, AppCacheEventID event_id);
+  EventRaised(AppCacheEventID event_id);
 
   // Notifies the renderer of an AppCache progress event.
-  ProgressEventRaised(array<int32> host_ids,
-                      url.mojom.Url url,
+  ProgressEventRaised(url.mojom.Url url,
                       int32 total,
                       int32 complete);
 
   // Notifies the renderer of an AppCache error event.
-  ErrorEventRaised(array<int32> host_ids, AppCacheErrorDetails error_details);
+  ErrorEventRaised(AppCacheErrorDetails error_details);
 
   // Notifies the renderer of an AppCache logging message.
-  LogMessage(int32 host_id, ConsoleMessageLevel log_level, string message);
+  LogMessage(ConsoleMessageLevel log_level, string message);
 
   // In the network service world this message sets the URLLoaderFactory to be
   // used for subresources.
-  SetSubresourceFactory(int32 host_id,
-                        network.mojom.URLLoaderFactory url_loader_factory);
+  SetSubresourceFactory(network.mojom.URLLoaderFactory url_loader_factory);
 };
 

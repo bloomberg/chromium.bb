@@ -118,7 +118,6 @@ class Gpu;
 
 namespace content {
 
-class AppCacheFrontendImpl;
 class AecDumpMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
@@ -315,10 +314,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Will be null if threaded compositing has not been enabled.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner() const {
     return compositor_task_runner_;
-  }
-
-  AppCacheFrontendImpl* appcache_frontend_impl() const {
-    return appcache_frontend_impl_.get();
   }
 
   DomStorageDispatcher* dom_storage_dispatcher() const {
@@ -593,7 +588,6 @@ class CONTENT_EXPORT RenderThreadImpl
       discardable_shared_memory_manager_;
 
   // These objects live solely on the render thread.
-  std::unique_ptr<AppCacheFrontendImpl> appcache_frontend_impl_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;

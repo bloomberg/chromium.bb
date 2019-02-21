@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
@@ -30,12 +29,12 @@ class ChromeAppCacheService;
 // pendant of AppCacheNavigationHandle. See the
 // AppCacheNavigationHandle header for more details about the lifetime of
 // both classes.
-class AppCacheNavigationHandleCore : public blink::mojom::AppCacheFrontend {
+class AppCacheNavigationHandleCore {
  public:
   AppCacheNavigationHandleCore(ChromeAppCacheService* appcache_service,
                                int appcache_host_id,
                                int process_id);
-  ~AppCacheNavigationHandleCore() override;
+  ~AppCacheNavigationHandleCore();
 
   // Returns the raw AppCacheHost pointer. Ownership remains with this class.
   AppCacheHost* host() { return precreated_host_.get(); }
@@ -54,27 +53,6 @@ class AppCacheNavigationHandleCore : public blink::mojom::AppCacheFrontend {
   // scenario where NavigationHandleImpl needs to delay specifying the
   // |process_id| until ReadyToCommit time).
   void SetProcessId(int process_id);
-
- protected:
-  // AppCacheFrontend methods
-  // We don't expect calls on the AppCacheFrontend methods while the
-  // AppCacheHost is not registered with the AppCacheBackend.
-  void CacheSelected(int32_t host_id,
-                     blink::mojom::AppCacheInfoPtr info) override;
-  void EventRaised(const std::vector<int32_t>& host_ids,
-                   blink::mojom::AppCacheEventID event_id) override;
-  void ProgressEventRaised(const std::vector<int32_t>& host_ids,
-                           const GURL& url,
-                           int32_t num_total,
-                           int32_t num_complete) override;
-  void ErrorEventRaised(const std::vector<int32_t>& host_ids,
-                        blink::mojom::AppCacheErrorDetailsPtr details) override;
-  void LogMessage(int32_t host_id,
-                  blink::mojom::ConsoleMessageLevel log_level,
-                  const std::string& message) override;
-  void SetSubresourceFactory(
-      int32_t host_id,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
 
  private:
   std::unique_ptr<AppCacheHost> precreated_host_;
