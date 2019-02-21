@@ -43,47 +43,26 @@ blink::mojom::IDBStatus GetIndexedDBStatus(leveldb::Status status) {
     return blink::mojom::IDBStatus::IOError;
 }
 
-void DoCallCompactionStatusCallback(
-    IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabaseCallback
-        callback,
-    leveldb::Status status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(GetIndexedDBStatus(status));
-}
-
-void CallCompactionStatusCallbackOnIOThread(
-    scoped_refptr<base::SequencedTaskRunner> io_runner,
+void CallCompactionStatusCallbackOnIDBThread(
     IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabaseCallback
         mojo_callback,
     leveldb::Status status) {
-  io_runner->PostTask(FROM_HERE,
-                      base::BindOnce(&DoCallCompactionStatusCallback,
-                                     std::move(mojo_callback), status));
+  std::move(mojo_callback).Run(GetIndexedDBStatus(status));
 }
 
-void DoCallAbortStatusCallback(
-    IndexedDBDispatcherHost::AbortTransactionsForDatabaseCallback callback,
-    leveldb::Status status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(GetIndexedDBStatus(status));
-}
-
-void CallAbortStatusCallbackOnIOThread(
-    scoped_refptr<base::SequencedTaskRunner> io_runner,
+void CallAbortStatusCallbackOnIDBThread(
     IndexedDBDispatcherHost::AbortTransactionsForDatabaseCallback mojo_callback,
     leveldb::Status status) {
-  io_runner->PostTask(FROM_HERE,
-                      base::BindOnce(&DoCallAbortStatusCallback,
-                                     std::move(mojo_callback), status));
+  std::move(mojo_callback).Run(GetIndexedDBStatus(status));
 }
 
 }  // namespace
 
+// TODO(cmp): Flatten calls / remove this class once IDB task runner CL settles.
 class IndexedDBDispatcherHost::IDBSequenceHelper {
  public:
-  IDBSequenceHelper(
-      int ipc_process_id,
-      scoped_refptr<IndexedDBContextImpl> indexed_db_context)
+  IDBSequenceHelper(int ipc_process_id,
+                    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
       : ipc_process_id_(ipc_process_id),
         indexed_db_context_(std::move(indexed_db_context)) {}
   ~IDBSequenceHelper() {}
@@ -125,44 +104,50 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     : indexed_db_context_(std::move(indexed_db_context)),
       blob_storage_context_(std::move(blob_storage_context)),
       ipc_process_id_(ipc_process_id),
-      idb_helper_(new IDBSequenceHelper(ipc_process_id_, indexed_db_context_)),
+      idb_helper_(std::make_unique<IDBSequenceHelper>(ipc_process_id_,
+                                                      indexed_db_context_)),
       weak_factory_(this) {
-  DCHECK(indexed_db_context_.get());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(indexed_db_context_);
+  DCHECK(blob_storage_context_);
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-  IDBTaskRunner()->DeleteSoon(FROM_HERE, idb_helper_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void IndexedDBDispatcherHost::AddBinding(
     blink::mojom::IDBFactoryRequest request,
     const url::Origin& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (blob_storage_context_) {
-    io_weak_blob_storage_context_ =
-        blob_storage_context_->context()->AsWeakPtr();
-    blob_storage_context_.reset();
-  }
+  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bindings_.AddBinding(this, std::move(request), {origin});
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
     std::unique_ptr<blink::mojom::IDBDatabase> database,
     blink::mojom::IDBDatabaseAssociatedRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   database_bindings_.AddBinding(std::move(database), std::move(request));
 }
 
 void IndexedDBDispatcherHost::AddCursorBinding(
     std::unique_ptr<blink::mojom::IDBCursor> cursor,
     blink::mojom::IDBCursorAssociatedRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
 }
 
 void IndexedDBDispatcherHost::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Since |this| is destructed on the IDB task runner, the next call would be
+  // issued and run before any destruction event.  This guarantees that the
+  // base::Unretained(this) usage is safe below.
+  IDBTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
           base::Unretained(this)));
@@ -170,30 +155,25 @@ void IndexedDBDispatcherHost::RenderProcessExited(
 
 void IndexedDBDispatcherHost::GetDatabaseInfo(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::GetDatabaseInfoOnIDBThread,
-                                base::Unretained(idb_helper_),
-                                std::move(callbacks), context.origin));
+  idb_helper_->GetDatabaseInfoOnIDBThread(std::move(callbacks), context.origin);
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::GetDatabaseNamesOnIDBThread,
-                                base::Unretained(idb_helper_),
-                                std::move(callbacks), context.origin));
+  idb_helper_->GetDatabaseNamesOnIDBThread(std::move(callbacks),
+                                           context.origin);
 }
 
 void IndexedDBDispatcherHost::Open(
@@ -202,7 +182,7 @@ void IndexedDBDispatcherHost::Open(
     const base::string16& name,
     int64_t version,
     int64_t transaction_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
@@ -210,65 +190,51 @@ void IndexedDBDispatcherHost::Open(
                              std::move(callbacks_info), IDBTaskRunner()));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
       new IndexedDBDatabaseCallbacks(indexed_db_context_,
-                                     std::move(database_callbacks_info)));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::OpenOnIDBThread,
-                     base::Unretained(idb_helper_), std::move(callbacks),
-                     std::move(database_callbacks), context.origin, name,
-                     version, transaction_id));
+                                     std::move(database_callbacks_info),
+                                     IDBTaskRunner()));
+  idb_helper_->OpenOnIDBThread(std::move(callbacks),
+                               std::move(database_callbacks), context.origin,
+                               name, version, transaction_id);
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     const base::string16& name,
     bool force_close) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::DeleteDatabaseOnIDBThread,
-                     base::Unretained(idb_helper_), std::move(callbacks),
-                     context.origin, name, force_close));
+  idb_helper_->DeleteDatabaseOnIDBThread(std::move(callbacks), context.origin,
+                                         name, force_close);
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
     AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
-      &CallCompactionStatusCallbackOnIOThread,
-      base::ThreadTaskRunnerHandle::Get(), std::move(mojo_callback));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &IDBSequenceHelper::AbortTransactionsAndCompactDatabaseOnIDBThread,
-          base::Unretained(idb_helper_), std::move(callback_on_io),
-          context.origin));
+      &CallCompactionStatusCallbackOnIDBThread, std::move(mojo_callback));
+  idb_helper_->AbortTransactionsAndCompactDatabaseOnIDBThread(
+      std::move(callback_on_io), context.origin);
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
     AbortTransactionsForDatabaseCallback mojo_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
-      &CallAbortStatusCallbackOnIOThread, base::ThreadTaskRunnerHandle::Get(),
-      std::move(mojo_callback));
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &IDBSequenceHelper::AbortTransactionsForDatabaseOnIDBThread,
-          base::Unretained(idb_helper_), std::move(callback_on_io),
-          context.origin));
+      &CallAbortStatusCallbackOnIDBThread, std::move(mojo_callback));
+  idb_helper_->AbortTransactionsForDatabaseOnIDBThread(
+      std::move(callback_on_io), context.origin);
 }
 
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_factory_.InvalidateWeakPtrs();
   cursor_bindings_.CloseAllBindings();
   database_bindings_.CloseAllBindings();

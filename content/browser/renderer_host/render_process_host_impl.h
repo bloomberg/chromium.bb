@@ -865,7 +865,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
 
-  std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter>
       indexed_db_factory_;
 
   std::unique_ptr<ServiceWorkerDispatcherHost, BrowserThread::DeleteOnIOThread>
