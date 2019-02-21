@@ -21,7 +21,7 @@
     <div id="activity-list"
         hidden$="[[!shouldShowActivities_(pageState_, activityData_)]]">
       <template is="dom-repeat" items="[[activityData_]]">
-        <activity-log-item id="[[item.apiCall]]" data="[[item]]">
+        <activity-log-item data="[[item]]">
         </activity-log-item>
       </template>
     </div>

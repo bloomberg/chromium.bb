@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":activity_log_history",
     ":activity_log_item",
     ":activity_log_stream",
+    ":activity_log_stream_item",
   ]
 }
 
@@ -29,6 +30,14 @@ js_library("activity_log_history") {
 }
 
 js_library("activity_log_stream") {
+  deps = [
+    ":activity_log_stream_item",
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/activity_log_private.js" ]
+}
+
+js_library("activity_log_stream_item") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]

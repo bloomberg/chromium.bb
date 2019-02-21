@@ -26,6 +26,8 @@ cr.define('extensions', function() {
    */
   let PageUrlItem;
 
+  // TODO(kelvinjiang): Replace |activity_log_item| with
+  // |activity_log_history_item|.
   const ActivityLogItem = Polymer({
     is: 'activity-log-item',
 

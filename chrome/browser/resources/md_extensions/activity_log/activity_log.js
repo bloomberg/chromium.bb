@@ -66,6 +66,10 @@ cr.define('extensions', function() {
      * @private
      */
     onViewExitFinish_: function() {
+      const activityLogStream = this.$$('activity-log-stream');
+      if (activityLogStream) {
+        activityLogStream.clearStream();
+      }
       this.selectedSubpage_ = ActivityLogSubpage.NONE;
     },
 
@@ -90,6 +94,9 @@ cr.define('extensions', function() {
       if (this.selectedSubpage_ === ActivityLogSubpage.HISTORY) {
         const activityLogHistory = this.$$('activity-log-history');
         activityLogHistory.clearActivities();
+      } else {
+        const activityLogStream = this.$$('activity-log-stream');
+        activityLogStream.clearStream();
       }
     },
 

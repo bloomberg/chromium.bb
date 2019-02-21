@@ -7,6 +7,7 @@ cr.define('extensions', function() {
 
   /**
    * @implements {extensions.ActivityLogDelegate}
+   * @implements {extensions.ActivityLogEventDelegate}
    * @implements {extensions.ErrorPageDelegate}
    * @implements {extensions.ItemDelegate}
    * @implements {extensions.KeyboardShortcutDelegate}
@@ -411,6 +412,11 @@ cr.define('extensions', function() {
         chrome.activityLogPrivate.deleteActivitiesByExtension(
             extensionId, resolve);
       });
+    }
+
+    /** @override */
+    getOnExtensionActivity() {
+      return chrome.activityLogPrivate.onExtensionActivity;
     }
   }
 

@@ -72,7 +72,8 @@
           <div>
             <template is="dom-if"
                 if="[[isStreamTabSelected_(selectedSubpage_)]]" restamp>
-              <activity-log-stream>
+              <activity-log-stream extension-id="[[extensionId]]"
+                  delegate="[[delegate]]">
               </activity-log-stream>
             </template>
           </div>

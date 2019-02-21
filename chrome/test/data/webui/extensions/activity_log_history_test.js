@@ -154,7 +154,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
       // Test the order of the activity log items here. This test is in this
       // file because the logic to group activity log items by their API call
-      // is in activity_log.js.
+      // is in activity_log_history.js.
       expectEquals(
           activityLogItems[0].$$('#activity-key').innerText,
           'i18n.getUILanguage');

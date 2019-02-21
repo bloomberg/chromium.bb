@@ -92,6 +92,7 @@ CrExtensionsActivityLogTest.*
 CrExtensionsActivityLogHistoryTest.*
 CrExtensionsActivityLogItemTest.*
 CrExtensionsActivityLogStreamTest.*
+CrExtensionsActivityLogStreamItemTest.*
 CrExtensionsA11yTest.*
 CrExtensionsA11yTestWithMultipleExensions.*
 CrExtensionsCodeSectionTest.*
