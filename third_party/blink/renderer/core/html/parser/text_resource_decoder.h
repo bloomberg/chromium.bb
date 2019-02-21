@@ -40,6 +40,9 @@ class HTMLMetaCharsetParser;
 // https://encoding.spec.whatwg.org/#utf-8-decode when an appropriate
 // TextResourceDecoderOptions is given.
 // See comments in text_resource_decoder_options.h.
+//
+// To construct a string from known-UTF-8 data without BOM, please use
+// WTF::String::FromUTF8 instead.
 class CORE_EXPORT TextResourceDecoder {
   USING_FAST_MALLOC(TextResourceDecoder);
 
