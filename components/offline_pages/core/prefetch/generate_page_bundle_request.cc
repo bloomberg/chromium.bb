@@ -22,6 +22,7 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
     int max_bundle_size_bytes,
     const std::vector<std::string>& page_urls,
     version_info::Channel channel,
+    bool send_testing_header,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefetchRequestFinishedCallback callback)
     : callback_(std::move(callback)), requested_urls_(page_urls) {
@@ -41,7 +42,8 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
   request.SerializeToString(&upload_data);
 
   fetcher_ = PrefetchRequestFetcher::CreateForPost(
-      GeneratePageBundleRequestURL(channel), upload_data, url_loader_factory,
+      GeneratePageBundleRequestURL(channel), upload_data, send_testing_header,
+      url_loader_factory,
       base::BindOnce(&GeneratePageBundleRequest::OnCompleted,
                      // Fetcher is owned by this instance.
                      base::Unretained(this)));

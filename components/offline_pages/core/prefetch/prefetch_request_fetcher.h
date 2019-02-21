@@ -34,6 +34,7 @@ class PrefetchRequestFetcher {
   static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
       const GURL& url,
       const std::string& message,
+      bool send_testing_header,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FinishedCallback callback);
 
@@ -47,6 +48,7 @@ class PrefetchRequestFetcher {
   PrefetchRequestFetcher(
       const GURL& url,
       const std::string& message,
+      bool send_testing_header,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FinishedCallback callback);
 

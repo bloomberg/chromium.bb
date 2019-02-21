@@ -70,4 +70,14 @@ TEST_F(PrefetchPrefsTest, LimitlessPrefetchingEnabled) {
   EXPECT_FALSE(prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs()));
 }
 
+TEST_F(PrefetchPrefsTest, SendTestingHeaderPref) {
+  EXPECT_FALSE(prefetch_prefs::ShouldSendPrefetchTestingHeader(prefs()));
+
+  prefetch_prefs::SetSendPrefetchTestingHeader(prefs(), true);
+  EXPECT_TRUE(prefetch_prefs::ShouldSendPrefetchTestingHeader(prefs()));
+
+  prefetch_prefs::SetSendPrefetchTestingHeader(prefs(), false);
+  EXPECT_FALSE(prefetch_prefs::ShouldSendPrefetchTestingHeader(prefs()));
+}
+
 }  // namespace offline_pages
