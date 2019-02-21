@@ -2809,10 +2809,10 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/scroll/scroll_snap_data.h"],
-      default_value: "ScrollSnapType()",
+      include_paths: ["cc/input/scroll_snap_data.h"],
+      default_value: "cc::ScrollSnapType()",
       getter: "GetScrollSnapType",
-      type_name: "ScrollSnapType",
+      type_name: "cc::ScrollSnapType",
       converter: "ConvertSnapType",
       keywords: ["none", "x", "y", "block", "inline", "both", "mandatory", "proximity"],
       typedom_types: ["Keyword"]

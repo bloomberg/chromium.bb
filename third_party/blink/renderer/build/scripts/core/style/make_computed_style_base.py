@@ -61,7 +61,7 @@ ALIGNMENT_ORDER = [
     'TabSize',
     'float',
     # Aligns like int
-    'ScrollSnapType',
+    'cc::ScrollSnapType',
     'ScrollSnapAlign',
     'BorderValue',
     'StyleColor',

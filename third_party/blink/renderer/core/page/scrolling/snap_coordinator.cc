@@ -88,8 +88,9 @@ static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
              : layout_box.GetScrollableArea();
 }
 
-static ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
-  ScrollSnapType scroll_snap_type = snap_container.Style()->GetScrollSnapType();
+static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
+  cc::ScrollSnapType scroll_snap_type =
+      snap_container.Style()->GetScrollSnapType();
   if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
     if (snap_container.Style()->IsHorizontalWritingMode())
       scroll_snap_type.axis = cc::SnapAxis::kX;
@@ -324,8 +325,9 @@ bool SnapCoordinator::PerformSnapping(
   return true;
 }
 
-void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
-                                             ScrollSnapType scroll_snap_type) {
+void SnapCoordinator::SnapContainerDidChange(
+    LayoutBox& snap_container,
+    cc::ScrollSnapType scroll_snap_type) {
   snap_container.SetNeedsPaintPropertyUpdate();
   if (scroll_snap_type.is_none) {
     snap_container_map_.erase(&snap_container);

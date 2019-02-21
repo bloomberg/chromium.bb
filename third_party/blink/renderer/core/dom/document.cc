@@ -34,6 +34,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "cc/input/scroll_snap_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -2055,7 +2056,7 @@ void Document::PropagateStyleToViewport() {
   // propagate it too.
   GapLength column_gap = overflow_style->ColumnGap();
 
-  ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
+  cc::ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
 
   EOverscrollBehavior overscroll_behavior_x =
