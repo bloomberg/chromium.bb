@@ -73,6 +73,10 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
 
 void LookalikeUrlInterstitialPage::OnInterstitialClosing() {}
 
+bool LookalikeUrlInterstitialPage::ShouldDisplayURL() const {
+  return false;
+}
+
 // This handles the commands sent from the interstitial JavaScript.
 void LookalikeUrlInterstitialPage::CommandReceived(const std::string& command) {
   if (command == "\"pageLoadComplete\"") {

@@ -45,6 +45,7 @@ class LookalikeUrlInterstitialPage
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
   void OnInterstitialClosing() override;
+  bool ShouldDisplayURL() const override;
   int GetHTMLTemplateId() override;
 
  private:

@@ -43,6 +43,12 @@ class SecurityInterstitialTabHelper
       std::unique_ptr<security_interstitials::SecurityInterstitialPage>
           blocking_page);
 
+  // Determines whether a URL should be shown on the current navigation page.
+  bool ShouldDisplayURL() const;
+
+  // Whether this tab helper is tracking a currently-displaying interstitial.
+  bool IsDisplayingInterstitial() const;
+
   security_interstitials::SecurityInterstitialPage*
   GetBlockingPageForCurrentlyCommittedNavigationForTesting();
 
