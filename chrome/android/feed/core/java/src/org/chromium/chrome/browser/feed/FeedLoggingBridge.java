@@ -12,7 +12,10 @@ import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 import com.google.android.libraries.feed.host.logging.ElementLoggingData;
 import com.google.android.libraries.feed.host.logging.ElementType;
+import com.google.android.libraries.feed.host.logging.InternalFeedError;
+import com.google.android.libraries.feed.host.logging.RequestReason;
 import com.google.android.libraries.feed.host.logging.SpinnerType;
+import com.google.android.libraries.feed.host.logging.ZeroStateShowReason;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -176,12 +179,22 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     }
 
     @Override
-    public void onSpinnerShown(int timeShownMs, @SpinnerType int spinnerType) {
+    public void onSpinnerStarted(@SpinnerType int spinnerType) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onSpinnerFinished(int timeShownMs, @SpinnerType int spinnerType) {
         // Bridge could have been destroyed for policy when this is called.
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
         nativeOnSpinnerShown(mNativeFeedLoggingBridge, timeShownMs);
+    }
+
+    @Override
+    public void onSpinnerDestroyedWithoutCompleting(int timeShownMs, @SpinnerType int spinnerType) {
+        // TODO(https://crbug.com/924739): Implementation.
     }
 
     @Override
@@ -200,6 +213,36 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onVisualElementViewed(ElementLoggingData data, @ElementType int elementType) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onInternalError(@InternalFeedError int internalError) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onTokenCompleted(boolean wasSynthetic, int contentCount, int tokenCount) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onTokenFailedToComplete(boolean wasSynthetic, int failureCount) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onServerRequest(@RequestReason int requestReason) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onZeroStateShown(@ZeroStateShowReason int zeroStateShowReason) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onZeroStateRefreshCompleted(int newContentCount, int newTokenCount) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
