@@ -34,8 +34,10 @@
 # U.S. English
 xkb:us::eng             us               en,en-US,en-AU,en-NZ US   login
 xkb:us:intl:eng         us(intl)         en,en-US             INTL login
+xkb:us:intl_pc:eng      us(intl_pc)      en,en-US             INTL
 xkb:us:altgr-intl:eng   us(altgr-intl)   en,en-US             EXTD login
 xkb:us:dvorak:eng       us(dvorak)       en,en-US             DV   login
+xkb:us:dvp:eng          us(dvp)          en,en-US             DVP  login
 xkb:us:colemak:eng      us(colemak)      en,en-US             CO   login
 xkb:us:workman:eng      us(workman)      en,en-US             WM   login
 xkb:us:workman-intl:eng us(workman-intl) en,en-US             WMI  login
@@ -53,11 +55,12 @@ xkb:be::nld  be nl BE login
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
-xkb:fr::fra       fr         fr,fr-FR FR login
-xkb:be::fra       be         fr       BE login
-xkb:ca::fra       ca         fr,fr-CA CA login
-xkb:ch:fr:fra     ch(fr)     fr,fr-CH CH login
-xkb:ca:multix:fra ca(multix) fr,fr-CA CA login
+xkb:fr::fra       fr(oss)    fr,fr-FR FR   login
+xkb:fr:bepo:fra   fr(bepo)   fr,fr-FR BEPO login
+xkb:be::fra       be         fr       BE   login
+xkb:ca::fra       ca         fr,fr-CA CA   login
+xkb:ch:fr:fra     ch(fr)     fr,fr-CH CH   login
+xkb:ca:multix:fra ca(multix) fr,fr-CA CA   login
 
 # German
 xkb:de::ger     de      de,de-DE DE  login
@@ -85,8 +88,10 @@ xkb:ee::est           ee             et        EE login
 xkb:es::spa           es             es        ES login
 xkb:es:cat:cat        es(cat)        ca        CAS login
 xkb:dk::dan           dk             da        DK login
+xkb:fo::fao           fo             fo        FO
 xkb:gr::gre           gr             el        GR
 xkb:il::heb           il             he        IL
+xkb:kz::kaz           kz             kk        KZ
 xkb:latam::spa        latam          es,es-419 LA login
 xkb:lt::lit           lt             lt        LT login
 xkb:lv:apostrophe:lav lv(apostrophe) lv        LV login
@@ -95,6 +100,7 @@ xkb:gb:extd:eng       gb(extd)       en,en-GB  GB login
 xkb:gb:dvorak:eng     gb(dvorak)     en,en-GB  DV login
 xkb:fi::fin           fi             fi        FI login
 xkb:hu::hun           hu             hu        HU login
+xkb:hu:qwerty:hun     hu(qwerty)     hu        HU
 xkb:it::ita           it             it,it-IT  IT login
 xkb:is::ice           is             is        IS login
 xkb:no::nob           no             nb,nn,no  NO login
@@ -107,6 +113,7 @@ xkb:sk::slo           sk             sk        SK
 xkb:si::slv           si             sl        SI login
 xkb:rs::srp           rs             sr        RS
 xkb:tr::tur           tr             tr        TR login
+xkb:tr:f:tur          tr(f)          tr        TR
 xkb:ua::ukr           ua             uk        UA
 xkb:by::bel           by             be        BY
 xkb:am:phonetic:arm   am             hy        AM

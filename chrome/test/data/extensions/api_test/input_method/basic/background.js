@@ -85,7 +85,7 @@ function getListTest() {
   console.log('getListTest: Getting input method list.');
 
   chrome.inputMethodPrivate.getInputMethods(function(inputMethods) {
-    chrome.test.assertEq(6, inputMethods.length);
+    chrome.test.assertEq(7, inputMethods.length);
     var foundInitialInputMethod = false;
     var foundNewInputMethod = false;
     for (var i = 0; i < inputMethods.length; ++i) {
