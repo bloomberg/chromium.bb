@@ -3,6 +3,12 @@ function offsetFromViewportTop(element)
     return element.getClientRects()[0].top;
 }
 
+function offsetFromViewportBottom(element)
+{
+    var rect = element.getClientRects()[0];
+    return window.innerHeight - rect.top - rect.height;
+}
+
 function offsetOfMiddleFromViewportTop(element)
 {
     return element.getClientRects()[0].top + Math.round(element.getClientRects()[0].height / 2);
@@ -26,6 +32,15 @@ function generateNumbers(from, to, zeroPaddedWidth, delimiter)
         result += number + delimiter;
     }
     return result;
+}
+
+function assertInputIsInTheBottomEdgeOfViewport()
+{
+    var offsetOfInput = offsetFromViewportBottom(document.getElementById("input"));
+    document.getElementById("results").innerHTML += "ScrollVertically: " +
+        (Math.abs(offsetOfInput) <= 3 ?
+         "PASS" :
+         "FAIL<br>offsetOfInput: " + offsetOfInput);
 }
 
 function assertInputIsInTheMiddleOfViewport()
