@@ -1440,10 +1440,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableTouchAdjustment)},
 #if defined(OS_CHROMEOS)
-    {"enable-captive-portal-random-url",
-     flag_descriptions::kEnableCaptivePortalRandomUrl,
-     flag_descriptions::kEnableCaptivePortalRandomUrlDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalRandomUrl)},
     {"enable-explicit-dma-fences",
      flag_descriptions::kEnableExplicitDmaFencesName,
      flag_descriptions::kEnableExplicitDmaFencesDescription, kOsCrOS,
