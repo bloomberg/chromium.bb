@@ -4,15 +4,21 @@
 
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-InfoBarContainerIOS::InfoBarContainerIOS(id<InfobarContainerConsumer> consumer)
-    : InfoBarContainer(nullptr), consumer_(consumer) {}
+InfoBarContainerIOS::InfoBarContainerIOS(
+    id<InfobarContainerConsumer> consumer,
+    id<InfobarContainerConsumer> legacyConsumer)
+    : InfoBarContainer(nullptr),
+      consumer_(consumer),
+      legacyConsumer_(legacyConsumer) {}
 
 InfoBarContainerIOS::~InfoBarContainerIOS() {
   RemoveAllInfoBarsForDestruction();
@@ -21,8 +27,16 @@ InfoBarContainerIOS::~InfoBarContainerIOS() {
 void InfoBarContainerIOS::PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
                                                      size_t position) {
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
-  [consumer_ addInfoBarWithDelegate:infobar_ios->InfobarUIDelegate()
-                           position:position];
+  id<InfobarUIDelegate> delegate = infobar_ios->InfobarUIDelegate();
+
+  if ([delegate isPresented]) {
+    // Only InfobarUIReboot Infobars should be presented using the non legacy
+    // consumer.
+    DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+    [consumer_ addInfoBarWithDelegate:delegate position:position];
+  } else {
+    [legacyConsumer_ addInfoBarWithDelegate:delegate position:position];
+  }
 }
 
 void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
@@ -34,4 +48,5 @@ void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
 void InfoBarContainerIOS::PlatformSpecificInfoBarStateChanged(
     bool is_animating) {
   [consumer_ setUserInteractionEnabled:!is_animating];
+  [legacyConsumer_ setUserInteractionEnabled:!is_animating];
 }

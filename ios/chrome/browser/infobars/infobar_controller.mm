@@ -21,6 +21,7 @@
 @synthesize view = _view;
 @synthesize delegate = _delegate;
 @synthesize infoBarDelegate = _infoBarDelegate;
+@synthesize presented = _presented;
 
 #pragma mark - Public
 
@@ -29,6 +30,7 @@
   self = [super init];
   if (self) {
     _infoBarDelegate = infoBarDelegate;
+    _presented = NO;
     _view = [self infobarView];
   }
   return self;
