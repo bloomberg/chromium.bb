@@ -5,42 +5,147 @@
 cr.define('extensions', function() {
   'use strict';
 
+  /** @interface */
+  class ActivityLogEventDelegate {
+    /** @return {!ChromeEvent} */
+    getOnExtensionActivity() {}
+  }
+
+  /**
+   * Process activity for the stream. In the case of content scripts, we split
+   * the activity for every script invoked.
+   * @param {!chrome.activityLogPrivate.ExtensionActivity}
+   *     activity
+   * @return {!Array<!extensions.StreamItem>}
+   */
+  function processActivityForStream(activity) {
+    const activityType = activity.activityType;
+    const timestamp = activity.time;
+    const isContentScript = activityType ===
+        chrome.activityLogPrivate.ExtensionActivityType.CONTENT_SCRIPT;
+
+    const args = isContentScript ? null : activity.args;
+
+    let streamItemNames = [activity.apiCall];
+
+    // TODO(kelvinjiang): Reuse logic from activity_log_history and refactor
+    // some of the processing code into a separate file in a follow up CL.
+    if (isContentScript) {
+      streamItemNames = activity.args ? JSON.parse(activity.args) : [];
+      assert(Array.isArray(streamItemNames), 'Invalid data for script names.');
+    }
+
+    return streamItemNames.map(name => ({
+                                 args,
+                                 activityType,
+                                 name,
+                                 pageUrl: activity.pageUrl,
+                                 timestamp,
+                               }));
+  }
+
   const ActivityLogStream = Polymer({
     is: 'activity-log-stream',
 
     properties: {
+      /** @type {string} */
+      extensionId: String,
+
+      /** @type {!extensions.ActivityLogEventDelegate} */
+      delegate: Object,
+
       /** @private */
       isStreamOn_: {
         type: Boolean,
         value: false,
       },
+
+      /** @private {!Array<!chrome.activityLogPrivate.ExtensionActivity>} */
+      activityStream_: {
+        type: Array,
+        value: () => [],
+      },
     },
+
+    /**
+     * Instance of |extensionActivityListener_| bound to |this|.
+     * @private {!Function}
+     */
+    listenerInstance_: () => {},
 
     /** @override */
     attached: function() {
-      this.isStreamOn_ = true;
+      this.listenerInstance_ = this.extensionActivityListener_.bind(this);
+      this.startStream_();
     },
 
     /** @override */
     detached: function() {
-      this.isStreamOn_ = false;
+      this.pauseStream_();
+      this.clearStream();
     },
 
-    /** @return {boolean} */
-    isStreamOnForTest() {
-      // TODO(kelvinjiang): remove this method when the event listener has been
-      // hooked up to this component (in the CL after this one). At that time,
-      // onExtensionActivity.hasListeners() will be used instead.
-      return this.isStreamOn_;
+    clearStream: function() {
+      this.activityStream_ = [];
     },
 
     /** @private */
-    onToggleButtonTap_: function() {
-      this.isStreamOn_ = !this.isStreamOn_;
+    startStream_: function() {
+      if (this.isStreamOn_) {
+        return;
+      }
+
+      this.isStreamOn_ = true;
+      this.delegate.getOnExtensionActivity().addListener(
+          this.listenerInstance_);
+    },
+
+    /** @private */
+    pauseStream_: function() {
+      if (!this.isStreamOn_) {
+        return;
+      }
+
+      this.delegate.getOnExtensionActivity().removeListener(
+          this.listenerInstance_);
+      this.isStreamOn_ = false;
+    },
+
+    /** @private */
+    onToggleButtonClick_: function() {
+      if (this.isStreamOn_) {
+        this.pauseStream_();
+      } else {
+        this.startStream_();
+      }
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    isStreamEmpty_: function() {
+      return this.activityStream_.length == 0;
+    },
+
+    /**
+     * @private
+     * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
+     */
+    extensionActivityListener_: function(activity) {
+      if (activity.extensionId != this.extensionId) {
+        return;
+      }
+
+      const streamItems = processActivityForStream(activity);
+      for (const item of streamItems) {
+        this.push('activityStream_', item);
+      }
     },
   });
 
   return {
     ActivityLogStream: ActivityLogStream,
+    ActivityLogEventDelegate: ActivityLogEventDelegate,
   };
 });

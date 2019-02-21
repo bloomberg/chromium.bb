@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="activity_log_stream_item.html">
 <link rel="import" href="../shared_style.html">
 
 <dom-module id="activity-log-stream">
@@ -12,7 +13,7 @@
       }
     </style>
     <div id="activity-log-stream-header" class="page-header">
-      <paper-button id="toggle-stream-button" on-click="onToggleButtonTap_">
+      <paper-button id="toggle-stream-button" on-click="onToggleButtonClick_">
         <span hidden$="[[isStreamOn_]]">
           $i18n{startActivityStream}
         </span>
@@ -21,13 +22,21 @@
         </span>
       </paper-button>
     </div>
-    <div id="empty-stream-message" class="activity-message">
-      <span hidden$="[[isStreamOn_]]">
+    <div id="empty-stream-message" class="activity-message"
+        hidden$="[[!isStreamEmpty_(activityStream_.length)]]">
+      <span id="stream-stopped-message" hidden$="[[isStreamOn_]]">
         $i18n{emptyStreamStopped}
       </span>
-      <span hidden$="[[!isStreamOn_]]">
+      <span id="stream-started-message" hidden$="[[!isStreamOn_]]">
         $i18n{emptyStreamStarted}
       </span>
+    </div>
+    <div id="activity-stream-list"
+        hidden$="[[isStreamEmpty_(activityStream_.length)]]">
+      <template is="dom-repeat" items="[[activityStream_]]">
+        <activity-log-stream-item id="[[item.id]]" data="[[item]]">
+        </activity-log-stream-item>
+      </template>
     </div>
   </template>
   <script src="activity_log_stream.js"></script>

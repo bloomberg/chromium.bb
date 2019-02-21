@@ -39,14 +39,14 @@ suite('ExtensionsActivityLogItemTest', function() {
     activityLogItem.remove();
   });
 
-  test('no page urls shown when activity has no associated page', function() {
+  test('no page URLs shown when activity has no associated page', function() {
     Polymer.dom.flush();
 
     testVisible('#activity-item-main-row', true);
     testVisible('#page-url-list', false);
   });
 
-  test('clicking the expand button shows the associated page url', function() {
+  test('clicking the expand button shows the associated page URL', function() {
     const countsByUrl = new Map([['google.com', 1]]);
 
     testActivityGroup = {
@@ -68,7 +68,7 @@ suite('ExtensionsActivityLogItemTest', function() {
     testVisible('#page-url-list', true);
   });
 
-  test('count not shown when there is only 1 page url', function() {
+  test('count not shown when there is only 1 page URL', function() {
     const countsByUrl = new Map([['google.com', 1]]);
 
     testActivityGroup = {
@@ -90,7 +90,7 @@ suite('ExtensionsActivityLogItemTest', function() {
     testVisible('.page-url-count', false);
   });
 
-  test('count shown in descending order for multiple page urls', function() {
+  test('count shown in descending order for multiple page URLs', function() {
     const countsByUrl =
         new Map([['google.com', 5], ['chrome://extensions', 10]]);
 
@@ -114,7 +114,7 @@ suite('ExtensionsActivityLogItemTest', function() {
     const pageUrls = activityLogItem.shadowRoot.querySelectorAll('.page-url');
     expectEquals(pageUrls.length, 2);
 
-    // Test the order of the page urls and activity count for the activity
+    // Test the order of the page URLs and activity count for the activity
     // log item here. Apparently a space is added at the end of the innerText,
     // hence the use of .includes.
     expectTrue(pageUrls[0]

@@ -277,6 +277,26 @@ TEST_F('CrExtensionsActivityLogStreamTest', 'All', () => {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+// Extension Activity Log Stream Item Tests
+
+CrExtensionsActivityLogStreamItemTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/activity_log/activity_log_stream_item.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'activity_log_stream_item_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsActivityLogStreamItemTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
 CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {

@@ -19,6 +19,14 @@ suite('ExtensionsActivityLogTest', function() {
   let proxyDelegate;
   let testVisible;
 
+  const testActivityEvent = {
+    extensionId: EXTENSION_ID,
+    activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
+    time: 1550101623113,
+    args: JSON.stringify([null]),
+    apiCall: 'testAPI.testMethod',
+  };
+
   const testActivities = {
     activities: [
       {
@@ -184,9 +192,6 @@ suite('ExtensionsActivityLogTest', function() {
     Polymer.dom.flush();
     testVisible('activity-log-stream', true);
 
-    const activityLogStream = activityLog.$$('activity-log-stream');
-    assertTrue(activityLogStream.isStreamOnForTest());
-
     // Navigate back to the activity log history tab.
     activityLog.$$('#history-tab').click();
 
@@ -194,9 +199,34 @@ suite('ExtensionsActivityLogTest', function() {
     proxyDelegate.whenCalled('getExtensionActivityLog').then(() => {
       Polymer.dom.flush();
       testVisible('activity-log-history', true);
-
-      // Stream should be turned off.
-      assertFalse(activityLogStream.isStreamOnForTest());
     });
+  });
+
+  test('clicking on clear button clears the activity log stream', function() {
+    Polymer.dom.flush();
+
+    // Navigate to the activity log stream.
+    activityLog.$$('#real-time-tab').click();
+    Polymer.dom.flush();
+    testVisible('activity-log-stream', true);
+
+    const activityLogStream = activityLog.$$('activity-log-stream');
+    const testVisibleForStream =
+        extension_test_util.testVisible.bind(null, activityLogStream);
+    proxyDelegate.getOnExtensionActivity().callListeners(testActivityEvent);
+
+    Polymer.dom.flush();
+    testVisibleForStream('#empty-stream-message', false);
+
+    expectEquals(
+        1,
+        activityLogStream.shadowRoot
+            .querySelectorAll('activity-log-stream-item')
+            .length);
+
+    activityLog.$$('#clear-activities-button').click();
+    Polymer.dom.flush();
+
+    testVisibleForStream('#empty-stream-message', true);
   });
 });

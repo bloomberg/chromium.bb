@@ -30,6 +30,7 @@ cr.define('extensions', function() {
 
       this.itemStateChangedTarget = new FakeChromeEvent();
       this.profileStateChangedTarget = new FakeChromeEvent();
+      this.extensionActivityTarget = new FakeChromeEvent();
 
       /** @type {boolean} */
       this.acceptRuntimeHostPermission = true;
@@ -204,6 +205,11 @@ cr.define('extensions', function() {
     deleteActivitiesFromExtension(extensionId) {
       this.methodCalled('deleteActivitiesFromExtension', extensionId);
       return Promise.resolve();
+    }
+
+    /** @override */
+    getOnExtensionActivity() {
+      return this.extensionActivityTarget;
     }
   }
 
