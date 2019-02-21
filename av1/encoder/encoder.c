@@ -4178,6 +4178,47 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
   fix_interp_filter(&cm->interp_filter, cpi->td.counts);
 }
 
+static int get_regulated_q_overshoot(AV1_COMP *const cpi, int q_low, int q_high,
+                                     int top_index, int bottom_index) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const RATE_CONTROL *const rc = &cpi->rc;
+
+  av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+
+  int q_regulated =
+      av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
+                        AOMMAX(q_high, top_index), cm->width, cm->height);
+
+  int retries = 0;
+  while (q_regulated < q_low && retries < 10) {
+    av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+    q_regulated =
+        av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
+                          AOMMAX(q_high, top_index), cm->width, cm->height);
+    retries++;
+  }
+  return q_regulated;
+}
+
+static int get_regulated_q_undershoot(AV1_COMP *const cpi, int q_high,
+                                      int top_index, int bottom_index) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const RATE_CONTROL *const rc = &cpi->rc;
+
+  av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+  int q_regulated = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
+                                      top_index, cm->width, cm->height);
+
+  int retries = 0;
+  while (q_regulated > q_high && retries < 10) {
+    av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+    q_regulated = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
+                                    top_index, cm->width, cm->height);
+    retries++;
+  }
+  return q_regulated;
+}
+
 // Called after encode_with_recode_loop() has just encoded a frame and packed
 // its bitstream.  This function works out whether we under- or over-shot
 // our bitrate target and adjusts q as appropriate.  Also decides whether
@@ -4248,7 +4289,6 @@ static void recode_loop_update_q(AV1_COMP *const cpi, int *const loop,
     // Is the projected frame size out of range and are we allowed
     // to attempt to recode.
     int last_q = *q;
-    int retries = 0;
 
     // Frame size out of permitted range:
     // Update correction factor & compute new Q to try...
@@ -4261,26 +4301,21 @@ static void recode_loop_update_q(AV1_COMP *const cpi, int *const loop,
       // Raise Qlow as to at least the current value
       *q_low = *q < *q_high ? *q + 1 : *q_high;
 
-      if (*undershoot_seen || loop_at_this_size > 1) {
-        // Update rate_correction_factor unless
+      if (*undershoot_seen || loop_at_this_size > 2 ||
+          (loop_at_this_size == 2 && !frame_is_intra_only(cm))) {
         av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
 
         *q = (*q_high + *q_low + 1) / 2;
+      } else if (loop_at_this_size == 2 && frame_is_intra_only(cm)) {
+        const int q_mid = (*q_high + *q_low + 1) / 2;
+        const int q_regulated = get_regulated_q_overshoot(
+            cpi, *q_low, *q_high, top_index, bottom_index);
+        // Get 'q' in-between 'q_mid' and 'q_regulated' for a smooth
+        // transition between loop_at_this_size < 2 and loop_at_this_size > 2.
+        *q = (q_mid + q_regulated + 1) / 2;
       } else {
-        // Update rate_correction_factor unless
-        av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
-
-        *q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                               AOMMAX(*q_high, top_index), cm->width,
-                               cm->height);
-
-        while (*q < *q_low && retries < 10) {
-          av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
-          *q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                 AOMMAX(*q_high, top_index), cm->width,
-                                 cm->height);
-          retries++;
-        }
+        *q = get_regulated_q_overshoot(cpi, *q_low, *q_high, top_index,
+                                       bottom_index);
       }
 
       *overshoot_seen = 1;
@@ -4288,26 +4323,34 @@ static void recode_loop_update_q(AV1_COMP *const cpi, int *const loop,
       // Frame is too small
       *q_high = *q > *q_low ? *q - 1 : *q_low;
 
-      if (*overshoot_seen || loop_at_this_size > 1) {
+      if (*overshoot_seen || loop_at_this_size > 2 ||
+          (loop_at_this_size == 2 && !frame_is_intra_only(cm))) {
         av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
         *q = (*q_high + *q_low) / 2;
+      } else if (loop_at_this_size == 2 && frame_is_intra_only(cm)) {
+        const int q_mid = (*q_high + *q_low) / 2;
+        const int q_regulated =
+            get_regulated_q_undershoot(cpi, *q_high, top_index, bottom_index);
+        // Get 'q' in-between 'q_mid' and 'q_regulated' for a smooth
+        // transition between loop_at_this_size < 2 and loop_at_this_size > 2.
+        *q = (q_mid + q_regulated) / 2;
+
+        // Special case reset for qlow for constrained quality.
+        // This should only trigger where there is very substantial
+        // undershoot on a frame and the auto cq level is above
+        // the user passsed in value.
+        if (cpi->oxcf.rc_mode == AOM_CQ && q_regulated < *q_low) {
+          *q_low = *q;
+        }
       } else {
-        av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
-        *q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                               top_index, cm->width, cm->height);
+        *q = get_regulated_q_undershoot(cpi, *q_high, top_index, bottom_index);
+
         // Special case reset for qlow for constrained quality.
         // This should only trigger where there is very substantial
         // undershoot on a frame and the auto cq level is above
         // the user passsed in value.
         if (cpi->oxcf.rc_mode == AOM_CQ && *q < *q_low) {
           *q_low = *q;
-        }
-
-        while (*q > *q_high && retries < 10) {
-          av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
-          *q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                 top_index, cm->width, cm->height);
-          retries++;
         }
       }
 
