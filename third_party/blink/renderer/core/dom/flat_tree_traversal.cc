@@ -212,9 +212,9 @@ ContainerNode* FlatTreeTraversal::TraverseParentOrHost(const Node& node) {
   ContainerNode* parent = node.parentNode();
   if (!parent)
     return nullptr;
-  if (!parent->IsShadowRoot())
+  auto* shadow_root = DynamicTo<ShadowRoot>(parent);
+  if (!shadow_root)
     return parent;
-  ShadowRoot* shadow_root = ToShadowRoot(parent);
   return &shadow_root->host();
 }
 

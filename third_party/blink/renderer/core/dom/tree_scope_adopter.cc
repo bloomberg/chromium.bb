@@ -168,8 +168,8 @@ inline void TreeScopeAdopter::MoveNodeToNewDocument(
                                           new_document);
   }
 
-  if (node.IsShadowRoot())
-    ToShadowRoot(node).SetDocument(new_document);
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(node))
+    shadow_root->SetDocument(new_document);
 
 #if DCHECK_IS_ON()
   g_did_move_to_new_document_was_called = false;

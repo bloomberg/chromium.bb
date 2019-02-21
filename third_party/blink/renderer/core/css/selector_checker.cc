@@ -283,8 +283,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
 }
 
 static inline bool IsV0ShadowRoot(const Node* node) {
-  return node && node->IsShadowRoot() &&
-         ToShadowRoot(node)->GetType() == ShadowRootType::V0;
+  auto* shadow_root = DynamicTo<ShadowRoot>(node);
+  return shadow_root && shadow_root->GetType() == ShadowRootType::V0;
 }
 
 SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoShadow(
@@ -299,8 +299,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoShadow(
 }
 
 static inline Element* ParentOrV0ShadowHostElement(const Element& element) {
-  if (element.parentNode() && element.parentNode()->IsShadowRoot()) {
-    if (ToShadowRoot(element.parentNode())->GetType() != ShadowRootType::V0)
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(element.parentNode())) {
+    if (shadow_root->GetType() != ShadowRootType::V0)
       return nullptr;
   }
   return element.ParentOrShadowHostElement();
@@ -1065,8 +1065,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
-      if (context.scope->IsShadowRoot())
-        return element == ToShadowRoot(context.scope)->host();
+      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope.Get()))
+        return element == shadow_root->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
       return !element.IsDefined() && element.IsUnresolvedV0CustomElement();

@@ -175,7 +175,7 @@ ContainerNode& ScopedStyleResolver::InvalidationRootForTreeScope(
     const TreeScope& tree_scope) {
   if (tree_scope.RootNode() == tree_scope.GetDocument())
     return tree_scope.GetDocument();
-  return ToShadowRoot(tree_scope.RootNode()).host();
+  return To<ShadowRoot>(tree_scope.RootNode()).host();
 }
 
 void ScopedStyleResolver::KeyframesRulesAdded(const TreeScope& tree_scope) {

@@ -398,10 +398,10 @@ ShadowRoot* InspectorDOMAgent::UserAgentShadowRoot(Node* node) {
     return nullptr;
 
   Node* candidate = node;
-  while (candidate && !candidate->IsShadowRoot())
+  while (candidate && !IsA<ShadowRoot>(candidate))
     candidate = candidate->ParentOrShadowHostNode();
   DCHECK(candidate);
-  ShadowRoot* shadow_root = ToShadowRoot(candidate);
+  ShadowRoot* shadow_root = To<ShadowRoot>(candidate);
 
   return shadow_root->IsUserAgent() ? shadow_root : nullptr;
 }
@@ -412,7 +412,7 @@ Response InspectorDOMAgent::AssertEditableNode(int node_id, Node*& node) {
     return response;
 
   if (node->IsInShadowTree()) {
-    if (node->IsShadowRoot())
+    if (IsA<ShadowRoot>(node))
       return Response::Error("Cannot edit shadow roots");
     if (UserAgentShadowRoot(node))
       return Response::Error("Cannot edit nodes from user-agent shadow trees");
@@ -944,16 +944,15 @@ static Node* NextNodeWithShadowDOMInMind(const Node& current,
   do {
     if (node == stay_within)
       return nullptr;
-    if (node->IsShadowRoot()) {
-      const ShadowRoot* shadow_root = ToShadowRoot(node);
+    auto* shadow_root = DynamicTo<ShadowRoot>(node);
+    if (shadow_root) {
       Element& host = shadow_root->host();
       if (host.HasChildren())
         return host.firstChild();
     }
     if (node->nextSibling())
       return node->nextSibling();
-    node =
-        node->IsShadowRoot() ? &ToShadowRoot(node)->host() : node->parentNode();
+    node = shadow_root ? &shadow_root->host() : node->parentNode();
   } while (node);
 
   return nullptr;
@@ -1547,8 +1546,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     Attr* attribute = ToAttr(node);
     value->setName(attribute->name());
     value->setValue(attribute->value());
-  } else if (node->IsShadowRoot()) {
-    value->setShadowRootType(GetShadowRootType(ToShadowRoot(node)));
+  } else if (auto* shadow_root = DynamicTo<ShadowRoot>(node)) {
+    value->setShadowRootType(GetShadowRootType(shadow_root));
   }
 
   if (node->IsContainerNode()) {

@@ -118,7 +118,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
 
  private:
   Element* TreeOwner(ContainerNode* node) {
-    if (ShadowRoot* shadow_root = ToShadowRootOrNull(node))
+    if (ShadowRoot* shadow_root = DynamicTo<ShadowRoot>(node))
       return &shadow_root->host();
     // FIXME: Figure out the right thing for OOPI here.
     if (Frame* frame = node->GetDocument().GetFrame())

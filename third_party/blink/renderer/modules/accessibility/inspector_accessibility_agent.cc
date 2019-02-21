@@ -628,14 +628,15 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
   // Walk up parents until an AXObject can be found.
-  Node* parent_node = inspected_dom_node.IsShadowRoot()
-                          ? &ToShadowRoot(inspected_dom_node).host()
+  auto* shadow_root = DynamicTo<ShadowRoot>(inspected_dom_node);
+  Node* parent_node = shadow_root
+                          ? &shadow_root->host()
                           : FlatTreeTraversal::Parent(inspected_dom_node);
   AXObject* parent_ax_object = cache.GetOrCreate(parent_node);
   while (parent_node && !parent_ax_object) {
-    parent_node = parent_node->IsShadowRoot()
-                      ? &ToShadowRoot(parent_node)->host()
-                      : FlatTreeTraversal::Parent(*parent_node);
+    shadow_root = DynamicTo<ShadowRoot>(parent_node);
+    parent_node = shadow_root ? &shadow_root->host()
+                              : FlatTreeTraversal::Parent(*parent_node);
     parent_ax_object = cache.GetOrCreate(parent_node);
   }
 
