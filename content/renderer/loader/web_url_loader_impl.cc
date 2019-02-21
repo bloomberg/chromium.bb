@@ -565,9 +565,6 @@ void WebURLLoaderImpl::Context::Cancel() {
   if (body_stream_writer_)
     body_stream_writer_->Fail();
 
-  body_handle_.reset();
-  body_watcher_.Cancel();
-
   // Do not make any further calls to the client.
   client_ = nullptr;
   loader_ = nullptr;
@@ -1047,10 +1044,6 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
 }
 
 void WebURLLoaderImpl::Context::OnBodyHasBeenRead(uint32_t read_bytes) {
-  if (!body_handle_) {
-    // The request is cancelled.
-    return;
-  }
   MojoResult rv = body_handle_->EndReadData(read_bytes);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   if (defers_loading_ == NOT_DEFERRING)
