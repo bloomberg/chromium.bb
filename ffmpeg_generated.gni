@@ -156,6 +156,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/fifo.c",
     "libavutil/file_open.c",
     "libavutil/frame.c",
+    "libavutil/hdr_dynamic_metadata.c",
     "libavutil/hwcontext.c",
     "libavutil/integer.c",
     "libavutil/intmath.c",
@@ -429,6 +430,7 @@ if ((use_linux_config && current_cpu == "mips64el") || (use_linux_config && curr
     "libavcodec/mips/autorename_libavcodec_mips_videodsp_init.c",
     "libavcodec/mips/h264pred_init_mips.c",
     "libavcodec/mips/hpeldsp_init_mips.c",
+    "libavcodec/mips/vp3dsp_init_mips.c",
     "libavcodec/mips/vp8dsp_init_mips.c",
   ]
 }
@@ -464,10 +466,12 @@ if ((is_win && current_cpu == "arm64") || (use_linux_config && current_cpu == "a
     "libavcodec/aarch64/h264pred_init.c",
     "libavcodec/aarch64/hpeldsp_init_aarch64.c",
     "libavcodec/aarch64/videodsp_init.c",
+    "libavcodec/aarch64/vp8dsp_init_aarch64.c",
   ]
   ffmpeg_gas_sources += [
     "libavcodec/aarch64/autorename_libavcodec_aarch64_h264pred_neon.S",
     "libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S",
+    "libavcodec/aarch64/autorename_libavcodec_aarch64_vp8dsp_neon.S",
     "libavcodec/aarch64/videodsp.S",
   ]
 }
