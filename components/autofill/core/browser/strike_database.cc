@@ -72,7 +72,8 @@ void StrikeDatabase::ClearStrikes(const std::string key) {
   ClearAllProtoStrikesForKey(key, base::DoNothing());
 }
 
-void StrikeDatabase::ClearAllStrikes(const std::string& project_prefix) {
+void StrikeDatabase::ClearAllStrikesForProject(
+    const std::string& project_prefix) {
   std::vector<std::string> keys_to_delete;
   for (std::pair<std::string, StrikeData> entry : strike_map_cache_) {
     if (entry.first.find(project_prefix) == 0) {
@@ -81,6 +82,11 @@ void StrikeDatabase::ClearAllStrikes(const std::string& project_prefix) {
   }
   for (std::string key : keys_to_delete)
     ClearStrikes(key);
+}
+
+void StrikeDatabase::ClearAllStrikes() {
+  strike_map_cache_.clear();
+  ClearAllProtoStrikes(base::DoNothing());
 }
 
 StrikeDatabase::StrikeDatabase()

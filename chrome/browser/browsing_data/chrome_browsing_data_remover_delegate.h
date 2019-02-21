@@ -223,6 +223,7 @@ class ChromeBrowsingDataRemoverDelegate
     kDrmLicenses = 28,
     kHostCache = 29,
     kTpmAttestationKeys = 30,
+    kStrikes = 31,
   };
 
   // Called by CreateTaskCompletionClosure().
