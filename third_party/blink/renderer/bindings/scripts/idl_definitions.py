@@ -429,6 +429,9 @@ class IdlAttribute(TypedObject):
         self.name = node.GetName() if node else None
         self.idl_type = None
         self.extended_attributes = {}
+        # In what interface the attribute is (originally) defined when the
+        # attribute is inherited from an ancestor interface.
+        self.defined_in = None
 
         if node:
             children = node.GetChildren()
@@ -469,6 +472,9 @@ class IdlConstant(TypedObject):
         # we don't use the full type_node_to_type function.
         self.idl_type = type_node_inner_to_type(type_node)
         self.value = value_node.GetProperty('VALUE')
+        # In what interface the attribute is (originally) defined when the
+        # attribute is inherited from an ancestor interface.
+        self.defined_in = None
 
         if num_children == 3:
             ext_attributes_node = children[2]
@@ -545,6 +551,9 @@ class IdlOperation(TypedObject):
         self.is_constructor = False
         self.idl_type = None
         self.is_static = False
+        # In what interface the attribute is (originally) defined when the
+        # attribute is inherited from an ancestor interface.
+        self.defined_in = None
 
         if not node:
             return

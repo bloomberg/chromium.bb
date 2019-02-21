@@ -334,6 +334,9 @@ def inherit_unforgeable_attributes(resolved_definitions, interfaces_info):
         interface = interfaces_info[interface_name]
         unforgeable_attributes, referenced_interfaces, cpp_includes = collect_unforgeable_attributes_in_ancestors(interface.get('parent'), component)
         this_unforgeable = interface.get('unforgeable_attributes', [])
+        for attr in this_unforgeable:
+            if attr.defined_in is None:
+                attr.defined_in = interface_name
         unforgeable_attributes.extend(this_unforgeable)
         this_referenced = [attr.idl_type.base_type for attr in this_unforgeable
                            if attr.idl_type.base_type in
