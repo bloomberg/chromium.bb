@@ -51,6 +51,9 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_experiments.h"
@@ -1678,15 +1681,21 @@ class PreviewsLitePageAndPageHintsBrowserTest
 
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    base::HistogramTester histogram_tester;
-
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
 
-    RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-        1);
+    // Wait for hint update processing to complete.
+    base::RunLoop run_loop;
+    PreviewsServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()))
+        ->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
@@ -1702,30 +1711,6 @@ class PreviewsLitePageAndPageHintsBrowserTest
   }
 
  private:
-  // Retries fetching |histogram_name| until it contains at least |count|
-  // samples.
-  void RetryForHistogramUntilCountReached(
-      base::HistogramTester* histogram_tester,
-      const std::string& histogram_name,
-      size_t count) {
-    while (true) {
-      base::TaskScheduler::GetInstance()->FlushForTesting();
-      base::RunLoop().RunUntilIdle();
-
-      content::FetchHistogramsFromChildProcesses();
-      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-      const std::vector<base::Bucket> buckets =
-          histogram_tester->GetAllSamples(histogram_name);
-      size_t total_count = 0;
-      for (const auto& bucket : buckets) {
-        total_count += bucket.count;
-      }
-      if (total_count >= count) {
-        break;
-      }
-    }
-  }
 
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;

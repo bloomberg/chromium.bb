@@ -131,6 +131,10 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetEffectiveConnectionType(
       net::EffectiveConnectionType effective_connection_type);
 
+  PreviewsOptimizationGuide* previews_opt_guide() const {
+    return previews_opt_guide_.get();
+  }
+
  protected:
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(
