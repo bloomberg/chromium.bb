@@ -354,4 +354,134 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_WildcardSchemes) {
               testing::ElementsAre(kWildcardSchemePattern));
 }
 
+// Tests that unpacking <all_urls> correctly includes or omits the file:-scheme.
+TEST(ExtensionPermissionsAPIHelpers, Unpack_FileSchemes_AllUrls) {
+  // Without file access, <all_urls> should be parsed, but the resulting pattern
+  // should not include file:-scheme access.
+  {
+    const int kNonFileSchemes =
+        Extension::kValidHostPermissionSchemes & ~URLPattern::SCHEME_FILE;
+    URLPattern all_urls(kNonFileSchemes, URLPattern::kAllUrlsPattern);
+    PermissionSet required_permissions(
+        APIPermissionSet(), ManifestPermissionSet(), URLPatternSet({all_urls}),
+        URLPatternSet());
+
+    Permissions permissions_object;
+    permissions_object.origins = std::make_unique<std::vector<std::string>>(
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}));
+
+    constexpr bool kHasFileAccess = false;
+    std::string error;
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, required_permissions,
+                            PermissionSet(), kHasFileAccess, &error);
+    ASSERT_TRUE(unpack_result) << error;
+
+    EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
+                testing::ElementsAre(URLPattern::kAllUrlsPattern));
+    EXPECT_FALSE(
+        unpack_result->required_explicit_hosts.begin()->valid_schemes() &
+        URLPattern::SCHEME_FILE);
+    EXPECT_THAT(
+        GetPatternsAsStrings(unpack_result->restricted_file_scheme_patterns),
+        testing::IsEmpty());
+  }
+
+  // With file access, <all_urls> should be parsed and include file:-scheme
+  // access.
+  {
+    URLPattern all_urls(Extension::kValidHostPermissionSchemes,
+                        URLPattern::kAllUrlsPattern);
+    PermissionSet required_permissions(
+        APIPermissionSet(), ManifestPermissionSet(), URLPatternSet({all_urls}),
+        URLPatternSet());
+
+    Permissions permissions_object;
+    permissions_object.origins = std::make_unique<std::vector<std::string>>(
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}));
+
+    std::string error;
+    constexpr bool kHasFileAccess = true;
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, required_permissions,
+                            PermissionSet(), kHasFileAccess, &error);
+    ASSERT_TRUE(unpack_result) << error;
+
+    EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
+                testing::ElementsAre(URLPattern::kAllUrlsPattern));
+    EXPECT_TRUE(
+        unpack_result->required_explicit_hosts.begin()->valid_schemes() &
+        URLPattern::SCHEME_FILE);
+    EXPECT_THAT(
+        GetPatternsAsStrings(unpack_result->restricted_file_scheme_patterns),
+        testing::IsEmpty());
+  }
+}
+
+// Tests that unpacking a pattern that explicitly specifies the file:-scheme is
+// properly placed into the |restricted_file_scheme_patterns| set.
+TEST(ExtensionPermissionsAPIHelpers, Unpack_FileSchemes_Specific) {
+  constexpr char kFilePattern[] = "file:///*";
+
+  // Without file access, the file:-scheme pattern should be populated into
+  // |restricted_file_scheme_patterns|.
+  {
+    URLPattern file_pattern(Extension::kValidHostPermissionSchemes,
+                            kFilePattern);
+    PermissionSet required_permissions(
+        APIPermissionSet(), ManifestPermissionSet(),
+        URLPatternSet({file_pattern}), URLPatternSet());
+
+    Permissions permissions_object;
+    permissions_object.origins = std::make_unique<std::vector<std::string>>(
+        std::vector<std::string>({kFilePattern}));
+
+    std::string error;
+    constexpr bool kHasFileAccess = false;
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, required_permissions,
+                            PermissionSet(), kHasFileAccess, &error);
+    ASSERT_TRUE(unpack_result) << error;
+
+    EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
+                testing::IsEmpty());
+    EXPECT_THAT(
+        GetPatternsAsStrings(unpack_result->restricted_file_scheme_patterns),
+        testing::ElementsAre(kFilePattern));
+    EXPECT_TRUE(unpack_result->restricted_file_scheme_patterns.begin()
+                    ->valid_schemes() &
+                URLPattern::SCHEME_FILE);
+  }
+
+  // With file access, the file:-scheme pattern should be populated into
+  // |required_explicit_hosts| (since it's not restricted).
+  {
+    URLPattern file_pattern(Extension::kValidHostPermissionSchemes,
+                            kFilePattern);
+    PermissionSet required_permissions(
+        APIPermissionSet(), ManifestPermissionSet(),
+        URLPatternSet({file_pattern}), URLPatternSet());
+
+    Permissions permissions_object;
+    permissions_object.origins = std::make_unique<std::vector<std::string>>(
+        std::vector<std::string>({kFilePattern}));
+
+    std::string error;
+    constexpr bool kHasFileAccess = true;
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, required_permissions,
+                            PermissionSet(), kHasFileAccess, &error);
+    ASSERT_TRUE(unpack_result) << error;
+
+    EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
+                testing::ElementsAre(kFilePattern));
+    EXPECT_TRUE(
+        unpack_result->required_explicit_hosts.begin()->valid_schemes() &
+        URLPattern::SCHEME_FILE);
+    EXPECT_THAT(
+        GetPatternsAsStrings(unpack_result->restricted_file_scheme_patterns),
+        testing::IsEmpty());
+  }
+}
+
 }  // namespace extensions
