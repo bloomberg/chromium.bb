@@ -85,6 +85,8 @@ class TestRenderFrame : public RenderFrameImpl {
   base::Optional<std::string> next_navigation_html_override_;
   mojom::FrameInputHandlerPtr frame_input_handler_;
 
+  mojom::NavigationClientAssociatedPtr mock_navigation_client_;
+
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };
 
