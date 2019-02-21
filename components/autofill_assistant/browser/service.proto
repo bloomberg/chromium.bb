@@ -631,33 +631,41 @@ message DateTimeProto {
   optional TimeProto time = 2;
 }
 
-message DetailsChanges {
+message DetailsChangesProto {
   // Whether the changes require user approval.
   optional bool user_approval_required = 1;
 
   // Whether the title should be highlighted.
   optional bool highlight_title = 2;
 
-  // Whether the date should be highlighted.
-  optional bool highlight_date = 3;
+  // Whether the first description line should be highlighted.
+  optional bool highlight_line1 = 3;
+
+  // Whether the second description line should be highlighted.
+  optional bool highlight_line2 = 4;
 }
 
 message DetailsProto {
   optional string title = 1;
 
-  optional string url = 2;
+  optional string image_url = 2;
 
-  optional DateTimeProto datetime = 3;
-
-  optional string description = 4;
-
-  // Mid that comes from Knowledge Graph. Uniquely identify the object that this
-  // proto describes.
-  optional string m_id = 5;
-
-  // Price label containing the total amount and the currency to pay, formatted
+  // Optional label to provide additional price information.
+  optional string total_price_label = 9;
+  // The price containing the total amount and the currency to pay, formatted
   // in the client's locale (e.g., $123.00).
   optional string total_price = 6;
+
+  optional string description_line1 = 7;
+  optional string description_line2 = 8;
+
+  // Deprecated, but currently still necessary and supported. We can get rid of
+  // these fields when the backend starts setting description_line1 and 2.
+  optional DateTimeProto datetime = 3;
+  optional string description = 4;
+
+  // Deprecated, no longer supported.
+  reserved 5;
 }
 
 // Show contextual information.
@@ -665,7 +673,7 @@ message ShowDetailsProto {
   optional DetailsProto details = 1;
 
   // Flags indicating which parts of the details (if any) have changed.
-  optional DetailsChanges change_flags = 2;
+  optional DetailsChangesProto change_flags = 2;
 }
 
 // Set the value of an form element.

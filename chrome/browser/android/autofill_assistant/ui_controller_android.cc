@@ -423,19 +423,21 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     return;
   }
 
-  const DetailsProto& proto = details->proto;
+  const DetailsProto& proto = details->proto().details();
+  const DetailsChangesProto& changes = details->proto().change_flags();
   auto jdetails = Java_AssistantDetails_create(
       env, base::android::ConvertUTF8ToJavaString(env, proto.title()),
-      base::android::ConvertUTF8ToJavaString(env, proto.url()),
-      base::android::ConvertUTF8ToJavaString(env, proto.description()),
-      base::android::ConvertUTF8ToJavaString(env, proto.m_id()),
+      base::android::ConvertUTF8ToJavaString(env, proto.image_url()),
+      base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
-      base::android::ConvertUTF8ToJavaString(env, details->datetime),
+      base::android::ConvertUTF8ToJavaString(env, details->GetDatetime()),
       proto.datetime().date().year(), proto.datetime().date().month(),
       proto.datetime().date().day(), proto.datetime().time().hour(),
       proto.datetime().time().minute(), proto.datetime().time().second(),
-      details->changes.user_approval_required(),
-      details->changes.highlight_title(), details->changes.highlight_date());
+      base::android::ConvertUTF8ToJavaString(env, proto.description_line1()),
+      base::android::ConvertUTF8ToJavaString(env, proto.description_line2()),
+      changes.user_approval_required(), changes.highlight_title(),
+      changes.highlight_line1(), changes.highlight_line2());
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
 }
 

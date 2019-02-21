@@ -13,16 +13,13 @@
 
 namespace autofill_assistant {
 
-struct Details {
-  DetailsProto proto;
-  DetailsChanges changes;
+class Details {
+ public:
+  Details() = default;
+  Details(const ShowDetailsProto& proto);
 
-  // RFC 3339 date-time. Ignore if proto.datetime is set.
-  //
-  // TODO(crbug.com/806868): parse RFC 3339 date-time on the C++ side and fill
-  // proto.datetime with the result instead of carrying a string representation
-  // of the datetime.
-  std::string datetime;
+  const ShowDetailsProto& proto() const { return proto_; }
+  const std::string GetDatetime() const { return datetime_; }
 
   // Returns a dictionary describing the current execution context, which
   // is intended to be serialized as JSON string. The execution context is
@@ -33,6 +30,21 @@ struct Details {
   // made.
   bool UpdateFromParameters(
       const std::map<std::string, std::string>& parameters);
+
+  // Clears all change flags.
+  void ClearChanges();
+
+ private:
+  const DetailsProto& details() const { return proto_.details(); }
+  const DetailsChangesProto& changes() const { return proto_.change_flags(); }
+
+  ShowDetailsProto proto_;
+  // RFC 3339 date-time. Ignore if proto.description_line1 is set.
+  //
+  // TODO(crbug.com/806868): parse RFC 3339 date-time on the C++ side and fill
+  // proto.description_line1 with the result instead of carrying a string
+  // representation of the datetime.
+  std::string datetime_;
 };
 
 }  // namespace autofill_assistant

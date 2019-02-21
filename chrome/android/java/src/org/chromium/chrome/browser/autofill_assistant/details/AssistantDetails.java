@@ -23,38 +23,46 @@ public class AssistantDetails {
     private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     private final String mTitle;
-    private final String mUrl;
+    private final String mImageUrl;
     @Nullable
     private final Date mDate;
-    private final String mDescription;
-    private final String mMid;
+    private final String mDescriptionLine1;
+    private final String mDescriptionLine2;
     /** Whether user approval is required (i.e., due to changes). */
     private boolean mUserApprovalRequired;
     /** Whether the title should be highlighted. */
     private boolean mHighlightTitle;
-    /** Whether the date should be highlighted. */
-    private boolean mHighlightDate;
+    /** Whether the first description line should be highlighted. */
+    private boolean mHighlightLine1;
+    /** Whether the second description line should be highlighted. */
+    private boolean mHighlightLine2;
     /** Whether empty fields should have the animated placeholder background. */
     private final boolean mShowPlaceholdersForEmptyFields;
     /**
      * The correctly formatted price for the client locale, including the currency.
      * Example: '$20.50' or '20.50 €'.
      */
-    private final String mPrice;
-    // NOTE: When adding a new field, update the clearChangedFlags and toJSONObject methods.
+    private final String mTotalPrice;
+    /** An optional price label, such as 'Estimated Total incl. VAT'. */
+    private final String mTotalPriceLabel;
 
-    public AssistantDetails(String title, String url, @Nullable Date date, String description,
-            String mId, @Nullable String price, boolean userApprovalRequired,
-            boolean highlightTitle, boolean highlightDate, boolean showPlaceholdersForEmptyFields) {
+    public AssistantDetails(String title, String imageUrl, String totalPriceLabel,
+            String totalPrice, @Nullable Date date, String descriptionLine1,
+            String descriptionLine2, boolean userApprovalRequired, boolean highlightTitle,
+            boolean highlightLine1, boolean highlightLine2,
+            boolean showPlaceholdersForEmptyFields) {
+        this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
-        this.mUrl = url;
+        this.mImageUrl = imageUrl;
+        this.mTotalPrice = totalPrice;
         this.mDate = date;
-        this.mDescription = description;
-        this.mMid = mId;
-        this.mPrice = price;
+        this.mDescriptionLine1 = descriptionLine1;
+        this.mDescriptionLine2 = descriptionLine2;
+
         this.mUserApprovalRequired = userApprovalRequired;
         this.mHighlightTitle = highlightTitle;
-        this.mHighlightDate = highlightDate;
+        this.mHighlightLine1 = highlightLine1;
+        this.mHighlightLine2 = highlightLine2;
         this.mShowPlaceholdersForEmptyFields = showPlaceholdersForEmptyFields;
     }
 
@@ -62,8 +70,8 @@ public class AssistantDetails {
         return mTitle;
     }
 
-    String getUrl() {
-        return mUrl;
+    String getImageUrl() {
+        return mImageUrl;
     }
 
     @Nullable
@@ -71,17 +79,20 @@ public class AssistantDetails {
         return mDate;
     }
 
-    String getDescription() {
-        return mDescription;
+    String getDescriptionLine1() {
+        return mDescriptionLine1;
     }
 
-    private String getMid() {
-        return mMid;
+    String getDescriptionLine2() {
+        return mDescriptionLine2;
     }
 
-    @Nullable
-    String getPrice() {
-        return mPrice;
+    String getTotalPrice() {
+        return mTotalPrice;
+    }
+
+    String getTotalPriceLabel() {
+        return mTotalPriceLabel;
     }
 
     boolean getUserApprovalRequired() {
@@ -92,8 +103,12 @@ public class AssistantDetails {
         return mHighlightTitle;
     }
 
-    boolean getHighlightDate() {
-        return mHighlightDate;
+    boolean getHighlightLine1() {
+        return mHighlightLine1;
+    }
+
+    boolean getHighlightLine2() {
+        return mHighlightLine2;
     }
 
     boolean getShowPlaceholdersForEmptyFields() {
@@ -104,10 +119,11 @@ public class AssistantDetails {
      * Create details with the given values.
      */
     @CalledByNative
-    private static AssistantDetails create(String title, String url, String description, String mId,
-            String price, String datetime, long year, int month, int day, int hour, int minute,
-            int second, boolean userApprovalRequired, boolean highlightTitle,
-            boolean highlightDate) {
+    private static AssistantDetails create(String title, String imageUrl, String totalPriceLabel,
+            String totalPrice, String datetime, long year, int month, int day, int hour, int minute,
+            int second, String descriptionLine1, String descriptionLine2,
+            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
+            boolean highlightLine2) {
         Date date = null;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -126,10 +142,8 @@ public class AssistantDetails {
             }
         }
 
-        if (price.length() == 0) price = null;
-
-        return new AssistantDetails(title, url, date, description, mId, price, userApprovalRequired,
-                highlightTitle, highlightDate,
-                /* showPlaceholdersForEmptyFields= */ false);
+        return new AssistantDetails(title, imageUrl, totalPriceLabel, totalPrice, date,
+                descriptionLine1, descriptionLine2, userApprovalRequired, highlightTitle,
+                highlightLine1, highlightLine2, /* showPlaceholdersForEmptyFields= */ false);
     }
 }
