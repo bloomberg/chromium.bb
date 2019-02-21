@@ -1550,8 +1550,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
   histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
-                                NavigationDownloadPolicy::kAllowOpenerNoGesture,
-                                1);
+                                NavigationDownloadPolicy::kAllow, 1);
 }
 
 // A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
@@ -1589,16 +1588,24 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 
   // Using the popup, navigate its opener to a download.
   base::HistogramTester histograms;
-  DownloadTestObserverInProgress observer(
-      BrowserContext::GetDownloadManager(opener->GetBrowserContext()),
-      1 /* wait_count */);
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      popup,
-      "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
-  observer.WaitForFinished();
-  histograms.ExpectUniqueSample(
-      "Navigation.DownloadPolicy",
-      NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture, 1);
+  const GURL data_url("data:html/text;base64,cGF5bG9hZA==");
+  TestNavigationManager manager(shell()->web_contents(), data_url);
+  EXPECT_TRUE(
+      ExecuteScript(popup, base::StringPrintf("window.opener.location ='%s'",
+                                              data_url.spec().c_str())));
+  manager.WaitForNavigationFinished();
+
+  EXPECT_FALSE(manager.was_successful());
+
+  // Navigations downloads that go through ResourceDispatcherHost do not trigger
+  // metrics collection, since the "cancellation reason" is collapsed to a
+  // boolean before the navigation turns into a download. Just expect metrics
+  // when the network service is enabled.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    histograms.ExpectUniqueSample(
+        "Navigation.DownloadPolicy",
+        NavigationDownloadPolicy::kDisallowOpenerCrossOrigin, 1);
+  }
 }
 
 // Regression test for https://crbug.com/872284.

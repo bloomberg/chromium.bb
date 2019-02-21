@@ -1629,17 +1629,13 @@ NavigationDownloadPolicy RenderFrameImpl::GetOpenerDownloadPolicy(
     bool is_opener_navigation,
     const blink::WebURLRequest& request,
     const WebSecurityOrigin& current_origin) {
-  if (!is_opener_navigation)
-    return NavigationDownloadPolicy::kAllow;
-  bool gesture = request.HasUserGesture();
-  bool cross_origin = !request.RequestorOrigin().CanAccess(current_origin);
-  if (!gesture && cross_origin)
-    return NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture;
-  if (!gesture)
-    return NavigationDownloadPolicy::kAllowOpenerNoGesture;
-  if (cross_origin)
-    return NavigationDownloadPolicy::kAllowOpenerCrossOrigin;
-  return NavigationDownloadPolicy::kAllowOpener;
+  // Disallow downloads on an opener if the requestor is cross origin.
+  // See crbug.com/632514.
+  if (is_opener_navigation &&
+      !request.RequestorOrigin().CanAccess(current_origin)) {
+    return NavigationDownloadPolicy::kDisallowOpenerCrossOrigin;
+  }
+  return NavigationDownloadPolicy::kAllow;
 }
 
 blink::WebURL RenderFrameImpl::OverrideFlashEmbedWithHTML(

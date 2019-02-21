@@ -2083,7 +2083,7 @@ enum WebFeature {
   // The above items are available in M72 branch.
 
   kV8IDBFactory_Databases_Method = 2648,
-  kOpenerNavigationDownloadCrossOriginNoGesture = 2649,
+  kOpenerNavigationDownloadCrossOrigin = 2649,
   kV8RegExpMatchIsTrueishOnNonJSRegExp = 2650,
   kV8RegExpMatchIsFalseishOnJSRegExp = 2651,
   kDownloadInAdFrameWithUserGesture = 2652,

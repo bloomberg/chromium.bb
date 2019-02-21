@@ -1027,12 +1027,17 @@ void NavigationRequest::OnResponseStarted(
 
   // Log UseCounters for opener navigations.
   if (is_download &&
-      download_policy ==
-          NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture) {
+      download_policy == NavigationDownloadPolicy::kDisallowOpenerCrossOrigin) {
+    content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
+    rfh->AddMessageToConsole(
+        CONSOLE_MESSAGE_LEVEL_ERROR,
+        base::StringPrintf(
+            "Navigating a cross-origin opener to a download (%s) is "
+            "deprecated, see "
+            "https://www.chromestatus.com/feature/5742188281462784.",
+            navigation_handle_->GetURL().spec().c_str()));
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame_tree_node_->current_frame_host(),
-        blink::mojom::WebFeature::
-            kOpenerNavigationDownloadCrossOriginNoGesture);
+        rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
 
   // TODO(https://crbug.com/880741): Remove this once the bug is fixed.

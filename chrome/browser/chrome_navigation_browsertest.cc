@@ -992,11 +992,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 }
 
-// TODO(http://crbug.com/632514): This test currently expects opener downloads
-// go through and UMA is logged, but when the linked bug is resolved the
-// download should be disallowed.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
-                       OpenerNavigation_DownloadPolicy) {
+                       OpenerNavigation_DownloadPolicy_Disallowed) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                false);
   ui_test_utils::NavigateToURL(
@@ -1024,17 +1021,70 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(popup, opener);
   WaitForLoadStop(popup);
+
+  content::ConsoleObserverDelegate console_observer(
+      opener,
+      "Navigating a cross-origin opener to a download (*) is deprecated*");
+  opener->SetDelegate(&console_observer);
+  EXPECT_TRUE(content::ExecuteScript(
+      popup,
+      "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
+
+  console_observer.Wait();
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin, 1);
+
+  // Ensure that no download happened.
+  std::vector<download::DownloadItem*> download_items;
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(browser()->profile());
+  manager->GetAllDownloads(&download_items);
+  EXPECT_TRUE(download_items.empty());
+}
+
+// Opener navigations from a same-origin popup should be allowed.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       OpenerNavigation_DownloadPolicy_Allowed) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
+                                               false);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // Open a popup.
+  bool opened = false;
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  const char* kScriptFormat =
+      "window.domAutomationController.send(!!window.open('%s'));";
+  GURL popup_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  content::TestNavigationObserver popup_waiter(nullptr, 1);
+  popup_waiter.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      opener, base::StringPrintf(kScriptFormat, popup_url.spec().c_str()),
+      &opened));
+  EXPECT_TRUE(opened);
+  popup_waiter.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Using the popup, navigate its opener to a download.
+  base::HistogramTester histograms;
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(popup, opener);
+  WaitForLoadStop(popup);
+
   content::DownloadTestObserverInProgress observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
       1 /* wait_count */);
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(content::ExecuteScript(
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
+
   histograms.ExpectBucketCount(
       "Blink.UseCounter.Features",
-      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOriginNoGesture,
-      1);
+      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin, 0);
 
   // Delete any pending download.
   std::vector<download::DownloadItem*> download_items;
