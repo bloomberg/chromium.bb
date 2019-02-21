@@ -51,7 +51,7 @@ bool HasDuplicateLabel(TextTrack* current_track) {
 
 MediaControlTextTrackListElement::MediaControlTextTrackListElement(
     MediaControlsImpl& media_controls)
-    : MediaControlPopupMenuElement(media_controls, kMediaIgnore) {
+    : MediaControlPopupMenuElement(media_controls) {
   setAttribute(html_names::kRoleAttr, "menu");
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(

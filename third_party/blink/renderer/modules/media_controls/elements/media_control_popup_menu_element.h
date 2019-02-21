@@ -39,7 +39,7 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
   bool SupportsFocus() const override { return true; }
 
  protected:
-  MediaControlPopupMenuElement(MediaControlsImpl&, MediaControlElementType);
+  MediaControlPopupMenuElement(MediaControlsImpl&);
 
   void SetPosition();
 

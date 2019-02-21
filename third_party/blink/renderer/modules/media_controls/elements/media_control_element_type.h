@@ -12,7 +12,6 @@ enum MediaControlElementType {
   kMediaSlider,
   kMediaSliderThumb,
   kMediaTimelineContainer,
-  kMediaOverflowList,
   kMediaIgnore
 };
 

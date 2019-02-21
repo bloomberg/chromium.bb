@@ -60,7 +60,6 @@ AXObject* AccessibilityMediaControl::Create(
 
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaOverflowList:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -103,7 +102,6 @@ String AccessibilityMediaControl::TextAlternative(
   switch (ControlType()) {
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaOverflowList:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -123,7 +121,6 @@ String AccessibilityMediaControl::Description(
   switch (ControlType()) {
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaOverflowList:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -149,7 +146,6 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
 ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
     case kMediaTimelineContainer:
-    case kMediaOverflowList:
       return ax::mojom::Role::kGroup;
 
     case kMediaSliderThumb:
