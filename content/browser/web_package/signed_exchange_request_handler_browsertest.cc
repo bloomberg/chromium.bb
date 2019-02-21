@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
       SignedExchangeLoadResult::kSignatureVerificationError, 1);
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.SignatureVerificationResult",
-      SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp, 1);
+      SignedExchangeSignatureVerifier::Result::kErrExpired, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,

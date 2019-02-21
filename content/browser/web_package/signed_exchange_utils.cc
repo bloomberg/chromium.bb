@@ -155,5 +155,94 @@ base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
   return base::nullopt;
 }
 
+SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
+    SignedExchangeSignatureVerifier::Result verify_result) {
+  switch (verify_result) {
+    case SignedExchangeSignatureVerifier::Result::kSuccess:
+      return SignedExchangeLoadResult::kSuccess;
+    case SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch:
+      // "Handling the certificate reference
+      //   ...
+      //   - If the SHA-256 hash of chain’s leaf's certificate is not equal to
+      //     certSha256, return "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::
+        kErrSignatureVerificationFailed:
+      // "Validating a signature
+      //   ...
+      //   - If parsedSignature’s signature is not a valid signature of message
+      //     by publicKey using the ecdsa_secp256r1_sha256 algorithm, return
+      //     invalid." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrInvalidSignatureIntegrity:
+      // "Creating the response stream.
+      //   - If signature’s integrity header is:
+      //     - "digest", "mi-sha256-03"
+      //       ...
+      //     - Anything else
+      //       Return an error string "invalid_integrity_header". " [spec text]
+      return SignedExchangeLoadResult::kInvalidIntegrityHeader;
+    case SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType:
+      // "Validating a signature
+      //   ...
+      //   - If parsedSignature’s signature is not a valid signature of message
+      //     by publicKey using the ecdsa_secp256r1_sha256 algorithm, return
+      //     invalid." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong:
+      // "Cross-origin trust
+      //   ...
+      //   - If signature’s expiration time is more than 604800 seconds (7 days)
+      //     after signature’s date, return "untrusted"." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature does not establish cross-origin trust for
+      //     parsedExchange, return "cert_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kCertVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrFutureDate:
+    case SignedExchangeSignatureVerifier::Result::kErrExpired:
+      // "Validating a signature
+      //   ...
+      //   - If the UA’s estimate of the current time is more than clockSkew
+      //     before signature’s date, return "untrusted".
+      //   - If the UA’s estimate of the current time is after signature’s
+      //     expiration time, return "untrusted"." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+
+    // Deprecated error results.
+    case SignedExchangeSignatureVerifier::Result::kErrNoCertificate_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrNoCertificateSHA256_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureFormat_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidTimestamp_deprecated:
+      NOTREACHED();
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+  }
+
+  NOTREACHED();
+  return SignedExchangeLoadResult::kSignatureVerificationError;
+}
+
 }  // namespace signed_exchange_utils
 }  // namespace content

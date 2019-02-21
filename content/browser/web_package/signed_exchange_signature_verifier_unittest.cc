@@ -127,7 +127,7 @@ class SignedExchangeSignatureVerifierTest
     }
     {
       base::HistogramTester histogram_tester;
-      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrFutureDate,
                 SignedExchangeSignatureVerifier::Verify(
                     GetParam(), envelope, certificate,
                     base::Time::UnixEpoch() +
@@ -160,7 +160,7 @@ class SignedExchangeSignatureVerifierTest
     }
     {
       base::HistogramTester histogram_tester;
-      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrExpired,
                 SignedExchangeSignatureVerifier::Verify(
                     GetParam(), envelope, certificate,
                     base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(
@@ -183,11 +183,12 @@ class SignedExchangeSignatureVerifierTest
     ASSERT_EQ(1u, invalid_expires_signature->size());
     invalid_expires_envelope.SetSignatureForTesting(
         (*invalid_expires_signature)[0]);
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-              SignedExchangeSignatureVerifier::Verify(
-                  GetParam(), invalid_expires_envelope, certificate,
-                  VerificationTime(), nullptr /* devtools_proxy */
-                  ));
+    EXPECT_EQ(
+        SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong,
+        SignedExchangeSignatureVerifier::Verify(
+            GetParam(), invalid_expires_envelope, certificate,
+            VerificationTime(), nullptr /* devtools_proxy */
+            ));
 
     SignedExchangeEnvelope corrupted_envelope(envelope);
     corrupted_envelope.set_request_url(signed_exchange_utils::URLWithRawString(

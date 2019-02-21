@@ -35,6 +35,8 @@ constexpr char kSXGResultFailed[] = "sxg.failed";
 constexpr char kSXGResultMiError[] = "sxg.mi_error";
 constexpr char kSXGResultNonSecureDistributor[] = "sxg.non_secure_distributor";
 constexpr char kSXGResultParseError[] = "sxg.parse_error";
+constexpr char kSXGResultInvalidIntegrityHeader[] =
+    "sxg.invalid_integrity_header";
 constexpr char kSXGResultSignatureVerificationError[] =
     "sxg.signature_verification_error";
 constexpr char kSXGResultCertVerificationError[] =
@@ -58,8 +60,6 @@ const char* GetResultTypeString(SignedExchangeLoadResult result) {
     case SignedExchangeLoadResult::kCertParseError:
       return kSXGResultCertParseError;
     case SignedExchangeLoadResult::kSignatureVerificationError:
-      // TODO(crbug/910516): Extend kSignatureVerificationError to support
-      // "invalid_integrity_header" error.
       return kSXGResultSignatureVerificationError;
     case SignedExchangeLoadResult::kCertVerificationError:
       return kSXGResultCertVerificationError;
@@ -75,6 +75,8 @@ const char* GetResultTypeString(SignedExchangeLoadResult result) {
       // TODO(crbug/910516): Need to update the spec to send the report in this
       // case.
       return kSXGResultParseError;
+    case SignedExchangeLoadResult::kInvalidIntegrityHeader:
+      return kSXGResultInvalidIntegrityHeader;
   }
   NOTREACHED();
   return kSXGResultFailed;

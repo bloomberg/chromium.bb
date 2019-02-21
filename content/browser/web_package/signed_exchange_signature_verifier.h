@@ -37,15 +37,18 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
   // This enum is used for recording histograms. Treat as append-only.
   enum class Result {
     kSuccess,
-    kErrNoCertificate,
-    kErrNoCertificateSHA256,
+    kErrNoCertificate_deprecated,
+    kErrNoCertificateSHA256_deprecated,
     kErrCertificateSHA256Mismatch,
-    kErrInvalidSignatureFormat,
+    kErrInvalidSignatureFormat_deprecated,
     kErrSignatureVerificationFailed,
     kErrInvalidSignatureIntegrity,
-    kErrInvalidTimestamp,
+    kErrInvalidTimestamp_deprecated,
     kErrUnsupportedCertType,
-    kMaxValue = kErrUnsupportedCertType
+    kErrValidityPeriodTooLong,
+    kErrFutureDate,
+    kErrExpired,
+    kMaxValue = kErrExpired
   };
 
   // An utility class which holds a set of certificates which errors should be

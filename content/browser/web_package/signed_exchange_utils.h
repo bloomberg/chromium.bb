@@ -11,6 +11,7 @@
 #include "content/browser/web_package/origins_list.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_error.h"
+#include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -74,6 +75,14 @@ bool ShouldHandleAsSignedHTTPExchange(
 // [1] https://wicg.github.io/webpackage/loading.html#signed-exchange-version
 CONTENT_EXPORT base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
     const std::string& content_type);
+
+// Returns the matching SignedExchangeLoadResult for the verifier's result.
+// There is a gap between the logic of SignedExchangeSignatureVerifier and the
+// spec of Loading Signed Exchanges [1]. This method is used to fill the gap
+// and send a correct signed exchange report.
+// [1] https://wicg.github.io/webpackage/loading.html
+SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
+    SignedExchangeSignatureVerifier::Result verify_result);
 
 }  // namespace signed_exchange_utils
 }  // namespace content
