@@ -207,6 +207,11 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2737
         'ChromeDriverTest.testTakeElementScreenshot',
         'ChromeDriverTest.testTakeElementScreenshotInIframe',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2786
+        'ChromeDriverTest.testActionsTouchTap',
+        'ChromeDriverTest.testTouchDownMoveUpElement',
+        'ChromeDriverTest.testTouchFlickElement',
+
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
