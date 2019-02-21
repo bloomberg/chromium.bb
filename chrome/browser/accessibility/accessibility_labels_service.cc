@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/pref_names.h"
@@ -16,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_action_data.h"
 
 AccessibilityLabelsService::~AccessibilityLabelsService() {}
 
@@ -66,10 +68,22 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
 }
 
 void AccessibilityLabelsService::EnableLabelsServiceOnce() {
-  // TODO(katie): Fire an AXAction on the active tab to enable this feature
-  // once only.
-  // TODO(katie): Ensure this can't be subject to a race condition where the
-  // context menu was on a different tab than the active tab.
+  // TODO(crbug.com/905419): Implement for Android, which does not support
+  // BrowserList::GetInstance.
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
+  if (!browser)
+    return;
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return;
+  // Fire an AXAction on the active tab to enable this feature once only.
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kAnnotatePageImages;
+  web_contents->GetMainFrame()->AccessibilityPerformAction(action_data);
+  // TODO(katie): Support iframes by doing this to all RenderFrameHosts within
+  // the web_contents.
+#endif
 }
 
 void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {

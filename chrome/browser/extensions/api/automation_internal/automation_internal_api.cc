@@ -480,6 +480,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->end_index = get_text_location_params.end_index;
       break;
     }
+    case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_NONE:
       break;
   }

@@ -285,6 +285,7 @@
 
   // All possible actions that can be performed on automation nodes.
   enum ActionType {
+    annotatePageImages,
     blur,
     clearAccessibilityFocus,
     customAction,

@@ -1099,6 +1099,8 @@ const char* ToString(ax::mojom::Action action) {
       return "showContextMenu";
     case ax::mojom::Action::kGetTextLocation:
       return "getTextLocation";
+    case ax::mojom::Action::kAnnotatePageImages:
+      return "annotatePageImages";
   }
 
   return "";
@@ -1107,6 +1109,8 @@ const char* ToString(ax::mojom::Action action) {
 ax::mojom::Action ParseAction(const char* action) {
   if (0 == strcmp(action, "none"))
     return ax::mojom::Action::kNone;
+  if (0 == strcmp(action, "annotatePageImages"))
+    return ax::mojom::Action::kAnnotatePageImages;
   if (0 == strcmp(action, "blur"))
     return ax::mojom::Action::kBlur;
   if (0 == strcmp(action, "clearAccessibilityFocus"))

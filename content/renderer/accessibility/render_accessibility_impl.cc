@@ -148,6 +148,21 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
   ax_context_.reset(new blink::WebAXContext(GetMainDocument()));
 }
 
+void RenderAccessibilityImpl::DidCommitProvisionalLoad(
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
+  // Remove the image annotator if the page is loading and it was added for
+  // the one-shot image annotation (i.e. AXMode for image annotation is not
+  // set).
+  if (!ax_image_annotator_ ||
+      tree_source_.accessibility_mode().has_mode(ui::AXMode::kLabelImages)) {
+    return;
+  }
+  tree_source_.RemoveImageAnnotator();
+  ax_image_annotator_->Destroy();
+  ax_image_annotator_.release();
+}
+
 void RenderAccessibilityImpl::AccessibilityModeChanged() {
   ui::AXMode old_mode = tree_source_.accessibility_mode();
   ui::AXMode new_mode = render_frame_->accessibility_mode();
@@ -692,6 +707,14 @@ void RenderAccessibilityImpl::OnPerformAction(
       NOTREACHED();
       break;
     case ax::mojom::Action::kGetTextLocation:
+      break;
+    case ax::mojom::Action::kAnnotatePageImages:
+      // Ensure we aren't already labeling images, in which case this should
+      // not change.
+      if (!ax_image_annotator_) {
+        ax_image_annotator_ = std::make_unique<AXImageAnnotator>(this);
+        tree_source_.AddImageAnnotator(ax_image_annotator_.get());
+      }
       break;
   }
 }

@@ -292,6 +292,7 @@ chrome.automation.StateType = {
  * @see https://developer.chrome.com/extensions/automation#type-ActionType
  */
 chrome.automation.ActionType = {
+  ANNOTATE_PAGE_IMAGES: 'annotatePageImages',
   BLUR: 'blur',
   CLEAR_ACCESSIBILITY_FOCUS: 'clearAccessibilityFocus',
   CUSTOM_ACTION: 'customAction',
