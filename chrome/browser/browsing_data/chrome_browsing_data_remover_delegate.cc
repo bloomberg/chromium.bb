@@ -23,6 +23,7 @@
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -64,7 +65,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -852,12 +855,24 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // TODO(crbug.com/884817): Respect |delete_begin_| and |delete_end_| and
       // only clear out entries whose last strikes were created in that
       // timeframe.
-      autofill::LegacyStrikeDatabase* legacy_strike_database =
-          autofill::LegacyStrikeDatabaseFactory::GetForProfile(profile_);
-      if (legacy_strike_database)
-        legacy_strike_database->ClearAllStrikes(
-            base::AdaptCallbackForRepeating(IgnoreArgument<bool>(
-                CreateTaskCompletionClosure(TracingDataType::kLegacyStrikes))));
+      if (base::FeatureList::IsEnabled(
+              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+        autofill::StrikeDatabase* strike_database =
+            autofill::StrikeDatabaseFactory::GetForProfile(profile_);
+        if (strike_database)
+          strike_database->ClearAllStrikes();
+      } else if (base::FeatureList::IsEnabled(
+                     autofill::features::
+                         kAutofillSaveCreditCardUsesStrikeSystem)) {
+        autofill::LegacyStrikeDatabase* legacy_strike_database =
+            autofill::LegacyStrikeDatabaseFactory::GetForProfile(profile_);
+        if (legacy_strike_database) {
+          legacy_strike_database->ClearAllStrikes(
+              base::AdaptCallbackForRepeating(
+                  IgnoreArgument<bool>(CreateTaskCompletionClosure(
+                      TracingDataType::kLegacyStrikes))));
+        }
+      }
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(

@@ -69,7 +69,7 @@ void StrikeDatabaseIntegratorBase::ClearStrikes(const std::string id) {
 }
 
 void StrikeDatabaseIntegratorBase::ClearAllStrikes() {
-  strike_database_->ClearAllStrikes(GetProjectPrefix());
+  strike_database_->ClearAllStrikesForProject(GetProjectPrefix());
 }
 
 void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {

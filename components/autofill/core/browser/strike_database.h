@@ -63,13 +63,17 @@ class StrikeDatabase : public KeyedService {
   // Returns strike count from in-memory cache.
   int GetStrikes(const std::string key);
 
-  // Removes all database entries from in-memory cache and underlying
+  // Removes database entry for |key| from in-memory cache and underlying
   // ProtoDatabase.
   void ClearStrikes(const std::string key);
 
   // Removes all database entries from in-memory cache and underlying
   // ProtoDatabase for the whole project.
-  void ClearAllStrikes(const std::string& project_prefix);
+  void ClearAllStrikesForProject(const std::string& project_prefix);
+
+  // Removes all database entries from in-memory cache and underlying
+  // ProtoDatabase.
+  void ClearAllStrikes();
 
  protected:
   friend class StrikeDatabaseIntegratorBase;
