@@ -263,8 +263,7 @@ list(APPEND AOM_AV1_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/av1/common/x86/wiener_convolve_avx2.c")
 
 list(APPEND AOM_AV1_ENCODER_ASM_SSE2 "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
-            "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm"
-            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_apply_sse2.asm")
+            "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm")
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_SSE2
             "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_sse2.c"
@@ -287,6 +286,8 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE4_1
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/rdopt_sse4.c"
+            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_constants.h"
+            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/pickrst_sse4.c")
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2

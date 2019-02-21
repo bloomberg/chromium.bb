@@ -37,6 +37,10 @@
 #define EDGE_THRESHOLD 50
 #define SQRT_PI_BY_2 1.25331413732
 
+static unsigned int index_mult[14] = {
+  0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
+};
+
 static void temporal_filter_predictors_mb_c(
     MACROBLOCKD *xd, uint8_t *y_mb_ptr, uint8_t *u_mb_ptr, uint8_t *v_mb_ptr,
     int stride, int uv_block_width, int uv_block_height, int mv_row, int mv_col,
@@ -167,8 +171,25 @@ static void highbd_apply_temporal_filter_self(
   }
 }
 
-static INLINE int mod_index(int64_t sum_dist, int index, int rounding,
-                            int strength, int filter_weight) {
+static INLINE int mod_index(int sum_dist, int index, int rounding, int strength,
+                            int filter_weight) {
+  assert(index >= 0 && index <= 13);
+  assert(index_mult[index] != 0);
+
+  int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
+  mod += rounding;
+  mod >>= strength;
+
+  mod = AOMMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+static INLINE int highbd_mod_index(int64_t sum_dist, int index, int rounding,
+                                   int strength, int filter_weight) {
   int mod = (int)(((sum_dist * 3) / index + rounding) >> strength);
   mod = AOMMIN(16, mod);
   mod = 16 - mod;
@@ -428,8 +449,8 @@ void av1_highbd_apply_temporal_filter_c(
 
       y_index += 2;
 
-      const int final_y_mod =
-          mod_index(modifier, y_index, rounding, strength, filter_weight);
+      const int final_y_mod = highbd_mod_index(modifier, y_index, rounding,
+                                               strength, filter_weight);
 
       y_count[k] += final_y_mod;
       y_accumulator[k] += final_y_mod * pixel_value;
@@ -474,10 +495,10 @@ void av1_highbd_apply_temporal_filter_c(
         u_mod += y_diff;
         v_mod += y_diff;
 
-        const int final_u_mod =
-            mod_index(u_mod, cr_index, rounding, strength, filter_weight);
-        const int final_v_mod =
-            mod_index(v_mod, cr_index, rounding, strength, filter_weight);
+        const int final_u_mod = highbd_mod_index(u_mod, cr_index, rounding,
+                                                 strength, filter_weight);
+        const int final_v_mod = highbd_mod_index(v_mod, cr_index, rounding,
+                                                 strength, filter_weight);
 
         u_count[m] += final_u_mod;
         u_accumulator[m] += final_u_mod * u_pixel_value;

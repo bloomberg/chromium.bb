@@ -55,10 +55,34 @@ int GetFilterWeight(unsigned int row, unsigned int col,
   return blk_fw[2 * (row >= block_height / 2) + (col >= block_width / 2)];
 }
 
+// Highbitdepth version
 template <typename PixelType>
 int GetModIndex(int sum_dist, int index, int rounding, int strength,
                 int filter_weight) {
   int mod = sum_dist * 3 / index;
+  mod += rounding;
+  mod >>= strength;
+
+  mod = AOMMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+// Lowbitdepth version
+template <>
+int GetModIndex<uint8_t>(int sum_dist, int index, int rounding, int strength,
+                         int filter_weight) {
+  unsigned int index_mult[14] = {
+    0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
+  };
+
+  assert(index >= 0 && index <= 13);
+  assert(index_mult[index] != 0);
+
+  int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
   mod += rounding;
   mod >>= strength;
 
@@ -514,15 +538,10 @@ void YUVTemporalFilterTest::RunTestFilterWithParam(int width, int height,
   SetArray(v_pre, width, height, MAX_WIDTH, &rnd_, 0, 7 << (bd_ = 8));
 
   for (int repeats = 0; repeats < num_repeats_; repeats++) {
-    ASM_REGISTER_STATE_CHECK(filter_func_(
-        reinterpret_cast<const uint8_t *>(y_src), MAX_WIDTH,
-        reinterpret_cast<const uint8_t *>(y_pre), MAX_WIDTH,
-        reinterpret_cast<const uint8_t *>(u_src),
-        reinterpret_cast<const uint8_t *>(v_src), MAX_WIDTH,
-        reinterpret_cast<const uint8_t *>(u_pre),
-        reinterpret_cast<const uint8_t *>(v_pre), MAX_WIDTH, width, height,
-        ss_x, ss_y, filter_strength, filter_weight, use_32x32, y_accum, y_count,
-        u_accum, u_count, v_accum, v_count));
+    ApplyTestFilter(y_src, MAX_WIDTH, y_pre, MAX_WIDTH, u_src, v_src, MAX_WIDTH,
+                    u_pre, v_pre, MAX_WIDTH, width, height, ss_x, ss_y,
+                    filter_strength, filter_weight, use_32x32, y_accum, y_count,
+                    u_accum, u_count, v_accum, v_count);
   }
 }
 
@@ -671,5 +690,11 @@ INSTANTIATE_TEST_CASE_P(
         TemporalFilterWithBd(&av1_apply_temporal_filter_c, 8),
         TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_c, 10),
         TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_c, 12)));
+
+#if HAVE_SSE4_1
+INSTANTIATE_TEST_CASE_P(SSE4_1, YUVTemporalFilterTest,
+                        ::testing::Values(TemporalFilterWithBd(
+                            &av1_apply_temporal_filter_sse4_1, 8)));
+#endif  // HAVE_SSE4_1
 
 }  // namespace
