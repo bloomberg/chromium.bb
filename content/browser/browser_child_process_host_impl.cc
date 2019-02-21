@@ -603,7 +603,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK(process.IsValid());
 
   if (child_connection_)
-    child_connection_->SetProcessHandle(process.Handle());
+    child_connection_->SetProcess(process.Duplicate());
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the

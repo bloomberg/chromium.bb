@@ -4421,8 +4421,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     channel_->Unpause(false /* flush */);
 
     if (child_connection_) {
-      child_connection_->SetProcessHandle(
-          child_process_launcher_->GetProcess().Handle());
+      child_connection_->SetProcess(
+          child_process_launcher_->GetProcess().Duplicate());
     }
 
 // Not all platforms launch processes in the same backgrounded state. Make
