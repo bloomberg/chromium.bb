@@ -23,7 +23,6 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -56,15 +55,17 @@ constexpr SkColor kZeroQuerySearchboxColor =
 
 }  // namespace
 
-// A background that paints a solid white rounded rect with a thin grey border.
+// A background that paints a solid white rounded rect with a thin grey
+// border.
 class SearchBoxBackground : public views::Background {
  public:
   SearchBoxBackground(int corner_radius, SkColor color)
-      : corner_radius_(corner_radius), color_(color) {}
+      : corner_radius_(corner_radius) {
+    SetNativeControlColor(color);
+  }
   ~SearchBoxBackground() override {}
 
   void set_corner_radius(int corner_radius) { corner_radius_ = corner_radius; }
-  void set_color(SkColor color) { color_ = color; }
 
  private:
   // views::Background overrides:
@@ -73,12 +74,11 @@ class SearchBoxBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(color_);
+    flags.setColor(get_color());
     canvas->DrawRoundRect(bounds, corner_radius_, flags);
   }
 
   int corner_radius_;
-  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
 };
@@ -248,7 +248,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
   AddChildView(content_container_);
 
   content_container_->SetBackground(std::make_unique<SearchBoxBackground>(
-      kSearchBoxBorderCornerRadius, background_color_));
+      kSearchBoxBorderCornerRadius, kSearchBoxBackgroundDefault));
 
   box_layout_ =
       content_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -343,7 +343,7 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
 
   is_search_box_active_ = active;
   UpdateSearchIcon();
-  UpdateBackgroundColor(background_color_);
+  UpdateBackgroundColor(kSearchBoxBackgroundDefault);
   search_box_->set_placeholder_text_draw_flags(
       active ? (base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT
                                     : gfx::Canvas::TEXT_ALIGN_LEFT)
@@ -472,14 +472,6 @@ void SearchBoxViewBase::NotifyActiveChanged() {
   delegate_->ActiveChanged(this);
 }
 
-// TODO(crbug.com/755219): Unify this with UpdateBackgroundColor.
-void SearchBoxViewBase::SetBackgroundColor(SkColor light_vibrant) {
-  background_color_ =
-      (light_vibrant == SK_ColorTRANSPARENT)
-          ? kSearchBoxBackgroundDefault
-          : color_utils::AlphaBlend(SK_ColorWHITE, light_vibrant, 0.9f);
-}
-
 void SearchBoxViewBase::SetSearchBoxColor(SkColor color) {
   search_box_color_ =
       SK_ColorTRANSPARENT == color ? kDefaultSearchboxColor : color;
@@ -533,11 +525,8 @@ bool SearchBoxViewBase::HandleGestureEvent(
 }
 
 void SearchBoxViewBase::SetSearchBoxBackgroundCornerRadius(int corner_radius) {
-  GetSearchBoxBackground()->set_corner_radius(corner_radius);
-}
-
-void SearchBoxViewBase::SetSearchBoxBackgroundColor(SkColor color) {
-  GetSearchBoxBackground()->set_color(color);
+  static_cast<SearchBoxBackground*>(GetSearchBoxBackground())
+      ->set_corner_radius(corner_radius);
 }
 
 void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {
@@ -570,11 +559,11 @@ void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
 void SearchBoxViewBase::UpdateBackgroundColor(SkColor color) {
   if (is_search_box_active_)
     color = kSearchBoxBackgroundDefault;
-  GetSearchBoxBackground()->set_color(color);
+  GetSearchBoxBackground()->SetNativeControlColor(color);
 }
 
-SearchBoxBackground* SearchBoxViewBase::GetSearchBoxBackground() const {
-  return static_cast<SearchBoxBackground*>(content_container_->background());
+views::Background* SearchBoxViewBase::GetSearchBoxBackground() {
+  return content_container_->background();
 }
 
 }  // namespace search_box
