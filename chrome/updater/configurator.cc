@@ -5,11 +5,16 @@
 #include "chrome/updater/configurator.h"
 
 #include "base/version.h"
+#include "build/build_config.h"
 #include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/version_info/version_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "chrome/updater/win/net/network.h"
+#endif
 
 namespace {
 
@@ -86,7 +91,15 @@ std::string Configurator::GetDownloadPreference() const {
 
 scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
+#if defined(OS_WIN)
+  if (!network_fetcher_factory_) {
+    network_fetcher_factory_ =
+        base::MakeRefCounted<NetworkFetcherWinHTTPFactory>();
+  }
+  return network_fetcher_factory_;
+#else
   return nullptr;
+#endif
 }
 
 std::unique_ptr<service_manager::Connector>

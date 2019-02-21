@@ -32,7 +32,6 @@ source_set("common") {
     "//components/update_client",
     "//components/version_info",
     "//mojo/core/embedder",
-    "//net",
     "//url",
   ]
 }
@@ -44,7 +43,15 @@ source_set("updater_tests") {
     "updater_unittest.cc",
   ]
 
+  deps = [
+    ":updater",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+
   if (is_win) {
+    deps += [ "//chrome/updater/win:unittest" ]
+
     data_deps = [
       "//chrome/updater/win:updater",
     ]
@@ -55,10 +62,4 @@ source_set("updater_tests") {
       "//chrome/updater/mac:updater",
     ]
   }
-
-  deps = [
-    ":updater",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
 }
