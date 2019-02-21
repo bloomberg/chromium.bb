@@ -22,7 +22,6 @@
 #include "chromeos/components/proximity_auth/proximity_monitor.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
@@ -76,22 +75,22 @@ class MockMessenger : public Messenger {
 
 class MockProximityMonitor : public ProximityMonitor {
  public:
-  MockProximityMonitor() : started_(false), stopped_(false) {
+  MockProximityMonitor(base::OnceClosure destroy_callback)
+      : destroy_callback_(std::move(destroy_callback)), started_(false) {
     ON_CALL(*this, IsUnlockAllowed()).WillByDefault(Return(true));
   }
-  ~MockProximityMonitor() override {}
+  ~MockProximityMonitor() override { std::move(destroy_callback_).Run(); }
 
   void Start() override { started_ = true; }
-  void Stop() override { stopped_ = true; }
+  void Stop() override {}
   MOCK_CONST_METHOD0(IsUnlockAllowed, bool());
   MOCK_METHOD0(RecordProximityMetricsOnAuthSuccess, void());
 
   bool started() { return started_; }
-  bool stopped() { return stopped_; }
 
  private:
+  base::OnceClosure destroy_callback_;
   bool started_;
-  bool stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProximityMonitor);
 };
@@ -100,8 +99,7 @@ class TestUnlockManager : public UnlockManagerImpl {
  public:
   TestUnlockManager(ProximityAuthSystem::ScreenlockType screenlock_type,
                     ProximityAuthClient* proximity_auth_client)
-      : UnlockManagerImpl(screenlock_type, proximity_auth_client, nullptr),
-        proximity_monitor_(nullptr) {}
+      : UnlockManagerImpl(screenlock_type, proximity_auth_client, nullptr) {}
   ~TestUnlockManager() override {}
 
   using UnlockManager::OnAuthAttempted;
@@ -110,24 +108,29 @@ class TestUnlockManager : public UnlockManagerImpl {
   using MessengerObserver::OnDecryptResponse;
   using MessengerObserver::OnUnlockResponse;
   using MessengerObserver::OnDisconnected;
-  using ScreenlockBridge::Observer::OnScreenDidLock;
-  using ScreenlockBridge::Observer::OnScreenDidUnlock;
-  using ScreenlockBridge::Observer::OnFocusedUserChanged;
 
   MockProximityMonitor* proximity_monitor() { return proximity_monitor_; }
+  bool proximity_monitor_destroyed() { return proximity_monitor_destroyed_; }
 
  private:
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
       RemoteDeviceLifeCycle* life_cycle,
       ProximityAuthPrefManager* pref_manager) override {
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
-        new NiceMock<MockProximityMonitor>());
+        new NiceMock<MockProximityMonitor>(
+            base::BindOnce(&TestUnlockManager::OnProximityMonitorDestroyed,
+                           base::Unretained(this))));
+    proximity_monitor_destroyed_ = false;
+
     proximity_monitor_ = proximity_monitor.get();
     return std::move(proximity_monitor);
   }
 
+  void OnProximityMonitorDestroyed() { proximity_monitor_destroyed_ = true; }
+
   // Owned by the super class.
-  MockProximityMonitor* proximity_monitor_;
+  MockProximityMonitor* proximity_monitor_ = nullptr;
+  bool proximity_monitor_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestUnlockManager);
 };
@@ -170,8 +173,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     unlock_manager_.reset();
 
     chromeos::DBusThreadManager::Shutdown();
-
-    ScreenlockBridge::Get()->SetLockHandler(nullptr);
   }
 
   void SetUp() override {
@@ -183,7 +184,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
 
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
-    ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
 
     chromeos::DBusThreadManager::Initialize();
   }
@@ -206,6 +206,11 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
 
   MockProximityMonitor* proximity_monitor() {
     return unlock_manager_ ? unlock_manager_->proximity_monitor() : nullptr;
+  }
+
+  bool proximity_monitor_destroyed() {
+    return unlock_manager_ ? unlock_manager_->proximity_monitor_destroyed()
+                           : false;
   }
 
  protected:
@@ -443,7 +448,7 @@ TEST_F(
   unlock_manager_->OnLifeCycleStateChanged();
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
   unlock_manager_->OnLifeCycleStateChanged();
-  EXPECT_TRUE(proximity_monitor()->stopped());
+  EXPECT_TRUE(proximity_monitor_destroyed());
 }
 
 TEST_F(
@@ -456,6 +461,34 @@ TEST_F(
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
   unlock_manager_->OnLifeCycleStateChanged();
+  EXPECT_TRUE(proximity_monitor()->started());
+}
+
+// Regression test for crbug.com/931929. Capture the case where the phone is
+// connected to, connection is lost, and then a new connection is made shortly
+// after.
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       SetRemoteDeviceLifeCycle_TwiceConnectedRemoteDeviceLifeCycle) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  unlock_manager_->OnLifeCycleStateChanged();
+
+  life_cycle_.ChangeState(
+      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+  unlock_manager_->OnLifeCycleStateChanged();
+  EXPECT_TRUE(proximity_monitor()->started());
+
+  // Simulate the phone connection being lost. The ProximityMonitor is stale
+  // and should have been destroyed.
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+  unlock_manager_->OnLifeCycleStateChanged();
+  EXPECT_TRUE(proximity_monitor_destroyed());
+
+  life_cycle_.ChangeState(
+      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+  unlock_manager_->OnLifeCycleStateChanged();
+  EXPECT_FALSE(proximity_monitor_destroyed());
   EXPECT_TRUE(proximity_monitor()->started());
 }
 
@@ -513,7 +546,7 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->OnLifeCycleStateChanged();
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
   unlock_manager_->OnLifeCycleStateChanged();
-  EXPECT_TRUE(proximity_monitor()->stopped());
+  EXPECT_TRUE(proximity_monitor_destroyed());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
@@ -559,44 +592,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
       .Times(testing::AtLeast(1));
   unlock_manager_.get()->OnDisconnected();
   unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnScreenDidUnlock_StopsProximityMonitor) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-
-  unlock_manager_.get()->OnScreenDidUnlock(
-      ScreenlockBridge::LockHandler::LOCK_SCREEN);
-  EXPECT_TRUE(proximity_monitor()->stopped());
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnScreenDidLock_StartsProximityMonitor) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-
-  unlock_manager_.get()->OnScreenDidLock(
-      ScreenlockBridge::LockHandler::LOCK_SCREEN);
-
-  life_cycle_.ChangeState(
-      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
-  EXPECT_TRUE(proximity_monitor()->started());
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest, OnScreenDidLock_SetsWakingUpState) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-
-  EXPECT_CALL(proximity_auth_client_,
-              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
-
-  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-  unlock_manager_.get()->OnScreenDidLock(
-      ScreenlockBridge::LockHandler::LOCK_SCREEN);
-
-  unlock_manager_->OnLifeCycleStateChanged();
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,

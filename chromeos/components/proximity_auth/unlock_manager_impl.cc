@@ -115,17 +115,12 @@ UnlockManagerImpl::UnlockManagerImpl(
       life_cycle_(nullptr),
       proximity_auth_client_(proximity_auth_client),
       pref_manager_(pref_manager),
-      is_locked_(false),
       is_attempting_auth_(false),
       is_waking_up_(false),
       screenlock_state_(ScreenlockState::INACTIVE),
       clear_waking_up_state_weak_ptr_factory_(this),
       reject_auth_attempt_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  ScreenlockBridge* screenlock_bridge = ScreenlockBridge::Get();
-  screenlock_bridge->AddObserver(this);
-  OnScreenLockedOrUnlocked(screenlock_bridge->IsLocked());
-
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   SetWakingUpState(true /* is_waking_up */);
@@ -143,8 +138,6 @@ UnlockManagerImpl::~UnlockManagerImpl() {
 
   if (proximity_monitor_)
     proximity_monitor_->RemoveObserver(this);
-
-  ScreenlockBridge::Get()->RemoveObserver(this);
 
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 
@@ -196,11 +189,16 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
     if (!proximity_monitor_) {
       proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
       proximity_monitor_->AddObserver(this);
+      proximity_monitor_->Start();
     }
     GetMessenger()->AddObserver(this);
 
     attempt_get_remote_status_start_time_ =
         base::DefaultClock::GetInstance()->Now();
+  } else if (proximity_monitor_) {
+    proximity_monitor_->RemoveObserver(this);
+    proximity_monitor_->Stop();
+    proximity_monitor_.reset();
   }
 
   if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
@@ -300,26 +298,6 @@ void UnlockManagerImpl::OnDisconnected() {
 void UnlockManagerImpl::OnProximityStateChanged() {
   PA_LOG(VERBOSE) << "Proximity state changed.";
   UpdateLockScreen();
-}
-
-void UnlockManagerImpl::OnScreenDidLock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  OnScreenLockedOrUnlocked(true);
-}
-
-void UnlockManagerImpl::OnScreenDidUnlock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  OnScreenLockedOrUnlocked(false);
-}
-
-void UnlockManagerImpl::OnFocusedUserChanged(const AccountId& account_id) {}
-
-void UnlockManagerImpl::OnScreenLockedOrUnlocked(bool is_locked) {
-  if (is_locked && IsBluetoothPresentAndPowered() && life_cycle_)
-    SetWakingUpState(true /* is_waking_up */);
-
-  is_locked_ = is_locked;
-  UpdateProximityMonitorState();
 }
 
 void UnlockManagerImpl::OnBluetoothAdapterInitialized(
@@ -515,8 +493,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
 void UnlockManagerImpl::UpdateLockScreen() {
   AttemptToStartRemoteDeviceLifecycle();
 
-  UpdateProximityMonitorState();
-
   ScreenlockState new_state = GetScreenlockState();
   if (screenlock_state_ == new_state)
     return;
@@ -529,19 +505,6 @@ void UnlockManagerImpl::UpdateLockScreen() {
 
   proximity_auth_client_->UpdateScreenlockState(new_state);
   screenlock_state_ = new_state;
-}
-
-void UnlockManagerImpl::UpdateProximityMonitorState() {
-  if (!proximity_monitor_)
-    return;
-
-  if (is_locked_ && life_cycle_ &&
-      life_cycle_->GetState() ==
-          RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    proximity_monitor_->Start();
-  } else {
-    proximity_monitor_->Stop();
-  }
 }
 
 void UnlockManagerImpl::SetWakingUpState(bool is_waking_up) {
