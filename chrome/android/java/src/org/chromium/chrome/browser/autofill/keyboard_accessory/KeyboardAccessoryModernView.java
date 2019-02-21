@@ -113,11 +113,10 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
     }
 
     @Override
-    void setVisible(boolean visible) {
-        super.setVisible(visible);
-        // Make sure view doesn't assume that recycler view width is constant when it's brought up
-        // again. This doesn't hold for device orientation changes.
-        if (visible) mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        // Request update for the offset of the icons at the end of the accessory bar:
+        mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
     }
 
     void setKeyboardToggleVisibility(boolean hasActiveTab) {
