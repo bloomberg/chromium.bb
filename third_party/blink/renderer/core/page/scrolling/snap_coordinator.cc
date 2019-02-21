@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -90,17 +91,17 @@ static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
 
 static ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
   ScrollSnapType scroll_snap_type = snap_container.Style()->GetScrollSnapType();
-  if (scroll_snap_type.axis == SnapAxis::kInline) {
+  if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
     if (snap_container.Style()->IsHorizontalWritingMode())
-      scroll_snap_type.axis = SnapAxis::kX;
+      scroll_snap_type.axis = cc::SnapAxis::kX;
     else
-      scroll_snap_type.axis = SnapAxis::kY;
+      scroll_snap_type.axis = cc::SnapAxis::kY;
   }
-  if (scroll_snap_type.axis == SnapAxis::kBlock) {
+  if (scroll_snap_type.axis == cc::SnapAxis::kBlock) {
     if (snap_container.Style()->IsHorizontalWritingMode())
-      scroll_snap_type.axis = SnapAxis::kY;
+      scroll_snap_type.axis = cc::SnapAxis::kY;
     else
-      scroll_snap_type.axis = SnapAxis::kX;
+      scroll_snap_type.axis = cc::SnapAxis::kX;
   }
   // Writing mode does not affect the cases where axis kX, kY or kBoth.
   return scroll_snap_type;

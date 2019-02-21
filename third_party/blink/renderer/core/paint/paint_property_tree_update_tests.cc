@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -1337,7 +1338,8 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
 
   auto doc_snap_container_data = DocScroll()->GetSnapContainerData();
   ASSERT_TRUE(doc_snap_container_data);
-  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis, SnapAxis::kBoth);
+  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis,
+            cc::SnapAxis::kBoth);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
             SnapStrictness::kProximity);
   EXPECT_EQ(doc_snap_container_data->rect(), gfx::RectF(0, 0, 300, 300));
