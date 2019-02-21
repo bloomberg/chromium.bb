@@ -1681,9 +1681,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardOverscrollDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(
          keyboard::switches::kDisableVirtualKeyboardOverscroll)},
-    {"input-view", flag_descriptions::kInputViewName,
-     flag_descriptions::kInputViewDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableInputView)},
     {"enable-physical-keyboard-autocorrect",
      flag_descriptions::kPhysicalKeyboardAutocorrectName,
      flag_descriptions::kPhysicalKeyboardAutocorrectDescription, kOsCrOS,

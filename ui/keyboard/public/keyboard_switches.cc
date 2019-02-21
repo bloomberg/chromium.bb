@@ -7,7 +7,6 @@
 namespace keyboard {
 namespace switches {
 
-const char kDisableInputView[] = "disable-input-view";
 const char kDisableVoiceInput[] = "disable-voice-input";
 const char kDisableGestureTyping[] = "disable-gesture-typing";
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
