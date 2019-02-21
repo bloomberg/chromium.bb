@@ -172,6 +172,8 @@ class ParentAccessView::AccessCodeInput : public views::View,
     // All key pressed events not handled below are ignored.
     if (key_code >= ui::VKEY_0 && key_code <= ui::VKEY_9) {
       InsertDigit(key_code - ui::VKEY_0);
+    } else if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9) {
+      InsertDigit(key_code - ui::VKEY_NUMPAD0);
     } else if (key_code == ui::VKEY_LEFT) {
       FocusPreviousField();
     } else if (key_code == ui::VKEY_RIGHT) {
