@@ -2740,7 +2740,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Google may use your history to personalize Search and other Google services
       </message>
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message with a link to customize Sync settings. Shown on the screen that asks the user to turn on Sync.">
-        You can <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>customize these settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> anytime
+        You can always <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>choose what to sync in settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
       </message>
       <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync. [CHAR-LIMIT=20]">
         Yes, I'm in
