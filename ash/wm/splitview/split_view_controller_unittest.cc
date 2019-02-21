@@ -1918,8 +1918,12 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
   std::unique_ptr<WindowResizer> StartDrag(aura::Window* dragged_window,
                                            aura::Window* source_window) {
     SetIsInTabDragging(dragged_window, /*is_dragging=*/true, source_window);
-    return CreateResizerForTest(dragged_window,
-                                dragged_window->bounds().origin(), HTCAPTION);
+    std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(
+        dragged_window, dragged_window->bounds().origin(), HTCAPTION);
+    GetBrowserWindowDragController(resizer.get())
+        ->drag_delegate_for_testing()
+        ->set_drag_start_deadline_for_testing(base::Time::Now());
+    return resizer;
   }
 
   // Drags the window to |end_position|.
@@ -1987,17 +1991,20 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     }
   }
 
-  IndicatorState GetIndicatorState(WindowResizer* resizer) {
+  TabletModeWindowDragController* GetBrowserWindowDragController(
+      WindowResizer* resizer) {
     WindowResizer* real_window_resizer;
     // TODO(xdai): This piece of codes seems knowing too much impl details about
     // WindowResizer. Revisit the logic here later to see if there is anything
     // we can do to simplify the logic and hide impl details.
     real_window_resizer = static_cast<DragWindowResizer*>(resizer)
                               ->next_window_resizer_for_testing();
-    TabletModeWindowDragController* browser_controller =
-        static_cast<TabletModeWindowDragController*>(real_window_resizer);
+    return static_cast<TabletModeWindowDragController*>(real_window_resizer);
+  }
 
-    return browser_controller->drag_delegate_for_testing()
+  IndicatorState GetIndicatorState(WindowResizer* resizer) {
+    return GetBrowserWindowDragController(resizer)
+        ->drag_delegate_for_testing()
         ->split_view_drag_indicators_for_testing()
         ->current_indicator_state();
   }
@@ -3660,6 +3667,8 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     controller_ = std::make_unique<TabletModeWindowDragController>(
         window_state, std::make_unique<TabletModeBrowserWindowDragDelegate>());
+    controller_->drag_delegate_for_testing()
+        ->set_drag_start_deadline_for_testing(base::Time::Now());
     controller_->Drag(location, 0);
   }
 

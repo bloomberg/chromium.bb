@@ -79,6 +79,10 @@ class TabletModeWindowDragDelegate {
     return split_view_drag_indicators_.get();
   }
 
+  void set_drag_start_deadline_for_testing(base::Time time) {
+    drag_start_deadline_ = time;
+  }
+
  protected:
   // These four methods are used by its child class to do its special handling
   // before/during/after dragging.
@@ -115,6 +119,10 @@ class TabletModeWindowDragDelegate {
   // Returns true if fling event should drop the window into overview grid.
   bool ShouldFlingIntoOverview(const ui::GestureEvent* event) const;
 
+  // Updates |is_window_considered_moved_| on current time and
+  // |y_location_in_screen|.
+  void UpdateIsWindowConsideredMoved(int y_location_in_screen);
+
   SplitViewController* const split_view_controller_;
 
   // A widget to display the drag indicators and preview window.
@@ -137,11 +145,15 @@ class TabletModeWindowDragDelegate {
   // desired window transform during dragging.
   gfx::Rect bounds_of_selected_drop_target_;
 
-  // Flag to indicate whether a window is considered as moved. A window needs to
-  // be dragged vertically a small amount of distance to be considered as moved.
-  // The drag indicators will only show up after the window has been moved. Once
-  // the window is moved, it will stay as 'moved'.
-  bool did_move_ = false;
+  // True if the |dragged_window_| has been considered as moved. Only after it
+  // has been dragged longer than kIsWindowMovedTimeoutMs on time and further
+  // than GetIndicatorsVerticalThreshold on distance, it can be considered as
+  // moved. Only change its window state or show the drag indicators if it has
+  // been 'moved'. Once it has been 'moved', it will stay as 'moved'.
+  bool is_window_considered_moved_ = false;
+
+  // Drag need to last later than the deadline here to be considered as 'moved'.
+  base::Time drag_start_deadline_;
 
   base::Optional<aura::WindowOcclusionTracker::ScopedExclude>
       occlusion_excluder_;

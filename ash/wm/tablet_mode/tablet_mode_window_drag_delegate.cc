@@ -40,6 +40,10 @@ namespace {
 // tablet mode.
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
+// Duration of a drag that it will be considered as an intended drag.
+constexpr base::TimeDelta kIsWindowMovedTimeoutMs =
+    base::TimeDelta::FromMilliseconds(300);
+
 // Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
 OverviewSession* GetOverviewSession() {
@@ -97,6 +101,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
 
   dragged_window_ = dragged_window;
   initial_location_in_screen_ = location_in_screen;
+  drag_start_deadline_ = base::Time::Now() + kIsWindowMovedTimeoutMs;
 
   PrepareWindowDrag(location_in_screen);
 
@@ -177,16 +182,7 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
     const gfx::Point& location_in_screen,
     UpdateDraggedWindowType type,
     const gfx::Rect& target_bounds) {
-  if (!did_move_) {
-    const gfx::Rect work_area_bounds =
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(dragged_window_)
-            .work_area();
-    if (location_in_screen.y() >=
-        GetIndicatorsVerticalThreshold(work_area_bounds)) {
-      did_move_ = true;
-    }
-  }
+  UpdateIsWindowConsideredMoved(location_in_screen.y());
 
   if (type == UpdateDraggedWindowType::UPDATE_BOUNDS) {
     // UPDATE_BOUNDS is used when dragging tab(s) out of a browser window.
@@ -266,7 +262,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   occlusion_excluder_.reset();
   dragged_window_ = nullptr;
-  did_move_ = false;
+  is_window_considered_moved_ = false;
 }
 
 void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
@@ -299,16 +295,10 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   if (split_view_controller_->IsSplitViewModeActive())
     return IndicatorState::kNone;
 
-  // If the event location hasn't passed the indicator vertical threshold, do
-  // not show the drag indicators.
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(dragged_window_)
-          .work_area();
-  if (!did_move_ && location_in_screen.y() <
-                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
+  // Do not show the drag indicators if the window hasn't been considered as
+  // moved.
+  if (!is_window_considered_moved_)
     return IndicatorState::kNone;
-  }
 
   // No top drag indicator if in portrait screen orientation.
   if (IsCurrentScreenOrientationLandscape())
@@ -352,16 +342,13 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     }
   }
 
-  // Otherwise, the user has to drag pass the indicator vertical threshold to
-  // snap the window.
+  // Do not snap the window if it hasn't be considered as moved.
+  if (!is_window_considered_moved_)
+    return SplitViewController::NONE;
+
   gfx::Rect work_area_bounds = display::Screen::GetScreen()
                                    ->GetDisplayNearestWindow(dragged_window_)
                                    .work_area();
-  if (!did_move_ && location_in_screen.y() <
-                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
-    return SplitViewController::NONE;
-  }
-
   // Check to see if the current event location |location_in_screen|is within
   // the drag indicators bounds.
   if (is_landscape) {
@@ -502,6 +489,23 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
   // Consider only the velocity_y if splitview is not active and preview area is
   // not shown.
   return event->details().velocity_y() > kFlingToOverviewThreshold;
+}
+
+void TabletModeWindowDragDelegate::UpdateIsWindowConsideredMoved(
+    int y_location_in_screen) {
+  if (is_window_considered_moved_)
+    return;
+
+  if (base::Time::Now() < drag_start_deadline_)
+    return;
+
+  DCHECK(dragged_window_);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
+  is_window_considered_moved_ =
+      y_location_in_screen >= GetIndicatorsVerticalThreshold(work_area_bounds);
 }
 
 }  // namespace ash
