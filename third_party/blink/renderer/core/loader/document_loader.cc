@@ -236,11 +236,33 @@ DocumentLoader::DocumentLoader(
   if (is_client_redirect_)
     redirect_chain_.push_back(frame_->GetDocument()->Url());
 
-  if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
-    redirect_chain_.push_back(url_);
-
   if (!params_->origin_to_commit.IsNull())
     origin_to_commit_ = params_->origin_to_commit.Get()->IsolatedCopy();
+
+  loading_url_as_empty_document_ =
+      !params_->is_static_data && WillLoadUrlAsEmpty(url_);
+
+  if (!loading_url_as_empty_document_) {
+    content_security_policy_ =
+        CreateCSP(params_->response.ToResourceResponse(), origin_policy_);
+    if (!content_security_policy_) {
+      // Loading the document was blocked by the CSP check. Pretend that
+      // this was an empty document instead and don't reuse the
+      // original URL (https://crbug.com/622385).
+      // TODO(mkwst):  Remove this once XFO moves to the browser.
+      // https://crbug.com/555418.
+      was_blocked_after_csp_ = true;
+      KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
+      original_url_ = blocked_url;
+      url_ = blocked_url;
+      params_->url = blocked_url;
+      WebNavigationParams::FillStaticResponse(params_.get(), "text/html",
+                                              "UTF-8", "");
+    }
+  }
+
+  if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
+    redirect_chain_.push_back(url_);
 
   probe::lifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
 }
@@ -702,64 +724,35 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
   return true;
 }
 
-void DocumentLoader::CancelLoadAfterCSPDenied(
-    const ResourceResponse& response) {
-  was_blocked_after_csp_ = true;
-
-  // Pretend that this was an empty HTTP 200 response.  Don't reuse the original
-  // URL for the empty page (https://crbug.com/622385).
-  //
-  // TODO(mkwst):  Remove this once XFO moves to the browser.
-  // https://crbug.com/555418.
-  content_security_policy_.Clear();
-  KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
-  original_url_ = blocked_url;
-  url_ = blocked_url;
-  redirect_chain_.pop_back();
-  redirect_chain_.push_back(blocked_url);
-  response_ = ResourceResponse(blocked_url);
-  response_.SetMimeType("text/html");
-  FinishedLoading(CurrentTimeTicks());
-}
-
-bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
-  DCHECK(frame_);
-  application_cache_host_->DidReceiveResponseForMainResource(response);
-
-  content_security_policy_ = ContentSecurityPolicy::Create();
-  content_security_policy_->SetOverrideURLForSelf(response.CurrentRequestUrl());
-
-  AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
-  if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
-    frame_->GetDocument()->SetMixedAutoupgradeOptOut(true);
-  }
+ContentSecurityPolicy* DocumentLoader::CreateCSP(
+    const ResourceResponse& response,
+    const String& origin_policy_string) {
+  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  csp->SetOverrideURLForSelf(response.CurrentRequestUrl());
 
   if (!frame_->GetSettings()->BypassCSP()) {
-    content_security_policy_->DidReceiveHeaders(
-        ContentSecurityPolicyResponseHeaders(response));
+    csp->DidReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
 
     // Handle OriginPolicy. We can skip the entire block if the OP policies have
     // already been passed down.
-    if (!content_security_policy_->HasPolicyFromSource(
+    if (!csp->HasPolicyFromSource(
             kContentSecurityPolicyHeaderSourceOriginPolicy)) {
-      std::unique_ptr<OriginPolicy> origin_policy =
-          OriginPolicy::From(StringUTF8Adaptor(origin_policy_).AsStringPiece());
+      std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
+          StringUTF8Adaptor(origin_policy_string).AsStringPiece());
       if (origin_policy) {
-        for (auto csp : origin_policy->GetContentSecurityPolicies()) {
-          content_security_policy_->DidReceiveHeader(
-              WTF::String::FromUTF8(csp.policy.data(), csp.policy.length()),
-              csp.report_only ? kContentSecurityPolicyHeaderTypeReport
-                              : kContentSecurityPolicyHeaderTypeEnforce,
-              kContentSecurityPolicyHeaderSourceOriginPolicy);
+        for (auto policy : origin_policy->GetContentSecurityPolicies()) {
+          csp->DidReceiveHeader(WTF::String::FromUTF8(policy.policy.data(),
+                                                      policy.policy.length()),
+                                policy.report_only
+                                    ? kContentSecurityPolicyHeaderTypeReport
+                                    : kContentSecurityPolicyHeaderTypeEnforce,
+                                kContentSecurityPolicyHeaderSourceOriginPolicy);
         }
       }
     }
   }
-  if (!content_security_policy_->AllowAncestors(frame_,
-                                                response.CurrentRequestUrl())) {
-    CancelLoadAfterCSPDenied(response);
-    return false;
-  }
+  if (!csp->AllowAncestors(frame_, response.CurrentRequestUrl()))
+    return nullptr;
 
   if (!frame_->GetSettings()->BypassCSP() &&
       !GetFrameLoader().RequiredCSP().IsEmpty()) {
@@ -767,17 +760,16 @@ bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
         frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();
     if (ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
             response, parent_security_origin)) {
-      content_security_policy_->AddPolicyFromHeaderValue(
-          GetFrameLoader().RequiredCSP(),
-          kContentSecurityPolicyHeaderTypeEnforce,
-          kContentSecurityPolicyHeaderSourceHTTP);
+      csp->AddPolicyFromHeaderValue(GetFrameLoader().RequiredCSP(),
+                                    kContentSecurityPolicyHeaderTypeEnforce,
+                                    kContentSecurityPolicyHeaderSourceHTTP);
     } else {
       ContentSecurityPolicy* required_csp = ContentSecurityPolicy::Create();
       required_csp->AddPolicyFromHeaderValue(
           GetFrameLoader().RequiredCSP(),
           kContentSecurityPolicyHeaderTypeEnforce,
           kContentSecurityPolicyHeaderSourceHTTP);
-      if (!required_csp->Subsumes(*content_security_policy_)) {
+      if (!required_csp->Subsumes(*csp)) {
         String message = "Refused to display '" +
                          response.CurrentRequestUrl().ElidedString() +
                          "' because it has not opted-into the following policy "
@@ -787,10 +779,20 @@ bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
             kSecurityMessageSource, kErrorMessageLevel, message,
             response.CurrentRequestUrl(), this, MainResourceIdentifier());
         frame_->GetDocument()->AddConsoleMessage(console_message);
-        CancelLoadAfterCSPDenied(response);
-        return false;
+        return nullptr;
       }
     }
+  }
+  return csp;
+}
+
+bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
+  DCHECK(frame_);
+  application_cache_host_->DidReceiveResponseForMainResource(response);
+
+  AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
+  if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
+    frame_->GetDocument()->SetMixedAutoupgradeOptOut(true);
   }
 
   // Pre-commit state, count usage the use counter associated with "this"
@@ -868,7 +870,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
 
   InstallNewDocument(
       Url(), initiator_origin, owner_document,
-      frame_->ShouldReuseDefaultView(Url(), GetContentSecurityPolicy())
+      frame_->ShouldReuseDefaultView(Url(), content_security_policy_.Get())
           ? WebGlobalObjectReusePolicy::kUseExisting
           : WebGlobalObjectReusePolicy::kCreateNew,
       mime_type, encoding, InstallNewDocumentReason::kNavigation,
@@ -1035,7 +1037,7 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK(params_);
   state_ = kProvisional;
 
-  if (!params_->is_static_data && WillLoadUrlAsEmpty(url_)) {
+  if (loading_url_as_empty_document_) {
     LoadEmpty();
     return;
   }
