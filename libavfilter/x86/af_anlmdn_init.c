@@ -16,30 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "compat/cuda/dynlink_loader.h"
-#include "libavutil/cuda_check.h"
+#include "config.h"
+#include "libavutil/attributes.h"
+#include "libavutil/cpu.h"
+#include "libavutil/x86/cpu.h"
+#include "libavfilter/af_anlmdndsp.h"
 
-int ff_cuda_check(void *avctx,
-                  void *cuGetErrorName_fn,
-                  void *cuGetErrorString_fn,
-                  CUresult err, const char *func)
+float ff_compute_distance_ssd_sse(const float *f1, const float *f2,
+                                  ptrdiff_t len);
+
+av_cold void ff_anlmdn_init_x86(AudioNLMDNDSPContext *s)
 {
-    const char *err_name;
-    const char *err_string;
+    int cpu_flags = av_get_cpu_flags();
 
-    av_log(avctx, AV_LOG_TRACE, "Calling %s\n", func);
-
-    if (err == CUDA_SUCCESS)
-        return 0;
-
-    ((tcuGetErrorName *)cuGetErrorName_fn)(err, &err_name);
-    ((tcuGetErrorString *)cuGetErrorString_fn)(err, &err_string);
-
-    av_log(avctx, AV_LOG_ERROR, "%s failed", func);
-    if (err_name && err_string)
-        av_log(avctx, AV_LOG_ERROR, " -> %s: %s", err_name, err_string);
-    av_log(avctx, AV_LOG_ERROR, "\n");
-
-    return AVERROR_EXTERNAL;
+    if (EXTERNAL_SSE(cpu_flags)) {
+        s->compute_distance_ssd = ff_compute_distance_ssd_sse;
+    }
 }
-

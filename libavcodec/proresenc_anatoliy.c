@@ -27,6 +27,7 @@
  * Known FOURCCs: 'ap4h' (444), 'apch' (HQ), 'apcn' (422), 'apcs' (LT), 'acpo' (Proxy)
  */
 
+#include "libavutil/opt.h"
 #include "avcodec.h"
 #include "dct.h"
 #include "internal.h"
@@ -44,14 +45,21 @@ static const AVProfile profiles[] = {
     { FF_PROFILE_PRORES_STANDARD, "apcn"},
     { FF_PROFILE_PRORES_HQ,       "apch"},
     { FF_PROFILE_PRORES_4444,     "ap4h"},
+    { FF_PROFILE_PRORES_XQ,       "ap4x"},
     { FF_PROFILE_UNKNOWN }
 };
 
-static const int qp_start_table[5] = {  8, 3, 2, 1, 1};
-static const int qp_end_table[5]   = { 13, 9, 6, 6, 5};
-static const int bitrate_table[5]  = { 1000, 2100, 3500, 5400, 7000};
+static const int qp_start_table[6] = {  8, 3, 2, 1, 1, 1};
+static const int qp_end_table[6]   = { 13, 9, 6, 6, 5, 4};
+static const int bitrate_table[6]  = { 1000, 2100, 3500, 5400, 7000, 10000};
 
-static const uint8_t QMAT_LUMA[5][64] = {
+static const int valid_primaries[9]  = { AVCOL_PRI_RESERVED0, AVCOL_PRI_BT709, AVCOL_PRI_UNSPECIFIED, AVCOL_PRI_BT470BG,
+                                         AVCOL_PRI_SMPTE170M, AVCOL_PRI_BT2020, AVCOL_PRI_SMPTE431, AVCOL_PRI_SMPTE432,INT_MAX };
+static const int valid_trc[4]        = { AVCOL_TRC_RESERVED0, AVCOL_TRC_BT709, AVCOL_TRC_UNSPECIFIED, INT_MAX };
+static const int valid_colorspace[5] = { AVCOL_SPC_BT709, AVCOL_SPC_UNSPECIFIED, AVCOL_SPC_SMPTE170M,
+                                         AVCOL_SPC_BT2020_NCL, INT_MAX };
+
+static const uint8_t QMAT_LUMA[6][64] = {
     {
          4,  7,  9, 11, 13, 14, 15, 63,
          7,  7, 11, 12, 14, 15, 63, 63,
@@ -97,10 +105,19 @@ static const uint8_t QMAT_LUMA[5][64] = {
         4,  4,  4,  4,  4,  5,  5,  6,
         4,  4,  4,  4,  5,  5,  6,  7,
         4,  4,  4,  4,  5,  6,  7,  7
+    }, { /* 444 XQ */
+        2,  2,  2,  2,  2,  2,  2,  2,
+        2,  2,  2,  2,  2,  2,  2,  2,
+        2,  2,  2,  2,  2,  2,  2,  2,
+        2,  2,  2,  2,  2,  2,  2,  3,
+        2,  2,  2,  2,  2,  2,  3,  3,
+        2,  2,  2,  2,  2,  3,  3,  3,
+        2,  2,  2,  2,  3,  3,  3,  4,
+        2,  2,  2,  2,  3,  3,  4,  4,
     }
 };
 
-static const uint8_t QMAT_CHROMA[5][64] = {
+static const uint8_t QMAT_CHROMA[6][64] = {
     {
          4,  7,  9, 11, 13, 14, 63, 63,
          7,  7, 11, 12, 14, 63, 63, 63,
@@ -146,11 +163,21 @@ static const uint8_t QMAT_CHROMA[5][64] = {
         4,  4,  4,  4,  4,  5,  5,  6,
         4,  4,  4,  4,  5,  5,  6,  7,
         4,  4,  4,  4,  5,  6,  7,  7
+    }, { /* 444 xq */
+        4,  4,  4,  4,  4,  4,  4,  4,
+        4,  4,  4,  4,  4,  4,  4,  4,
+        4,  4,  4,  4,  4,  4,  4,  4,
+        4,  4,  4,  4,  4,  4,  4,  5,
+        4,  4,  4,  4,  4,  4,  5,  5,
+        4,  4,  4,  4,  4,  5,  5,  6,
+        4,  4,  4,  4,  5,  5,  6,  7,
+        4,  4,  4,  4,  5,  6,  7,  7
     }
 };
 
 
 typedef struct {
+    AVClass *class;
     FDCTDSPContext fdsp;
     uint8_t* fill_y;
     uint8_t* fill_u;
@@ -162,6 +189,8 @@ typedef struct {
 
     int is_422;
     int need_alpha;
+
+    char *vendor;
 } ProresContext;
 
 static void encode_codeword(PutBitContext *pb, int val, int codebook)
@@ -651,6 +680,7 @@ static int prores_encode_picture(AVCodecContext *avctx, const AVFrame *pic,
 static int prores_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                                const AVFrame *pict, int *got_packet)
 {
+    ProresContext *ctx = avctx->priv_data;
     int header_size = 148;
     uint8_t *buf;
     int pic_size, ret;
@@ -672,18 +702,19 @@ static int prores_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     bytestream_put_be16(&buf, header_size);
     bytestream_put_be16(&buf, 0); /* version */
-    bytestream_put_buffer(&buf, "fmpg", 4);
+    bytestream_put_buffer(&buf, ctx->vendor, 4);
     bytestream_put_be16(&buf, avctx->width);
     bytestream_put_be16(&buf, avctx->height);
-    if (avctx->profile == FF_PROFILE_PRORES_4444) {
+    if (avctx->profile >= FF_PROFILE_PRORES_4444) { /* 4444 or 4444 Xq */
         *buf++ = 0xC2; // 444, not interlaced
     } else {
         *buf++ = 0x82; // 422, not interlaced
     }
     *buf++ = 0; /* reserved */
-    *buf++ = pict->color_primaries;
-    *buf++ = pict->color_trc;
-    *buf++ = pict->colorspace;
+    /* only write color properties, if valid value. set to unspecified otherwise */
+    *buf++ = ff_int_from_list_or_default(avctx, "frame color primaries", pict->color_primaries, valid_primaries, 0);
+    *buf++ = ff_int_from_list_or_default(avctx, "frame color trc", pict->color_trc, valid_trc, 0);
+    *buf++ = ff_int_from_list_or_default(avctx, "frame colorspace", pict->colorspace, valid_colorspace, 0);
     if (avctx->profile >= FF_PROFILE_PRORES_4444) {
         if (avctx->pix_fmt == AV_PIX_FMT_YUV444P10) {
             *buf++ = 0xA0;/* src b64a and no alpha */
@@ -733,6 +764,11 @@ static av_cold int prores_encode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
+    if (strlen(ctx->vendor) != 4) {
+        av_log(avctx, AV_LOG_ERROR, "vendor ID should be 4 bytes\n");
+        return AVERROR(EINVAL);
+    }
+
     if (avctx->profile == FF_PROFILE_UNKNOWN) {
         if (avctx->pix_fmt == AV_PIX_FMT_YUV422P10) {
             avctx->profile = FF_PROFILE_PRORES_STANDARD;
@@ -751,16 +787,16 @@ static av_cold int prores_encode_init(AVCodecContext *avctx)
             return AVERROR(EINVAL);
         }
     } else if (avctx->profile < FF_PROFILE_PRORES_PROXY
-            || avctx->profile > FF_PROFILE_PRORES_4444) {
+            || avctx->profile > FF_PROFILE_PRORES_XQ) {
         av_log(
                 avctx,
                 AV_LOG_ERROR,
-                "unknown profile %d, use [0 - apco, 1 - apcs, 2 - apcn (default), 3 - apch, 4 - ap4h]\n",
+                "unknown profile %d, use [0 - apco, 1 - apcs, 2 - apcn (default), 3 - apch, 4 - ap4h, 5 - ap4x]\n",
                 avctx->profile);
         return AVERROR(EINVAL);
     } else if ((avctx->pix_fmt == AV_PIX_FMT_YUV422P10) && (avctx->profile > FF_PROFILE_PRORES_HQ)){
         av_log(avctx, AV_LOG_ERROR,
-               "encoding with ProRes 444 (ap4h) profile, need YUV444P10 input\n");
+               "encoding with ProRes 444/Xq (ap4h/ap4x) profile, need YUV444P10 input\n");
         return AVERROR(EINVAL);
     }  else if ((avctx->pix_fmt == AV_PIX_FMT_YUV444P10 || avctx->pix_fmt == AV_PIX_FMT_YUVA444P10)
                 && (avctx->profile < FF_PROFILE_PRORES_4444)){
@@ -816,6 +852,28 @@ static av_cold int prores_encode_close(AVCodecContext *avctx)
     return 0;
 }
 
+#define OFFSET(x) offsetof(ProresContext, x)
+#define VE     AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
+
+static const AVOption options[] = {
+    { "vendor", "vendor ID", OFFSET(vendor), AV_OPT_TYPE_STRING, { .str = "fmpg" }, CHAR_MIN, CHAR_MAX, VE },
+    { NULL }
+};
+
+static const AVClass proresaw_enc_class = {
+    .class_name = "ProResAw encoder",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+static const AVClass prores_enc_class = {
+    .class_name = "ProRes encoder",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 AVCodec ff_prores_aw_encoder = {
     .name           = "prores_aw",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple ProRes"),
@@ -827,6 +885,7 @@ AVCodec ff_prores_aw_encoder = {
     .encode2        = prores_encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]){AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_NONE},
     .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .priv_class     = &proresaw_enc_class,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_prores_profiles),
 };
 
@@ -841,5 +900,6 @@ AVCodec ff_prores_encoder = {
     .encode2        = prores_encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]){AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_NONE},
     .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .priv_class     = &prores_enc_class,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_prores_profiles),
 };

@@ -1201,6 +1201,18 @@ static int ebml_parse_elem(MatroskaDemuxContext *matroska,
                    length, max_lengths[syntax->type], syntax->type);
             return AVERROR_INVALIDDATA;
         }
+        if (matroska->num_levels > 0) {
+            MatroskaLevel *level = &matroska->levels[matroska->num_levels - 1];
+            AVIOContext *pb = matroska->ctx->pb;
+            int64_t pos = avio_tell(pb);
+            if (level->length != (uint64_t) -1 &&
+                (pos + length) > (level->start + level->length)) {
+                av_log(matroska->ctx, AV_LOG_ERROR,
+                       "Invalid length 0x%"PRIx64" > 0x%"PRIx64" in parent\n",
+                       length, level->start + level->length);
+                return AVERROR_INVALIDDATA;
+            }
+        }
     }
 
     switch (syntax->type) {
@@ -3558,7 +3570,7 @@ static int matroska_read_packet(AVFormatContext *s, AVPacket *pkt)
             ret = matroska_resync(matroska, pos);
     }
 
-    return ret;
+    return 0;
 }
 
 static int matroska_read_seek(AVFormatContext *s, int stream_index,
@@ -3953,17 +3965,14 @@ static int webm_dash_manifest_cues(AVFormatContext *s, int64_t init_range)
     strcpy(buf, "");
     for (i = 0; i < s->streams[0]->nb_index_entries; i++) {
         int ret = snprintf(buf + end, 20,
-                           "%" PRId64, s->streams[0]->index_entries[i].timestamp);
+                           "%" PRId64"%s", s->streams[0]->index_entries[i].timestamp,
+                           i != s->streams[0]->nb_index_entries - 1 ? "," : "");
         if (ret <= 0 || (ret == 20 && i ==  s->streams[0]->nb_index_entries - 1)) {
             av_log(s, AV_LOG_ERROR, "timestamp too long.\n");
             av_free(buf);
             return AVERROR_INVALIDDATA;
         }
         end += ret;
-        if (i != s->streams[0]->nb_index_entries - 1) {
-            strncat(buf, ",", 1);
-            end++;
-        }
     }
     av_dict_set(&s->streams[0]->metadata, CUE_TIMESTAMPS, buf, 0);
     av_free(buf);
