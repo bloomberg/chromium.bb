@@ -240,4 +240,48 @@ suite('SiteEntry', function() {
 
     });
   });
+
+  test('favicon with www.etld+1 chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 74622;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://www.example.com');
+  });
+
+  test('favicon with largest storage chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 74622;
+    testSiteGroup.origins[1].origin = 'https://abc.example.com';
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://login.example.com');
+  });
+
+  test('favicon with largest cookies number chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testSiteGroup.origins[1].origin = 'https://abc.example.com';
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://abc.example.com');
+  });
 });

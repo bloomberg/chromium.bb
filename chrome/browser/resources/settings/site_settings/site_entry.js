@@ -199,14 +199,34 @@ Polymer({
   /**
    * Get an appropriate favicon that represents this group of eTLD+1 sites as a
    * whole.
-   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @param {!SiteGroup} siteGroup The eTLD+1 group of origins.
    * @return {string} URL that is used for fetching the favicon
    * @private
    */
   getSiteGroupIcon_: function(siteGroup) {
-    // TODO(https://crbug.com/835712): Implement heuristic for finding a good
-    // favicon.
-    return siteGroup.origins[0].origin;
+    const origins = siteGroup.origins;
+    assert(origins);
+    assert(origins.length >= 1);
+    if (origins.length == 1) {
+      return origins[0].origin;
+    }
+    // If we can find a origin with format "www.etld+1", use the favicon of this
+    // origin. Otherwise find the origin with largest storage, and use the
+    // number of cookies as a tie breaker.
+    for (const originInfo of origins) {
+      if (this.toUrl(originInfo.origin).host == 'www.' + siteGroup.etldPlus1) {
+        return originInfo.origin;
+      }
+    }
+    const getMaxStorage = (max, originInfo) => {
+      return (
+          max.usage > originInfo.usage ||
+                  (max.usage == originInfo.usage &&
+                   max.numCookies > originInfo.numCookies) ?
+              max :
+              originInfo);
+    };
+    return origins.reduce(getMaxStorage, origins[0]).origin;
   },
 
   /**
