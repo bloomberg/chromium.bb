@@ -429,8 +429,8 @@ void FrameFetchContext::PrepareRequest(
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }
 
-  probe::prepareRequest(GetFrame()->GetDocument(), MasterDocumentLoader(),
-                        request, initiator_info, resource_type);
+  probe::prepareRequest(Probe(), MasterDocumentLoader(), request,
+                        initiator_info, resource_type);
 
   // ServiceWorker hook ups.
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
@@ -462,9 +462,9 @@ void FrameFetchContext::DispatchWillSendRequest(
     GetFrame()->Loader().Progress().WillStartLoading(identifier,
                                                      request.Priority());
   }
-  probe::willSendRequest(GetFrame()->GetDocument(), identifier,
-                         MasterDocumentLoader(), request, redirect_response,
-                         initiator_info, resource_type);
+  probe::willSendRequest(Probe(), identifier, MasterDocumentLoader(), Url(),
+                         request, redirect_response, initiator_info,
+                         resource_type);
   if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(MasterDocumentLoader()->Fetcher());
   if (frame_or_imported_document_->GetDocument()) {
@@ -956,9 +956,9 @@ void FrameFetchContext::DispatchDidBlockRequest(
     ResourceType resource_type) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  probe::didBlockRequest(GetFrame()->GetDocument(), resource_request,
-                         MasterDocumentLoader(), fetch_initiator_info,
-                         blocked_reason, resource_type);
+  probe::didBlockRequest(Probe(), resource_request, MasterDocumentLoader(),
+                         Url(), fetch_initiator_info, blocked_reason,
+                         resource_type);
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {

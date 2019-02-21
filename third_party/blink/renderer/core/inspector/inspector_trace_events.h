@@ -83,15 +83,14 @@ class CORE_EXPORT InspectorTraceEvents
  public:
   InspectorTraceEvents() = default;
 
-  void WillSendRequest(ExecutionContext*,
-                       unsigned long identifier,
+  void WillSendRequest(unsigned long identifier,
                        DocumentLoader*,
+                       const KURL& fetch_context_url,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
-  void WillSendNavigationRequest(ExecutionContext*,
-                                 unsigned long identifier,
+  void WillSendNavigationRequest(unsigned long identifier,
                                  DocumentLoader*,
                                  const KURL&,
                                  const AtomicString& http_method,

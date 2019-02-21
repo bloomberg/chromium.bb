@@ -17,7 +17,6 @@
 namespace blink {
 
 class DocumentLoader;
-class ExecutionContext;
 class ResourceRequest;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -81,8 +80,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyAcceptLanguageOverride(String* accept_lang);
   void ApplyUserAgentOverride(String* user_agent);
   void FrameStartedLoading(LocalFrame*);
-  void PrepareRequest(ExecutionContext*,
-                      DocumentLoader*,
+  void PrepareRequest(DocumentLoader*,
                       ResourceRequest&,
                       const FetchInitiatorInfo&,
                       ResourceType);

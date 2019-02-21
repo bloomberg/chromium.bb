@@ -89,11 +89,11 @@ interface CoreProbes {
   void didPaint(LocalFrame*, const cc::Layer*, const LayoutRect&);
   void applyAcceptLanguageOverride(ExecutionContext*, String* acceptLanguage);
   void applyUserAgentOverride(CoreProbeSink*, String* userAgent);
-  void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
+  void didBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
   void didChangeResourcePriority(LocalFrame*, DocumentLoader*, unsigned long identifier, ResourceLoadPriority loadPriority);
-  void prepareRequest([Keep] ExecutionContext*, DocumentLoader*, ResourceRequest&, const FetchInitiatorInfo&, ResourceType);
-  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
-  void willSendNavigationRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
+  void prepareRequest(CoreProbeSink*, DocumentLoader*, ResourceRequest&, const FetchInitiatorInfo&, ResourceType);
+  void willSendRequest(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const KURL& fetch_context_url, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
+  void willSendNavigationRequest(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
   void markResourceAsCached(LocalFrame*, DocumentLoader*, unsigned long identifier);
   void didReceiveResourceResponse(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didReceiveData(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const char* data, uint64_t dataLength);

@@ -95,7 +95,7 @@ void WorkerFetchContext::DispatchDidBlockRequest(
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
     ResourceType resource_type) const {
-  probe::didBlockRequest(global_scope_, resource_request, nullptr,
+  probe::didBlockRequest(Probe(), resource_request, nullptr, Url(),
                          fetch_initiator_info, blocked_reason, resource_type);
 }
 
@@ -202,7 +202,7 @@ void WorkerFetchContext::PrepareRequest(
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
 
-  probe::prepareRequest(global_scope_, nullptr, request, initiator_info,
+  probe::prepareRequest(Probe(), nullptr, request, initiator_info,
                         resource_type);
 }
 
@@ -223,7 +223,7 @@ void WorkerFetchContext::DispatchWillSendRequest(
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
-  probe::willSendRequest(global_scope_, identifier, nullptr, request,
+  probe::willSendRequest(Probe(), identifier, nullptr, Url(), request,
                          redirect_response, initiator_info, resource_type);
 }
 

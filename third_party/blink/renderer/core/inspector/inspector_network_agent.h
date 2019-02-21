@@ -85,29 +85,27 @@ class CORE_EXPORT InspectorNetworkAgent final
   void Restore() override;
 
   // Probes.
-  void DidBlockRequest(ExecutionContext*,
-                       const ResourceRequest&,
+  void DidBlockRequest(const ResourceRequest&,
                        DocumentLoader*,
+                       const KURL& fetch_context_url,
                        const FetchInitiatorInfo&,
                        ResourceRequestBlockedReason,
                        ResourceType);
   void DidChangeResourcePriority(DocumentLoader*,
                                  unsigned long identifier,
                                  ResourceLoadPriority);
-  void PrepareRequest(ExecutionContext*,
-                      DocumentLoader*,
+  void PrepareRequest(DocumentLoader*,
                       ResourceRequest&,
                       const FetchInitiatorInfo&,
                       ResourceType);
-  void WillSendRequest(ExecutionContext*,
-                       unsigned long identifier,
+  void WillSendRequest(unsigned long identifier,
                        DocumentLoader*,
+                       const KURL& fetch_context_url,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
-  void WillSendNavigationRequest(ExecutionContext*,
-                                 unsigned long identifier,
+  void WillSendNavigationRequest(unsigned long identifier,
                                  DocumentLoader*,
                                  const KURL&,
                                  const AtomicString& http_method,
@@ -248,9 +246,9 @@ class CORE_EXPORT InspectorNetworkAgent final
 
  private:
   void Enable();
-  void WillSendRequestInternal(ExecutionContext*,
-                               unsigned long identifier,
+  void WillSendRequestInternal(unsigned long identifier,
                                DocumentLoader*,
+                               const KURL& fetch_context_url,
                                const ResourceRequest&,
                                const ResourceResponse& redirect_response,
                                const FetchInitiatorInfo&,
