@@ -5,19 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_ANDROID_H_
 
-#include <map>
 #include <memory>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "components/invalidation/public/invalidation_util.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "google/cacheinvalidation/include/types.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 class Profile;
 
@@ -201,10 +193,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
-
-  // The class that handles getting, setting, and persisting sync
-  // preferences.
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
 
   // Java-side ProfileSyncService object.
   JavaObjectWeakGlobalRef weak_java_profile_sync_service_;

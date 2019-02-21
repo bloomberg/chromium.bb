@@ -456,7 +456,7 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
     // The major version has changed and a local syncable change was made.
     // Reset the passphrase prompt state.
     passphrase_prompt_triggered_by_version_ = false;
-    sync_prefs_.SetPassphrasePrompted(false);
+    SetPassphrasePrompted(false);
     NotifyObservers();
   }
 
@@ -1922,6 +1922,14 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (engine_initialized_)
     engine_->FlushDirectory();
+}
+
+bool ProfileSyncService::IsPassphrasePrompted() const {
+  return sync_prefs_.IsPassphrasePrompted();
+}
+
+void ProfileSyncService::SetPassphrasePrompted(bool prompted) {
+  sync_prefs_.SetPassphrasePrompted(prompted);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

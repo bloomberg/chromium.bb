@@ -333,6 +333,9 @@ class ProfileSyncService : public syncer::SyncService,
   // killed in the near future.
   void FlushDirectory() const;
 
+  bool IsPassphrasePrompted() const;
+  void SetPassphrasePrompted(bool prompted);
+
   void SyncAllowedByPlatformChanged(bool allowed);
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
