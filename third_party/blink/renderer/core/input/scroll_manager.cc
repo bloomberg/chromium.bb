@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/input/scroll_manager.h"
 
 #include <memory>
+
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -701,8 +703,8 @@ bool ScrollManager::GetSnapFlingInfo(
 
   FloatPoint current_position = scrollable_area->ScrollPosition();
   *out_initial_position = gfx::Vector2dF(current_position);
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndAndDirection(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(*out_initial_position),
           gfx::ScrollOffset(natural_displacement));
   base::Optional<FloatPoint> snap_end =

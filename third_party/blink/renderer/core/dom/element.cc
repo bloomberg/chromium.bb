@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
@@ -827,8 +828,8 @@ void Element::setScrollLeft(double new_left) {
 
     FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
                          box->ScrollTop().ToFloat());
-    std::unique_ptr<SnapSelectionStrategy> strategy =
-        SnapSelectionStrategy::CreateForEndPosition(
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndPosition(
             gfx::ScrollOffset(end_point), true, false);
     end_point = GetDocument()
                     .GetSnapCoordinator()
@@ -859,8 +860,8 @@ void Element::setScrollTop(double new_top) {
 
     FloatPoint end_point(box->ScrollLeft().ToFloat(),
                          new_top * box->Style()->EffectiveZoom());
-    std::unique_ptr<SnapSelectionStrategy> strategy =
-        SnapSelectionStrategy::CreateForEndPosition(
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndPosition(
             gfx::ScrollOffset(end_point), false, true);
     end_point = GetDocument()
                     .GetSnapCoordinator()
@@ -980,9 +981,9 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
     gfx::ScrollOffset new_offset(current_position + displacement);
     FloatPoint new_position(new_offset.x(), new_offset.y());
 
-    std::unique_ptr<SnapSelectionStrategy> strategy =
-        SnapSelectionStrategy::CreateForEndAndDirection(current_position,
-                                                        displacement);
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndAndDirection(current_position,
+                                                            displacement);
     new_position = GetDocument()
                        .GetSnapCoordinator()
                        ->GetSnapPosition(*box, *strategy)
@@ -1011,8 +1012,8 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
           box->Style()->EffectiveZoom());
     }
 
-    std::unique_ptr<SnapSelectionStrategy> strategy =
-        SnapSelectionStrategy::CreateForEndPosition(
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndPosition(
             gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
             scroll_to_options->hasTop());
     new_position = GetDocument()
@@ -1050,9 +1051,9 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
                             FloatPoint(displacement.x(), displacement.y());
 
   gfx::ScrollOffset current_position(viewport->ScrollPosition());
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndAndDirection(current_position,
-                                                      displacement);
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndAndDirection(current_position,
+                                                          displacement);
   new_position =
       GetDocument()
           .GetSnapCoordinator()
@@ -1087,8 +1088,8 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   }
 
   FloatPoint new_position = viewport->ScrollOffsetToPosition(new_offset);
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_position =

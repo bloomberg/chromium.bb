@@ -46,6 +46,7 @@
 
 #include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -2057,9 +2058,9 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   }
 
   FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(end_point),
-                                                  true, true);
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
+          gfx::ScrollOffset(end_point), true, true);
   end_point = GetLayoutBox()
                   ->GetDocument()
                   .GetSnapCoordinator()

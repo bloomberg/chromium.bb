@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -1027,8 +1028,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
                           y * GetFrame()->PageZoomFactor());
   FloatPoint new_scaled_position = current_position + scaled_delta;
 
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndAndDirection(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position), gfx::ScrollOffset(scaled_delta));
   new_scaled_position =
       document()
@@ -1091,8 +1092,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
 
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_scaled_position =

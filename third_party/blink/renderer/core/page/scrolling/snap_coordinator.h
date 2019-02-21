@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SNAP_COORDINATOR_H_
 
 #include "base/macros.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -72,7 +73,7 @@ class CORE_EXPORT SnapCoordinator final
 
   base::Optional<FloatPoint> GetSnapPosition(
       const LayoutBox& snap_container,
-      const SnapSelectionStrategy& strategy) const;
+      const cc::SnapSelectionStrategy& strategy) const;
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();
@@ -83,7 +84,7 @@ class CORE_EXPORT SnapCoordinator final
  private:
   friend class SnapCoordinatorTest;
   bool PerformSnapping(const LayoutBox& snap_container,
-                       const SnapSelectionStrategy& strategy) const;
+                       const cc::SnapSelectionStrategy& strategy) const;
 
   HashMap<const LayoutBox*, SnapContainerData> snap_container_map_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
