@@ -27,14 +27,9 @@ PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
       image_paint_timing_detector_(
           MakeGarbageCollected<ImagePaintTimingDetector>(frame_view)) {}
 
-void PaintTimingDetector::NotifyPrePaintFinished() {
-  // The image detector is hooking up the prepaint stage.
-  image_paint_timing_detector_->OnPrePaintFinished();
-}
-
 void PaintTimingDetector::NotifyPaintFinished() {
-  // The text detector is hooking up the paint stage.
   text_paint_timing_detector_->OnPaintFinished();
+  image_paint_timing_detector_->OnPrePaintFinished();
 }
 
 void PaintTimingDetector::NotifyObjectPrePaint(
@@ -51,6 +46,7 @@ void PaintTimingDetector::NotifyObjectPrePaint(
   // Todo(maxlg): add other detectors here.
 }
 
+// static
 void PaintTimingDetector::NotifyTextPaint(
     const Node* node,
     const PropertyTreeState& current_paint_chunk_properties) {
@@ -62,6 +58,7 @@ void PaintTimingDetector::NotifyTextPaint(
   NotifyTextPaint(*object, current_paint_chunk_properties);
 }
 
+// static
 void PaintTimingDetector::NotifyTextPaint(
     const LayoutObject& object,
     const PropertyTreeState& current_paint_chunk_properties) {

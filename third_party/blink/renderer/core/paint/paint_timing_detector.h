@@ -37,7 +37,6 @@ class CORE_EXPORT PaintTimingDetector
   static void NotifyTextPaint(const LayoutObject& object,
                               const PropertyTreeState&);
   void NotifyNodeRemoved(const LayoutObject& object);
-  void NotifyPrePaintFinished();
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
