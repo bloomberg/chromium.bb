@@ -1060,6 +1060,11 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
 
   void OnRequest(RequestDetails details) override { NOTREACHED(); }
 
+  void QueueSignedExchangeReport(
+      const SignedExchangeReportDetails& details) override {
+    NOTREACHED();
+  }
+
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
     ++remove_calls_;

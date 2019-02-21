@@ -82,6 +82,8 @@ class TestNetworkContext : public mojom::NetworkContext {
                    const GURL& url,
                    const base::Optional<std::string>& user_agent,
                    base::Value body) override {}
+  void QueueSignedExchangeReport(
+      mojom::SignedExchangeReportPtr report) override {}
   void CloseAllConnections(CloseAllConnectionsCallback callback) override {}
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override {}
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,

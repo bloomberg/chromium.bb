@@ -151,6 +151,28 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     return details;
   }
 
+  NetworkErrorLoggingService::SignedExchangeReportDetails
+  MakeSignedExchangeReportDetails(bool success,
+                                  const std::string& type,
+                                  const GURL& outer_url,
+                                  const GURL& inner_url,
+                                  const GURL& cert_url,
+                                  const IPAddress& server_ip_address) {
+    NetworkErrorLoggingService::SignedExchangeReportDetails details;
+    details.success = success;
+    details.type = type;
+    details.outer_url = outer_url;
+    details.inner_url = inner_url;
+    details.cert_url = cert_url;
+    details.referrer = kReferrer_.spec();
+    details.server_ip_address = server_ip_address;
+    details.protocol = "http/1.1";
+    details.method = "GET";
+    details.status_code = 200;
+    details.elapsed_time = base::TimeDelta::FromMilliseconds(1234);
+    details.user_agent = kUserAgent_;
+    return details;
+  }
   NetworkErrorLoggingService* service() { return service_.get(); }
   const std::vector<TestReportingService::Report>& reports() {
     return reporting_service_->reports();
@@ -160,6 +182,9 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const GURL kUrlDifferentPort_ = GURL("https://example.com:4433/path");
   const GURL kUrlSubdomain_ = GURL("https://subdomain.example.com/path");
   const GURL kUrlDifferentHost_ = GURL("https://example2.com/path");
+
+  const GURL kInnerUrl_ = GURL("https://example.net/path");
+  const GURL kCertUrl_ = GURL("https://example.com/cert_path");
 
   const IPAddress kServerIP_ = IPAddress(192, 168, 0, 1);
   const IPAddress kOtherServerIP_ = IPAddress(192, 168, 0, 2);
@@ -171,6 +196,10 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
       url::Origin::Create(kUrlDifferentHost_);
 
   const std::string kHeader_ = "{\"report_to\":\"group\",\"max_age\":86400}";
+  const std::string kHeaderSuccessFraction0_ =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":0.0}";
+  const std::string kHeaderSuccessFraction1_ =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   const std::string kHeaderIncludeSubdomains_ =
       "{\"report_to\":\"group\",\"max_age\":86400,\"include_subdomains\":true}";
   const std::string kHeaderMaxAge0_ = "{\"max_age\":0}";
@@ -237,9 +266,7 @@ TEST_F(NetworkErrorLoggingServiceTest, JsonTooDeep) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK));
 
@@ -385,9 +412,7 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(
       MakeRequestDetails(kUrl_, OK, "GET", 200, kOtherServerIP_));
@@ -421,9 +446,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED, "GET",
                                           200, kOtherServerIP_));
@@ -457,9 +480,7 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(
       MakeRequestDetails(kUrl_, OK, "GET", 504, kOtherServerIP_));
@@ -493,9 +514,7 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_NAME_NOT_RESOLVED, "GET",
                                           0, kOtherServerIP_));
@@ -529,9 +548,7 @@ TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK, "POST"));
 
@@ -570,9 +587,7 @@ TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0) {
-  static const std::string kHeaderSuccessFraction0 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":0.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction0);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction0_);
 
   // Each network error has a 0% chance of being reported.  Fire off several and
   // verify that no reports are produced.
@@ -820,9 +835,7 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
       base::TimeTicks::UnixEpoch().since_origin();
   clock.Advance(delta_from_origin);
 
-  static const std::string kHeaderSuccessFraction1 =
-      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
-  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
   service()->OnHeader(kOriginDifferentHost_, kServerIP_, kHeader_);
   service()->OnHeader(kOriginSubdomain_, kServerIP_, kHeaderIncludeSubdomains_);
   const std::string kHeaderWrongTypes =
@@ -878,6 +891,140 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
       }
       )json");
   EXPECT_EQ(*expected, actual);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, NoReportingService_SignedExchange) {
+  DestroyReportingService();
+
+  service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin_SignedExchange) {
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0_SignedExchange) {
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction0_);
+
+  // Each network error has a 0% chance of being reported.  Fire off several and
+  // verify that no reports are produced.
+  constexpr size_t kReportCount = 100;
+  for (size_t i = 0; i < kReportCount; ++i) {
+    service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+        true, "ok", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
+  }
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued_SignedExchange) {
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      true, "ok", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
+  ASSERT_EQ(1u, reports().size());
+  EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kUserAgent_, reports()[0].user_agent);
+  EXPECT_EQ(kGroup_, reports()[0].group);
+  EXPECT_EQ(kType_, reports()[0].type);
+  EXPECT_EQ(0, reports()[0].depth);
+
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue(kReferrer_.spec(), *body,
+                              NetworkErrorLoggingService::kReferrerKey);
+  ExpectDictDoubleValue(1.0, *body,
+                        NetworkErrorLoggingService::kSamplingFractionKey);
+  base::ExpectDictStringValue(kServerIP_.ToString(), *body,
+                              NetworkErrorLoggingService::kServerIpKey);
+  base::ExpectDictStringValue("http/1.1", *body,
+                              NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
+  base::ExpectDictIntegerValue(200, *body,
+                               NetworkErrorLoggingService::kStatusCodeKey);
+  base::ExpectDictIntegerValue(1234, *body,
+                               NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue(
+      NetworkErrorLoggingService::kSignedExchangePhaseValue, *body,
+      NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("ok", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+
+  const base::DictionaryValue* sxg_body;
+  ASSERT_TRUE(body->FindKey(NetworkErrorLoggingService::kSignedExchangeBodyKey)
+                  ->GetAsDictionary(&sxg_body));
+
+  base::ExpectDictStringValue(kUrl_.spec(), *sxg_body,
+                              NetworkErrorLoggingService::kOuterUrlKey);
+  base::ExpectDictStringValue(kInnerUrl_.spec(), *sxg_body,
+                              NetworkErrorLoggingService::kInnerUrlKey);
+  base::ExpectStringValue(
+      kCertUrl_.spec(),
+      sxg_body->FindKey(NetworkErrorLoggingService::kCertUrlKey)->GetList()[0]);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued_SignedExchange) {
+  service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
+  ASSERT_EQ(1u, reports().size());
+  EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kUserAgent_, reports()[0].user_agent);
+  EXPECT_EQ(kGroup_, reports()[0].group);
+  EXPECT_EQ(kType_, reports()[0].type);
+  EXPECT_EQ(0, reports()[0].depth);
+
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue(kReferrer_.spec(), *body,
+                              NetworkErrorLoggingService::kReferrerKey);
+  ExpectDictDoubleValue(1.0, *body,
+                        NetworkErrorLoggingService::kSamplingFractionKey);
+  base::ExpectDictStringValue(kServerIP_.ToString(), *body,
+                              NetworkErrorLoggingService::kServerIpKey);
+  base::ExpectDictStringValue("http/1.1", *body,
+                              NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
+  base::ExpectDictIntegerValue(200, *body,
+                               NetworkErrorLoggingService::kStatusCodeKey);
+  base::ExpectDictIntegerValue(1234, *body,
+                               NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue(
+      NetworkErrorLoggingService::kSignedExchangePhaseValue, *body,
+      NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("sxg.failed", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+
+  const base::DictionaryValue* sxg_body;
+  ASSERT_TRUE(body->FindKey(NetworkErrorLoggingService::kSignedExchangeBodyKey)
+                  ->GetAsDictionary(&sxg_body));
+
+  base::ExpectDictStringValue(kUrl_.spec(), *sxg_body,
+                              NetworkErrorLoggingService::kOuterUrlKey);
+  base::ExpectDictStringValue(kInnerUrl_.spec(), *sxg_body,
+                              NetworkErrorLoggingService::kInnerUrlKey);
+  base::ExpectStringValue(
+      kCertUrl_.spec(),
+      sxg_body->FindKey(NetworkErrorLoggingService::kCertUrlKey)->GetList()[0]);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, MismatchingSubdomain_SignedExchange) {
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      false, "sxg.failed", kUrlSubdomain_, kInnerUrl_, kCertUrl_, kServerIP_));
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, MismatchingIPAddress_SignedExchange) {
+  service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
+      false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kOtherServerIP_));
+  EXPECT_TRUE(reports().empty());
 }
 
 }  // namespace

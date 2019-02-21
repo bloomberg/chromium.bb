@@ -608,6 +608,16 @@
     "args": ["--sampling-heap-profiler"]
   },
   {
+    "prefix": "sxg-reporting",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedExchangeReportingForDistributors"]
+  },
+  {
+    "prefix": "sxg-reporting-with-network-service",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedExchangeReportingForDistributors,NetworkService"]
+  },
+  {
     "prefix": "sxg-with-network-service",
     "base": "http/tests/loading/sxg",
     "args": ["--enable-features=NetworkService"]

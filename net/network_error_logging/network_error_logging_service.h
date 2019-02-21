@@ -71,6 +71,26 @@ class NET_EXPORT NetworkErrorLoggingService {
     int reporting_upload_depth;
   };
 
+  // The details of a signed exchange report.
+  struct NET_EXPORT SignedExchangeReportDetails {
+    SignedExchangeReportDetails();
+    SignedExchangeReportDetails(const SignedExchangeReportDetails& other);
+    ~SignedExchangeReportDetails();
+
+    bool success;
+    std::string type;
+    GURL outer_url;
+    GURL inner_url;
+    GURL cert_url;
+    std::string referrer;
+    IPAddress server_ip_address;
+    std::string protocol;
+    std::string method;
+    int32_t status_code;
+    base::TimeDelta elapsed_time;
+    std::string user_agent;
+  };
+
   static const char kHeaderName[];
 
   static const char kReportType[];
@@ -88,6 +108,12 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kElapsedTimeKey[];
   static const char kPhaseKey[];
   static const char kTypeKey[];
+
+  static const char kSignedExchangePhaseValue[];
+  static const char kSignedExchangeBodyKey[];
+  static const char kOuterUrlKey[];
+  static const char kInnerUrlKey[];
+  static const char kCertUrlKey[];
 
   // Histograms.  These are mainly used in test cases to verify that interesting
   // events occurred.
@@ -167,6 +193,10 @@ class NET_EXPORT NetworkErrorLoggingService {
   // *all* secure requests. NEL is only available to secure origins, so this is
   // not called on any insecure requests.
   virtual void OnRequest(RequestDetails details) = 0;
+
+  // Queues a Signed Exchange report.
+  virtual void QueueSignedExchangeReport(
+      const SignedExchangeReportDetails& details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true.
