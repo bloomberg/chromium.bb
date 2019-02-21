@@ -707,6 +707,12 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
       PRINTER_LOG(ERROR)
           << "Requested printer changes would make printer unusable";
       break;
+    case PrinterSetupResult::kDbusNoReply:
+      PRINTER_LOG(ERROR) << "Couldn't talk to debugd over D-Bus.";
+      break;
+    case PrinterSetupResult::kDbusTimeout:
+      PRINTER_LOG(ERROR) << "Timed out trying to reach debugd over D-Bus.";
+      break;
     case PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This is not an expected value";
       break;

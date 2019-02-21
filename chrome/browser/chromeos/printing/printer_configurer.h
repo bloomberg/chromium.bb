@@ -32,7 +32,13 @@ enum PrinterSetupResult {
   kInvalidPpd = 11,        // PPD rejected by cupstestppd
   kPpdNotFound = 12,       // Could not find PPD
   kPpdUnretrievable = 13,  // Could not download PPD
-  kMaxValue                // Maximum value for histograms
+  // Space left for additional errors
+
+  // Specific DBus errors. This must stay in sync with the DbusLibraryError
+  // enum and PrinterSetupResultFromDbusErrorCode().
+  kDbusNoReply = 64,  // Expected remote response but got nothing
+  kDbusTimeout = 65,  // Generic timeout error (c.f. dbus-protocol.h)
+  kMaxValue           // Maximum value for histograms
 };
 
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;

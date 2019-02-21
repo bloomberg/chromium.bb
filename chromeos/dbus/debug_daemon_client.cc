@@ -9,10 +9,13 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <dbus/dbus-protocol.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,6 +23,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -101,6 +105,21 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
 
   DISALLOW_COPY_AND_ASSIGN(PipeReaderWrapper);
 };
+
+// Convert the string representation of a D-Bus error into a
+// DbusLibraryError value.
+DbusLibraryError DbusLibraryErrorFromString(
+    const std::string& dbus_error_string) {
+  static const base::NoDestructor<std::map<std::string, DbusLibraryError>>
+      error_string_map({
+          {DBUS_ERROR_NO_REPLY, DbusLibraryError::kNoReply},
+          {DBUS_ERROR_TIMEOUT, DbusLibraryError::kTimeout},
+      });
+
+  auto it = error_string_map->find(dbus_error_string);
+  return it != error_string_map->end() ? it->second
+                                       : DbusLibraryError::kGenericError;
+}
 
 }  // namespace
 
@@ -462,7 +481,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         reinterpret_cast<const uint8_t*>(ppd_contents.data()),
         ppd_contents.size());
 
-    debugdaemon_proxy_->CallMethod(
+    debugdaemon_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnPrinterAdded,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -478,7 +497,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendString(name);
     writer.AppendString(uri);
 
-    debugdaemon_proxy_->CallMethod(
+    debugdaemon_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnPrinterAdded,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -730,14 +749,27 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void OnPrinterAdded(CupsAddPrinterCallback callback,
-                      dbus::Response* response) {
+                      dbus::Response* response,
+                      dbus::ErrorResponse* err_response) {
     int32_t result;
     dbus::MessageReader reader(response);
+
+    // If we get a normal response, we need not examine the error response.
     if (response && reader.PopInt32(&result)) {
+      DCHECK_GE(result, 0);
       std::move(callback).Run(result);
-    } else {
-      std::move(callback).Run(base::nullopt);
+      return;
     }
+
+    // Without a normal response, we communicate the D-Bus error response
+    // to the callback.
+    std::string err_str;
+    if (err_response) {
+      dbus::MessageReader err_reader(err_response);
+      err_str = err_response->GetErrorName();
+    }
+    DbusLibraryError dbus_error = DbusLibraryErrorFromString(err_str);
+    std::move(callback).Run(dbus_error);
   }
 
   void OnPrinterRemoved(const CupsRemovePrinterCallback& callback,
