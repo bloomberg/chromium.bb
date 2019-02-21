@@ -1427,6 +1427,52 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
   EXPECT_FALSE(csp->AllowTrustedTypePolicy("'three'"));
 }
 
+TEST_F(ContentSecurityPolicyTest, TrustedTypeEnforce) {
+  execution_context->SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_FALSE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypeReport) {
+  execution_context->SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
+                        kContentSecurityPolicyHeaderTypeReport,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndEnforce) {
+  execution_context->SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types one",
+                        kContentSecurityPolicyHeaderTypeReport,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  csp->DidReceiveHeader("trusted-types two",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_FALSE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndNonTTEnforce) {
+  execution_context->SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types one",
+                        kContentSecurityPolicyHeaderTypeReport,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  csp->DidReceiveHeader("script-src none",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+}
+
 TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
   KURL example_url("http://example.com");
   KURL not_example_url("http://not-example.com");

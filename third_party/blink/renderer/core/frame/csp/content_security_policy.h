@@ -138,7 +138,12 @@ class CORE_EXPORT ContentSecurityPolicy
   // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
   // generate a report, we're guaranteed that the value isn't 'null', so we
   // don't need that state in this enum.
-  enum ViolationType { kInlineViolation, kEvalViolation, kURLViolation };
+  enum ViolationType {
+    kInlineViolation,
+    kEvalViolation,
+    kURLViolation,
+    kTrustedTypesViolation
+  };
 
   enum class InlineType { kBlock, kAttribute };
 
@@ -392,6 +397,10 @@ class CORE_EXPORT ContentSecurityPolicy
                         SecurityViolationReportingPolicy::kReport,
                     CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
+  // Determine whether to enforce the assignment failure. Also handle reporting.
+  // Returns whether enforcing Trusted Types CSP directives are present.
+  bool AllowTrustedTypeAssignmentFailure(const String& message) const;
+
   void UsesScriptHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
   void UsesStyleHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
 
@@ -463,7 +472,7 @@ class CORE_EXPORT ContentSecurityPolicy
   void EnforceSandboxFlags(SandboxFlags);
   void TreatAsPublicAddress();
   void RequireTrustedTypes();
-  bool IsRequireTrustedTypes() const { return require_safe_types_; }
+  bool IsRequireTrustedTypes() const { return require_trusted_types_; }
   String EvalDisabledErrorMessage() const;
 
   // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in
@@ -604,7 +613,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // State flags used to configure the environment after parsing a policy.
   SandboxFlags sandbox_mask_;
   bool treat_as_public_address_;
-  bool require_safe_types_;
+  bool require_trusted_types_;
   String disable_eval_error_message_;
   WebInsecureRequestPolicy insecure_request_policy_;
 

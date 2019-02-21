@@ -129,14 +129,15 @@ void CSPDirectiveList::ReportViolation(
     const ContentSecurityPolicy::DirectiveType effective_type,
     const String& console_message,
     const KURL& blocked_url,
-    ResourceRequest::RedirectStatus redirect_status) const {
+    ResourceRequest::RedirectStatus redirect_status,
+    ContentSecurityPolicy::ViolationType violation_type) const {
   String message =
       IsReportOnly() ? "[Report Only] " + console_message : console_message;
   policy_->LogToConsole(ConsoleMessage::Create(kSecurityMessageSource,
                                                kErrorMessageLevel, message));
   policy_->ReportViolation(directive_text, effective_type, message, blocked_url,
                            report_endpoints_, use_reporting_api_, header_,
-                           header_type_, ContentSecurityPolicy::kURLViolation,
+                           header_type_, violation_type,
                            std::unique_ptr<SourceLocation>(),
                            nullptr,  // localFrame
                            redirect_status);
@@ -267,6 +268,19 @@ void CSPDirectiveList::ReportMixedContent(
         nullptr,  // contextFrame,
         redirect_status);
   }
+}
+
+bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
+    const String& message) const {
+  if (!trusted_types_)
+    return true;
+
+  ReportViolation(ContentSecurityPolicy::GetDirectiveName(
+                      ContentSecurityPolicy::DirectiveType::kTrustedTypes),
+                  ContentSecurityPolicy::DirectiveType::kTrustedTypes, message,
+                  KURL(), RedirectStatus::kFollowedRedirect,
+                  ContentSecurityPolicy::kTrustedTypesViolation);
+  return IsReportOnly();
 }
 
 bool CSPDirectiveList::CheckSource(
@@ -1376,10 +1390,6 @@ void CSPDirectiveList::TreatAsPublicAddress(const String& name,
 
 void CSPDirectiveList::RequireTrustedTypes(const String& name,
                                            const String& value) {
-  if (IsReportOnly()) {
-    policy_->ReportInvalidInReportOnly(name);
-    return;
-  }
   if (trusted_types_) {
     policy_->ReportDuplicateDirective(name);
     return;
