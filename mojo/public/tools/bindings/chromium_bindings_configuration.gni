@@ -8,7 +8,7 @@ _typemap_imports = [
   "//chrome/common/importer/typemaps.gni",
   "//chrome/common/media_router/mojo/typemaps.gni",
   "//chrome/typemaps.gni",
-  "//chromecast/common/mojom/typemaps.gni",
+  "//chromecast/typemaps.gni",
   "//chromeos/typemaps.gni",
   "//chromeos/components/multidevice/mojom/typemaps.gni",
   "//chromeos/services/secure_channel/public/mojom/typemaps.gni",
