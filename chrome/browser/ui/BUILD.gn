@@ -415,6 +415,8 @@ jumbo_split_static_library("ui") {
     "//components/favicon/core",
     "//components/feature_engagement",
     "//components/feed:feature_list",
+    "//components/feed/content:feed_content",
+    "//components/feed/core:feed_core",
     "//components/feedback",
     "//components/flags_ui",
     "//components/gcm_driver",

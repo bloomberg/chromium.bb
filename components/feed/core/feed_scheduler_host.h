@@ -134,6 +134,9 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // the return value, and if true, the caller should start a refresh.
   bool OnArticlesCleared(bool suppress_refreshes);
 
+  // Surface user classifier data for internals debugging page.
+  UserClassifier* user_classifier();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
 
