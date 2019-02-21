@@ -298,27 +298,45 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
     return;
 
   // TODO(samans): Take into account the embed token.
-  if (surface_id.local_surface_id().parent_sequence_number() >=
-          it->second.parent_sequence_number &&
-      surface_id.local_surface_id().child_sequence_number() >=
-          it->second.child_sequence_number) {
+  if (surface_id.local_surface_id().parent_sequence_number() >
+          it->second.parent_sequence_number ||
+      surface_id.local_surface_id().child_sequence_number() >
+          it->second.child_sequence_number ||
+      (surface_id.local_surface_id().parent_sequence_number() ==
+           it->second.parent_sequence_number &&
+       surface_id.local_surface_id().child_sequence_number() ==
+           it->second.child_sequence_number)) {
     frame_sink_id_dependencies_.erase(it);
     surface_manager_->SurfaceDependenciesChanged(this, {},
                                                  {surface_id.frame_sink_id()});
   }
 
-  // LocalSurfaceIds of a given FrameSinkId are monotonically increasing in time
-  // so if LocalSurfaceId j arrives then all LocalSurfaceIds i<j will never
-  // arrive and so we just drop these invalid activation dependencies here.
   // TODO(fsamuel): This is a linear scan which is probably fine today because
   // a given surface has a small number of dependencies. We might need to
   // revisit this in the future if the number of dependencies grows
   // significantly.
-  base::EraseIf(
-      activation_dependencies_, [surface_id](const SurfaceId& dependency) {
-        return dependency.frame_sink_id() == surface_id.frame_sink_id() &&
-               dependency.local_surface_id() <= surface_id.local_surface_id();
-      });
+  auto delete_fn = [surface_id](const SurfaceId& dependency) {
+    if (dependency.frame_sink_id() != surface_id.frame_sink_id())
+      return false;
+    // The dependency will never get satisfied if the child is already using a
+    // larger parent or child sequence number, so drop the dependency in that
+    // case.
+    if (dependency.local_surface_id().parent_sequence_number() <
+            surface_id.local_surface_id().parent_sequence_number() ||
+        dependency.local_surface_id().child_sequence_number() <
+            surface_id.local_surface_id().child_sequence_number()) {
+      return true;
+    }
+    // For the dependency to get satisfied, both parent and child sequence
+    // numbers of the activated SurfaceId must be equal to those of the
+    // dependency.
+    return dependency.local_surface_id().parent_sequence_number() ==
+               surface_id.local_surface_id().parent_sequence_number() &&
+           dependency.local_surface_id().child_sequence_number() ==
+               surface_id.local_surface_id().child_sequence_number();
+  };
+
+  base::EraseIf(activation_dependencies_, delete_fn);
 
   // We cannot activate this CompositorFrame if there are still missing
   // activation dependencies or this surface is blocked on its parent arriving

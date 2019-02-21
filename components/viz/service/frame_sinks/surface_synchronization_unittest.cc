@@ -2390,11 +2390,55 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceSkipDifferentNonce) {
 
 // This test verifies that if a child submits a LocalSurfaceId newer that the
 // parent's dependency, then the parent will drop its dependency and activate
-// if possible.
-TEST_F(SurfaceSynchronizationTest, DropDependenciesThatWillNeverArrive) {
+// if possible. In this version of the test, parent sequence number of the
+// activated surface is larger than that in the dependency, while the child
+// sequence number is smaller.
+TEST_F(SurfaceSynchronizationTest, DropDependenciesThatWillNeverArrive1) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id11 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id12 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child_id11 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  const SurfaceId child_id12 = MakeSurfaceId(kChildFrameSink1, 2, 1);
+  const SurfaceId child_id21 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  // |parent_id| depends on { child_id11, child_id21 }. It shouldn't activate.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id11, child_id21}, empty_surface_ranges(),
+                          std::vector<TransferableResource>()));
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+
+  // The first child submits a new CompositorFrame to |child_id12|. |parent_id|
+  // no longer depends on |child_id11| because it cannot expect it to arrive.
+  // However, the parent is still blocked on |child_id21|.
+  child_support1().SubmitCompositorFrame(
+      child_id12.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>()));
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id21));
+
+  // Finally, the second child submits a frame to the remaining dependency and
+  // the parent activates.
+  child_support2().SubmitCompositorFrame(
+      child_id21.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>()));
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+}
+
+// This test verifies that if a child submits a LocalSurfaceId newer that the
+// parent's dependency, then the parent will drop its dependency and activate
+// if possible. In this version of the test, parent sequence number of the
+// activated surface is smaller than that in the dependency, while the child
+// sequence number is larger.
+TEST_F(SurfaceSynchronizationTest, DropDependenciesThatWillNeverArrive2) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id11 = MakeSurfaceId(kChildFrameSink1, 2, 1);
+  const SurfaceId child_id12 = MakeSurfaceId(kChildFrameSink1, 1, 2);
   const SurfaceId child_id21 = MakeSurfaceId(kChildFrameSink2, 1);
 
   // |parent_id| depends on { child_id11, child_id21 }. It shouldn't activate.
