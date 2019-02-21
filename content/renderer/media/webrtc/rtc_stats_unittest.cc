@@ -68,7 +68,7 @@ WEBRTC_RTCSTATS_IMPL(TestStats,
                      webrtc::RTCStats,
                      "teststats",
                      &standardized,
-                     &non_standardized);
+                     &non_standardized)
 
 TestStats::TestStats(const std::string& id, int64_t timestamp_us)
     : RTCStats(id, timestamp_us),

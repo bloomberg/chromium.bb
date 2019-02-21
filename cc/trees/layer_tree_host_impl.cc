@@ -255,9 +255,9 @@ ui::FrameMetricsSettings LTHI_FrameMetricsSettings(
 }  // namespace
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
-                                  "Scheduling.%s.PendingTreeDuration");
+                                  "Scheduling.%s.PendingTreeDuration")
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeRasterDurationHistogramTimer,
-                                  "Scheduling.%s.PendingTreeRasterDuration");
+                                  "Scheduling.%s.PendingTreeRasterDuration")
 
 LayerTreeHostImpl::FrameData::FrameData() = default;
 LayerTreeHostImpl::FrameData::~FrameData() = default;
