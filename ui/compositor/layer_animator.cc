@@ -109,14 +109,19 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
     return target.member;                                              \
   }
 
-ANIMATED_PROPERTY(
-    const gfx::Transform&, TRANSFORM, Transform, gfx::Transform, transform);
-ANIMATED_PROPERTY(const gfx::Rect&, BOUNDS, Bounds, gfx::Rect, bounds);
-ANIMATED_PROPERTY(float, OPACITY, Opacity, float, opacity);
-ANIMATED_PROPERTY(bool, VISIBILITY, Visibility, bool, visibility);
-ANIMATED_PROPERTY(float, BRIGHTNESS, Brightness, float, brightness);
-ANIMATED_PROPERTY(float, GRAYSCALE, Grayscale, float, grayscale);
-ANIMATED_PROPERTY(SkColor, COLOR, Color, SkColor, color);
+ANIMATED_PROPERTY(const gfx::Transform&,
+                  TRANSFORM,
+                  Transform,
+                  gfx::Transform,
+                  transform)
+ANIMATED_PROPERTY(const gfx::Rect&, BOUNDS, Bounds, gfx::Rect, bounds)
+ANIMATED_PROPERTY(float, OPACITY, Opacity, float, opacity)
+ANIMATED_PROPERTY(bool, VISIBILITY, Visibility, bool, visibility)
+ANIMATED_PROPERTY(float, BRIGHTNESS, Brightness, float, brightness)
+ANIMATED_PROPERTY(float, GRAYSCALE, Grayscale, float, grayscale)
+ANIMATED_PROPERTY(SkColor, COLOR, Color, SkColor, color)
+
+#undef ANIMATED_PROPERTY
 
 base::TimeDelta LayerAnimator::GetTransitionDuration() const {
   return transition_duration_;

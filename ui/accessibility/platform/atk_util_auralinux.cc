@@ -57,7 +57,7 @@ struct _AtkUtilAuraLinuxClass
 
 GType atk_util_auralinux_get_type();
 
-G_DEFINE_TYPE(AtkUtilAuraLinux, atk_util_auralinux, ATK_TYPE_UTIL);
+G_DEFINE_TYPE(AtkUtilAuraLinux, atk_util_auralinux, ATK_TYPE_UTIL)
 
 static void atk_util_auralinux_init(AtkUtilAuraLinux *ax_util) {
 }
