@@ -124,4 +124,10 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
   # arm64 supports only "hard".
   arm_float_abi = "hard"
   arm_use_neon = true
+
+  declare_args() {
+    # Turn on to allow function outlining when compiling for arm64.
+    # See crbug.com/931297 for why this is turned off by default.
+    arm64_allow_outlining = false
+  }
 }
