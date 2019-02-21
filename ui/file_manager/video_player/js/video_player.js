@@ -316,6 +316,11 @@ function unload() {
   // Releases keep awake just in case (should be released on unloading video).
   chrome.power.releaseKeepAwake();
 
+  if (useNativeControls) {
+    nativePlayer.savePosition(true);
+    return;
+  }
+
   if (!player.controls || !player.controls.getMedia()) {
     return;
   }
