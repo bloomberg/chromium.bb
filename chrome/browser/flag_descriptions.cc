@@ -498,10 +498,6 @@ const char kEnableBrotliName[] = "Brotli Content-Encoding.";
 const char kEnableBrotliDescription[] =
     "Enable Brotli Content-Encoding support.";
 
-const char kEnableCaptivePortalRandomUrl[] = "Captive Portal url Randomization";
-const char kEnableCaptivePortalRandomUrlDescription[] =
-    "Enable Captive Portal URL randomization.";
-
 const char kEnableDataSaverLiteModeRebrandName[] =
     "Data Saver Lite Mode Rebranding";
 const char kEnableDataSaverLiteModeRebrandDescription[] =

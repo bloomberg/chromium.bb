@@ -941,11 +941,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-captive-portal-random-url",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-chrome-duet",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -330,9 +330,6 @@ extern const char kEnableAutoplayUnifiedSoundSettingsDescription[];
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
-extern const char kEnableCaptivePortalRandomUrl[];
-extern const char kEnableCaptivePortalRandomUrlDescription[];
-
 extern const char kEnableDataSaverLiteModeRebrandName[];
 extern const char kEnableDataSaverLiteModeRebrandDescription[];
 

@@ -294,9 +294,6 @@ const char kEnableArcOobeOptinNoSkip[] = "enable-arc-oobe-optin-no-skip";
 // Enables ARC VM.
 const char kEnableArcVm[] = "enable-arcvm";
 
-// Enables using a random url for captive portal detection.
-const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
-
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
 
