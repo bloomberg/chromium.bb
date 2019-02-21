@@ -125,9 +125,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                                    SSLCertRequestInfo* cert_info) = 0;
 
-    // This is the failure of the CONNECT request through an HTTPS proxy.
-    // Headers can be read from |response_info|, while the body can be read
-    // from |stream|.
+    // This is the failure of the CONNECT request through an HTTPS proxy due to
+    // a 302 redirect. Headers can be read from |response_info|, while the body
+    // can be read from |stream|.
     //
     // |used_ssl_config| indicates the actual SSL configuration used for this
     // stream, since the HttpStreamRequest may have modified the configuration
@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     // since the HttpStreamRequest performs the proxy resolution.
     //
     // Ownership of |stream| is transferred to the delegate.
-    virtual void OnHttpsProxyTunnelResponse(
+    virtual void OnHttpsProxyTunnelResponseRedirect(
         const HttpResponseInfo& response_info,
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,

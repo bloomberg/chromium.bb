@@ -674,7 +674,7 @@ TEST_P(QuicProxyClientSocketTest, ConnectRedirects) {
 
   Initialize();
 
-  AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+  AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != nullptr);

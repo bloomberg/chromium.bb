@@ -42,8 +42,6 @@ bool LooksLikePacScript(const base::string16& script) {
          base::string16::npos;
 }
 
-}  // anonymous namespace
-
 // This is the hard-coded location used by the DNS portion of web proxy
 // auto-discovery.
 //
@@ -56,10 +54,17 @@ bool LooksLikePacScript(const base::string16& script) {
 //
 // For more details, also check out this comment:
 // http://code.google.com/p/chromium/issues/detail?id=18575#c20
-namespace {
 const char kWpadUrl[] = "http://wpad/wpad.dat";
 const int kQuickCheckDelayMs = 1000;
+
 }  // namespace
+
+PacFileDataWithSource::PacFileDataWithSource() = default;
+PacFileDataWithSource::~PacFileDataWithSource() = default;
+PacFileDataWithSource::PacFileDataWithSource(const PacFileDataWithSource&) =
+    default;
+PacFileDataWithSource& PacFileDataWithSource::operator=(
+    const PacFileDataWithSource&) = default;
 
 std::unique_ptr<base::Value> PacFileDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
@@ -156,7 +161,7 @@ const ProxyConfigWithAnnotation& PacFileDecider::effective_config() const {
   return effective_config_;
 }
 
-const scoped_refptr<PacFileData>& PacFileDecider::script_data() const {
+const PacFileDataWithSource& PacFileDecider::script_data() const {
   DCHECK_EQ(STATE_NONE, next_state_);
   return script_data_;
 }
@@ -369,12 +374,13 @@ int PacFileDecider::DoVerifyPacScriptComplete(int result) {
   const PacSource& pac_source = current_pac_source();
 
   // Extract the current script data.
+  script_data_.from_auto_detect = pac_source.type != PacSource::CUSTOM;
   if (fetch_pac_bytes_) {
-    script_data_ = PacFileData::FromUTF16(pac_script_);
+    script_data_.data = PacFileData::FromUTF16(pac_script_);
   } else {
-    script_data_ = pac_source.type == PacSource::CUSTOM
-                       ? PacFileData::FromURL(pac_source.url)
-                       : PacFileData::ForAutoDetect();
+    script_data_.data = pac_source.type == PacSource::CUSTOM
+                            ? PacFileData::FromURL(pac_source.url)
+                            : PacFileData::ForAutoDetect();
   }
 
   // Let the caller know which automatic setting we ended up initializing the

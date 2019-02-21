@@ -436,7 +436,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
     EXPECT_FALSE(handle_.socket());
   } else {
     // Expect ProxyClientSocket to return the proxy's response, sanitized.
-    EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE));
+    EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
     EXPECT_TRUE(handle_.is_initialized());
     ASSERT_TRUE(handle_.socket());
 

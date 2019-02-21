@@ -265,11 +265,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info) override {}
 
-  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
-                                  const SSLConfig& used_ssl_config,
-                                  const ProxyInfo& used_proxy_info,
-                                  std::unique_ptr<HttpStream> stream) override {
-  }
+  void OnHttpsProxyTunnelResponseRedirect(
+      const HttpResponseInfo& response_info,
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<HttpStream> stream) override {}
 
   void OnQuicBroken() override {}
 

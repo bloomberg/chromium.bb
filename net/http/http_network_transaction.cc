@@ -648,7 +648,7 @@ void HttpNetworkTransaction::OnNeedsClientAuth(
   OnIOComplete(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
+void HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
@@ -668,7 +668,7 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   stream_ = std::move(stream);
   stream_->SetRequestHeadersCallback(request_headers_callback_);
   stream_request_.reset();  // we're done with the stream request
-  OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+  OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 }
 
 void HttpNetworkTransaction::OnQuicBroken() {
@@ -854,11 +854,12 @@ int HttpNetworkTransaction::DoCreateStream() {
 }
 
 int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
-  // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE, then
-  // DoCreateStreamComplete is being called from OnHttpsProxyTunnelResponse,
-  // which resets the stream request first. Therefore, we have to grab the
-  // connection attempts in *that* function instead of here in that case.
-  if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE)
+  // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, then
+  // DoCreateStreamComplete is being called from
+  // OnHttpsProxyTunnelResponseRedirect, which resets the stream request first.
+  // Therefore, we have to grab the connection attempts in *that* function
+  // instead of here in that case.
+  if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
     CopyConnectionAttemptsFromStreamRequest();
 
   if (result == OK) {
@@ -866,10 +867,8 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
     DCHECK(stream_.get());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     result = HandleCertificateRequest(result);
-  } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
-    // Return OK and let the caller read the proxy's error page
-    next_state_ = STATE_NONE;
-    return OK;
+  } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
+    return DoCreateStreamCompletedTunnelResponseRedirect();
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
@@ -1941,6 +1940,47 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
   }
 
   return result;
+}
+
+static HttpNetworkTransaction::TunnelRedirectHistogramValue
+GetTunnelRedirectHistogramValue(bool is_main_frame, bool was_auto_detected) {
+  if (!is_main_frame && !was_auto_detected)
+    return HttpNetworkTransaction::kSubresourceByExplicitProxy;
+  if (is_main_frame && !was_auto_detected)
+    return HttpNetworkTransaction::kMainFrameByExplicitProxy;
+  if (!is_main_frame && was_auto_detected)
+    return HttpNetworkTransaction::kSubresourceByAutoDetectedProxy;
+  return HttpNetworkTransaction::kMainFrameByAutoDetectedProxy;
+}
+
+// TODO(https://crbug.com/928551): Support for redirect on CONNECT is
+// deprecated, and support will be removed.
+//
+// The code in this method handles the temporary histogramming and
+// compatibility-mode policy during the phase-out.
+int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
+  bool is_main_frame = (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) ==
+                       LOAD_MAIN_FRAME_DEPRECATED;
+  bool was_auto_detected = proxy_info_.did_use_auto_detected_pac_script();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.Proxy.RedirectDuringConnect",
+      GetTunnelRedirectHistogramValue(is_main_frame, was_auto_detected));
+
+  // For legacy compatibility, the proxy is allowed to redirect CONNECT
+  // if:
+  //      (a) the request was for a top-level frame
+  //      (b) the proxy server was explicitly configured (i.e. not
+  //          auto-detected).
+  if (is_main_frame && !was_auto_detected) {
+    // Return OK and let the caller read the proxy's error page
+    next_state_ = STATE_NONE;
+    return OK;
+  }
+
+  // Otherwise let the request fail.
+  stream_.reset();
+  return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 }
 
 }  // namespace net

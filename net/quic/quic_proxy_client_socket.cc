@@ -405,7 +405,7 @@ int QuicProxyClientSocket::DoReadReplyComplete(int result) {
       if (!SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
       next_state_ = STATE_DISCONNECTED;
-      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
+      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_CONNECT_COMPLETE;

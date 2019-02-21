@@ -420,14 +420,14 @@ void BidirectionalStream::OnNeedsClientAuth(const SSLConfig& used_ssl_config,
   StartRequest(ssl_config);
 }
 
-void BidirectionalStream::OnHttpsProxyTunnelResponse(
+void BidirectionalStream::OnHttpsProxyTunnelResponseRedirect(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     std::unique_ptr<HttpStream> stream) {
   DCHECK(stream_request_);
 
-  NotifyFailed(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+  NotifyFailed(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 }
 
 void BidirectionalStream::OnQuicBroken() {}

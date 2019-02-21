@@ -218,10 +218,11 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
                         HttpAuthController* auth_controller) override;
   void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info) override;
-  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
-                                  const SSLConfig& used_ssl_config,
-                                  const ProxyInfo& used_proxy_info,
-                                  std::unique_ptr<HttpStream> stream) override;
+  void OnHttpsProxyTunnelResponseRedirect(
+      const HttpResponseInfo& response_info,
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<HttpStream> stream) override;
   void OnQuicBroken() override;
 
   // Helper method to notify delegate if there is an error.

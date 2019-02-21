@@ -530,13 +530,13 @@ void HttpStreamFactory::Job::OnNeedsClientAuthCallback(
   // |this| may be deleted after this call.
 }
 
-void HttpStreamFactory::Job::OnHttpsProxyTunnelResponseCallback(
+void HttpStreamFactory::Job::OnHttpsProxyTunnelResponseRedirectCallback(
     const HttpResponseInfo& response_info,
     std::unique_ptr<HttpStream> stream) {
   DCHECK_NE(job_type_, PRECONNECT);
 
-  delegate_->OnHttpsProxyTunnelResponse(this, response_info, server_ssl_config_,
-                                        proxy_info_, std::move(stream));
+  delegate_->OnHttpsProxyTunnelResponseRedirect(
+      this, response_info, server_ssl_config_, proxy_info_, std::move(stream));
   // |this| may be deleted after this call.
 }
 
@@ -639,7 +639,7 @@ void HttpStreamFactory::Job::RunLoop(int result) {
                   connection_->ssl_error_response_info().cert_request_info)));
       return;
 
-    case ERR_HTTPS_PROXY_TUNNEL_RESPONSE: {
+    case ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT: {
       DCHECK(connection_.get());
       DCHECK(connection_->socket());
       DCHECK(establishing_tunnel_);
@@ -652,7 +652,7 @@ void HttpStreamFactory::Job::RunLoop(int result) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(
-              &Job::OnHttpsProxyTunnelResponseCallback,
+              &Job::OnHttpsProxyTunnelResponseRedirectCallback,
               ptr_factory_.GetWeakPtr(),
               *proxy_socket->GetConnectResponseInfo(),
               std::make_unique<ProxyConnectRedirectHttpStream>(
@@ -1096,7 +1096,7 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   }
 
   if (result == ERR_PROXY_AUTH_REQUESTED ||
-      result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
+      result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
     DCHECK(!ssl_started);
     // Other state (i.e. |using_ssl_|) suggests that |connection_| will have an
     // SSL socket, but there was an error before that could happen.  This
