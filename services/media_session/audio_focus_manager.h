@@ -107,7 +107,6 @@ class AudioFocusManager : public mojom::AudioFocusManager,
                                  base::OnceCallback<void()>);
   void AbandonAudioFocusInternal(RequestId);
 
-  void EnforceAudioFocusAbandon();
   void EnforceAudioFocus();
 
   void MaybeUpdateActiveSession();
