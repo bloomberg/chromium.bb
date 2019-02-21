@@ -345,12 +345,6 @@ bool IsPrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
   return plugin && plugin->SupportsPaginatedPrint();
 }
 
-bool IsPrintingFrameset(const blink::WebLocalFrame* frame) {
-  return frame->GetDocument().IsHTMLDocument() &&
-         !frame->GetDocument().Body().IsNull() &&
-         frame->GetDocument().Body().TagName().Equals("FRAMESET");
-}
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Returns true if the current destination printer is PRINT_TO_PDF.
 bool IsPrintToPdfRequested(const base::DictionaryValue& job_settings) {
@@ -1273,8 +1267,7 @@ void PrintRenderFrameHelper::OnPrintPreview(
 void PrintRenderFrameHelper::PrepareFrameForPreviewDocument() {
   reset_prep_frame_view_ = false;
 
-  if (!print_pages_params_ ||
-      IsPrintingFrameset(print_preview_context_.source_frame())) {
+  if (!print_pages_params_) {
     print_preview_context_.set_error(PREVIEW_ERROR_ZERO_PAGES);
     DidFinishPrinting(FAIL_PREVIEW);
     return;
@@ -1640,11 +1633,6 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
     return;
 
   FrameReference frame_ref(frame);
-
-  if (IsPrintingFrameset(frame)) {
-    DidFinishPrinting(FAIL_PRINT);
-    return;
-  }
 
   int expected_page_count = 0;
   if (!CalculateNumberOfPages(frame, node, &expected_page_count)) {
