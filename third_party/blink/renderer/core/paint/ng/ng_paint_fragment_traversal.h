@@ -146,8 +146,52 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   // Returns inclusive ancestors.
   static AncestorRange InclusiveAncestorsOf(const NGPaintFragment&);
 
-  // Returns inline descendants in preorder.
-  static Vector<NGPaintFragment*> InlineDescendantsOf(const NGPaintFragment&);
+  class CORE_EXPORT InlineDescendantsRange final {
+    STACK_ALLOCATED();
+
+   public:
+    class CORE_EXPORT Iterator final
+        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
+      STACK_ALLOCATED();
+
+     public:
+      explicit Iterator(const NGPaintFragment& container);
+      Iterator() = default;
+
+      NGPaintFragment* operator*() const { return operator->(); }
+      NGPaintFragment* operator->() const;
+
+      void operator++();
+
+      bool operator==(const Iterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const Iterator& other) const {
+        return !operator==(other);
+      }
+
+     private:
+      NGPaintFragment* Next(const NGPaintFragment& fragment) const;
+      static bool IsInlineFragment(const NGPaintFragment& fragment);
+      static bool ShouldTraverse(const NGPaintFragment& fragment);
+
+      const NGPaintFragment* container_ = nullptr;
+      NGPaintFragment* current_ = nullptr;
+    };
+
+    explicit InlineDescendantsRange(const NGPaintFragment& container)
+        : container_(&container) {}
+
+    Iterator begin() const { return Iterator(*container_); }
+    Iterator end() const { return Iterator(); }
+
+   private:
+    const NGPaintFragment* const container_;
+  };
+
+  // Returns inline descendants of |container| in preorder.
+  static InlineDescendantsRange InlineDescendantsOf(
+      const NGPaintFragment& container);
 
   // Returns the line box paint fragment of |line|. |line| itself must be the
   // paint fragment of a line box.
