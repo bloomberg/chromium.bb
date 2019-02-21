@@ -38,6 +38,9 @@ void LogAppLaunch(int index_in_suggestion_chip_container) {
 SearchResultSuggestionChipView::SearchResultSuggestionChipView(
     AppListViewDelegate* view_delegate)
     : view_delegate_(view_delegate), weak_ptr_factory_(this) {
+  // Make it unfocusable to avoid violating accessibiliy rule since its child
+  // view |suggestion_chip_view_| is focusable.
+  SetFocusBehavior(FocusBehavior::NEVER);
   suggestion_chip_view_ = new SuggestionChipView(
       app_list::SuggestionChipView::Params(), /* listener */ this);
   AddChildView(suggestion_chip_view_);

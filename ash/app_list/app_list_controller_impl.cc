@@ -92,10 +92,11 @@ bool MinimizeAllWindows() {
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
+    : model_(std::make_unique<app_list::AppListModel>()),
+      presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       home_launcher_gesture_handler_(
           std::make_unique<HomeLauncherGestureHandler>(this)) {
-  model_.AddObserver(this);
+  model_->AddObserver(this);
 
   SessionController* session_controller = Shell::Get()->session_controller();
   session_controller->AddObserver(this);
@@ -130,7 +131,7 @@ void AppListControllerImpl::BindRequest(
 }
 
 app_list::AppListModel* AppListControllerImpl::GetModel() {
-  return &model_;
+  return model_.get();
 }
 
 app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
@@ -140,7 +141,7 @@ app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
 void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
   const std::string folder_id = item_data->folder_id;
   if (folder_id.empty())
-    model_.AddItem(CreateAppListItem(std::move(item_data)));
+    model_->AddItem(CreateAppListItem(std::move(item_data)));
   else
     AddItemToFolder(std::move(item_data), folder_id);
 }
@@ -152,34 +153,34 @@ void AppListControllerImpl::AddItemToFolder(AppListItemMetadataPtr item_data,
   // the item to add is not in the target folder yet, and sets its folder id
   // later. So we should clear the folder id here to avoid breaking checks.
   item_data->folder_id.clear();
-  model_.AddItemToFolder(CreateAppListItem(std::move(item_data)), folder_id);
+  model_->AddItemToFolder(CreateAppListItem(std::move(item_data)), folder_id);
 }
 
 void AppListControllerImpl::RemoveItem(const std::string& id) {
-  model_.DeleteItem(id);
+  model_->DeleteItem(id);
 }
 
 void AppListControllerImpl::RemoveUninstalledItem(const std::string& id) {
-  model_.DeleteUninstalledItem(id);
+  model_->DeleteUninstalledItem(id);
 }
 
 void AppListControllerImpl::MoveItemToFolder(const std::string& id,
                                              const std::string& folder_id) {
-  app_list::AppListItem* item = model_.FindItem(id);
-  model_.MoveItemToFolder(item, folder_id);
+  app_list::AppListItem* item = model_->FindItem(id);
+  model_->MoveItemToFolder(item, folder_id);
 }
 
 void AppListControllerImpl::SetStatus(ash::AppListModelStatus status) {
-  model_.SetStatus(status);
+  model_->SetStatus(status);
 }
 
 void AppListControllerImpl::SetState(ash::AppListState state) {
-  model_.SetState(state);
+  model_->SetState(state);
 }
 
 void AppListControllerImpl::HighlightItemInstalledFromUI(
     const std::string& id) {
-  model_.top_level_item_list()->HighlightItemInstalledFromUI(id);
+  model_->top_level_item_list()->HighlightItemInstalledFromUI(id);
 }
 
 void AppListControllerImpl::SetSearchEngineIsGoogle(bool is_google) {
@@ -216,7 +217,7 @@ void AppListControllerImpl::PublishSearchResults(
 
 void AppListControllerImpl::SetItemMetadata(const std::string& id,
                                             AppListItemMetadataPtr data) {
-  app_list::AppListItem* item = model_.FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
 
@@ -226,15 +227,15 @@ void AppListControllerImpl::SetItemMetadata(const std::string& id,
 
   // Update the item's position and name based on the metadata.
   if (!data->position.Equals(item->position()))
-    model_.SetItemPosition(item, data->position);
+    model_->SetItemPosition(item, data->position);
 
   if (data->short_name.empty()) {
     if (data->name != item->name()) {
-      model_.SetItemName(item, data->name);
+      model_->SetItemName(item, data->name);
     }
   } else {
     if (data->name != item->name() || data->short_name != item->short_name()) {
-      model_.SetItemNameAndShortName(item, data->name, data->short_name);
+      model_->SetItemNameAndShortName(item, data->name, data->short_name);
     }
   }
 
@@ -247,14 +248,14 @@ void AppListControllerImpl::SetItemMetadata(const std::string& id,
 
 void AppListControllerImpl::SetItemIcon(const std::string& id,
                                         const gfx::ImageSkia& icon) {
-  app_list::AppListItem* item = model_.FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   if (item)
     item->SetIcon(icon);
 }
 
 void AppListControllerImpl::SetItemIsInstalling(const std::string& id,
                                                 bool is_installing) {
-  app_list::AppListItem* item = model_.FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   if (item)
     item->SetIsInstalling(is_installing);
 }
@@ -262,7 +263,7 @@ void AppListControllerImpl::SetItemIsInstalling(const std::string& id,
 void AppListControllerImpl::SetItemPercentDownloaded(
     const std::string& id,
     int32_t percent_downloaded) {
-  app_list::AppListItem* item = model_.FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   if (item)
     item->SetPercentDownloaded(percent_downloaded);
 }
@@ -271,7 +272,7 @@ void AppListControllerImpl::SetModelData(
     std::vector<AppListItemMetadataPtr> apps,
     bool is_search_engine_google) {
   // Clear old model data.
-  model_.DeleteAllItems();
+  model_->DeleteAllItems();
   search_model_.DeleteAllResults();
 
   // Populate new models. First populate folders and then other items to avoid
@@ -322,8 +323,8 @@ void AppListControllerImpl::NotifySearchResultItemInstalled(
 void AppListControllerImpl::GetIdToAppListIndexMap(
     GetIdToAppListIndexMapCallback callback) {
   base::flat_map<std::string, uint16_t> id_to_app_list_index;
-  for (size_t i = 0; i < model_.top_level_item_list()->item_count(); ++i)
-    id_to_app_list_index[model_.top_level_item_list()->item_at(i)->id()] = i;
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
+    id_to_app_list_index[model_->top_level_item_list()->item_at(i)->id()] = i;
   std::move(callback).Run(id_to_app_list_index);
 }
 
@@ -331,7 +332,8 @@ void AppListControllerImpl::FindOrCreateOemFolder(
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preferred_oem_position,
     FindOrCreateOemFolderCallback callback) {
-  app_list::AppListFolderItem* oem_folder = model_.FindFolderItem(kOemFolderId);
+  app_list::AppListFolderItem* oem_folder =
+      model_->FindFolderItem(kOemFolderId);
   if (!oem_folder) {
     std::unique_ptr<app_list::AppListFolderItem> new_folder =
         std::make_unique<app_list::AppListFolderItem>(kOemFolderId);
@@ -341,10 +343,10 @@ void AppListControllerImpl::FindOrCreateOemFolder(
     // Do not create a sync item for the OEM folder here, do it in
     // ResolveFolderPositions() when the item position is finalized.
     oem_folder = static_cast<app_list::AppListFolderItem*>(
-        model_.AddItem(std::move(new_folder)));
-    model_.SetItemPosition(oem_folder, oem_position);
+        model_->AddItem(std::move(new_folder)));
+    model_->SetItemPosition(oem_folder, oem_position);
   }
-  model_.SetItemName(oem_folder, oem_folder_name);
+  model_->SetItemName(oem_folder, oem_folder_name);
   std::move(callback).Run(oem_folder->CloneMetadata());
 }
 
@@ -358,7 +360,7 @@ void AppListControllerImpl::ResolveOemFolderPosition(
     const syncer::StringOrdinal& oem_folder_pos =
         preferred_oem_position.IsValid() ? preferred_oem_position
                                          : GetOemFolderPos();
-    model_.SetItemPosition(ash_oem_folder, oem_folder_pos);
+    model_->SetItemPosition(ash_oem_folder, oem_folder_pos);
     metadata = ash_oem_folder->CloneMetadata();
   }
   std::move(callback).Run(std::move(metadata));
@@ -533,7 +535,7 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
 }
 
 app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
-  return model_.state_fullscreen();
+  return model_->state_fullscreen();
 }
 
 void AppListControllerImpl::OnWindowDragStarted() {
@@ -565,7 +567,7 @@ void AppListControllerImpl::OnShellDestroying() {
   shell->wallpaper_controller()->RemoveObserver(this);
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
-  model_.RemoveObserver(this);
+  model_->RemoveObserver(this);
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
@@ -792,6 +794,13 @@ app_list::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
     return presenter_.GetView()->CalculateStateAfterShelfDrag(
         gesture_in_screen, launcher_above_shelf_bottom_amount);
   return app_list::AppListViewState::CLOSED;
+}
+
+void AppListControllerImpl::SetAppListModelForTest(
+    std::unique_ptr<app_list::AppListModel> model) {
+  model_->RemoveObserver(this);
+  model_ = std::move(model);
+  model_->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1040,7 +1049,7 @@ syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
   // followed by a pre-installed app (e.g. Search), so the poosition should be
   // stable. TODO(stevenjb): consider explicitly setting the OEM folder location
   // along with the name in ServicesCustomizationDocument::SetOemFolderName().
-  app_list::AppListItemList* item_list = model_.top_level_item_list();
+  app_list::AppListItemList* item_list = model_->top_level_item_list();
   if (!item_list->item_count()) {
     LOG(ERROR) << "No top level item was found. "
                << "Placing OEM folder at the beginning.";
@@ -1091,7 +1100,7 @@ std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
 
 app_list::AppListFolderItem* AppListControllerImpl::FindFolderItem(
     const std::string& folder_id) {
-  return model_.FindFolderItem(folder_id);
+  return model_->FindFolderItem(folder_id);
 }
 
 void AppListControllerImpl::UpdateHomeLauncherVisibility() {

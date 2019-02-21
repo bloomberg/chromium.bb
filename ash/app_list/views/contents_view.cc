@@ -135,6 +135,10 @@ void ContentsView::Init(AppListModel* model) {
 
   pagination_model_.SelectPage(initial_page_index, false);
 
+  // Update suggestion chips after valid page is selected to prevent the update
+  // from being ignored.
+  GetAppsContainerView()->UpdateSuggestionChips();
+
   ActivePageChanged();
 }
 
