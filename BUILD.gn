@@ -724,6 +724,7 @@ group("gn_all") {
       (is_win && (use_drfuzz || use_libfuzzer)) || (use_libfuzzer && is_mac)) {
     deps += [
       "//testing/libfuzzer/fuzzers",
+      "//third_party/grpc:fuzzers",
       "//third_party/icu/fuzzers",
       "//third_party/qcms:fuzzers",
       "//third_party/zlib/contrib/tests/fuzzers",

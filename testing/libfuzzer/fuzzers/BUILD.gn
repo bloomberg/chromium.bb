@@ -27,7 +27,6 @@ fuzzer_test("courgette_fuzzer") {
     "//base",
     "//courgette:courgette_lib",
   ]
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("language_detection_fuzzer") {

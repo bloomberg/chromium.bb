@@ -548,6 +548,10 @@ static_library("grpc_test_util") {
   ]
 }
 
+# A dummy group which is needed to make the fuzz targets discoverable.
+group("fuzzers") {
+}
+
 fuzzer_test("grpc_alts_credentials_fuzzer") {
   sources = [
     "src/test/core/security/alts_credentials_fuzzer.cc",
