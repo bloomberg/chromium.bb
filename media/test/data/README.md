@@ -818,6 +818,12 @@ ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image
 does not have Huffman table.
 
+#### pixel-1280x720-grayscale.jpg
+A version of pixel-1280x720.jpg converted to grayscale using:
+```
+jpegtran -grayscale pixel-1280x720.jpg > pixel-1280x720-grayscale.jpg
+```
+
 #### peach_pi-1280x720.jpg
 Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13").
 This image has Huffman table.

@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <type_traits>
+#include <vector>
 
 #include <va/va.h>
 
@@ -15,6 +16,7 @@
 #include "base/stl_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
 namespace media {
@@ -32,6 +34,8 @@ constexpr VAImageFormat kImageFormatYUYV = {
     .byte_order = VA_LSB_FIRST,
     .bits_per_pixel = 16,
 };
+
+constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 static void FillPictureParameters(
     const JpegFrameHeader& frame_header,
@@ -193,10 +197,9 @@ static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
   return true;
 }
 
-}  // namespace
-
-bool VaSurfaceFormatToImageFormat(uint32_t va_rt_format,
-                                  VAImageFormat* va_image_format) {
+// Convert the specified surface format to the associated output image format.
+static bool VaSurfaceFormatToImageFormat(unsigned int va_rt_format,
+                                         VAImageFormat* va_image_format) {
   switch (va_rt_format) {
     case VA_RT_FORMAT_YUV420:
       *va_image_format = kImageFormatI420;
@@ -209,7 +212,8 @@ bool VaSurfaceFormatToImageFormat(uint32_t va_rt_format,
   }
 }
 
-unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
+static unsigned int VaSurfaceFormatForJpeg(
+    const JpegFrameHeader& frame_header) {
   // The range of sampling factor is [1, 4]. Pack them into integer to make the
   // matching code simpler. For example, 0x211 means the sampling factor are 2,
   // 1, 1 for 3 components.
@@ -244,53 +248,157 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
            << frame_header.num_components << ", h=" << std::hex << h
            << ", v=" << v;
 
-  return 0;
+  return kInvalidVaRtFormat;
 }
 
-bool VaapiJpegDecoder::DoDecode(VaapiWrapper* vaapi_wrapper,
-                                const JpegParseResult& parse_result,
-                                VASurfaceID va_surface) {
-  DCHECK_NE(va_surface, VA_INVALID_SURFACE);
-  if (!IsVaapiSupportedJpeg(parse_result))
+}  // namespace
+
+VaapiJpegDecoder::VaapiJpegDecoder()
+    : va_surface_id_(VA_INVALID_SURFACE), va_rt_format_(kInvalidVaRtFormat) {}
+
+VaapiJpegDecoder::~VaapiJpegDecoder() = default;
+
+bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
+  vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kDecode,
+                                        VAProfileJPEGBaseline, error_uma_cb);
+  if (!vaapi_wrapper_) {
+    VLOGF(1) << "Failed initializing VAAPI";
     return false;
+  }
+  return true;
+}
+
+std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
+    base::span<const uint8_t> encoded_image,
+    VaapiJpegDecodeStatus* status) {
+  if (!vaapi_wrapper_) {
+    VLOGF(1) << "VaapiJpegDecoder has not been initialized";
+    *status = VaapiJpegDecodeStatus::kInvalidState;
+    return nullptr;
+  }
+
+  // Parse the JPEG encoded data.
+  JpegParseResult parse_result;
+  if (!ParseJpegPicture(encoded_image.data(), encoded_image.size(),
+                        &parse_result)) {
+    VLOGF(1) << "ParseJpegPicture failed";
+    *status = VaapiJpegDecodeStatus::kParseJpegFailed;
+    return nullptr;
+  }
+
+  // Figure out the right format for the VaSurface.
+  const unsigned int picture_va_rt_format =
+      VaSurfaceFormatForJpeg(parse_result.frame_header);
+  if (picture_va_rt_format == kInvalidVaRtFormat) {
+    VLOGF(1) << "Unsupported subsampling";
+    *status = VaapiJpegDecodeStatus::kUnsupportedSubsampling;
+    return nullptr;
+  }
+
+  // Make sure this JPEG can be decoded.
+  if (!IsVaapiSupportedJpeg(parse_result)) {
+    VLOGF(1) << "The supplied JPEG is unsupported";
+    *status = VaapiJpegDecodeStatus::kUnsupportedJpeg;
+    return nullptr;
+  }
+
+  // Prepare the VaSurface for decoding.
+  const gfx::Size new_coded_size(
+      base::strict_cast<int>(parse_result.frame_header.coded_width),
+      base::strict_cast<int>(parse_result.frame_header.coded_height));
+  if (new_coded_size != coded_size_ || va_surface_id_ == VA_INVALID_SURFACE ||
+      picture_va_rt_format != va_rt_format_) {
+    vaapi_wrapper_->DestroyContextAndSurfaces();
+    va_surface_id_ = VA_INVALID_SURFACE;
+    va_rt_format_ = picture_va_rt_format;
+
+    std::vector<VASurfaceID> va_surfaces;
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_rt_format_, new_coded_size,
+                                                  1, &va_surfaces)) {
+      VLOGF(1) << "Could not create the context or the surface";
+      *status = VaapiJpegDecodeStatus::kSurfaceCreationFailed;
+      return nullptr;
+    }
+    va_surface_id_ = va_surfaces[0];
+    coded_size_ = new_coded_size;
+  }
 
   // Set picture parameters.
   VAPictureParameterBufferJPEGBaseline pic_param{};
   FillPictureParameters(parse_result.frame_header, &pic_param);
-  if (!vaapi_wrapper->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
-    return false;
+  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
+    VLOGF(1) << "Could not submit VAPictureParameterBufferType";
+    *status = VaapiJpegDecodeStatus::kSubmitPicParamsFailed;
+    return nullptr;
   }
 
   // Set quantization table.
   VAIQMatrixBufferJPEGBaseline iq_matrix{};
   FillIQMatrix(parse_result.q_table, &iq_matrix);
-  if (!vaapi_wrapper->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
-    return false;
+  if (!vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
+    VLOGF(1) << "Could not submit VAIQMatrixBufferType";
+    *status = VaapiJpegDecodeStatus::kSubmitIQMatrixFailed;
+    return nullptr;
   }
 
   // Set huffman table.
   VAHuffmanTableBufferJPEGBaseline huffman_table{};
   FillHuffmanTable(parse_result.dc_table, parse_result.ac_table,
                    &huffman_table);
-  if (!vaapi_wrapper->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
-    return false;
+  if (!vaapi_wrapper_->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
+    VLOGF(1) << "Could not submit VAHuffmanTableBufferType";
+    *status = VaapiJpegDecodeStatus::kSubmitHuffmanFailed;
+    return nullptr;
   }
 
   // Set slice parameters.
   VASliceParameterBufferJPEGBaseline slice_param{};
   FillSliceParameters(parse_result, &slice_param);
-  if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
-    return false;
+  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
+    VLOGF(1) << "Could not submit VASliceParameterBufferType";
+    *status = VaapiJpegDecodeStatus::kSubmitSliceParamsFailed;
+    return nullptr;
   }
 
   // Set scan data.
-  if (!vaapi_wrapper->SubmitBuffer(VASliceDataBufferType,
-                                   parse_result.data_size,
-                                   const_cast<char*>(parse_result.data))) {
-    return false;
+  if (!vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType,
+                                    parse_result.data_size,
+                                    const_cast<char*>(parse_result.data))) {
+    VLOGF(1) << "Could not submit VASliceDataBufferType";
+    *status = VaapiJpegDecodeStatus::kSubmitSliceDataFailed;
+    return nullptr;
   }
 
-  return vaapi_wrapper->ExecuteAndDestroyPendingBuffers(va_surface);
+  // Execute the decode.
+  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id_)) {
+    VLOGF(1) << "Executing the decode failed";
+    *status = VaapiJpegDecodeStatus::kExecuteDecodeFailed;
+    return nullptr;
+  }
+
+  // Specify which image format we will request from the VAAPI. As the expected
+  // output format is I420, we will first try this format. If converting to I420
+  // is not supported by the decoder, we will request the image in its original
+  // chroma sampling format.
+  VAImageFormat va_image_format = kImageFormatI420;
+  if (!VaapiWrapper::IsImageFormatSupported(va_image_format) &&
+      !VaSurfaceFormatToImageFormat(va_rt_format_, &va_image_format)) {
+    VLOGF(1) << "Unsupported surface format";
+    *status = VaapiJpegDecodeStatus::kUnsupportedSurfaceFormat;
+    return nullptr;
+  }
+
+  auto scoped_image = vaapi_wrapper_->CreateVaImage(
+      va_surface_id_, &va_image_format, coded_size_);
+  if (!scoped_image) {
+    VLOGF(1) << "Cannot get VAImage";
+    *status = VaapiJpegDecodeStatus::kCannotGetImage;
+    return nullptr;
+  }
+
+  DCHECK_EQ(va_image_format.fourcc, scoped_image->image()->format.fourcc);
+  *status = VaapiJpegDecodeStatus::kSuccess;
+  return scoped_image;
 }
 
 }  // namespace media

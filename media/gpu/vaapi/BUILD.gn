@@ -142,7 +142,6 @@ source_set("jpeg_decoder_unit_test") {
     ":vaapi",
     "//base",
     "//base/test:test_support",
-    "//media",
     "//media:test_support",
     "//testing/gtest",
     "//ui/gfx/geometry",
