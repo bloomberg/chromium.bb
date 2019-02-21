@@ -388,8 +388,8 @@ bool FileManagerPrivateGetVolumeMetadataListFunction::RunAsync() {
                 name(), request_id(), log_string.c_str(), result.size());
   }
 
-  results_ =
-      file_manager_private::GetVolumeMetadataList::Results::Create(result);
+  SetResultList(
+      file_manager_private::GetVolumeMetadataList::Results::Create(result));
   SendResponse(true);
   return true;
 }
