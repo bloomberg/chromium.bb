@@ -267,11 +267,15 @@ void GetChromePolicyValues(content::BrowserContext* context,
 }
 
 #if defined(OS_CHROMEOS)
-void GetDeviceLocalAccountPolicies(bool convert_values, Value* values) {
-  // DeviceLocalAccount policies are not available for not affiliated users
-  if (!user_manager::UserManager::IsInitialized() ||
-      !user_manager::UserManager::Get()->GetPrimaryUser() ||
-      !user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated()) {
+void GetDeviceLocalAccountPolicies(bool convert_values,
+                                   Value* values,
+                                   bool with_device_data) {
+  // DeviceLocalAccount policies are only available for affiliated users and for
+  // system logs.
+  if (!with_device_data &&
+      (!user_manager::UserManager::IsInitialized() ||
+       !user_manager::UserManager::Get()->GetPrimaryUser() ||
+       !user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated())) {
     return;
   }
 
@@ -335,7 +339,8 @@ void GetDeviceLocalAccountPolicies(bool convert_values, Value* values) {
 
 Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
                                      bool with_user_policies,
-                                     bool convert_values) {
+                                     bool convert_values,
+                                     bool with_device_data) {
   Value all_policies(Value::Type::DICTIONARY);
   if (!context) {
     LOG(ERROR) << "Can not dump policies, null context";
@@ -389,7 +394,8 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
 
 #if defined(OS_CHROMEOS)
   Value device_local_account_policies(Value::Type::DICTIONARY);
-  GetDeviceLocalAccountPolicies(convert_values, &device_local_account_policies);
+  GetDeviceLocalAccountPolicies(convert_values, &device_local_account_policies,
+                                with_device_data);
   all_policies.SetKey("deviceLocalAccountPolicies",
                       std::move(device_local_account_policies));
 #endif  // defined(OS_CHROMEOS)
@@ -452,10 +458,11 @@ void FillIdentityFields(Value* policy_dump) {
 
 std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
                                      bool with_user_policies,
-                                     bool with_device_identity) {
+                                     bool with_device_data) {
   Value all_policies = policy::GetAllPolicyValuesAsDictionary(
-      context, with_user_policies, false /* convert_values */);
-  if (with_device_identity) {
+      context, with_user_policies, false /* convert_values */,
+      with_device_data);
+  if (with_device_data) {
     FillIdentityFields(&all_policies);
   }
   return DictionaryToJSONString(all_policies);
