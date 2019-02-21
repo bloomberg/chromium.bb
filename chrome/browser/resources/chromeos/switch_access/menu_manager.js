@@ -69,6 +69,15 @@ class MenuManager {
     }
 
     const actions = this.getActionsForNode_(navNode);
+    // getActionsForNode_ will return null when there is only one interesting
+    // action (selection) specific to this node. In this case, rather than
+    // forcing the user to repeatedly disambiguate, we will simply select by
+    // default.
+    if (actions === null) {
+      this.navigationManager_.selectCurrentNode();
+      return;
+    }
+
     this.inMenu_ = true;
     if (actions !== this.actions_) {
       this.actions_ = actions;
@@ -217,13 +226,16 @@ class MenuManager {
   }
 
   /**
-   * Determines which menu actions are relevant, given the current node.
+   * Determines which menu actions are relevant, given the current node. If
+   * there are no node-specific actions, return |null|, to indicate that we
+   * should select the current node automatically.
+   *
    * @param {!chrome.automation.AutomationNode} node
-   * @return {!Array<MenuManager.Action>}
+   * @return {Array<MenuManager.Action>}
    * @private
    */
   getActionsForNode_(node) {
-    let actions = [MenuManager.Action.SELECT, MenuManager.Action.OPTIONS];
+    let actions = [];
 
     if (SwitchAccessPredicate.isTextInput(node))
       actions.push(MenuManager.Action.DICTATION);
@@ -245,7 +257,13 @@ class MenuManager {
     const standardActions = /** @type {!Array<MenuManager.Action>} */ (
         node.standardActions.filter(action => action in MenuManager.Action));
 
-    return actions.concat(standardActions);
+    actions = actions.concat(standardActions);
+
+    if (actions.length === 0)
+      return null;
+
+    actions.push(MenuManager.Action.SELECT, MenuManager.Action.OPTIONS);
+    return actions;
   }
 
   /**
