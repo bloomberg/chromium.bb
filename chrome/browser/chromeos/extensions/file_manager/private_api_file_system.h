@@ -289,7 +289,7 @@ class FileManagerPrivateCancelCopyFunction
 // Implements the chrome.fileManagerPrivateInternal.resolveIsolatedEntries
 // method.
 class FileManagerPrivateInternalResolveIsolatedEntriesFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.resolveIsolatedEntries",
@@ -299,8 +299,8 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
   ~FileManagerPrivateInternalResolveIsolatedEntriesFunction() override =
       default;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(

@@ -25,7 +25,7 @@ namespace {
 // TODO(https://crbug.com/844654): This should be using something more
 // deterministic.
 content::WebContents* GetAssociatedWebContentsDeprecated(
-    ChromeAsyncExtensionFunction* function) {
+    UIThreadExtensionFunction* function) {
   if (function->dispatcher()) {
     content::WebContents* web_contents =
         function->dispatcher()->GetAssociatedWebContents();
@@ -42,7 +42,7 @@ content::WebContents* GetAssociatedWebContentsDeprecated(
 
 // Computes the routing ID for SelectFileDialogExtension from the |function|.
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
-    ChromeAsyncExtensionFunction* function) {
+    UIThreadExtensionFunction* function) {
   return SelectFileDialogExtension::GetRoutingIDFromWebContents(
       GetAssociatedWebContentsDeprecated(function));
 }

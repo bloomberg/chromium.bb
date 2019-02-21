@@ -289,7 +289,8 @@ FileBrowserHandlerInternalSelectFileFunction::
 FileBrowserHandlerInternalSelectFileFunction::
     ~FileBrowserHandlerInternalSelectFileFunction() = default;
 
-bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileBrowserHandlerInternalSelectFileFunction::Run() {
   std::unique_ptr<SelectFile::Params> params(
       SelectFile::Params::Create(*args_));
 
@@ -299,15 +300,14 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
     allowed_extensions = *params->selection_params.allowed_file_extensions;
 
   if (!user_gesture() && user_gesture_check_enabled_) {
-    SetError(kNoUserGestureError);
-    return false;
+    return RespondNow(Error(kNoUserGestureError));
   }
 
   FileSelector* file_selector = file_selector_factory_->CreateFileSelector();
   file_selector->SelectFile(
       suggested_name.BaseName(), allowed_extensions,
       ChromeExtensionFunctionDetails(this).GetCurrentBrowser(), this);
-  return true;
+  return RespondLater();
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
@@ -316,13 +316,15 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!success) {
-    Respond(EntryDefinition(), false);
+    RespondWith(EntryDefinition(), false);
     return;
   }
 
+  const ChromeExtensionFunctionDetails chrome_details(this);
   storage::ExternalFileSystemBackend* external_backend =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          GetProfile(), render_frame_host())->external_backend();
+          chrome_details.GetProfile(), render_frame_host())
+          ->external_backend();
   DCHECK(external_backend);
 
   FileDefinition file_definition;
@@ -342,7 +344,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
       render_frame_host()->GetProcess()->GetID(), full_path);
 
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
-      GetProfile(), extension_id(), file_definition,
+      chrome_details.GetProfile(), extension_id(), file_definition,
       base::BindOnce(
           &FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition,
           this));
@@ -350,10 +352,10 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
 
 void FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition(
     const EntryDefinition& entry_definition) {
-  Respond(entry_definition, true);
+  RespondWith(entry_definition, true);
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::Respond(
+void FileBrowserHandlerInternalSelectFileFunction::RespondWith(
     const EntryDefinition& entry_definition,
     bool success) {
   std::unique_ptr<SelectFile::Results::Result> result(
@@ -372,6 +374,5 @@ void FileBrowserHandlerInternalSelectFileFunction::Respond(
     result->entry->file_is_directory = entry_definition.is_directory;
   }
 
-  results_ = SelectFile::Results::Create(*result);
-  SendResponse(true);
+  Respond(ArgumentList(SelectFile::Results::Create(*result)));
 }
