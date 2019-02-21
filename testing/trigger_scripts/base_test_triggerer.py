@@ -267,9 +267,9 @@ class BaseTestTriggerer(object):
           sys.stderr.write('Failed to trigger a task, aborting\n')
           return ret
         result_json = self.read_json_from_temp_file(json_temp)
-        if shard_index == 0:
+        if not merged_json:
           # Copy the entire JSON -- in particular, the "request"
-          # dictionary -- from shard 0. "swarming.py collect" uses
+          # dictionary -- from the first shard. "swarming.py collect" uses
           # some keys from this dictionary, in particular related to
           # expiration. It also contains useful debugging information.
           merged_json = copy.deepcopy(result_json)
