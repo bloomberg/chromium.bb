@@ -34,7 +34,6 @@ config("wtf_config") {
 
 jumbo_component("wtf") {
   sources = [
-    "address_sanitizer.h",
     "allocator.cc",
     "allocator.h",
     "allocator/partition_allocator.cc",
@@ -109,6 +108,7 @@ jumbo_component("wtf") {
     "ref_counted.h",
     "ref_vector.h",
     "retain_ptr.h",
+    "sanitizers.h",
     "saturated_arithmetic.h",
     "saturated_arithmetic_arm.h",
     "scoped_logger.cc",
