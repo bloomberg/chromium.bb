@@ -236,6 +236,7 @@ _CONFIG = [
             'cc::ScrollStateData',
             'cc::SnapAlignment',
             'cc::SnapAxis',
+            'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',

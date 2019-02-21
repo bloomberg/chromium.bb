@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 
-#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -238,7 +237,7 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
 
 base::Optional<FloatPoint> SnapCoordinator::GetSnapPosition(
     const LayoutBox& snap_container,
-    const SnapSelectionStrategy& strategy) const {
+    const cc::SnapSelectionStrategy& strategy) const {
   auto iter = snap_container_map_.find(&snap_container);
   if (iter == snap_container_map_.end())
     return base::nullopt;
@@ -271,8 +270,8 @@ bool SnapCoordinator::SnapForEndPosition(const LayoutBox& snap_container,
                                          const FloatPoint& end_position,
                                          bool scrolled_x,
                                          bool scrolled_y) const {
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
   return PerformSnapping(snap_container, *strategy);
 }
@@ -283,8 +282,8 @@ bool SnapCoordinator::SnapForDirection(const LayoutBox& snap_container,
   if (!scrollable_area)
     return false;
   FloatPoint current_position = scrollable_area->ScrollPosition();
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForDirection(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForDirection(
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()));
   return PerformSnapping(snap_container, *strategy);
@@ -296,8 +295,8 @@ bool SnapCoordinator::SnapForEndAndDirection(const LayoutBox& snap_container,
   if (!scrollable_area)
     return false;
   FloatPoint current_position = scrollable_area->ScrollPosition();
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndAndDirection(
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()));
   return PerformSnapping(snap_container, *strategy);
@@ -305,7 +304,7 @@ bool SnapCoordinator::SnapForEndAndDirection(const LayoutBox& snap_container,
 
 bool SnapCoordinator::PerformSnapping(
     const LayoutBox& snap_container,
-    const SnapSelectionStrategy& strategy) const {
+    const cc::SnapSelectionStrategy& strategy) const {
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (!scrollable_area)
     return false;

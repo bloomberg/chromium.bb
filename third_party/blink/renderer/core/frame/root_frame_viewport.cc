@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -295,9 +296,9 @@ LayoutRect RootFrameViewport::ScrollIntoView(
     new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
   FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(end_point),
-                                                  true, true);
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
+          gfx::ScrollOffset(end_point), true, true);
   if (GetLayoutBox()) {
     end_point = GetLayoutBox()
                     ->GetDocument()
