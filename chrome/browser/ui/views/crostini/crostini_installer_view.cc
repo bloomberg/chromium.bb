@@ -374,6 +374,16 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
   return g_crostini_installer_view;
 }
 
+void CrostiniInstallerView::SetCloseCallbackForTesting(
+    base::OnceClosure quit_closure) {
+  quit_closure_for_testing_ = std::move(quit_closure);
+}
+
+void CrostiniInstallerView::SetProgressBarCallbackForTesting(
+    base::RepeatingCallback<void(double)> callback) {
+  progress_bar_callback_for_testing_ = callback;
+}
+
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
   // Layout constants from the spec.
@@ -461,6 +471,9 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 
 CrostiniInstallerView::~CrostiniInstallerView() {
   g_crostini_installer_view = nullptr;
+  if (quit_closure_for_testing_) {
+    std::move(quit_closure_for_testing_).Run();
+  }
 }
 
 void CrostiniInstallerView::FinishCleanup(CrostiniResult result) {
@@ -576,6 +589,10 @@ void CrostiniInstallerView::StepProgress() {
       state_start_mark = 0.99;
       state_end_mark = 1;
       break;
+    case State::MOUNT_CONTAINER:
+      state_start_mark = 1;
+      state_end_mark = 1;
+      break;
 
     default:
       break;
@@ -596,6 +613,9 @@ void CrostiniInstallerView::StepProgress() {
                             base::ClampToRange(state_fraction, 0.0, 1.0) *
                                 (state_end_mark - state_start_mark));
     progress_bar_->SetVisible(true);
+    if (progress_bar_callback_for_testing_) {
+      progress_bar_callback_for_testing_.Run(progress_bar_->current_value());
+    }
   } else {
     progress_bar_->SetVisible(false);
   }

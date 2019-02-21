@@ -74,6 +74,20 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
     std::unique_ptr<base::RunLoop> run_loop_;
   };
 
+  class ProgressBarTracker {
+   public:
+    ProgressBarTracker() : progress_bar_position_(0.0) {}
+    void OnProgressBarUpdated(double value) {
+      EXPECT_LE(value, 1);
+      EXPECT_GE(value, progress_bar_position_);
+      EXPECT_GE(value, 0);
+      progress_bar_position_ = value;
+    }
+
+   private:
+    double progress_bar_position_;
+  };
+
   CrostiniInstallerViewBrowserTest()
       : CrostiniDialogBrowserTest(true /*register_termina*/),
         waiting_fake_concierge_client_(new WaitingFakeConciergeClient()),
@@ -165,6 +179,24 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kSuccess),
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest,
+                       ProgressBarOnlyMovesForwards) {
+  ShowUi("default");
+  EXPECT_NE(nullptr, ActiveView());
+
+  base::RunLoop run_loop;
+  ActiveView()->SetCloseCallbackForTesting(run_loop.QuitClosure());
+
+  ProgressBarTracker progress_bar_tracker;
+  ActiveView()->SetProgressBarCallbackForTesting(
+      base::BindRepeating(&ProgressBarTracker::OnProgressBarUpdated,
+                          base::Unretained(&progress_bar_tracker)));
+  ActiveView()->GetDialogClientView()->AcceptWindow();
+
+  run_loop.Run();
+  EXPECT_EQ(nullptr, ActiveView());
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {

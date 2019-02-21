@@ -96,6 +96,9 @@ class CrostiniInstallerView
   void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
+  void SetCloseCallbackForTesting(base::OnceClosure quit_closure);
+  void SetProgressBarCallbackForTesting(
+      base::RepeatingCallback<void(double)> callback);
 
  private:
   enum class State {
@@ -152,6 +155,9 @@ class CrostiniInstallerView
   // multiple error callbacks happening in some cases, as well as the user being
   // able to hit Cancel after any errors occur.
   bool has_logged_result_ = false;
+
+  base::RepeatingCallback<void(double)> progress_bar_callback_for_testing_;
+  base::OnceClosure quit_closure_for_testing_;
 
   base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_;
 
