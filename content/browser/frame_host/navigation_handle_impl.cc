@@ -1111,10 +1111,12 @@ void NavigationHandleImpl::RestartCommitTimeout() {
 
   RenderProcessHost* renderer_host =
       GetRenderFrameHost()->GetRenderWidgetHost()->GetProcess();
-  render_process_blocked_state_changed_subscription_ =
-      renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
-          &NavigationHandleImpl::RenderProcessBlockedStateChanged,
-          base::Unretained(this)));
+  if (!render_process_blocked_state_changed_subscription_) {
+    render_process_blocked_state_changed_subscription_ =
+        renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
+            &NavigationHandleImpl::RenderProcessBlockedStateChanged,
+            base::Unretained(this)));
+  }
   if (!renderer_host->IsBlocked())
     commit_timeout_timer_.Start(
         FROM_HERE, g_commit_timeout,
