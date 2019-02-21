@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -264,7 +265,10 @@ class CORE_EXPORT File final : public Blob {
   String relative_path_;
 };
 
-DEFINE_TYPE_CASTS(File, Blob, blob, blob->IsFile(), blob.IsFile());
+template <>
+struct DowncastTraits<File> {
+  static bool AllowFrom(const Blob& blob) { return blob.IsFile(); }
+};
 
 }  // namespace blink
 

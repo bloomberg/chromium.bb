@@ -352,8 +352,7 @@ WebDragData DataObject::ToWebDragData() {
         item.binary_data_content_disposition = original_item->Title();
       } else if (original_item->IsFilename()) {
         Blob* blob = original_item->GetAsFile();
-        if (blob->IsFile()) {
-          File* file = ToFile(blob);
+        if (auto* file = DynamicTo<File>(blob)) {
           if (file->HasBackingFile()) {
             item.storage_type = WebDragData::Item::kStorageTypeFilename;
             item.filename_data = file->GetPath();

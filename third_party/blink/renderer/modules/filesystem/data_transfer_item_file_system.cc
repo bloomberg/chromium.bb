@@ -58,7 +58,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
   // The clipboard may not be in a readable state.
   if (!file)
     return nullptr;
-  DCHECK(file->IsFile());
+  DCHECK(IsA<File>(file));
 
   DOMFileSystem* dom_file_system =
       DraggedIsolatedFileSystemImpl::GetDOMFileSystem(
@@ -71,12 +71,12 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
 
   // The dropped entries are mapped as top-level entries in the isolated
   // filesystem.
-  String virtual_path = DOMFilePath::Append("/", ToFile(file)->name());
+  String virtual_path = DOMFilePath::Append("/", To<File>(file)->name());
 
   // FIXME: This involves synchronous file operation. Consider passing file type
   // data when we dispatch drag event.
   FileMetadata metadata;
-  if (!GetFileMetadata(ToFile(file)->GetPath(), metadata))
+  if (!GetFileMetadata(To<File>(file)->GetPath(), metadata))
     return nullptr;
 
   if (metadata.type == FileMetadata::kTypeDirectory)

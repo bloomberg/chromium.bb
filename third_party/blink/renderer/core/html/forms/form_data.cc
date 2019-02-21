@@ -261,8 +261,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
     // filename.
     if (entry->GetBlob()) {
       String name;
-      if (entry->GetBlob()->IsFile()) {
-        File* file = ToFile(entry->GetBlob());
+      if (auto* file = DynamicTo<File>(entry->GetBlob())) {
         // For file blob, use the filename (or relative path if it is
         // present) as the name.
         name = file->webkitRelativePath().IsEmpty()
@@ -303,7 +302,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
     form_data->AppendData(header.data(), header.size());
     if (entry->GetBlob()) {
       if (entry->GetBlob()->HasBackingFile()) {
-        File* file = ToFile(entry->GetBlob());
+        auto* file = To<File>(entry->GetBlob());
         // Do not add the file if the path is empty.
         if (!file->GetPath().IsEmpty())
           form_data->AppendFile(file->GetPath());
@@ -355,8 +354,7 @@ File* FormData::Entry::GetFile() const {
   // entries.
   // FIXME: Consider applying the name during insertion.
 
-  if (GetBlob()->IsFile()) {
-    File* file = ToFile(GetBlob());
+  if (auto* file = DynamicTo<File>(GetBlob())) {
     if (Filename().IsNull())
       return file;
     return file->Clone(Filename());

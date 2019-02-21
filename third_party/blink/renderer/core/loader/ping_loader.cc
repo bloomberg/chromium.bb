@@ -105,7 +105,7 @@ class BeaconBlob final : public Beacon {
 
     scoped_refptr<EncodedFormData> entity_body = EncodedFormData::Create();
     if (data_->HasBackingFile())
-      entity_body->AppendFile(ToFile(data_)->GetPath());
+      entity_body->AppendFile(To<File>(data_.Get())->GetPath());
     else
       entity_body->AppendBlob(data_->Uuid(), data_->GetBlobDataHandle());
 

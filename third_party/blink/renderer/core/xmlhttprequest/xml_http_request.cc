@@ -876,7 +876,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
     // FIXME: add support for uploading bundles.
     http_body = EncodedFormData::Create();
     if (body->HasBackingFile()) {
-      File* file = ToFile(body);
+      auto* file = To<File>(body);
       if (!file->GetPath().IsEmpty())
         http_body->AppendFile(file->GetPath());
       else

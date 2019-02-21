@@ -95,7 +95,8 @@ TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
 
   Blob* blob = item->GetAsFile();
   ASSERT_TRUE(blob->IsFile());
-  File* file = ToFile(blob);
+  auto* file = DynamicTo<File>(blob);
+  ASSERT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
   EXPECT_EQ(file_path, file->GetPath());
@@ -112,8 +113,8 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
   EXPECT_EQ(DataObjectItem::kFileKind, item->Kind());
 
   Blob* blob = item->GetAsFile();
-  ASSERT_TRUE(blob->IsFile());
-  File* file = ToFile(blob);
+  auto* file = DynamicTo<File>(blob);
+  ASSERT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
   EXPECT_EQ(file_path, file->GetPath());
