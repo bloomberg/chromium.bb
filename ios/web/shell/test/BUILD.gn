@@ -55,6 +55,7 @@ ios_eg_test("ios_web_shell_egtests") {
 }
 
 source_set("earl_grey_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
 
   deps = [
@@ -96,7 +97,7 @@ source_set("earl_grey_test_support") {
 }
 
 bundle_data("bundle") {
-  visibility = [ ":ios_web_shell_egtests" ]
+  visibility = [ ":*" ]
   sources = [
     "http_server_files/basic_navigation_test.html",
     "http_server_files/tall_page.html",
@@ -115,8 +116,26 @@ group("eg_app_support+eg2") {
   testonly = true
 }
 
-group("eg_test_support+eg2") {
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
+
+  sources = [
+    "earl_grey/web_shell_test_case.h",
+    "earl_grey/web_shell_test_case.mm",
+  ]
+
+  include_dirs = [ "//ios/third_party/edo/src" ]
+
+  deps = [
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+  ]
 }
 
 source_set("eg_tests+eg2") {
@@ -127,7 +146,7 @@ source_set("eg_tests+eg2") {
   testonly = true
 
   sources = [
-    "web_shell_egtest.mm",
+    "web_shell_sample_egtest.mm",
   ]
 
   include_dirs = [ "//ios/third_party/edo/src" ]
@@ -159,4 +178,6 @@ ios_eg2_test("ios_web_shell_eg2tests") {
     # Test support libraries.
     ":eg_tests+eg2",
   ]
+
+  bundle_deps = [ ":bundle" ]
 }
