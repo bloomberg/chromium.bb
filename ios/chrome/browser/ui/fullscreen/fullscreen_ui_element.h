@@ -17,9 +17,18 @@
 // value denotes that the toolbar should be completely visible, and a |progress|
 // value of 0.0 denotes that the toolbar should be completely hidden.
 //
-// NOTE: Since this selector is called for every scroll offset, it's not
-// optional, as checking |-respondsToSelector:| for every FullscreenUIElement
-// at every scroll offset can introduce performance issues.
+// This selector is called for every scroll offset, it's not optional, as
+// checking |-respondsToSelector:| for every FullscreenUIElement at every scroll
+// offset can introduce performance issues.
+//
+// If the implementation of this selector uses batched layout updates (e.g.
+// updating the UI in |-layoutSubviews| or by updating constraints), then a
+// layout pass should be forced using |-setNeedsLayout| and |-layoutIfNeeded|.
+// This will ensure that the layout is updated for each scroll position rather
+// than batching multiple fullscreen progress updates together.  This is
+// especially important for FullscreenUIElements that do not implement
+// |-animateFullscreenWithAnimator:|, as this selctor is called by
+// FullscreenUIUpdater in an animation block.
 - (void)updateForFullscreenProgress:(CGFloat)progress;
 
 @optional
