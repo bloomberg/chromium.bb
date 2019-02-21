@@ -317,7 +317,7 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
     return;
   }
 
-  EnforceAudioFocusAbandon();
+  EnforceAudioFocus();
   MaybeUpdateActiveSession();
 
   // Notify observers that we lost audio focus.
@@ -414,27 +414,6 @@ void AudioFocusManager::RequestAudioFocusInternal(
   // We always grant the audio focus request but this may not always be the case
   // in the future.
   std::move(callback).Run();
-}
-
-void AudioFocusManager::EnforceAudioFocusAbandon() {
-  // Allow the top-most MediaSession having force duck to unduck even if
-  // it is not active.
-  if (enforcement_mode_ != mojom::EnforcementMode::kNone) {
-    for (auto iter = audio_focus_stack_.rbegin();
-         iter != audio_focus_stack_.rend(); ++iter) {
-      if (!(*iter)->info()->force_duck)
-        continue;
-
-      // TODO(beccahughes): Replace with std::rotate.
-      auto duck_row = std::move(*iter);
-      duck_row->session()->StopDucking();
-      audio_focus_stack_.erase(std::next(iter).base());
-      audio_focus_stack_.push_back(std::move(duck_row));
-      return;
-    }
-  }
-
-  EnforceAudioFocus();
 }
 
 void AudioFocusManager::EnforceAudioFocus() {
