@@ -1575,3 +1575,5 @@ crbug.com/925600 external/wpt/webrtc-quic/RTCQuicStream.https.html [ Slow ]
 
 crbug.com/933550 external/wpt/service-workers/service-worker/interfaces-window.https.html [ Slow ]
 crbug.com/933550 external/wpt/webusb/idlharness.https.any.worker.html [ Slow ]
+
+crbug.com/927183 [ Mac10.13 ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads_without_user_activation.sub.tentative.html [ Slow ]
