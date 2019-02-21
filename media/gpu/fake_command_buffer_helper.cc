@@ -10,7 +10,7 @@ namespace media {
 
 FakeCommandBufferHelper::FakeCommandBufferHelper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {
+    : CommandBufferHelper(task_runner), task_runner_(std::move(task_runner)) {
   DVLOG(1) << __func__;
 }
 

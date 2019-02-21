@@ -28,7 +28,8 @@ class CommandBufferHelperImpl
     : public CommandBufferHelper,
       public gpu::CommandBufferStub::DestructionObserver {
  public:
-  explicit CommandBufferHelperImpl(gpu::CommandBufferStub* stub) : stub_(stub) {
+  explicit CommandBufferHelperImpl(gpu::CommandBufferStub* stub)
+      : CommandBufferHelper(stub->channel()->task_runner()), stub_(stub) {
     DVLOG(1) << __func__;
     DCHECK(stub_->channel()->task_runner()->BelongsToCurrentThread());
 
@@ -207,6 +208,11 @@ class CommandBufferHelperImpl
 };
 
 }  // namespace
+
+CommandBufferHelper::CommandBufferHelper(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : base::RefCountedDeleteOnSequence<CommandBufferHelper>(
+          std::move(task_runner)) {}
 
 // static
 scoped_refptr<CommandBufferHelper> CommandBufferHelper::Create(
