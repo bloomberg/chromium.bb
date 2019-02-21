@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 namespace chrome {
@@ -76,8 +77,11 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 
   auto* window = params.browser->window()->GetNativeWindow();
   window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_SETTINGS_LOGO_192);
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::CHROME_APP));
+  // For Mash, this is set by BrowserFrameMash.
+  if (!features::IsUsingWindowService()) {
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::CHROME_APP));
+  }
 
   for (SettingsWindowManagerObserver& observer : observers_)
     observer.OnNewSettingsWindow(params.browser);

@@ -18,6 +18,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/wm/window_state.h"  // mash-ok
 #include "base/bind.h"
 #include "base/logging.h"
@@ -108,8 +109,11 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     const AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViewsAura::InitializeWindow(app_window, create_params);
   aura::Window* window = GetNativeWindow();
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::CHROME_APP));
+  // For Mash, this property is set in OnBeforeWidgetInit.
+  if (!features::IsUsingWindowService()) {
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::CHROME_APP));
+  }
   window->SetProperty(
       ash::kImmersiveWindowType,
       static_cast<int>(
@@ -168,6 +172,9 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   init_params
       ->mus_properties[ws::mojom::WindowManager::kWindowTitleShown_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(false));
+  init_params->mus_properties[ash::mojom::kAppType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int64_t>(ash::AppType::CHROME_APP));
 }
 
 views::NonClientFrameView*
