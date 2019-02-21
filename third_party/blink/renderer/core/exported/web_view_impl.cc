@@ -147,8 +147,6 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -1264,7 +1262,6 @@ void WebViewImpl::Close() {
       GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
 
     animation_host_ = nullptr;
-    mutator_dispatcher_ = nullptr;
     layer_tree_view_ = nullptr;
   }
 
@@ -3417,20 +3414,6 @@ void WebViewImpl::ForceNextWebGLContextCreationToFail() {
 
 void WebViewImpl::ForceNextDrawingBufferCreationToFail() {
   DrawingBuffer::ForceNextDrawingBufferCreationToFail();
-}
-
-base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-WebViewImpl::EnsureCompositorMutatorDispatcher(
-    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
-  if (!mutator_task_runner_) {
-    layer_tree_view_->SetMutatorClient(
-        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
-            &mutator_dispatcher_, &mutator_task_runner_));
-  }
-
-  DCHECK(mutator_task_runner_);
-  *mutator_task_runner = mutator_task_runner_;
-  return mutator_dispatcher_;
 }
 
 float WebViewImpl::DeviceScaleFactor() const {

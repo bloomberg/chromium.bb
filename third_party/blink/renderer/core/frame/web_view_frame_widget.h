@@ -86,9 +86,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
-  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-  EnsureCompositorMutatorDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner>*) override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

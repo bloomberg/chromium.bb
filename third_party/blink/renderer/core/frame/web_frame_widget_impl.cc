@@ -81,9 +81,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
-#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -172,7 +170,6 @@ void WebFrameWidgetImpl::Close() {
 
   WebFrameWidgetBase::Close();
 
-  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   root_layer_ = nullptr;
@@ -532,20 +529,6 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   web_sizing_info.has_width = sizing_info.has_width;
   web_sizing_info.has_height = sizing_info.has_height;
   Client()->IntrinsicSizingInfoChanged(web_sizing_info);
-}
-
-base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-WebFrameWidgetImpl::EnsureCompositorMutatorDispatcher(
-    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
-  if (!mutator_task_runner_) {
-    layer_tree_view_->SetMutatorClient(
-        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
-            &mutator_dispatcher_, &mutator_task_runner_));
-  }
-
-  DCHECK(mutator_task_runner_);
-  *mutator_task_runner = mutator_task_runner_;
-  return mutator_dispatcher_;
 }
 
 void WebFrameWidgetImpl::ApplyViewportChanges(const ApplyViewportChangesArgs&) {
@@ -985,7 +968,6 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
 void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
                                           cc::AnimationHost* animation_host) {
   DCHECK(Client());
-  DCHECK(!mutator_dispatcher_);
   layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
