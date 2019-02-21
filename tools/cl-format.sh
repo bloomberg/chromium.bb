@@ -9,8 +9,8 @@ for f in $(git diff --name-only @{u}); do
     continue;
   fi
 
-  # Skip non-cpp files
-  if ! [[ $f =~ \.(cc|h)$ ]]; then
+  # Skip statically copied Chromium QUIC build files.
+  if [[ $f =~ third_party/chromium_quic/build ]]; then
     continue;
   fi
 
@@ -19,5 +19,14 @@ for f in $(git diff --name-only @{u}); do
     continue;
   fi
 
-  clang-format -style=file -i "$f"
+  # Format cpp files
+  if [[ $f =~ \.(cc|h)$ ]]; then
+    clang-format -style=file -i "$f"
+  fi
+
+  # Format gn files
+  if [[ $f =~ \.gn$ ]]; then
+    gn format $f
+  fi
+
 done

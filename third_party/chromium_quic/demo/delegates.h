@@ -64,9 +64,7 @@ class SessionDelegate final : public quic::QuartcSession::Delegate {
     return stream_delegates_.empty() ? false
                                      : stream_delegates_.back()->closed();
   }
-  bool connection_closed() const {
-    return connection_closed_;
-  }
+  bool connection_closed() const { return connection_closed_; }
 
  private:
   std::vector<std::unique_ptr<StreamDelegate>> stream_delegates_;

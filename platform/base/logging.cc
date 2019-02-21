@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "platform/api/logging.h"
+
 #include <unistd.h>
 
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
-
-#include "platform/api/logging.h"
 
 namespace openscreen {
 namespace platform {

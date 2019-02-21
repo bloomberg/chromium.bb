@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_PUBLIC_RECEIVER_INFO_H_
-#define API_PUBLIC_RECEIVER_INFO_H_
+#ifndef API_PUBLIC_SERVICE_INFO_H_
+#define API_PUBLIC_SERVICE_INFO_H_
 
 #include <cstdint>
 #include <string>
@@ -42,4 +42,4 @@ struct ServiceInfo {
 
 }  // namespace openscreen
 
-#endif  // API_PUBLIC_RECEIVER_INFO_H_
+#endif  // API_PUBLIC_SERVICE_INFO_H_

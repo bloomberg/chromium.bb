@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "api/public/service_info.h"
-#include "base/error.h"
 
+#include "base/error.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {

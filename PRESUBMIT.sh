@@ -56,6 +56,11 @@ for f in $(git diff --name-only --diff-filter=d @{u}); do
     continue;
   fi
 
+  # Skip statically copied Chromium QUIC build files.
+  if [[ $f =~ third_party/chromium_quic/build ]]; then
+    continue;
+  fi
+
   if [[ $f =~ \.(cc|h)$ ]]; then
     # clang-format check.
     check_clang_format "$f"

@@ -9,9 +9,7 @@ config("chromium_quic_config") {
   ]
 
   if (is_linux) {
-    cflags_cc += [
-      "-Wno-defaulted-function-deleted",
-    ]
+    cflags_cc += [ "-Wno-defaulted-function-deleted" ]
   }
 
   if (is_gcc) {
@@ -19,6 +17,7 @@ config("chromium_quic_config") {
       "-Wno-dangling-else",
       "-Wno-return-type",
       "-Wno-unused-but-set-variable",
+
       # Don't warn about "maybe" uninitialized. Clang doesn't include this
       # in -Wall but gcc does, and it gives false positives.
       "-Wno-maybe-uninitialized",

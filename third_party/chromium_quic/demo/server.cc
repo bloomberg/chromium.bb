@@ -22,7 +22,6 @@
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
-
 #include "third_party/chromium_quic/demo/delegates.h"
 
 int main(int argc, char** argv) {
