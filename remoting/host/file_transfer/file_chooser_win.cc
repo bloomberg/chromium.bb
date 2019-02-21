@@ -137,16 +137,16 @@ void FileChooserWindows::OnObjectSignaled(HANDLE object) {
     // Currently, WaitForExit returns immediately if GetExitCodeProcess fails,
     // so GetLastError should still be relevant.
     PLOG(ERROR) << "Failed to check exit status";
+    process_.Close();
     std::move(callback_).Run(MakeFileTransferError(
         FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR));
-    process_.Close();
     return;
   }
   if (exit_code != ERROR_SUCCESS) {
     LOG(ERROR) << "Error running dialog process:" << exit_code;
+    process_.Close();
     std::move(callback_).Run(MakeFileTransferError(
         FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR));
-    process_.Close();
     return;
   }
   process_.Close();
