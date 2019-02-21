@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 
 namespace app_list {
@@ -112,6 +113,11 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
     }
   }
   return nullptr;
+}
+
+void SearchController::SetRecurrenceRanker(
+    std::unique_ptr<RecurrenceRanker> ranker) {
+  mixer_->SetRecurrenceRanker(std::move(ranker));
 }
 
 void SearchController::Train(const std::string& id, RankingItemType type) {

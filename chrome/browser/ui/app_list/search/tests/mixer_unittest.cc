@@ -16,7 +16,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,6 +82,10 @@ class TestSearchProvider : public SearchProvider {
       // of the canonical [0.0, 1.0] range.
       if (bad_relevance_range_)
         relevance = 10.0 - i * 10;
+      // If |small_relevance_range_|, keep the relevances in the same order, but
+      // make the differences very small: 0.5, 0.499, 0.498, ...
+      if (small_relevance_range_)
+        relevance = 0.5 - i / 100.0;
       TestSearchResult* result = new TestSearchResult(id, relevance);
       result->SetDisplayType(display_type_);
       Add(std::unique_ptr<ChromeSearchResult>(result));
@@ -92,11 +98,13 @@ class TestSearchProvider : public SearchProvider {
   }
   void set_count(size_t count) { count_ = count; }
   void set_bad_relevance_range() { bad_relevance_range_ = true; }
+  void set_small_relevance_range() { small_relevance_range_ = true; }
 
  private:
   std::string prefix_;
   size_t count_;
   bool bad_relevance_range_;
+  bool small_relevance_range_;
   ChromeSearchResult::DisplayType display_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
@@ -114,6 +122,16 @@ class MixerTest : public testing::Test {
     providers_.push_back(std::make_unique<TestSearchProvider>("app"));
     providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
     providers_.push_back(std::make_unique<TestSearchProvider>("webstore"));
+  }
+
+  void CreateMixer(bool use_adaptive_ranker) {
+    if (use_adaptive_ranker) {
+      scoped_feature_list_.InitWithFeatures(
+          {app_list_features::kEnableAdaptiveResultRanker}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {app_list_features::kEnableAdaptiveResultRanker});
+    }
 
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
 
@@ -150,12 +168,18 @@ class MixerTest : public testing::Test {
     return result;
   }
 
+  void Train(const std::string& id, const RankingItemType& type) {
+    mixer_->Train(id, type);
+  }
+
   Mixer* mixer() { return mixer_.get(); }
   TestSearchProvider* app_provider() { return providers_[0].get(); }
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
   TestSearchProvider* webstore_provider() { return providers_[2].get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
 
@@ -165,6 +189,9 @@ class MixerTest : public testing::Test {
 };
 
 TEST_F(MixerTest, Basic) {
+  // Create mixer without adaptive ranker.
+  CreateMixer(false);
+
   // Note: Some cases in |expected| have vastly more results than others, due to
   // the "at least 6" mechanism. If it gets at least 6 results from all
   // providers, it stops at 6. If not, it fetches potentially many more results
@@ -216,6 +243,9 @@ TEST_F(MixerTest, Basic) {
 }
 
 TEST_F(MixerTest, RemoveDuplicates) {
+  // Create mixer without adaptive ranker.
+  CreateMixer(false);
+
   const std::string dup = "dup";
 
   // This gives "dup0,dup1,dup2".
@@ -234,6 +264,23 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
+}
+
+TEST_F(MixerTest, RankerIsDisabledWithFlag) {
+  CreateMixer(false);
+
+  for (int i = 0; i < 20; ++i)
+    Train("omnibox2", RankingItemType::kOmnibox);
+
+  app_provider()->set_count(4);
+  app_provider()->set_small_relevance_range();
+  omnibox_provider()->set_count(4);
+  omnibox_provider()->set_small_relevance_range();
+  RunQuery();
+
+  // Expect training calls to have not affected rankings.
+  EXPECT_EQ(GetResults(),
+            "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3");
 }
 
 }  // namespace test
