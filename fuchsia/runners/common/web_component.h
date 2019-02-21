@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
@@ -96,7 +95,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   std::vector<std::string> additional_service_names_;
 
   // Objects used for binding and exporting the ViewProvider service.
-  std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
   std::unique_ptr<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>
       view_provider_binding_;
