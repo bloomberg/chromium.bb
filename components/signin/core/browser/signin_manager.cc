@@ -155,11 +155,9 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
                        base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
                                   base::Unretained(this)));
 
-  std::string account_id =
-      signin_client()->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
-  std::string user = account_id.empty() ? std::string() :
-      account_tracker_service()->GetAccountInfo(account_id).email;
-  if (!account_id.empty() && (!IsAllowedUsername(user) || !IsSigninAllowed())) {
+  AccountInfo account_info = GetAuthenticatedAccountInfo();
+  if (!account_info.account_id.empty() &&
+      (!IsAllowedUsername(account_info.email) || !IsSigninAllowed())) {
     // User is signed in, but the username is invalid or signin is no longer
     // allowed, so the user must be sign out.
     //
