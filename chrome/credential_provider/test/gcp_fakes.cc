@@ -12,13 +12,12 @@
 #include <atlcomcli.h>
 #include <atlconv.h>
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -322,6 +321,10 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
     hr = SetUserProperty(OLE2CW(*sid), kUserId, gaia_id);
     if (FAILED(hr))
       return hr;
+
+    hr = SetUserProperty(OLE2CW(*sid), kUserTokenHandle, L"token_handle");
+    if (FAILED(hr))
+      return hr;
   }
 
   if (!email.empty()) {
@@ -329,10 +332,6 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
     if (FAILED(hr))
       return hr;
   }
-
-  hr = SetUserProperty(OLE2CW(*sid), kUserTokenHandle, L"token_handle");
-  if (FAILED(hr))
-    return hr;
 
   return S_OK;
 }
@@ -451,6 +450,119 @@ HRESULT FakeScopedUserProfile::SaveAccountInfo(
     return hr;
 
   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeWinHttpUrlFetcherFactory::Response::Response() {}
+
+FakeWinHttpUrlFetcherFactory::Response::Response(const Response& rhs)
+    : headers(rhs.headers),
+      response(rhs.response),
+      send_response_event_handle(rhs.send_response_event_handle) {}
+
+FakeWinHttpUrlFetcherFactory::Response::Response(
+    const WinHttpUrlFetcher::Headers& new_headers,
+    const std::string& new_response,
+    HANDLE new_send_response_event_handle)
+    : headers(new_headers),
+      response(new_response),
+      send_response_event_handle(new_send_response_event_handle) {}
+
+FakeWinHttpUrlFetcherFactory::Response::~Response() = default;
+
+FakeWinHttpUrlFetcherFactory::FakeWinHttpUrlFetcherFactory()
+    : original_creator_(*WinHttpUrlFetcher::GetCreatorFunctionStorage()) {
+  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = base::BindRepeating(
+      &FakeWinHttpUrlFetcherFactory::Create, base::Unretained(this));
+}
+
+FakeWinHttpUrlFetcherFactory::~FakeWinHttpUrlFetcherFactory() {
+  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = original_creator_;
+}
+
+void FakeWinHttpUrlFetcherFactory::SetFakeResponse(
+    const GURL& url,
+    const WinHttpUrlFetcher::Headers& headers,
+    const std::string& response,
+    HANDLE send_response_event_handle /*=INVALID_HANDLE_VALUE*/) {
+  fake_responses_[url] =
+      Response(headers, response, send_response_event_handle);
+}
+
+std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
+    const GURL& url) {
+  if (fake_responses_.count(url) == 0)
+    return nullptr;
+
+  const Response& response = fake_responses_[url];
+
+  FakeWinHttpUrlFetcher* fetcher = new FakeWinHttpUrlFetcher(std::move(url));
+  fetcher->response_headers_ = response.headers;
+  fetcher->response_ = response.response;
+  fetcher->send_response_event_handle_ = response.send_response_event_handle;
+  ++requests_created_;
+
+  return std::unique_ptr<WinHttpUrlFetcher>(fetcher);
+}
+
+FakeWinHttpUrlFetcher::FakeWinHttpUrlFetcher(const GURL& url)
+    : WinHttpUrlFetcher() {}
+
+FakeWinHttpUrlFetcher::~FakeWinHttpUrlFetcher() {}
+
+bool FakeWinHttpUrlFetcher::IsValid() const {
+  return true;
+}
+
+HRESULT FakeWinHttpUrlFetcher::Fetch(std::vector<char>* response) {
+  if (send_response_event_handle_ != INVALID_HANDLE_VALUE)
+    ::WaitForSingleObject(send_response_event_handle_, INFINITE);
+
+  response->resize(response_.size());
+  memcpy(response->data(), response_.c_str(), response->size());
+  return S_OK;
+}
+
+HRESULT FakeWinHttpUrlFetcher::Close() {
+  return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeTokenHandleValidator::FakeTokenHandleValidator()
+    : TokenHandleValidator(
+          TokenHandleValidator::kDefaultTokenHandleValidationTimeout),
+      original_validator_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeTokenHandleValidator::FakeTokenHandleValidator(
+    base::TimeDelta validation_timeout)
+    : TokenHandleValidator(validation_timeout),
+      original_validator_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeTokenHandleValidator::~FakeTokenHandleValidator() {
+  *GetInstanceStorage() = original_validator_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeInternetAvailabilityChecker::FakeInternetAvailabilityChecker(
+    HasInternetConnectionCheckType has_internet_connection /*=kHicForceYes*/)
+    : original_checker_(*GetInstanceStorage()),
+      has_internet_connection_(has_internet_connection) {
+  *GetInstanceStorage() = this;
+}
+
+FakeInternetAvailabilityChecker::~FakeInternetAvailabilityChecker() {
+  *GetInstanceStorage() = original_checker_;
+}
+
+bool FakeInternetAvailabilityChecker::HasInternetConnection() {
+  return has_internet_connection_ == kHicForceYes;
 }
 
 }  // namespace credential_provider

@@ -129,19 +129,6 @@ HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(
   return S_OK;
 }
 
-HRESULT FakeGaiaCredentialProvider::HasInternetConnection() {
-  return has_internet_connection_ == kHicForceYes ? S_OK : S_FALSE;
-}
-
-// IGaiaCredentialProviderForTesting //////////////////////////////////////////
-
-HRESULT FakeGaiaCredentialProvider::SetHasInternetConnection(
-    HasInternetConnectionCheckType has_internet_connection) {
-  DCHECK(has_internet_connection != kHicCheckAlways);
-  has_internet_connection_ = has_internet_connection;
-  return S_OK;
-}
-
 IMPL_IUNKOWN_NOQI_NOREF(FakeGaiaCredentialProvider);
 
 }  // namespace credential_provider

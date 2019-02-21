@@ -90,7 +90,8 @@ TEST_F(GcpGaiaCredentialBaseTest, SetSelected) {
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
   FakeGaiaCredentialProvider provider;
-  ASSERT_EQ(S_OK, provider.SetHasInternetConnection(kHicForceNo));
+  FakeInternetAvailabilityChecker internet_checker(
+      FakeInternetAvailabilityChecker::kHicForceNo);
 
   CComPtr<IGaiaCredential> gaia_cred;
   CComPtr<ICredentialProviderCredential> cred;

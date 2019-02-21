@@ -32,6 +32,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
+#include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
@@ -1027,7 +1028,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
       TellOmahaDidRun();
 
       // If there is no internet connection, just abort right away.
-      if (provider_->HasInternetConnection() != S_OK) {
+      if (!InternetAvailabilityChecker::Get()->HasInternetConnection()) {
         BSTR error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
         ::SHStrDupW(OLE2CW(error_message), status_text);
         ::SysFreeString(error_message);

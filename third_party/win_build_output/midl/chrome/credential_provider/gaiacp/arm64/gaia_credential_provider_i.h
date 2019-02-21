@@ -52,13 +52,6 @@ typedef interface IGaiaCredentialProvider IGaiaCredentialProvider;
 #endif 	/* __IGaiaCredentialProvider_FWD_DEFINED__ */
 
 
-#ifndef __IGaiaCredentialProviderForTesting_FWD_DEFINED__
-#define __IGaiaCredentialProviderForTesting_FWD_DEFINED__
-typedef interface IGaiaCredentialProviderForTesting IGaiaCredentialProviderForTesting;
-
-#endif 	/* __IGaiaCredentialProviderForTesting_FWD_DEFINED__ */
-
-
 #ifndef __IGaiaCredential_FWD_DEFINED__
 #define __IGaiaCredential_FWD_DEFINED__
 typedef interface IGaiaCredential IGaiaCredential;
@@ -119,8 +112,6 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
             /* [in] */ BSTR sid,
             /* [in] */ BOOL fire_credentials_changed) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE HasInternetConnection( void) = 0;
-        
     };
     
     
@@ -154,9 +145,6 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
             /* [in] */ BSTR sid,
             /* [in] */ BOOL fire_credentials_changed);
         
-        HRESULT ( STDMETHODCALLTYPE *HasInternetConnection )( 
-            IGaiaCredentialProvider * This);
-        
         END_INTERFACE
     } IGaiaCredentialProviderVtbl;
 
@@ -186,9 +174,6 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 #define IGaiaCredentialProvider_OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed)	\
     ( (This)->lpVtbl -> OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed) ) 
 
-#define IGaiaCredentialProvider_HasInternetConnection(This)	\
-    ( (This)->lpVtbl -> HasInternetConnection(This) ) 
-
 #endif /* COBJMACROS */
 
 
@@ -198,102 +183,6 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 
 
 #endif 	/* __IGaiaCredentialProvider_INTERFACE_DEFINED__ */
-
-
-/* interface __MIDL_itf_gaia_credential_provider_0000_0001 */
-/* [local] */ 
-
-typedef /* [public][public] */ 
-enum __MIDL___MIDL_itf_gaia_credential_provider_0000_0001_0001
-    {
-        kHicForceYes	= 0,
-        kHicForceNo	= ( kHicForceYes + 1 ) ,
-        kHicCheckAlways	= ( kHicForceNo + 1 ) 
-    } 	HasInternetConnectionCheckType;
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_s_ifspec;
-
-#ifndef __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
-#define __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
-
-/* interface IGaiaCredentialProviderForTesting */
-/* [unique][uuid][object] */ 
-
-
-EXTERN_C const IID IID_IGaiaCredentialProviderForTesting;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("224CE2FB-2977-4585-BD46-1BAE8D7964DE")
-    IGaiaCredentialProviderForTesting : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE SetHasInternetConnection( 
-            /* [in] */ HasInternetConnectionCheckType hic) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct IGaiaCredentialProviderForTestingVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IGaiaCredentialProviderForTesting * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IGaiaCredentialProviderForTesting * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            IGaiaCredentialProviderForTesting * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *SetHasInternetConnection )( 
-            IGaiaCredentialProviderForTesting * This,
-            /* [in] */ HasInternetConnectionCheckType hic);
-        
-        END_INTERFACE
-    } IGaiaCredentialProviderForTestingVtbl;
-
-    interface IGaiaCredentialProviderForTesting
-    {
-        CONST_VTBL struct IGaiaCredentialProviderForTestingVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define IGaiaCredentialProviderForTesting_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define IGaiaCredentialProviderForTesting_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define IGaiaCredentialProviderForTesting_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define IGaiaCredentialProviderForTesting_SetHasInternetConnection(This,hic)	\
-    ( (This)->lpVtbl -> SetHasInternetConnection(This,hic) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__ */
 
 
 #ifndef __IGaiaCredential_INTERFACE_DEFINED__

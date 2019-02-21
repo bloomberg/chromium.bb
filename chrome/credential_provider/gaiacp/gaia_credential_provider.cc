@@ -4,8 +4,6 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 
-#include <netlistmgr.h>
-
 #include <iomanip>
 #include <map>
 
@@ -23,6 +21,7 @@
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 
 namespace credential_provider {
 
@@ -48,7 +47,6 @@ CGaiaCredentialProvider::~CGaiaCredentialProvider() {}
 
 HRESULT CGaiaCredentialProvider::FinalConstruct() {
   LOGFN(INFO);
-  CleanupStaleTokenHandles();
   CleanupOlderVersions();
   return S_OK;
 }
@@ -117,28 +115,6 @@ void CGaiaCredentialProvider::ClearTransient() {
   index_ = std::numeric_limits<size_t>::max();
 }
 
-void CGaiaCredentialProvider::CleanupStaleTokenHandles() {
-  LOGFN(INFO);
-  std::map<base::string16, base::string16> handles;
-
-  HRESULT hr = GetUserTokenHandles(&handles);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
-    return;
-  }
-
-  OSUserManager* manager = OSUserManager::Get();
-  for (auto it = handles.cbegin(); it != handles.cend(); ++it) {
-    HRESULT hr =
-        manager->FindUserBySID(it->first.c_str(), nullptr, 0, nullptr, 0);
-    if (hr == HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
-      RemoveAllUserProperties(it->first.c_str());
-    } else if (FAILED(hr)) {
-      LOGFN(ERROR) << "manager->FindUserBySID hr=" << putHR(hr);
-    }
-  }
-}
-
 void CGaiaCredentialProvider::CleanupOlderVersions() {
   base::FilePath versions_directory = GetInstallDirectory();
   if (!versions_directory.empty())
@@ -194,49 +170,13 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
   return hr;
 }
 
-HRESULT CGaiaCredentialProvider::HasInternetConnection() {
-  if (has_internet_connection_ != kHicCheckAlways)
-    return has_internet_connection_ == kHicForceYes ? S_OK : S_FALSE;
-
-  // If any errors occur, return that internet connection is available.  At
-  // worst the credential provider will try to connect and fail.
-
-  CComPtr<INetworkListManager> manager;
-  HRESULT hr = manager.CoCreateInstance(CLSID_NetworkListManager);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CoCreateInstance(NetworkListManager) hr=" << putHR(hr);
-    return S_OK;
-  }
-
-  VARIANT_BOOL is_connected;
-  hr = manager->get_IsConnectedToInternet(&is_connected);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "manager->get_IsConnectedToInternet hr=" << putHR(hr);
-    return S_OK;
-  }
-
-  // Normally VARIANT_TRUE/VARIANT_FALSE are used with the type VARIANT_BOOL
-  // but in this case the docs explicitly say to use FALSE.
-  // https://docs.microsoft.com/en-us/windows/desktop/api/Netlistmgr/
-  //     nf-netlistmgr-inetworklistmanager-get_isconnectedtointernet
-  return is_connected != FALSE ? S_OK : S_FALSE;
-}
-
-// IGaiaCredentialProviderForTesting //////////////////////////////////////////
-
-HRESULT CGaiaCredentialProvider::SetHasInternetConnection(
-    HasInternetConnectionCheckType has_internet_connection) {
-  has_internet_connection_ = has_internet_connection;
-  return S_OK;
-}
-
 // ICredentialProvider ////////////////////////////////////////////////////////
 
 HRESULT CGaiaCredentialProvider::SetUserArray(
     ICredentialProviderUserArray* users) {
   LOGFN(INFO);
   std::map<base::string16, std::pair<base::string16, base::string16>>
-      sid_to_userinfo;
+      sid_to_username;
 
   // Get the SIDs of all users being shown in the logon UI.
   {
@@ -280,7 +220,7 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
       }
 
       if (SUCCEEDED(hr)) {
-        sid_to_userinfo.emplace(sid, std::make_pair(domain, username));
+        sid_to_username.emplace(sid, std::make_pair(domain, username));
       } else {
         LOGFN(ERROR) << "Can't get sid or username hr=" << putHR(hr);
       }
@@ -290,7 +230,7 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
   }
 
   // For each SID, check to see if this user requires reauth.
-  for (const auto& kv : sid_to_userinfo) {
+  for (const auto& kv : sid_to_username) {
     // Gaia id must exist in the registry for the user to be considered
     // registered.
     wchar_t gaia_id[64];
@@ -298,9 +238,14 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
     HRESULT hr =
         GetUserProperty(kv.first.c_str(), kUserId, gaia_id, &id_length);
     if (FAILED(hr)) {
-      // Local users that are not associated are disabled.
+      // Local users that are not associated do not create a credential.
       continue;
     }
+
+    // If the token handle is valid, no need to create a reauth credential. The
+    // user can just sign in using their password.
+    if (TokenHandleValidator::Get()->IsTokenHandleValidForUser(kv.first))
+      continue;
 
     // Get the user's email address.  If not found, proceed anyway.  The net
     // effect is that the user will need to enter their email address
