@@ -9,11 +9,14 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/locid.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
 
 namespace assistant {
 
@@ -54,6 +57,26 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
     if (disallowed)
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
+  }
+
+  if (!ui::DeviceUsesKeyboardLayout2()) {
+    // Only enable non-dasher accounts for devices without physical key.
+    bool account_supported = false;
+    auto* identity_manager =
+        IdentityManagerFactory::GetForProfileIfExists(profile);
+
+    if (identity_manager) {
+      const std::string hosted_domain =
+          identity_manager->GetPrimaryAccountInfo().hosted_domain;
+      // |kNoHostedDomainFound| means it's gmail.com accounts.
+      if (hosted_domain == kNoHostedDomainFound ||
+          hosted_domain == "google.com") {
+        account_supported = true;
+      }
+    }
+
+    if (!account_supported)
+      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
   }
 
   return ash::mojom::AssistantAllowedState::ALLOWED;
