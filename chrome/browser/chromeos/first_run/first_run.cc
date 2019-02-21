@@ -125,20 +125,7 @@ class DialogLauncher : public content::NotificationObserver {
     DCHECK(content::Details<const user_manager::User>(details).ptr() ==
            ProfileHelper::Get()->GetUserByProfile(profile_));
 
-    // Whether the account is supported for voice interaction.
-    bool account_supported = false;
-    auto* identity_manager =
-        IdentityManagerFactory::GetForProfileIfExists(profile_);
-    if (identity_manager) {
-      std::string hosted_domain =
-          identity_manager->GetPrimaryAccountInfo().hosted_domain;
-      if (hosted_domain == kNoHostedDomainFound ||
-          hosted_domain == "google.com") {
-        account_supported = true;
-      }
-    }
-
-      TryLaunchFirstRunDialog(profile_);
+    TryLaunchFirstRunDialog(profile_);
 
     delete this;
   }
