@@ -883,7 +883,6 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
       HasCurrentBackdropFilterAnimation() !=
           other.HasCurrentBackdropFilterAnimation() ||
-      HasInlineTransform() != other.HasInlineTransform() ||
       BackfaceVisibility() != other.BackfaceVisibility() ||
       HasWillChangeCompositingHint() != other.HasWillChangeCompositingHint() ||
       UsedTransformStyle3D() != other.UsedTransformStyle3D() ||
