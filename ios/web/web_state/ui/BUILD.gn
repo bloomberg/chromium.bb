@@ -69,6 +69,8 @@ source_set("ui") {
     "wk_navigation_action_policy_util.mm",
     "wk_navigation_action_util.h",
     "wk_navigation_action_util.mm",
+    "wk_security_origin_util.h",
+    "wk_security_origin_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]
