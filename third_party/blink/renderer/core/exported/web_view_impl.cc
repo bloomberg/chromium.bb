@@ -837,14 +837,12 @@ WebInputEventResult WebViewImpl::HandleCharEvent(
 WebRect WebViewImpl::WidenRectWithinPageBounds(const WebRect& source,
                                                int target_margin,
                                                int minimum_margin) {
-  WebSize max_size;
-  IntSize scroll_offset;
-  if (MainFrame()) {
-    // Caller should guarantee that the main frame is local.
-    DCHECK(MainFrame()->IsWebLocalFrame());
-    max_size = MainFrame()->ToWebLocalFrame()->DocumentSize();
-    scroll_offset = MainFrame()->ToWebLocalFrame()->GetScrollOffset();
-  }
+  // Caller should guarantee that the main frame exists and is local.
+  DCHECK(MainFrame());
+  DCHECK(MainFrame()->IsWebLocalFrame());
+  WebSize max_size = MainFrame()->ToWebLocalFrame()->DocumentSize();
+  IntSize scroll_offset = MainFrame()->ToWebLocalFrame()->GetScrollOffset();
+
   int left_margin = target_margin;
   int right_margin = target_margin;
 
