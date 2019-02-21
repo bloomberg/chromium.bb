@@ -188,6 +188,9 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   DCHECK(handle->GetWebContents());
   DCHECK(handle->GetWebContents()->GetBrowserContext());
 
+  if (!handle->IsInMainFrame())
+    return nullptr;
+
   if (base::FeatureList::IsEnabled(
           previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
     return nullptr;
