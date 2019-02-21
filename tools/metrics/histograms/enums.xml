@@ -2674,6 +2674,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Pause"/>
 </enum>
 
+<enum name="AutocompleteActionPredictorAction">
+  <int value="0" label="PRERENDER"/>
+  <int value="1" label="PRECONNECT"/>
+  <int value="2" label="NONE"/>
+</enum>
+
+<enum name="AutocompleteActionPredictorDatabaseAction">
+  <int value="0" label="ADD"/>
+  <int value="1" label="UPDATE"/>
+  <int value="2" label="DELETE SOME"/>
+  <int value="3" label="DELETE ALL"/>
+</enum>
+
 <enum name="AutocompleteEvents">
   <int value="0" label="Suggestions Shown"/>
   <int value="1" label="Suggestion Selected"/>
