@@ -320,6 +320,10 @@ enum State {
  // object, e.g. "FOCUS".
 enum Action {
   kNone,
+
+  // Request image annotations for all the eligible images on a page.
+  kAnnotatePageImages,
+
   kBlur,
 
   // Notifies a node that it no longer has accessibility focus.
