@@ -52,8 +52,8 @@ class NET_EXPORT IPEndPoint {
   // |address| is the address.
   // |address_length| is the length of |address|.
   // Returns true on success, false on failure.
-  bool FromSockAddr(const struct sockaddr* address, socklen_t address_length)
-      WARN_UNUSED_RESULT;
+  bool FromSockAddr(const struct sockaddr* address,
+                    socklen_t address_length) WARN_UNUSED_RESULT;
 
   // Returns value as a string (e.g. "127.0.0.1:80"). Returns the empty string
   // when |address_| is invalid (the port will be ignored).

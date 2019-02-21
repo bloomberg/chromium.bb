@@ -269,7 +269,7 @@ int WebSocketTransportClientSocketPool::IdleSocketCount() const {
   return 0;
 }
 
-int WebSocketTransportClientSocketPool::IdleSocketCountInGroup(
+size_t WebSocketTransportClientSocketPool::IdleSocketCountInGroup(
     const std::string& group_name) const {
   return 0;
 }

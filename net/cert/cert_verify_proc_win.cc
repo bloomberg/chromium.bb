@@ -936,7 +936,7 @@ int CertVerifyProcWin::VerifyInternal(
   // and used when in cache-only mode.
   if (!ocsp_response.empty()) {
     CRYPT_DATA_BLOB ocsp_response_blob;
-    ocsp_response_blob.cbData = ocsp_response.size();
+    ocsp_response_blob.cbData = base::checked_cast<DWORD>(ocsp_response.size());
     ocsp_response_blob.pbData =
         reinterpret_cast<BYTE*>(const_cast<char*>(ocsp_response.data()));
     CertSetCertificateContextProperty(

@@ -150,7 +150,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void CloseIdleSockets() override;
   void CloseIdleSocketsInGroup(const std::string& group_name) override;
   int IdleSocketCount() const override;
-  int IdleSocketCountInGroup(const std::string& group_name) const override;
+  size_t IdleSocketCountInGroup(const std::string& group_name) const override;
   LoadState GetLoadState(const std::string& group_name,
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(

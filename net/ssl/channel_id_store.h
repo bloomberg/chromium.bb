@@ -100,7 +100,7 @@ class NET_EXPORT ChannelIDStore {
   // Returns the number of keypairs in the store.  May return 0 if the backing
   // store is not loaded yet.
   // Public only for unit testing.
-  virtual int GetChannelIDCount() = 0;
+  virtual size_t GetChannelIDCount() = 0;
 
   // When invoked, instructs the store to keep session related data on
   // destruction.

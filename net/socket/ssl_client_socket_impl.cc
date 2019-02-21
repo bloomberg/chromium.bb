@@ -1625,7 +1625,8 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
         NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
         NetLog::IntCallback(
             "cert_count",
-            1 + ssl_config_.client_cert->intermediate_buffers().size()));
+            base::checked_cast<int>(
+                1 + ssl_config_.client_cert->intermediate_buffers().size())));
     return 1;
   }
 #endif  // defined(OS_IOS)

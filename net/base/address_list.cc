@@ -71,7 +71,7 @@ AddressList AddressList::CreateFromAddrinfo(const struct addrinfo* head) {
   for (const struct addrinfo* ai = head; ai; ai = ai->ai_next) {
     IPEndPoint ipe;
     // NOTE: Ignoring non-INET* families.
-    if (ipe.FromSockAddr(ai->ai_addr, ai->ai_addrlen))
+    if (ipe.FromSockAddr(ai->ai_addr, static_cast<socklen_t>(ai->ai_addrlen)))
       list.push_back(ipe);
     else
       DLOG(WARNING) << "Unknown family found in addrinfo: " << ai->ai_family;
