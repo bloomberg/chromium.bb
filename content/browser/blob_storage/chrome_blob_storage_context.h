@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -34,7 +35,6 @@ class BlobStorageContext;
 namespace content {
 class BlobHandle;
 class BrowserContext;
-struct ChromeBlobStorageContextDeleter;
 class ResourceContext;
 
 // A context class that keeps track of BlobStorageController used by the chrome.
@@ -46,7 +46,7 @@ class ResourceContext;
 // the IO thread (unless specifically called out in doc comments).
 class CONTENT_EXPORT ChromeBlobStorageContext
     : public base::RefCountedThreadSafe<ChromeBlobStorageContext,
-                                        ChromeBlobStorageContextDeleter> {
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   ChromeBlobStorageContext();
 
@@ -95,20 +95,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   virtual ~ChromeBlobStorageContext();
 
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<ChromeBlobStorageContext>;
-  friend class base::RefCountedThreadSafe<ChromeBlobStorageContext,
-                                          ChromeBlobStorageContextDeleter>;
-  friend struct ChromeBlobStorageContextDeleter;
-
-  void DeleteOnCorrectThread() const;
 
   std::unique_ptr<storage::BlobStorageContext> context_;
-};
-
-struct ChromeBlobStorageContextDeleter {
-  static void Destruct(const ChromeBlobStorageContext* context) {
-    context->DeleteOnCorrectThread();
-  }
 };
 
 // Returns the BlobStorageContext associated with the
