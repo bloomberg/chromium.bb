@@ -8,6 +8,7 @@ config("earl_grey_support_config") {
 }
 
 source_set("earl_grey_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
@@ -22,13 +23,12 @@ source_set("earl_grey_support") {
     "matchers.mm",
   ]
 
-  defines = [ "CHROME_EARL_GREY_1" ]
-
   public_configs = [ ":earl_grey_support_config" ]
   configs += [ ":earl_grey_support_config" ]
 }
 
 source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
@@ -38,13 +38,19 @@ source_set("eg_app_support+eg2") {
   ]
 
   sources = [
-    "disabled_test_macros.h",
     "matchers.h",
     "matchers.mm",
   ]
 
-  defines = [ "CHROME_EARL_GREY_2" ]
-
   public_configs = [ ":earl_grey_support_config" ]
   configs += [ ":earl_grey_support_config" ]
+}
+
+source_set("eg_test_support+eg2") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+
+  sources = [
+    "disabled_test_macros.h",
+  ]
 }
