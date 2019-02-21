@@ -48,16 +48,10 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
   void VerifySuccess(
       HostConnectionMetricsLogger::ConnectionToHostResult_SuccessEventType
-          event_type,
-      bool is_background_advertisement) {
-    if (is_background_advertisement) {
-      histogram_tester_.ExpectUniqueSample(
-          "InstantTethering.ConnectionToHostResult.SuccessRate.Background",
-          event_type, 1);
-    } else {
-      histogram_tester_.ExpectUniqueSample(
-          "InstantTethering.ConnectionToHostResult.SuccessRate", event_type, 1);
-    }
+          event_type) {
+    histogram_tester_.ExpectUniqueSample(
+        "InstantTethering.ConnectionToHostResult.SuccessRate.Background",
+        event_type, 1);
   }
 
   void VerifyFailure(
@@ -83,7 +77,7 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
         event_type, 1);
   }
 
-  void VerifyConnectToHostDuration(bool is_background_advertisement) {
+  void VerifyConnectToHostDuration() {
     std::string device_id = test_devices_[0].GetDeviceId();
     SetActiveHostToConnecting(device_id);
 
@@ -92,15 +86,9 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
     fake_active_host_->SetActiveHostConnected(device_id, kTetherNetworkGuid,
                                               kWifiNetworkGuid);
 
-    if (is_background_advertisement) {
-      histogram_tester_.ExpectTimeBucketCount(
-          "InstantTethering.Performance.ConnectToHostDuration.Background",
-          kConnectToHostTime, 1);
-    } else {
-      histogram_tester_.ExpectTimeBucketCount(
-          "InstantTethering.Performance.ConnectToHostDuration",
-          kConnectToHostTime, 1);
-    }
+    histogram_tester_.ExpectTimeBucketCount(
+        "InstantTethering.Performance.ConnectToHostDuration.Background",
+        kConnectToHostTime, 1);
   }
 
   void SetActiveHostToConnecting(const std::string& device_id) {
@@ -143,8 +131,7 @@ TEST_F(HostConnectionMetricsLoggerTest, RecordConnectionResultSuccess) {
       test_devices_[0].GetDeviceId());
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::SUCCESS,
-                true /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::SUCCESS);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -160,8 +147,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       test_devices_[1].GetDeviceId());
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::SUCCESS,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::SUCCESS);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -179,8 +165,7 @@ TEST_F(HostConnectionMetricsLoggerTest, RecordConnectionResultFailure) {
                     ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                true /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -199,8 +184,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
                     ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -222,8 +206,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -246,8 +229,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -270,8 +252,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -294,8 +275,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_TIMED_OUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -319,8 +299,7 @@ TEST_F(
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_TIMED_OUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -339,8 +318,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_UNSUPPORTED);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
@@ -355,8 +333,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
   VerifyFailure(HostConnectionMetricsLogger::
                     ConnectionToHostResult_FailureEventType::NO_CELL_DATA);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
@@ -372,8 +349,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           ENABLING_HOTSPOT_FAILED);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
@@ -389,12 +365,11 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           ENABLING_HOTSPOT_TIMEOUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest, RecordConnectToHostDuration) {
-  VerifyConnectToHostDuration(true /* is_background_advertisement */);
+  VerifyConnectToHostDuration();
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
@@ -409,8 +384,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
   VerifyFailure(HostConnectionMetricsLogger::
                     ConnectionToHostResult_FailureEventType::NO_RESPONSE);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
@@ -426,8 +400,7 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           INVALID_HOTSPOT_CREDENTIALS);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE,
-                false /* is_background_advertisement */);
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
 }  // namespace tether
