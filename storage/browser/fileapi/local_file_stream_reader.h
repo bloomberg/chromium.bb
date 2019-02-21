@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
                         const base::FilePath& file_path,
                         int64_t initial_offset,
                         const base::Time& expected_modification_time);
-  int Open(net::CompletionOnceCallback callback);
+  void Open(net::CompletionOnceCallback callback);
 
   // Callbacks that are chained from Open for Read.
   void DidVerifyForOpen(net::CompletionOnceCallback callback,

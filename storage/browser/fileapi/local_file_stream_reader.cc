@@ -72,9 +72,12 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf,
 
   if (stream_impl_)
     return stream_impl_->Read(buf, buf_len, std::move(callback));
-  return Open(base::BindOnce(&LocalFileStreamReader::DidOpenForRead,
-                             weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
-                             buf_len, std::move(callback)));
+
+  Open(base::BindOnce(&LocalFileStreamReader::DidOpenForRead,
+                      weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
+                      buf_len, std::move(callback)));
+
+  return net::ERR_IO_PENDING;
 }
 
 int64_t LocalFileStreamReader::GetLength(
@@ -101,16 +104,17 @@ LocalFileStreamReader::LocalFileStreamReader(
       has_pending_open_(false),
       weak_factory_(this) {}
 
-int LocalFileStreamReader::Open(net::CompletionOnceCallback callback) {
+void LocalFileStreamReader::Open(net::CompletionOnceCallback callback) {
   DCHECK(!has_pending_open_);
   DCHECK(!stream_impl_.get());
   has_pending_open_ = true;
 
   // Call GetLength first to make it perform last-modified-time verification,
-  // and then call DidVerifyForOpen for do the rest.
-  return GetLength(base::BindOnce(&LocalFileStreamReader::DidVerifyForOpen,
-                                  weak_factory_.GetWeakPtr(),
-                                  std::move(callback)));
+  // and then call DidVerifyForOpen to do the rest.
+  int64_t verify_result = GetLength(
+      base::BindOnce(&LocalFileStreamReader::DidVerifyForOpen,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  DCHECK_EQ(verify_result, net::ERR_IO_PENDING);
 }
 
 void LocalFileStreamReader::DidVerifyForOpen(
