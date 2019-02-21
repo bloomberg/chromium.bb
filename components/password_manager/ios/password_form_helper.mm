@@ -424,4 +424,43 @@ constexpr char kCommandPrefix[] = "passwordForm";
   }];
 }
 
+// Finds the password form named |formName| and calls
+// |completionHandler| with the populated |FormData| data structure. |found| is
+// YES if the current form was found successfully, NO otherwise.
+- (void)extractPasswordFormData:(const std::string&)formName
+              completionHandler:(void (^)(BOOL found, const FormData& form))
+                                    completionHandler {
+  DCHECK(completionHandler);
+
+  if (!_webState) {
+    return;
+  }
+
+  GURL pageURL;
+  if (!GetPageURLAndCheckTrustLevel(_webState, &pageURL)) {
+    completionHandler(NO, FormData());
+    return;
+  }
+
+  id extractFormDataCompletionHandler = ^(NSString* jsonString) {
+    std::unique_ptr<base::Value> formValue = autofill::ParseJson(jsonString);
+    if (!formValue) {
+      completionHandler(NO, FormData());
+      return;
+    }
+
+    FormData formData;
+    if (!autofill::ExtractFormData(*formValue, false, base::string16(), pageURL,
+                                   pageURL.GetOrigin(), &formData)) {
+      completionHandler(NO, FormData());
+      return;
+    }
+
+    completionHandler(YES, formData);
+  };
+
+  [self.jsPasswordManager extractForm:base::SysUTF8ToNSString(formName)
+                    completionHandler:extractFormDataCompletionHandler];
+}
+
 @end
