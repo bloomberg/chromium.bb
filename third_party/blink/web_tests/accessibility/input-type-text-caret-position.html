@@ -12,16 +12,18 @@
 
         if (window.accessibilityController) {
 
-            var input = document.getElementById('input');
+            let input = document.getElementById('input');
             input.focus();
-            var inputAccessible =
+            window.inputAccessible =
                 accessibilityController.accessibleElementById('input');
 
-            for (var characterIndex = 0; characterIndex < 7; ++characterIndex) {
+            for (let characterIndex = 0; characterIndex < 7; ++characterIndex) {
                 input.setSelectionRange(characterIndex, characterIndex);
-                shouldBeEqualToNumber("inputAccessible.selectionStart",
+                shouldBe("inputAccessible", "inputAccessible.selectionAnchorObject");
+                shouldBeEqualToNumber("inputAccessible.selectionAnchorOffset",
                     characterIndex);
-                shouldBeEqualToNumber("inputAccessible.selectionEnd",
+                shouldBe("inputAccessible", "inputAccessible.selectionFocusObject");
+                shouldBeEqualToNumber("inputAccessible.selectionFocusOffset",
                     characterIndex);
             }
 
