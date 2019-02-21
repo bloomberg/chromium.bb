@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 
 #include "base/barrier_closure.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/elapsed_timer.h"
@@ -266,23 +267,30 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
     scoped_refptr<base::SingleThreadTaskRunner> worklet_queue = pair.value;
     int worklet_id = mutator->GetWorkletId();
     DCHECK(!worklet_queue->BelongsToCurrentThread());
+
+    // Wrap the barrier closure in a ScopedClosureRunner to guarantee it runs
+    // even if the posted task does not run.
+    auto on_done_runner =
+        std::make_unique<base::ScopedClosureRunner>(on_mutator_done);
+
     auto it = mutator_input_map_.find(worklet_id);
     if (it == mutator_input_map_.end()) {
-      // No input to process.
-      on_mutator_done.Run();
+      // Here the on_done_runner goes out of scope which causes the barrier
+      // closure to run.
       continue;
     }
+
     PostCrossThreadTask(
         *worklet_queue, FROM_HERE,
         CrossThreadBind(
             [](AnimationWorkletMutator* mutator,
                std::unique_ptr<AnimationWorkletInput> input,
                scoped_refptr<OutputVectorRef> outputs, int index,
-               WTF::CrossThreadClosure on_mutator_done) {
+               std::unique_ptr<base::ScopedClosureRunner> on_done_runner) {
               std::unique_ptr<AnimationWorkletOutput> output =
                   mutator ? mutator->Mutate(std::move(input)) : nullptr;
               outputs->get()[index] = std::move(output);
-              on_mutator_done.Run();
+              on_done_runner->RunAndReset();
             },
             // The mutator is created and destroyed on the worklet thread.
             WrapCrossThreadWeakPersistent(mutator),
@@ -292,7 +300,7 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
             // on the host thread. It can outlive the dispatcher during shutdown
             // of a process with a running animation.
             outputs_, next_request_index++,
-            WTF::Passed(WTF::CrossThreadClosure(on_mutator_done))));
+            WTF::Passed(std::move(on_done_runner))));
   }
 }
 
