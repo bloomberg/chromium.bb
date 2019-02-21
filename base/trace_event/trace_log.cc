@@ -1216,17 +1216,19 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                                   args);
 #endif  // OS_WIN
 
-  auto trace_event_override =
-      add_trace_event_override_.load(std::memory_order_relaxed);
-  if (trace_event_override) {
-    TraceEvent new_trace_event(thread_id, offset_event_timestamp, thread_now,
-                               phase, category_group_enabled, name, scope, id,
-                               bind_id, args, flags);
+  if (*category_group_enabled & RECORDING_MODE) {
+    auto trace_event_override =
+        add_trace_event_override_.load(std::memory_order_relaxed);
+    if (trace_event_override) {
+      TraceEvent new_trace_event(thread_id, offset_event_timestamp, thread_now,
+                                 phase, category_group_enabled, name, scope, id,
+                                 bind_id, args, flags);
 
-    trace_event_override(
-        &new_trace_event,
-        /*thread_will_flush=*/thread_local_event_buffer != nullptr, &handle);
-    return handle;
+      trace_event_override(
+          &new_trace_event,
+          /*thread_will_flush=*/thread_local_event_buffer != nullptr, &handle);
+      return handle;
+    }
   }
 
   std::string console_message;
