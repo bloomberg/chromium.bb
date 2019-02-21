@@ -121,6 +121,9 @@ class Profile : public content::BrowserContext {
   // Returns the profile corresponding to the given WebUI.
   static Profile* FromWebUI(content::WebUI* web_ui);
 
+  // Returns the SimpleFactoryKey asscociated with this |profile|.
+  static SimpleFactoryKey* GetSimpleFactoryKey(Profile* profile);
+
   // content::BrowserContext implementation ------------------------------------
 
   // Typesafe upcast.

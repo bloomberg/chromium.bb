@@ -115,6 +115,13 @@ Profile* Profile::FromWebUI(content::WebUI* web_ui) {
   return FromBrowserContext(web_ui->GetWebContents()->GetBrowserContext());
 }
 
+// static
+SimpleFactoryKey* Profile::GetSimpleFactoryKey(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    return profile->GetOffTheRecordKey();
+  return profile->GetOriginalKey();
+}
+
 TestingProfile* Profile::AsTestingProfile() {
   return nullptr;
 }
