@@ -519,7 +519,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
+#if defined(OS_WIN)
+#define MAYBE_EmptyBlob DISABLED_EmptyBlob
+#else
+#define MAYBE_EmptyBlob EmptyBlob
+#endif
+// TODO(crbug.com/934243) The test is flaky on Windows.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_EmptyBlob) {
   // First delete all IDB's for the test origin
   DeleteForOrigin(kFileOrigin);
   EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));  // Start with no blob files.
