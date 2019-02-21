@@ -150,7 +150,7 @@ GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
 
 GLImageNativePixmap::~GLImageNativePixmap() {}
 
-bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap) {
+bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
   DCHECK(!pixmap_);
   if (GetInternalFormatFromFormat(format_) == GL_NONE) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);

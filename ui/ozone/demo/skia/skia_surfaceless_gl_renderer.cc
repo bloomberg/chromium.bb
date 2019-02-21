@@ -115,7 +115,7 @@ bool SurfacelessSkiaGlRenderer::BufferWrapper::Initialize(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, format, gfx::BufferUsage::SCANOUT);
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
-  if (!image->Initialize(pixmap.get())) {
+  if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
