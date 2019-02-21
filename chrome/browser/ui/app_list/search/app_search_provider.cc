@@ -757,6 +757,7 @@ void AppSearchProvider::UpdateQueriedResults() {
   std::set<std::string> seen_or_filtered_apps;
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
+  const auto& ranker_scores = ranker_->Rank();
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
@@ -781,6 +782,15 @@ void AppSearchProvider::UpdateQueriedResults() {
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, false);
     result->UpdateFromMatch(*indexed_name, match);
+    // Update scores
+    const auto find_in_ranker = ranker_scores.find(app->id());
+    if (find_in_ranker != ranker_scores.end()) {
+      // TODO(crbug.com/931149): review relevance score's range and update
+      // the formula for new_score
+      const double new_score =
+          result->relevance() + find_in_ranker->second / 10;
+      result->set_relevance(new_score);
+    }
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 
