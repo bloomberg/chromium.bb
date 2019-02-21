@@ -523,8 +523,8 @@ TestingProfile::~TestingProfile() {
   MaybeSendDestroyedNotification();
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
-  SimpleFactoryKey* key =
-      IsOffTheRecord() ? GetOffTheRecordKey() : GetOriginalKey();
+
+  SimpleFactoryKey* key = Profile::GetSimpleFactoryKey(this);
   SimpleDependencyManager::GetInstance()->DestroyKeyedServices(key);
 
   if (host_content_settings_map_.get())
