@@ -15,8 +15,10 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,12 +40,21 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
       is_sync_user, std::move(form_manager)));
   delegate->set_dispatcher(dispatcher);
-  UpdatePasswordInfoBarController* controller =
-      [[UpdatePasswordInfoBarController alloc]
-          initWithBaseViewController:baseViewController
-                     infoBarDelegate:delegate.get()];
-  infobar_manager->AddInfoBar(
-      std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
+
+  if (experimental_flags::IsInfobarUIRebootEnabled()) {
+    InfobarPasswordCoordinator* coordinator =
+        [[InfobarPasswordCoordinator alloc]
+            initWithInfoBarDelegate:delegate.get()];
+    infobar_manager->AddInfoBar(
+        std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
+  } else {
+    UpdatePasswordInfoBarController* controller =
+        [[UpdatePasswordInfoBarController alloc]
+            initWithBaseViewController:baseViewController
+                       infoBarDelegate:delegate.get()];
+    infobar_manager->AddInfoBar(
+        std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
+  }
 }
 
 IOSChromeUpdatePasswordInfoBarDelegate::

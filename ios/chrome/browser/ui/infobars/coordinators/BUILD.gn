@@ -8,11 +8,14 @@ source_set("coordinators") {
     "infobar_confirm_coordinator.h",
     "infobar_confirm_coordinator.mm",
     "infobar_coordinating.h",
+    "infobar_password_coordinator.h",
+    "infobar_password_coordinator.mm",
   ]
   deps = [
     "//base",
     "//components/infobars/core",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/passwords:public",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/infobars/banners",
