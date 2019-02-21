@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -69,9 +68,10 @@ struct HostResolverAction {
     return result;
   }
 
-  static HostResolverAction ReturnResult(const net::AddressList& address_list) {
+  static HostResolverAction ReturnResult(
+      std::vector<net::IPAddress> addresses) {
     HostResolverAction result;
-    result.addresses = address_list;
+    result.addresses = std::move(addresses);
     return result;
   }
 
@@ -88,7 +88,7 @@ struct HostResolverAction {
   }
 
   Action action = COMPLETE;
-  net::AddressList addresses;
+  std::vector<net::IPAddress> addresses;
   net::Error error = net::OK;
 };
 
@@ -135,7 +135,7 @@ void MockMojoHostResolver::ResolveDns(
   switch (actions_[results_returned_].action) {
     case HostResolverAction::COMPLETE:
       client->ReportResult(actions_[results_returned_].error,
-                           std::move(actions_[results_returned_].addresses));
+                           actions_[results_returned_].addresses);
       break;
     case HostResolverAction::RETAIN:
       requests_.push_back(std::make_unique<MockMojoHostResolverRequest>(
@@ -183,36 +183,30 @@ class HostResolverMojoTest : public testing::Test {
 
   std::unique_ptr<HostResolverMojo> resolver_;
 
-  std::unique_ptr<net::HostResolver::Request> request_;
-
   Waiter waiter_;
 };
 
 TEST_F(HostResolverMojoTest, Basic) {
-  net::AddressList address_list;
+  std::vector<net::IPAddress> addresses;
   net::IPAddress address(1, 2, 3, 4);
-  address_list.push_back(net::IPEndPoint(address, 80));
-  address_list.push_back(
-      net::IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(address), 80));
-  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  addresses.push_back(address);
+  addresses.push_back(ConvertIPv4ToIPv4MappedIPv6(address));
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(addresses));
 
   std::vector<net::IPAddress> result;
   EXPECT_THAT(Resolve("example.com", &result), IsOk());
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(address_list[0].address(), result[0]);
-  EXPECT_EQ(address_list[1].address(), result[1]);
+  EXPECT_EQ(addresses, result);
 
   ASSERT_EQ(1u, mock_resolver_->requests().size());
   EXPECT_EQ("example.com", mock_resolver_->requests()[0]);
 }
 
 TEST_F(HostResolverMojoTest, ResolveCachedResult) {
-  net::AddressList address_list;
+  std::vector<net::IPAddress> addresses;
   net::IPAddress address(1, 2, 3, 4);
-  address_list.push_back(net::IPEndPoint(address, 80));
-  address_list.push_back(
-      net::IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(address), 80));
-  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  addresses.push_back(address);
+  addresses.push_back(ConvertIPv4ToIPv4MappedIPv6(address));
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(addresses));
 
   // Load results into cache.
   std::vector<net::IPAddress> result;
@@ -222,17 +216,14 @@ TEST_F(HostResolverMojoTest, ResolveCachedResult) {
   // Expect results from cache.
   result.clear();
   EXPECT_THAT(Resolve("example.com", &result), IsOk());
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(address_list[0].address(), result[0]);
-  EXPECT_EQ(address_list[1].address(), result[1]);
+  EXPECT_EQ(addresses, result);
   EXPECT_EQ(1u, mock_resolver_->requests().size());
 }
 
 TEST_F(HostResolverMojoTest, Multiple) {
-  net::AddressList address_list;
-  net::IPAddress address(1, 2, 3, 4);
-  address_list.push_back(net::IPEndPoint(address, 80));
-  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  std::vector<net::IPAddress> addresses;
+  addresses.emplace_back(1, 2, 3, 4);
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(addresses));
   mock_resolver_->AddAction(
       HostResolverAction::ReturnError(net::ERR_NAME_NOT_RESOLVED));
 
@@ -250,8 +241,7 @@ TEST_F(HostResolverMojoTest, Multiple) {
   EXPECT_THAT(callback1.GetResult(net::ERR_IO_PENDING), IsOk());
   EXPECT_THAT(callback2.GetResult(net::ERR_IO_PENDING),
               IsError(net::ERR_NAME_NOT_RESOLVED));
-  ASSERT_EQ(1u, request1->GetResults().size());
-  EXPECT_EQ(address_list[0].address(), request1->GetResults()[0]);
+  EXPECT_EQ(addresses, request1->GetResults());
   ASSERT_EQ(0u, request2->GetResults().size());
 
   EXPECT_THAT(mock_resolver_->requests(),

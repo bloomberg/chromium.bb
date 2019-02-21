@@ -66,22 +66,7 @@ class MojoProxyResolverV8TracingBindings
                   net::ProxyResolveDnsOperation operation,
                   mojom::HostResolverRequestClientPtr client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    net::HostPortPair host_port = net::HostPortPair(hostname, 80);
-    auto info = std::make_unique<net::HostResolver::RequestInfo>(host_port);
-
-    // Flag myIpAddress requests.
-    if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
-        operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX)
-      info->set_is_my_ip_address(true);
-
-    // The non-ex flavors are limited to IPv4 results.
-    if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
-        operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
-      info->set_address_family(net::ADDRESS_FAMILY_IPV4);
-    }
-
-    client_->ResolveDns(std::move(info), std::move(client));
+    client_->ResolveDns(hostname, operation, std::move(client));
   }
 
   base::ThreadChecker thread_checker_;

@@ -5,7 +5,9 @@
 #include "services/network/proxy_resolver_factory_mojo.h"
 
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,6 +20,7 @@
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -27,6 +30,7 @@
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/pac_library.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
 #include "services/network/mojo_host_resolver_impl.h"
@@ -52,7 +56,7 @@ void DoMyIpAddressOnWorker(
     bool is_ex,
     proxy_resolver::mojom::HostResolverRequestClientPtrInfo client_info) {
   // Resolve the list of IP addresses.
-  net::IPAddressList my_ip_addresses =
+  std::vector<net::IPAddress> my_ip_addresses =
       is_ex ? net::PacMyIpAddressEx() : net::PacMyIpAddress();
 
   proxy_resolver::mojom::HostResolverRequestClientPtr client;
@@ -68,11 +72,7 @@ void DoMyIpAddressOnWorker(
   if (my_ip_addresses.empty())
     my_ip_addresses.push_back(net::IPAddress::IPv4Localhost());
 
-  // Convert to a net::AddressList.
-  net::AddressList list;
-  for (const auto& ip : my_ip_addresses)
-    list.push_back(net::IPEndPoint(ip, 80));
-  client->ReportResult(net::OK, list);
+  client->ReportResult(net::OK, my_ip_addresses);
 }
 
 // A mixin that forwards logging to (Bound)NetLog and ProxyResolverErrorObserver
@@ -116,18 +116,20 @@ class ClientMixin : public ClientInterface {
   // TODO(eroman): Split the client interfaces so ResolveDns() does not also
   // carry the myIpAddress(Ex) requests.
   void ResolveDns(
-      std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+      const std::string& hostname,
+      net::ProxyResolveDnsOperation operation,
       proxy_resolver::mojom::HostResolverRequestClientPtr client) override {
-    if (request_info->is_my_ip_address()) {
-      bool is_ex =
-          request_info->address_family() == net::ADDRESS_FAMILY_UNSPECIFIED;
+    bool is_ex = operation == net::ProxyResolveDnsOperation::DNS_RESOLVE_EX ||
+                 operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
 
+    if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+        operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX) {
       GetMyIpAddressTaskRuner()->PostTask(
           FROM_HERE, base::BindOnce(&DoMyIpAddressOnWorker, is_ex,
                                     client.PassInterface()));
     } else {
       // Request was for dnsResolve() or dnsResolveEx().
-      host_resolver_.Resolve(std::move(request_info), std::move(client));
+      host_resolver_.Resolve(hostname, is_ex, std::move(client));
     }
   }
 

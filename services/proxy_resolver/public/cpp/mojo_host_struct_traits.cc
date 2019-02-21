@@ -12,24 +12,47 @@
 namespace mojo {
 
 // static
-bool StructTraits<proxy_resolver::mojom::HostResolverRequestInfoDataView,
-                  std::unique_ptr<net::HostResolver::RequestInfo>>::
-    Read(proxy_resolver::mojom::HostResolverRequestInfoDataView data,
-         std::unique_ptr<net::HostResolver::RequestInfo>* out) {
-  base::StringPiece host;
-  if (!data.ReadHost(&host))
-    return false;
+proxy_resolver::mojom::HostResolveOperation
+EnumTraits<proxy_resolver::mojom::HostResolveOperation,
+           net::ProxyResolveDnsOperation>::ToMojom(net::ProxyResolveDnsOperation
+                                                       input) {
+  switch (input) {
+    case net::ProxyResolveDnsOperation::DNS_RESOLVE:
+      return proxy_resolver::mojom::HostResolveOperation::DNS_RESOLVE;
+    case net::ProxyResolveDnsOperation::DNS_RESOLVE_EX:
+      return proxy_resolver::mojom::HostResolveOperation::DNS_RESOLVE_EX;
+    case net::ProxyResolveDnsOperation::MY_IP_ADDRESS:
+      return proxy_resolver::mojom::HostResolveOperation::MY_IP_ADDRESS;
+    case net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX:
+      return proxy_resolver::mojom::HostResolveOperation::MY_IP_ADDRESS_EX;
+  }
 
-  net::AddressFamily address_family;
-  if (!data.ReadAddressFamily(&address_family))
-    return false;
+  NOTREACHED();
+  return proxy_resolver::mojom::HostResolveOperation::kMinValue;
+}
 
-  *out = std::make_unique<net::HostResolver::RequestInfo>(
-      net::HostPortPair(host.as_string(), data.port()));
-  net::HostResolver::RequestInfo& request = **out;
-  request.set_address_family(address_family);
-  request.set_is_my_ip_address(data.is_my_ip_address());
-  return true;
+// static
+bool EnumTraits<proxy_resolver::mojom::HostResolveOperation,
+                net::ProxyResolveDnsOperation>::
+    FromMojom(proxy_resolver::mojom::HostResolveOperation input,
+              net::ProxyResolveDnsOperation* output) {
+  switch (input) {
+    case proxy_resolver::mojom::HostResolveOperation::DNS_RESOLVE:
+      *output = net::ProxyResolveDnsOperation::DNS_RESOLVE;
+      return true;
+    case proxy_resolver::mojom::HostResolveOperation::DNS_RESOLVE_EX:
+      *output = net::ProxyResolveDnsOperation::DNS_RESOLVE_EX;
+      return true;
+    case proxy_resolver::mojom::HostResolveOperation::MY_IP_ADDRESS:
+      *output = net::ProxyResolveDnsOperation::MY_IP_ADDRESS;
+      return true;
+    case proxy_resolver::mojom::HostResolveOperation::MY_IP_ADDRESS_EX:
+      *output = net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

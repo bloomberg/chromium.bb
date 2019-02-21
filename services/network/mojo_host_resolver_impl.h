@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -36,7 +37,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
                        const net::NetLogWithSource& net_log);
   ~MojoHostResolverImpl();
 
-  void Resolve(std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+  void Resolve(const std::string& hostname,
+               bool is_ex,
                proxy_resolver::mojom::HostResolverRequestClientPtr client);
 
   bool request_in_progress() { return !pending_jobs_.empty(); }
