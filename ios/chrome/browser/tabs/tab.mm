@@ -231,10 +231,6 @@ NSString* const kTabUrlKey = @"url";
   [self.webController dismissModals];
 }
 
-- (web::NavigationManager*)navigationManager {
-  return self.webState ? self.webState->GetNavigationManager() : nullptr;
-}
-
 - (void)willUpdateSnapshot {
   [_overscrollActionsController clear];
 }

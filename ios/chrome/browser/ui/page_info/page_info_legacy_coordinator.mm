@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
@@ -81,9 +82,9 @@ NSString* const kPageInfoWillHideNotification =
 #pragma mark - PageInfoCommands
 
 - (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
-  Tab* tab = self.tabModel.currentTab;
-  DCHECK([tab navigationManager]);
-  web::NavigationItem* navItem = [tab navigationManager]->GetVisibleItem();
+  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  web::NavigationItem* navItem =
+      webState->GetNavigationManager()->GetVisibleItem();
 
   // It is fully expected to have a navItem here, as showPageInfoPopup can only
   // be trigerred by a button enabled when a current item matches some
