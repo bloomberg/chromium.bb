@@ -260,6 +260,10 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void visibleSSLStateChanged() {
+        PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
+        auditor.notifyCertificateFailure(
+                PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
+                mTab.getApplicationContext());
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
             observers.next().onSSLStateUpdated(mTab);

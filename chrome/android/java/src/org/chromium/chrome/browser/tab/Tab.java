@@ -34,7 +34,6 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -62,7 +61,6 @@ import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -335,31 +333,6 @@ public class Tab
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
 
-    // TODO(dtrainor): Port more methods to the observer.
-    private final TabObserver mTabObserver = new EmptyTabObserver() {
-        @Override
-        public void onSSLStateUpdated(Tab tab) {
-            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyCertificateFailure(
-                    PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
-                    getApplicationContext());
-        }
-
-        @Override
-        public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-            if (!didStartLoad) return;
-
-            String url = tab.getUrl();
-            // Simulate the PAGE_LOAD_STARTED notification that we did not get.
-            didStartPageLoad(url);
-
-            if (didFinishLoad) {
-                // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
-                didFinishPageLoad(url);
-            }
-        }
-    };
-
     private final TabObserver mFullscreenHandler = new TabFullscreenHandler();
 
     private TabDelegateFactory mDelegateFactory;
@@ -449,7 +422,6 @@ public class Tab
             }
         }
 
-        addObserver(mTabObserver);
         addObserver(mFullscreenHandler);
 
         if (incognito) {
@@ -2066,6 +2038,17 @@ public class Tab
         initWebContents(webContents);
 
         destroyNativePageInternal(previousNativePage);
+
+        String url = getUrl();
+
+        if (didStartLoad) {
+            // Simulate the PAGE_LOAD_STARTED notification that we did not get.
+            didStartPageLoad(url);
+
+            // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
+            if (didFinishLoad) didFinishPageLoad(url);
+        }
+
         for (TabObserver observer : mObservers) {
             observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
         }
