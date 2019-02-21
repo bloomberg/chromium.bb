@@ -52,6 +52,23 @@ class PrintingAllowedDuplexModesPolicyHandler
                 printing::DuplexModeRestriction* result);
 };
 
+class PrintingAllowedPinModesPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  PrintingAllowedPinModesPolicyHandler();
+  ~PrintingAllowedPinModesPolicyHandler() override;
+
+  // ConfigurationPolicyHandler implementation:
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
+ private:
+  bool GetValue(const PolicyMap& policies,
+                PolicyErrorMap* errors,
+                printing::PinModeRestriction* result);
+};
+
 class PrintingAllowedPageSizesPolicyHandler : public ListPolicyHandler {
  public:
   PrintingAllowedPageSizesPolicyHandler();
@@ -95,6 +112,23 @@ class PrintingDuplexDefaultPolicyHandler : public TypeCheckingPolicyHandler {
   bool GetValue(const PolicyMap& policies,
                 PolicyErrorMap* errors,
                 printing::DuplexModeRestriction* result);
+};
+
+class PrintingPinDefaultPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  PrintingPinDefaultPolicyHandler();
+  ~PrintingPinDefaultPolicyHandler() override;
+
+  // ConfigurationPolicyHandler implementation:
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
+ private:
+  bool GetValue(const PolicyMap& policies,
+                PolicyErrorMap* errors,
+                printing::PinModeRestriction* result);
 };
 
 class PrintingSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {

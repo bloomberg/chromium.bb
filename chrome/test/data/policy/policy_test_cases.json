@@ -324,6 +324,14 @@
     ]
   },
 
+  "PrintingAllowedPinModes": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingAllowedPinModes": "secure" },
+    "pref_mappings": [
+      { "pref": "printing.allowed_pin_modes" }
+    ]
+  },
+
   "PrintingAllowedPageSizes": {
     "os": ["chromeos"],
     "test_policy": { "PrintingAllowedPageSizes": [{"WidthUm": 210000, "HeightUm": 297000}] },
@@ -345,6 +353,14 @@
     "test_policy": { "PrintingDuplexDefault": "long-edge" },
     "pref_mappings": [
       { "pref": "printing.duplex_default" }
+    ]
+  },
+
+  "PrintingPinDefault": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingPinDefault": "secure" },
+    "pref_mappings": [
+      { "pref": "printing.pin_default" }
     ]
   },
 

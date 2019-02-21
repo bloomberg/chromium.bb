@@ -890,9 +890,11 @@
         'CloudPrintProxyEnabled',
         'PrintingAllowedColorModes',
         'PrintingAllowedDuplexModes',
+        'PrintingAllowedPinModes',
         'PrintingAllowedPageSizes',
         'PrintingColorDefault',
         'PrintingDuplexDefault',
+        'PrintingPinDefault',
         'PrintingSizeDefault',
         'PrintingSendUsernameAndFilenameEnabled',
         'CloudPrintSubmitEnabled',
@@ -1922,6 +1924,47 @@
       'desc': '''Restricts printing duplex mode. Unset policy and empty set are treated as no restriction.''',
     },
     {
+      'name': 'PrintingAllowedPinModes',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'any',
+          'secure',
+          'unsecure',
+        ],
+      },
+      'items': [
+        {
+          'name': 'any',
+          'value': 'any',
+          'caption': '''Allow printing both with and without PIN''',
+        },
+        {
+          'name': 'secure',
+          'value': 'secure',
+          'caption': '''Allow printing only with PIN''',
+        },
+        {
+          'name': 'unsecure',
+          'value': 'unsecure',
+          'caption': '''Allow printing only without PIN''',
+        },
+      ],
+      'supported_on': ['chrome_os:74-'],
+      'future': True,
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'secure',
+      'id': 525,
+      'caption': '''Restrict PIN printing mode''',
+      'tags': [],
+      'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored.''',
+    },
+    {
       'name': 'PrintingAllowedPageSizes',
       'type': 'dict',
       'schema': {
@@ -2027,6 +2070,41 @@
       'caption': '''Default printing duplex mode''',
       'tags': [],
       'desc': '''Overrides default printing duplex mode. If the mode is unavailable this policy is ignored.''',
+    },
+    {
+      'name': 'PrintingPinDefault',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'secure',
+          'unsecure',
+        ],
+      },
+      'items': [
+        {
+          'name': 'secure',
+          'value': 'secure',
+          'caption': '''Enable PIN printing by default''',
+        },
+        {
+          'name': 'unsecure',
+          'value': 'unsecure',
+          'caption': '''Disable PIN printing by default''',
+        },
+      ],
+      'supported_on': ['chrome_os:74-'],
+      'future': True,
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'secure',
+      'id': 526,
+      'caption': '''Default PIN printing mode''',
+      'tags': [],
+      'desc': '''Overrides default PIN printing mode. If the mode is unavailable this policy is ignored.''',
     },
     {
       'name': 'PrintingSizeDefault',
@@ -14858,5 +14936,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  524
+  'highest_id_currently_used':  526
 }
