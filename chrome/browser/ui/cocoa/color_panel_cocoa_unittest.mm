@@ -28,28 +28,6 @@ class ColorPanelCocoaTest : public CocoaTest {
   }
 };
 
-TEST_F(ColorPanelCocoaTest, ClearTargetAndDelegateOnEnd) {
-  NSColorPanel* nscolor_panel = [NSColorPanel sharedColorPanel];
-  @autoreleasepool {
-    EXPECT_TRUE([nscolor_panel respondsToSelector:@selector(__target)]);
-
-    // Create a ColorPanelCocoa.
-    ColorChooserMac* color_chooser_mac =
-        ColorChooserMac::Open(nullptr, SK_ColorBLACK);
-
-    // Confirm the NSColorPanel's configuration by the ColorChooserMac's
-    // ColorPanelCocoa.
-    EXPECT_TRUE([nscolor_panel delegate]);
-    EXPECT_TRUE([nscolor_panel __target]);
-
-    // Release the ColorPanelCocoa and confirm it's no longer the NSColorPanel's
-    // target or delegate.
-    color_chooser_mac->End();
-  }
-  EXPECT_EQ([nscolor_panel delegate], nil);
-  EXPECT_EQ([nscolor_panel __target], nil);
-}
-
 TEST_F(ColorPanelCocoaTest, ClearTargetOnEnd) {
   NSColorPanel* nscolor_panel = [NSColorPanel sharedColorPanel];
   @autoreleasepool {
@@ -61,19 +39,12 @@ TEST_F(ColorPanelCocoaTest, ClearTargetOnEnd) {
 
     // Confirm the NSColorPanel's configuration by the ColorChooserMac's
     // ColorPanelCocoa.
-    EXPECT_TRUE([nscolor_panel delegate]);
     EXPECT_TRUE([nscolor_panel __target]);
-
-    // Clear the delegate and release the ColorPanelCocoa.
-    [nscolor_panel setDelegate:nil];
 
     // Release the ColorPanelCocoa.
     color_chooser_mac->End();
   }
-  // Confirm the ColorPanelCocoa is no longer the NSColorPanel's target or
-  // delegate. Previously the ColorPanelCocoa would not clear the target if
-  // the delegate had already been cleared.
-  EXPECT_EQ([nscolor_panel delegate], nil);
+  // Confirm the ColorPanelCocoa is no longer the NSColorPanel's target
   EXPECT_EQ([nscolor_panel __target], nil);
 }
 
