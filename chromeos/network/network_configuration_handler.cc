@@ -347,12 +347,6 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
   std::string network_id =
       shill_property_util::GetNetworkIdFromProperties(shill_properties);
 
-  if (NetworkTypePattern::Ethernet().MatchesType(type)) {
-    InvokeErrorCallback(network_id, error_callback,
-                        "ConfigureServiceForProfile: Invalid type: " + type);
-    return;
-  }
-
   std::unique_ptr<base::DictionaryValue> properties_to_set(
       shill_properties.DeepCopy());
 
