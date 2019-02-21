@@ -67,6 +67,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderFrameHostManager::Delegate* manager_delegate,
                 FrameTreeNode* parent,
                 blink::WebTreeScopeType scope,
+                int render_process_affinity,
                 const std::string& name,
                 const std::string& unique_name,
                 bool is_created_by_script,

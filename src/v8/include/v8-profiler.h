@@ -27,13 +27,16 @@ struct CpuProfileDeoptFrame {
 
 }  // namespace v8
 
-#ifdef V8_OS_WIN
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 template class V8_EXPORT std::vector<v8::CpuProfileDeoptFrame>;
 #endif
 
 namespace v8 {
 
-struct V8_EXPORT CpuProfileDeoptInfo {
+struct CpuProfileDeoptInfo {
   /** A pointer to a static string owned by v8. */
   const char* deopt_reason;
   std::vector<CpuProfileDeoptFrame> stack;
@@ -41,7 +44,10 @@ struct V8_EXPORT CpuProfileDeoptInfo {
 
 }  // namespace v8
 
-#ifdef V8_OS_WIN
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 template class V8_EXPORT std::vector<v8::CpuProfileDeoptInfo>;
 #endif
 
@@ -200,8 +206,13 @@ class V8_EXPORT CpuProfileNode {
   /** Retrieves a child node by index. */
   const CpuProfileNode* GetChild(int index) const;
 
+  // SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+  // SHEZ: because exporting std::vector doesn't work when building V8
+  // SHEZ: as a separate DLL.
+#if 0
   /** Retrieves deopt infos for the node. */
   const std::vector<CpuProfileDeoptInfo>& GetDeoptInfos() const;
+#endif
 
   static const int kNoLineNumberInfo = Message::kNoLineNumberInfo;
   static const int kNoColumnNumberInfo = Message::kNoColumnInfo;

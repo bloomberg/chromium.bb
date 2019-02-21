@@ -937,7 +937,7 @@ class BackgroundCompileTask : public ScriptCompiler::ScriptStreamingTask {
  public:
   BackgroundCompileTask(ScriptStreamingData* source, Isolate* isolate);
 
-  virtual void Run();
+  void Run() override;
 
  private:
   ScriptStreamingData* source_;  // Not owned.

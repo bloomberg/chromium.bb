@@ -176,6 +176,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void OnChannelError() override;
   bool on_channel_error_called() const { return on_channel_error_called_; }
 
+ public:  // SHEZ: Lets us access the IOTaskRunner from blpwtk2
   bool IsInBrowserProcess() const;
 
 #if defined(OS_MACOSX)
@@ -252,6 +253,10 @@ class CONTENT_EXPORT ChildThreadImpl
   // attempt to communicate.
   bool on_channel_error_called_;
 
+  bool use_mojo_channel_;
+
+  std::string in_process_ipc_token_;
+
   // TaskRunner to post tasks to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
 
@@ -288,6 +293,7 @@ struct ChildThreadImpl::Options {
   mojo::OutgoingInvitation* mojo_invitation;
   std::string in_process_service_request_token;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
+  int mojo_controller_handle;
 
  private:
   Options();

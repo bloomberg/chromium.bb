@@ -331,6 +331,16 @@ bool SpellCheck::SpellCheckWord(
     // If |*misspelling_len| is non-zero, that means at least one language
     // marked a word misspelled and no other language considered it correct.
     if (*misspelling_len != 0) {
+      if (custom_dictionary_.SpellCheckWord(text_begin,
+                                            *misspelling_start,
+                                            *misspelling_len)) {
+        position_in_text = *misspelling_start;
+        agreed_skippable_len = std::min(agreed_skippable_len, *misspelling_len);
+        suggestions_list.clear();
+        *misspelling_start = 0;
+        *misspelling_len = 0;
+        continue;
+      }
       if (optional_suggestions)
         FillSuggestions(suggestions_list, optional_suggestions);
       return false;

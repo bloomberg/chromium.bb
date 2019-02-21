@@ -169,6 +169,9 @@ class BLINK_EXPORT WebFrame {
 
   // Returns the global proxy object.
   virtual v8::Local<v8::Object> GlobalProxy() const = 0;
+ 
+  // Returns the V8 isolate for this frame.
+  virtual v8::Isolate* ScriptIsolate() const = 0;
 
   // Returns true if the WebFrame currently executing JavaScript has access
   // to the given WebFrame, or false otherwise.

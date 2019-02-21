@@ -37,7 +37,7 @@
 // BUILDING_V8_SHARED nor USING_V8_SHARED should be defined.
 #ifdef BUILDING_V8_SHARED
 # define V8_EXPORT __declspec(dllexport)
-#elif USING_V8_SHARED
+#elif defined(USING_V8_SHARED)
 # define V8_EXPORT __declspec(dllimport)
 #else
 # define V8_EXPORT
@@ -57,6 +57,19 @@
 #endif
 
 #endif  // V8_OS_WIN
+
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 
 /**
  * The v8 JavaScript engine.
@@ -252,8 +265,8 @@ const int kSmiShiftSize = PlatformSmiTagging::kSmiShiftSize;
 const int kSmiValueSize = PlatformSmiTagging::kSmiValueSize;
 const int kSmiMinValue = (static_cast<unsigned int>(-1)) << (kSmiValueSize - 1);
 const int kSmiMaxValue = -(kSmiMinValue + 1);
-constexpr bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
-constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+constexpr_func bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
+constexpr_func bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
 
 }  // namespace internal
 
@@ -1407,6 +1420,7 @@ class V8_EXPORT ScriptCompiler {
     ~CachedData();
     // TODO(marja): Async compilation; add constructors which take a callback
     // which will be called when V8 no longer needs the data.
+
     const uint8_t* data;
     int length;
     bool rejected;
@@ -1489,7 +1503,7 @@ class V8_EXPORT ScriptCompiler {
      * V8 has parsed the data it received so far.
      */
     virtual size_t GetMoreData(const uint8_t** src) = 0;
-
+  
     /**
      * V8 calls this method to set a 'bookmark' at the current position in
      * the source stream, for the purpose of (maybe) later calling
@@ -4386,10 +4400,18 @@ class V8_EXPORT WasmCompiledModule : public Object {
    */
   class TransferrableModule final {
    public:
+#if defined(MSVC_2015_PLUS)
     TransferrableModule(TransferrableModule&& src) = default;
+#else
+    TransferrableModule(TransferrableModule&& src);
+#endif
     TransferrableModule(const TransferrableModule& src) = delete;
 
+#if defined(MSVC_2015_PLUS)
     TransferrableModule& operator=(TransferrableModule&& src) = default;
+#else
+    TransferrableModule& operator=(TransferrableModule&& src);
+#endif
     TransferrableModule& operator=(const TransferrableModule& src) = delete;
 
    private:
@@ -4536,12 +4558,21 @@ class V8_EXPORT WasmModuleObjectBuilderStreaming final {
  private:
   WasmModuleObjectBuilderStreaming(const WasmModuleObjectBuilderStreaming&) =
       delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&) =
       default;
+#else
+  WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&);
+#endif
   WasmModuleObjectBuilderStreaming& operator=(
       const WasmModuleObjectBuilderStreaming&) = delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming& operator=(
       WasmModuleObjectBuilderStreaming&&) = default;
+#else
+  WasmModuleObjectBuilderStreaming& operator=(
+      WasmModuleObjectBuilderStreaming&&);
+#endif
   Isolate* isolate_ = nullptr;
 
 #if V8_CC_MSVC
@@ -8493,6 +8524,11 @@ class V8_EXPORT V8 {
    */
   static bool InitializeICUDefaultLocation(const char* exec_path,
                                            const char* icu_data_file = nullptr);
+
+  /**
+   * Initialize the ICU library bundled with V8 using the specified icu data.
+  */
+  static bool InitializeICUWithData(const void* icu_data);
 
   /**
    * Initialize the external startup data. The embedder only needs to

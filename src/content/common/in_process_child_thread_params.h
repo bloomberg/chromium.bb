@@ -22,7 +22,9 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   InProcessChildThreadParams(
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       mojo::OutgoingInvitation* mojo_invitation,
-      const std::string& service_request_token);
+      const std::string& service_request_token,
+      int mojo_controller_handle = 0,
+      bool exit_process_gracefully = false);
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
@@ -36,10 +38,20 @@ class CONTENT_EXPORT InProcessChildThreadParams {
     return service_request_token_;
   }
 
+  int mojo_controller_handle() const {
+    return mojo_controller_handle_;
+  }
+
+  bool exit_process_gracefully() const {
+    return exit_process_gracefully_;
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   mojo::OutgoingInvitation* const mojo_invitation_;
   std::string service_request_token_;
+  int mojo_controller_handle_;
+  bool exit_process_gracefully_;
 };
 
 }  // namespace content

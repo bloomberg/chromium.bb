@@ -41,6 +41,9 @@ class HostContextFactoryPrivate;
 namespace viz {
 class HostFrameSinkManager;
 }
+namespace blpwtk2 {
+class ToolkitImpl;
+}
 
 namespace mojo {
 class ScopedAllowSyncCallForTesting;
@@ -71,10 +74,15 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // a ScopedAllowSyncCall or ScopedAllowSyncCallForTesting.
   static void DisallowSyncCall();
 
+  // For blpwtk2 in-process sync calls such as those for DWriteFontProxy
+  static void ForceSyncCallAllowed();
 #else
   // Inline the empty definitions of functions so that they can be compiled out.
   static void AssertSyncCallAllowed() {}
+
   static void DisallowSyncCall() {}
+
+  static void ForceSyncCallAllowed() {}
 #endif
 
  private:
@@ -102,6 +110,8 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // (https://crbug.com/811945)
   friend class ui::HostContextFactoryPrivate;
   // END ALLOWED USAGE.
+
+  friend class blpwtk2::ToolkitImpl;  // single-process support
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   static void IncreaseScopedAllowCount();

@@ -435,6 +435,7 @@ RenderWidget::RenderWidget(
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)),
+      bb_OnHandleInputEvent_no_ack_(false),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   // TODO(nasko, alexmos): ref count the process based on the lifetime of
@@ -1117,6 +1118,14 @@ bool RenderWidget::IsClosing() const {
   //
   // http://crbug.com/545684
   return host_closing_ || closing_;
+}
+
+void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
+  ui::LatencyInfo latency_info;
+  bb_OnHandleInputEvent_no_ack_ = true;
+  input_handler_->HandleInputEvent(blink::WebCoalescedInputEvent(event, {}),
+                                   latency_info, {});
+  bb_OnHandleInputEvent_no_ack_ = false;
 }
 
 void RenderWidget::RequestScheduleAnimation() {
