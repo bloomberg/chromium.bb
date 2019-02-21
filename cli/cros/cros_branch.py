@@ -676,6 +676,7 @@ class BranchCommand(command.CliCommand):
 
   Performing any of these operations remotely requires special permissions.
   Please see go/cros-release-faq for details on obtaining those permissions.
+  For details on what this tool does, see go/cros-branch.
   """
 
   EPILOG = """
