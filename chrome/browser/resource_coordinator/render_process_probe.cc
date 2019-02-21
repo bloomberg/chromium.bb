@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -254,25 +253,14 @@ base::ProcessId RenderProcessProbeImpl::GetProcessId(
   return info.process.Pid();
 }
 
-performance_manager::SystemResourceCoordinator*
-RenderProcessProbeImpl::EnsureSystemResourceCoordinator() {
-  if (!system_resource_coordinator_) {
-    system_resource_coordinator_ =
-        std::make_unique<performance_manager::SystemResourceCoordinator>(
-            performance_manager::PerformanceManager::GetInstance());
-  }
-
-  return system_resource_coordinator_.get();
-}
-
 void RenderProcessProbeImpl::DispatchMetricsOnUIThread(
     mojom::ProcessResourceMeasurementBatchPtr batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  performance_manager::SystemResourceCoordinator* system_resource_coordinator =
-      EnsureSystemResourceCoordinator();
+  performance_manager::PerformanceManager* performance_manager =
+      performance_manager::PerformanceManager::GetInstance();
 
-  if (system_resource_coordinator && !batch->measurements.empty())
-    system_resource_coordinator->DistributeMeasurementBatch(std::move(batch));
+  if (performance_manager && !batch->measurements.empty())
+    performance_manager->DistributeMeasurementBatch(std::move(batch));
 }
 
 }  // namespace resource_coordinator
