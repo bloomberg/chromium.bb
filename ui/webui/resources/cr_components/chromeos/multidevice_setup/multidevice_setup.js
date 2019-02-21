@@ -143,7 +143,7 @@ cr.define('multidevice_setup', function() {
     },
 
     initializeSetupFlow: function() {
-      this.mojoInterfaceProvider_.getInterfacePtr()
+      this.mojoInterfaceProvider_.getMojoServiceProxy()
           .getEligibleHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {

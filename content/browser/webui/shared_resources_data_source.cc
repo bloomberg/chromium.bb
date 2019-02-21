@@ -93,7 +93,7 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
     {IDR_MOJO_MOJO_BINDINGS_JS, "js/mojo_bindings.js"},
         {IDR_MOJO_MOJO_BINDINGS_LITE_JS, "js/mojo_bindings_lite.js"},
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-        {IDR_MOJO_TIME_MOJOM_JS, "js/time.mojom.js"},
+        {IDR_MOJO_TIME_MOJOM_LITE_JS, "js/time.mojom-lite.js"},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   };
 }
@@ -101,14 +101,14 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
 #if defined(OS_CHROMEOS)
 const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
   return std::map<int, std::string>{
-      {IDR_MULTIDEVICE_DEVICE_SYNC_MOJOM_JS,
-       "js/chromeos/device_sync.mojom.js"},
-      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_MOJOM_JS,
-       "js/chromeos/multidevice_setup.mojom.js"},
-      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS,
-       "js/chromeos/multidevice_setup_constants.mojom.js"},
-      {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_JS,
-       "js/chromeos/multidevice_types.mojom.js"},
+      {IDR_MULTIDEVICE_DEVICE_SYNC_MOJOM_LITE_JS,
+       "js/chromeos/device_sync.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_MOJOM_LITE_JS,
+       "js/chromeos/multidevice_setup.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_LITE_JS,
+       "js/chromeos/multidevice_setup_constants.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_LITE_JS,
+       "js/chromeos/multidevice_types.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)

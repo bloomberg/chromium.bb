@@ -74,12 +74,12 @@
         <include name="IDR_DISCARDS_GRAPH_TAB_JS" file="resources\discards\graph_tab.js" compress="gzip" type="BINDATA" />
         <include name="IDR_DISCARDS_HTML" file="resources\discards\discards.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_JS" file="resources\discards\discards.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML" file="resources\discards\sorted_table_behavior.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS" file="${root_gen_dir}\services\resource_coordinator\public\mojom\webui_graph_dump.mojom.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS" file="${root_gen_dir}\services\resource_coordinator\public\mojom\webui_graph_dump.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
         <include name="IDR_BROWSER_SWITCHER_APP_HTML" file="resources\browser_switcher\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
@@ -226,7 +226,6 @@
         <include name="IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS" file="${root_gen_dir}\skia\public\interfaces\image_info.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS" file="${root_gen_dir}\ui\gfx\image\mojo\image.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\app_management\app_management.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_TIME_MOJO_LITE_JS" file="${root_gen_dir}\mojo\public\mojom\base\time.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS" file="${root_gen_dir}\chrome\services\app_service\public\mojom\types.mojom-lite.js" use_base_dir="false" type="BINDATA" />
 
         <include name="IDR_APP_MANAGEMENT_ACTIONS_HTML" file="resources\app_management\actions.html" type="BINDATA" />

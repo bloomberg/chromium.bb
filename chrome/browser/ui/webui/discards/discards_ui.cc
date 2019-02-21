@@ -413,17 +413,19 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->AddResourcePath("mojo_api.html", IDR_DISCARDS_MOJO_API_HTML);
 
   // Full paths (relative to src) are important for Mojom generated files.
-  source->AddResourcePath("chrome/browser/ui/webui/discards/discards.mojom.js",
-                          IDR_DISCARDS_MOJO_JS);
   source->AddResourcePath(
-      "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.js",
-      IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS);
-  source->AddResourcePath("mojom/webui_graph_dump.mojom.js",
-                          IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS);
+      "chrome/browser/ui/webui/discards/discards.mojom-lite.js",
+      IDR_DISCARDS_MOJOM_LITE_JS);
+  source->AddResourcePath(
+      "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-lite.js",
+      IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_LITE_JS);
+  source->AddResourcePath("mojom/webui_graph_dump.mojom-lite.js",
+                          IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS);
 
   // Add the mojo base dependency for the WebUI Graph Dump.
-  source->AddResourcePath("mojo/public/mojom/base/process_id.mojom.js",
-                          IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_JS);
+  source->AddResourcePath(
+      "mojo/public/mojom/base/process_id.mojom-lite.js",
+      IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_DISCARDS_HTML);
   source->UseGzip();

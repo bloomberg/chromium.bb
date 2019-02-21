@@ -227,7 +227,7 @@ Polymer({
   /** @private {!Object} */
   requestedOrigins_: {},
 
-  /** @private {?mojom.DiscardsDetailsProviderPtr} */
+  /** @private {?mojom.DiscardsDetailsProviderProxy} */
   uiHandler_: null,
 
   /** @override */
