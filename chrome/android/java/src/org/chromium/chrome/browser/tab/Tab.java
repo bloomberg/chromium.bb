@@ -182,13 +182,6 @@ public class Tab
     private int mRootId;
 
     /**
-     * If this tab was opened from another tab in another Activity, this is the Intent that can be
-     * fired to bring the parent Activity back.
-     * TODO(dfalcantara): Remove this mechanism when we have a global TabManager.
-     */
-    private Intent mParentIntent;
-
-    /**
      * Whether the tab should be grouped with its parent tab.
      */
     private boolean mGroupedWithParent = true;
@@ -2472,21 +2465,6 @@ public class Tab
             return activity.getInsetObserverView().getSystemWindowInsetsBottom();
         }
         return 0;
-    }
-
-    /**
-     * Sets the Intent that can be fired to restart the Activity of this Tab's parent.
-     * Should only be called if the Tab was launched via a different Activity.
-     */
-    public void setParentIntent(Intent parentIntent) {
-        mParentIntent = parentIntent;
-    }
-
-    /**
-     * @return Intent that can be fired to restart the parent Activity.
-     */
-    protected Intent getParentIntent() {
-        return mParentIntent;
     }
 
     /**

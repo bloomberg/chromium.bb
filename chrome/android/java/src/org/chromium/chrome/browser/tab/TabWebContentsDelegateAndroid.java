@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tab;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -30,7 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
-import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
@@ -77,47 +75,23 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     /** Used for logging. */
     private static final String TAG = "WebContentsDelegate";
 
+    private final Runnable mCloseContentsRunnable;
     protected final Tab mTab;
 
-    private FindResultListener mFindResultListener;
-
-    private FindMatchRectsListener mFindMatchRectsListener;
-
-    private @WebDisplayMode int mDisplayMode = WebDisplayMode.BROWSER;
-
     protected Handler mHandler;
-
-    private final Runnable mCloseContentsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            boolean isSelected = mTab.getTabModelSelector().getCurrentTab() == mTab;
-            mTab.getTabModelSelector().closeTab(mTab);
-
-            // If the parent Tab belongs to another Activity, fire the Intent to bring it back.
-            if (isSelected && mTab.getParentIntent() != null
-                    && mTab.getActivity().getIntent() != mTab.getParentIntent()) {
-                mTab.getActivity().startActivity(mTab.getParentIntent());
-            }
-        }
-
-        /** If the API allows it, returns whether a Task still exists for the parent Activity. */
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        private boolean isParentInAndroidOverview() {
-            ActivityManager activityManager = (ActivityManager) mTab.getApplicationContext()
-                    .getSystemService(Context.ACTIVITY_SERVICE);
-            for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                Intent taskIntent = DocumentUtils.getBaseIntentFromTask(task);
-                if (taskIntent != null && taskIntent.filterEquals(mTab.getParentIntent())) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    };
+    private FindResultListener mFindResultListener;
+    private FindMatchRectsListener mFindMatchRectsListener;
+    private @WebDisplayMode int mDisplayMode = WebDisplayMode.BROWSER;
 
     public TabWebContentsDelegateAndroid(Tab tab) {
         mTab = tab;
         mHandler = new Handler();
+        mCloseContentsRunnable = () -> {
+            // TODO(jinsukkim): Move |closeTab| to TabModelSelector by making it observe its tabs.
+            mTab.getTabModelSelector().closeTab(mTab);
+            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+            while (observers.hasNext()) observers.next().onCloseContents(mTab);
+        };
     }
 
     /**
