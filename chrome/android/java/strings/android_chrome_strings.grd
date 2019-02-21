@@ -4024,6 +4024,24 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_USAGE_STATS_SETTING_TITLE" desc="Title for setting toggling Digital Wellbeing to access Chrome usage data">
         Connect to Digital Wellbeing
       </message>
+
+      <!-- Bottom Tab Grid strings -->
+      <message name="IDS_BOTTOM_TAB_GRID_DESCRIPTION" desc="The content description of the 'opened tabs' bottom sheet.">
+        Opened tabs
+      </message>
+
+      <message name="IDS_BOTTOM_TAB_GRID_OPENED_HALF" desc="Accessibility string read when the 'opened tabs' sheet is opened at half height. The sheet will occupy the bottom half the screen. ">
+        Opened tabs at half height
+      </message>
+
+      <message name="IDS_BOTTOM_TAB_GRID_OPENED_FULL" desc="Accessibility string read when the 'opened tabs' bottom sheet is opened at full height. The sheet will occupy the entire screen.">
+        Opened tabs at full height
+      </message>
+
+      <message name="IDS_BOTTOM_TAB_GRID_CLOSED" desc="Accessibility string read when the 'opened tabs' bottom sheet is closed.">
+        Opened tabs closed
+      </message>
+
     </messages>
   </release>
 </grit>
