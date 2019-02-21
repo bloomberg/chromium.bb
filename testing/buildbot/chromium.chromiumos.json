@@ -411,7 +411,6 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter"
         ],
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -428,7 +427,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -445,7 +443,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
