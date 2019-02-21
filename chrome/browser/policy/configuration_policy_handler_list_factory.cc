@@ -23,7 +23,6 @@
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
-#include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #include "chrome/browser/profiles/force_safe_search_policy_handler.h"
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
@@ -101,6 +100,7 @@
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
+#include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -1066,8 +1066,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  handlers->AddHandler(
-      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
 
 // On most platforms, there is a legacy policy
 // kUnsafelyTreatInsecureOriginAsSecure which has been replaced by
@@ -1194,6 +1192,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema.GetValidationSchema(),
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  // At the moment, the WebUsbAllowDevicesForUrls policy is not supported on
+  // Android because the Site Settings UI is not yet capable of displaying
+  // policy managed USB items.
+  // TODO(https://crbug.com/931459): Move this statement outside of this
+  // preprocessor if statement once Android supports the policy.
+  handlers->AddHandler(
+      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
 #endif
 
 #if !defined(OS_CHROMEOS)

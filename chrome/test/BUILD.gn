@@ -2777,7 +2777,6 @@ test("unit_tests") {
     "../browser/policy/javascript_policy_handler_unittest.cc",
     "../browser/policy/managed_bookmarks_policy_handler_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
-    "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_unittest.cc",
     "../browser/predictors/loading_data_collector_unittest.cc",
@@ -3322,6 +3321,11 @@ test("unit_tests") {
       "../browser/notifications/notification_ui_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",
       "../browser/policy/policy_path_parser_unittest.cc",
+
+      # The WebUsbAllowDevicesForUrls policy is not yet supported on Android.
+      # TODO(https://crbug.com/931459): Move this up to the main "sources"
+      # property once the policy is supported.
+      "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
       "../browser/profile_resetter/profile_resetter_unittest.cc",
       "../browser/profile_resetter/reset_report_uploader_unittest.cc",
       "../browser/profile_resetter/triggered_profile_resetter_win_unittest.cc",
