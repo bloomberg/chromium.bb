@@ -32,14 +32,14 @@ cr.define('cr.ui', function() {
     decorate: function() {
       // Listen to the touch events on the document so that we can handle it
       // before cancelled by other UI components.
-      this.ownerDocument.addEventListener('touchstart', this);
+      this.ownerDocument.addEventListener('touchstart', this, {passive: true});
       this.addEventListener('mousedown', this);
       this.addEventListener('keydown', this);
       this.addEventListener('dblclick', this);
       this.addEventListener('blur', this);
 
-      // Adding the 'custom-appearance' class prevents widgets.css from changing
-      // the appearance of this element.
+      // Adding the 'custom-appearance' class prevents widgets.css from
+      // changing the appearance of this element.
       this.classList.add('custom-appearance');
       this.classList.add('menu-button');  // For styles in menu_button.css.
 
