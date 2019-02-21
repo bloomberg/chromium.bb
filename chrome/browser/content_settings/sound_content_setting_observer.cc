@@ -21,7 +21,7 @@
 #include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/autoplay.mojom.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/tabs/tab_utils.h"

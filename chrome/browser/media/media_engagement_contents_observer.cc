@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/autoplay.mojom.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
