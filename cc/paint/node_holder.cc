@@ -6,31 +6,34 @@
 
 namespace cc {
 
-NodeHolder::NodeHolder() : tag(EMPTY) {}
+NodeHolder::NodeHolder() : is_empty(true) {}
 
 NodeHolder::NodeHolder(scoped_refptr<TextHolder> holder)
-    : tag(TEXT_HOLDER), text_holder(holder) {}
+    : text_holder(holder), type(Type::kTextHolder), is_empty(false) {}
 
-NodeHolder::NodeHolder(int id) : tag(ID), id(id) {}
+NodeHolder::NodeHolder(int id) : id(id), type(Type::kID), is_empty(false) {}
 
 NodeHolder::NodeHolder(const NodeHolder& other) {
   text_holder = other.text_holder;
   id = other.id;
-  tag = other.tag;
+  type = other.type;
+  is_empty = other.is_empty;
 }
 
 NodeHolder::~NodeHolder() = default;
 
 bool operator==(const NodeHolder& l, const NodeHolder& r) {
-  if (l.tag != r.tag)
+  if (l.is_empty != r.is_empty) {
     return false;
-  switch (l.tag) {
-    case NodeHolder::TEXT_HOLDER:
-      return l.text_holder == r.text_holder;
-    case NodeHolder::ID:
-      return l.id == r.id;
-    case NodeHolder::EMPTY:
-      return true;
+  } else if (l.is_empty) {
+    return true;
+  } else {
+    switch (l.type) {
+      case NodeHolder::Type::kTextHolder:
+        return l.text_holder == r.text_holder;
+      case NodeHolder::Type::kID:
+        return l.id == r.id;
+    }
   }
 }
 
