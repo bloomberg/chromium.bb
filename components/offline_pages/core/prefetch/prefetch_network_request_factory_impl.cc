@@ -70,10 +70,12 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
                             ? kMaxBundleSizeForLimitlessBytes
                             : kMaxBundleSizeBytes;
   uint64_t request_id = GetNextRequestId();
+  bool send_testing_header =
+      prefetch_prefs::ShouldSendPrefetchTestingHeader(prefs_);
   generate_page_bundle_requests_[request_id] =
       std::make_unique<GeneratePageBundleRequest>(
           user_agent_, gcm_registration_id, max_bundle_size, url_strings,
-          channel_, url_loader_factory_,
+          channel_, send_testing_header, url_loader_factory_,
           base::BindOnce(
               &PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone,
               weak_factory_.GetWeakPtr(), std::move(callback), request_id));

@@ -28,6 +28,13 @@ void SetLimitlessPrefetchingEnabled(PrefService* prefs, bool enabled);
 
 bool IsLimitlessPrefetchingEnabled(PrefService* prefs);
 
+// Sets whether a header "X-Offline-Prefetch_Testing: true" should be sent with
+// GeneratePageBundle requests. This header exempts the request from country
+// filtering so that prefetching can be tested in filtered countries.
+void SetSendPrefetchTestingHeader(PrefService* prefs, bool enabled);
+
+bool ShouldSendPrefetchTestingHeader(PrefService* prefs);
+
 }  // namespace prefetch_prefs
 }  // namespace offline_pages
 

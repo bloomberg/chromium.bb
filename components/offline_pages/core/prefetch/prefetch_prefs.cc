@@ -16,6 +16,8 @@ namespace {
 const char kEnabled[] = "offline_prefetch.enabled";
 const char kLimitlessPrefetchingEnabledTimePref[] =
     "offline_prefetch.limitless_prefetching_enabled_time";
+const char kSendPrefetchTestingHeaderPref[] =
+    "offline_prefetch.send_testing_header";
 }  // namespace
 
 const char kBackoff[] = "offline_prefetch.backoff";
@@ -25,6 +27,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kEnabled, true);
   registry->RegisterTimePref(kLimitlessPrefetchingEnabledTimePref,
                              base::Time());
+  registry->RegisterBooleanPref(kSendPrefetchTestingHeaderPref, false);
 }
 
 void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {
@@ -56,6 +59,16 @@ bool IsLimitlessPrefetchingEnabled(PrefService* prefs) {
   const base::Time now = OfflineTimeNow();
 
   return (now >= enabled_time) && (now < (enabled_time + max_duration));
+}
+
+void SetSendPrefetchTestingHeader(PrefService* prefs, bool enabled) {
+  DCHECK(prefs);
+  prefs->SetBoolean(kSendPrefetchTestingHeaderPref, enabled);
+}
+
+bool ShouldSendPrefetchTestingHeader(PrefService* prefs) {
+  DCHECK(prefs);
+  return prefs->GetBoolean(kSendPrefetchTestingHeaderPref);
 }
 
 }  // namespace prefetch_prefs
