@@ -38,8 +38,8 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   void RequestSurfaceResolution(Surface* surface);
 
   // Returns whether the dependency tracker has a surface blocked on the
-  // provided |surface_id|.
-  bool HasSurfaceBlockedOn(const SurfaceId& surface_id) const;
+  // provided |frame_sink_id|.
+  bool HasSurfaceBlockedOn(const FrameSinkId& frame_sink_id) const;
 
   void OnSurfaceActivated(Surface* surface);
   void OnSurfaceDependencyAdded(const SurfaceId& surface_id);
