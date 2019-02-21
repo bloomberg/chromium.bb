@@ -69,7 +69,7 @@ class TestAutofillClient : public AutofillClient {
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const CreditCard& card,
-      bool show_prompt,
+      SaveCreditCardOptions options,
       LocalSaveCardPromptCallback callback) override;
 #if defined(OS_ANDROID)
   void ConfirmAccountNameFixFlow(
@@ -81,9 +81,7 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      bool should_request_name_from_user,
-      bool should_request_expiration_date_from_user,
-      bool show_prompt,
+      SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;

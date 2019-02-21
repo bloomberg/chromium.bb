@@ -152,7 +152,7 @@ void AwAutofillClient::ConfirmSaveAutofillProfile(
 
 void AwAutofillClient::ConfirmSaveCreditCardLocally(
     const autofill::CreditCard& card,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();
 }
@@ -171,9 +171,7 @@ void AwAutofillClient::ConfirmExpirationDateFixFlow(
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
-    bool show_prompt,
+    SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();
 }

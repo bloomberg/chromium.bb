@@ -31,8 +31,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
  public:
   AutofillSaveCardInfoBarDelegateMobile(
       bool upload,
-      bool should_request_name_from_user,
-      bool should_request_expiration_date_from_user,
+      AutofillClient::SaveCreditCardOptions options,
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       AutofillClient::UploadSaveCardPromptCallback
@@ -86,12 +85,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   bool upload_;
 
   // If the cardholder name is missing, request the name from the user before
-  // saving the card.
-  bool should_request_name_from_user_;
-
-  // If the expiration date is missing, request the missing data from the user
-  // before saving the card.
-  bool should_request_expiration_date_from_user_;
+  // saving the card. If the expiration date is missing, request the missing
+  // data from the user before saving the card.
+  AutofillClient::SaveCreditCardOptions options_;
 
   // The callback to run once the user makes a decision with respect to the
   // credit card upload offer-to-save prompt (if |upload_| is true).

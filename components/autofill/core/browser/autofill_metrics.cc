@@ -700,8 +700,7 @@ void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,
     bool is_reshow,
-    bool is_requesting_cardholder_name,
-    bool is_requesting_expiration_date,
+    AutofillClient::SaveCreditCardOptions options,
     int previous_save_credit_card_prompt_user_decision,
     security_state::SecurityLevel security_level,
     AutofillSyncSigninState sync_state) {
@@ -715,12 +714,12 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   base::UmaHistogramEnumeration(
       metric_with_destination_and_show + GetMetricsSyncStateSuffix(sync_state),
       metric, NUM_SAVE_CARD_PROMPT_METRICS);
-  if (is_requesting_cardholder_name) {
+  if (options.should_request_name_from_user) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".RequestingCardholderName", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);
   }
-  if (is_requesting_expiration_date) {
+  if (options.should_request_expiration_date_from_user) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".RequestingExpirationDate", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);

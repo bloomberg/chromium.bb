@@ -69,10 +69,14 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     controller_ = SaveCardBubbleControllerImpl::FromWebContents(web_contents);
     DCHECK(controller_);
 
-    const bool should_request_name_from_user =
-        name.find("WithCardholderNameTextfield") != std::string::npos;
-    const bool should_request_expiration_date_from_user =
-        name.find("WithCardExpirationDateDropDownBox") != std::string::npos;
+    AutofillClient::SaveCreditCardOptions options =
+        AutofillClient::SaveCreditCardOptions()
+            .with_should_request_name_from_user(
+                name.find("WithCardholderNameTextfield") != std::string::npos)
+            .with_should_request_expiration_date_from_user(
+                name.find("WithCardExpirationDateDropDownBox") !=
+                std::string::npos)
+            .with_show_prompt(true);
 
     BubbleType bubble_type = BubbleType::INACTIVE;
     if (name.find("Local") != std::string::npos)
@@ -86,15 +90,15 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
     switch (bubble_type) {
       case BubbleType::LOCAL_SAVE:
-        controller_->OfferLocalSave(test::GetCreditCard(), /*show_bubble=*/true,
-                                    base::DoNothing());
+        controller_->OfferLocalSave(
+            test::GetCreditCard(),
+            AutofillClient::SaveCreditCardOptions().with_show_prompt(true),
+            base::DoNothing());
         break;
       case BubbleType::UPLOAD_SAVE:
         controller_->OfferUploadSave(test::GetMaskedServerCard(),
-                                     GetTestLegalMessage(),
-                                     should_request_name_from_user,
-                                     should_request_expiration_date_from_user,
-                                     /*show_bubble=*/true, base::DoNothing());
+                                     GetTestLegalMessage(), options,
+                                     base::DoNothing());
         break;
       case BubbleType::SIGN_IN_PROMO:
         controller_->ShowBubbleForSignInPromo();
