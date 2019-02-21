@@ -121,6 +121,11 @@ class ChromeSearchResult {
   static std::string TagsDebugStringForTest(const std::string& text,
                                             const Tags& tags);
 
+  // Subtype of a search result. -1 means no sub type. Derived class
+  // can use this to return useful values for rankers etc. Currently,
+  // OmniboxResult overrides it to return AutocompleteMatch::Type.
+  virtual int GetSubType() const;
+
  protected:
   // These id setters should be called in derived class constructors only.
   void set_id(const std::string& id) { metadata_->id = id; }

@@ -38,9 +38,7 @@ class OmniboxResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void InvokeAction(int action_index, int event_flags) override;
-
-  // Returns type of the matched result as a string.
-  AutocompleteMatch::Type type() const;
+  int GetSubType() const override;
 
  private:
   void UpdateIcon();
