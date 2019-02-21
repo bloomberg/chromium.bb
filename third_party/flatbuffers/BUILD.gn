@@ -56,12 +56,13 @@ source_set("compiler_files") {
     "src/src/idl_gen_general.cpp",
     "src/src/idl_gen_go.cpp",
     "src/src/idl_gen_grpc.cpp",
-    "src/src/idl_gen_js.cpp",
+    "src/src/idl_gen_js_ts.cpp",
     "src/src/idl_gen_json_schema.cpp",
     "src/src/idl_gen_lobster.cpp",
     "src/src/idl_gen_lua.cpp",
     "src/src/idl_gen_php.cpp",
     "src/src/idl_gen_python.cpp",
+    "src/src/idl_gen_rust.cpp",
     "src/src/idl_gen_text.cpp",
     "src/src/idl_parser.cpp",
     "src/src/reflection.cpp",
@@ -102,6 +103,8 @@ flatbuffer("flatbuffers_samplebuffer") {
 test("flatbuffers_unittest") {
   sources = [
     "src/tests/test.cpp",
+    "src/tests/test_assert.cpp",
+    "src/tests/test_builder.cpp",
   ]
   deps = [
     ":compiler_files",
@@ -112,9 +115,8 @@ test("flatbuffers_unittest") {
     "src/tests/",
   ]
 
-  if (is_win) {
-    # Suppress "object allocated on the heap may not be aligned 16".
-    cflags = [ "/wd4316" ]
-  }
-  defines = [ "FLATBUFFERS_TRACK_VERIFIER_BUFFER_SIZE" ]
+  defines = [
+    "FLATBUFFERS_TRACK_VERIFIER_BUFFER_SIZE",
+    "FLATBUFFERS_TEST_PATH_PREFIX=third_party/flatbuffers/src/",
+  ]
 }
