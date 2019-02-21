@@ -316,7 +316,7 @@ external/wpt/web-animations/interfaces/KeyframeEffect/composite.html
 external/wpt/web-animations/interfaces/KeyframeEffect/spacing.html
 external/wpt/web-animations/timing-model/animation-effects/active-time.html
 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html
-external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html
+external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-ended.html
 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-playbackrate-zero.html
