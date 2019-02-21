@@ -26,6 +26,7 @@ class ClipboardProvider : public AutocompleteProvider {
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
+  void ResetSession() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, MatchesImage);
@@ -75,6 +76,12 @@ class ClipboardProvider : public AutocompleteProvider {
   // Used for recording metrics.
   GURL current_url_suggested_;
   size_t current_url_suggested_times_;
+
+  // Whether a field trial has triggered for this query and this session,
+  // respectively. Works similarly to BaseSearchProvider, though this class does
+  // not inherit from it.
+  bool field_trial_triggered_;
+  bool field_trial_triggered_in_session_;
 
   // Used to cancel image construction callbacks if autocomplete Stop() is
   // called.
