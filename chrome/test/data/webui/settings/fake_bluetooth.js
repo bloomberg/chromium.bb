@@ -25,14 +25,18 @@ cr.define('settings', function() {
 
   FakeBluetooth.prototype = {
     // Public testing methods.
-    /** @param {boolean} enabled */
-    setEnabled: function(enabled) {
-      this.setAdapterState({powered: enabled});
-    },
 
-    /** @param {!chrome.bluetooth.AdapterState} state*/
-    setAdapterState: function(state) {
-      Object.assign(this.adapterState_, state);
+    /**
+     * @param {!{
+     *    address: (string|undefined),
+     *    name: (string|undefined),
+     *    powered: (boolean|undefined),
+     *    available: (boolean|undefined),
+     *    discovering: (boolean|undefined)
+     *  }} newState
+     */
+    simulateAdapterStateChangedForTest: function(newState) {
+      Object.assign(this.adapterState_, newState);
       this.onAdapterStateChanged.callListeners(
           Object.assign({}, this.adapterState_));
     },
