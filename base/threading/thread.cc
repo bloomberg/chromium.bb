@@ -208,15 +208,6 @@ void Thread::StopSoon() {
 
   stopping_ = true;
 
-  if (using_external_message_loop_) {
-    // Setting |stopping_| to true above should have been sufficient for this
-    // thread to be considered "stopped" per it having never set its |running_|
-    // bit by lack of its own ThreadMain.
-    DCHECK(!IsRunning());
-    message_loop_base_ = nullptr;
-    return;
-  }
-
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&Thread::ThreadQuitHelper, Unretained(this)));
 }
@@ -270,19 +261,6 @@ bool Thread::GetThreadWasQuitProperly() {
   quit_properly = lazy_tls_bool.Pointer()->Get();
 #endif
   return quit_properly;
-}
-
-void Thread::SetMessageLoop(MessageLoop* message_loop) {
-  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
-  DCHECK(message_loop);
-
-  // Setting |message_loop_base_| should suffice for this thread to be
-  // considered as "running", until Stop() is invoked.
-  DCHECK(!IsRunning());
-  message_loop_base_ = message_loop->GetMessageLoopBase();
-  DCHECK(IsRunning());
-
-  using_external_message_loop_ = true;
 }
 
 void Thread::ThreadMain() {
