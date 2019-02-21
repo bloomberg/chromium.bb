@@ -343,7 +343,8 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
 // Verifies that the New Tab Tip does not appear if all conditions are met,
 // but the NTP is open.
-- (void)testNewTabTipPromoDoesNotAppearOnNTP {
+// TODO(crbug.com/934248) The test is flaky.
+- (void)DISABLED_testNewTabTipPromoDoesNotAppearOnNTP {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
@@ -368,7 +369,8 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
 // Verifies that the bottom toolbar tip is displayed when the phone is in split
 // toolbar mode.
-- (void)testBottomToolbarAppear {
+// TODO(crbug.com/934248) The test is flaky.
+- (void)DISABLED_testBottomToolbarAppear {
   if (!IsUIRefreshPhase1Enabled())
     return;
 
@@ -434,7 +436,8 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
 // Verifies that the LongPress tip is displayed only after the Bottom Toolbar
 // tip is presented.
-- (void)testLongPressTipAppearAfterBottomToolbar {
+// TODO(crbug.com/934248) The test is flaky.
+- (void)DISABLED_testLongPressTipAppearAfterBottomToolbar {
   if (!IsUIRefreshPhase1Enabled())
     return;
 
