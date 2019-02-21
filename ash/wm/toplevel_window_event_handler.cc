@@ -51,13 +51,9 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   ::wm::WindowMoveSource source = gesture_target
                                       ? ::wm::WINDOW_MOVE_SOURCE_TOUCH
                                       : ::wm::WINDOW_MOVE_SOURCE_MOUSE;
-  if (gesture_target) {
-    window->env()->gesture_recognizer()->TransferEventsTo(
-        gesture_target, window, ui::TransferTouchesBehavior::kDontCancel);
-  }
   return wm_toplevel_window_event_handler_.AttemptToStartDrag(
-      window, point_in_parent, window_component, source,
-      std::move(end_closure));
+      window, point_in_parent, window_component, source, std::move(end_closure),
+      /*update_gesture_target=*/true);
 }
 
 ::wm::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
@@ -96,7 +92,8 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   if (!wm_toplevel_window_event_handler_.AttemptToStartDrag(
           source, drag_location, HTCAPTION, move_source,
           base::Bind(&ToplevelWindowEventHandler::OnDragCompleted,
-                     weak_factory_.GetWeakPtr(), &result, &run_loop))) {
+                     weak_factory_.GetWeakPtr(), &result, &run_loop),
+          /*update_gesture_target=*/false)) {
     return ::wm::MOVE_CANCELED;
   }
 
