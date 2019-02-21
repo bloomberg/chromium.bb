@@ -54,8 +54,8 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
                                         ScrollSnapAlign scroll_snap_align) {
   LayoutBox* old_container = snap_area.SnapContainer();
-  if (scroll_snap_align.alignment_inline == SnapAlignment::kNone &&
-      scroll_snap_align.alignment_block == SnapAlignment::kNone) {
+  if (scroll_snap_align.alignment_inline == cc::SnapAlignment::kNone &&
+      scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {
     snap_area.SetSnapContainer(nullptr);
     if (old_container)
       UpdateSnapContainerData(*old_container);
@@ -179,15 +179,15 @@ static ScrollSnapAlign GetPhysicalAlignment(
   if (container_style.IsHorizontalWritingMode())
     return align;
 
-  SnapAlignment tmp = align.alignment_inline;
+  cc::SnapAlignment tmp = align.alignment_inline;
   align.alignment_inline = align.alignment_block;
   align.alignment_block = tmp;
 
   if (container_style.IsFlippedBlocksWritingMode()) {
-    if (align.alignment_inline == SnapAlignment::kStart) {
-      align.alignment_inline = SnapAlignment::kEnd;
-    } else if (align.alignment_inline == SnapAlignment::kEnd) {
-      align.alignment_inline = SnapAlignment::kStart;
+    if (align.alignment_inline == cc::SnapAlignment::kStart) {
+      align.alignment_inline = cc::SnapAlignment::kEnd;
+    } else if (align.alignment_inline == cc::SnapAlignment::kEnd) {
+      align.alignment_inline = cc::SnapAlignment::kStart;
     }
   }
   return align;

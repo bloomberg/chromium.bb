@@ -1528,12 +1528,12 @@ ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     snapAlign.alignment_block =
-        ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAlignment>();
+        ToCSSIdentifierValue(pair.First()).ConvertTo<cc::SnapAlignment>();
     snapAlign.alignment_inline =
-        ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapAlignment>();
+        ToCSSIdentifierValue(pair.Second()).ConvertTo<cc::SnapAlignment>();
   } else {
     snapAlign.alignment_block =
-        ToCSSIdentifierValue(value).ConvertTo<SnapAlignment>();
+        ToCSSIdentifierValue(value).ConvertTo<cc::SnapAlignment>();
     snapAlign.alignment_inline = snapAlign.alignment_block;
   }
   return snapAlign;

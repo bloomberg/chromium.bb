@@ -232,6 +232,7 @@ _CONFIG = [
             # Scrolling
             'cc::ScrollOffsetAnimationCurve',
             'cc::ScrollStateData',
+            'cc::SnapAlignment',
             'cc::SnapAxis',
             'cc::SnapStrictness',
             'gfx::RectToSkRect',
