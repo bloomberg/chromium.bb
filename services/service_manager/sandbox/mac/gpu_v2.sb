@@ -42,9 +42,11 @@
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
 (if (>= os-version 1013)
-  (allow mach-lookup (global-name "com.apple.coremedia.videodecoder"))
-  (allow mach-lookup (global-name "com.apple.coremedia.videoencoder"))
-)
+  (allow mach-lookup
+    (xpc-service-name "com.apple.coremedia.videodecoder")
+    (xpc-service-name "com.apple.coremedia.videoencoder")
+    (xpc-service-name-regex #"\.apple-extension-service$")
+))
 
 (allow sysctl-read
   (sysctl-name "hw.logicalcpu_max")
