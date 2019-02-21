@@ -1256,9 +1256,6 @@ extern const char kWebXrGamepadSupportDescription[];
 extern const char kWebXrHitTestName[];
 extern const char kWebXrHitTestDescription[];
 
-extern const char kWebXrOrientationSensorDeviceName[];
-extern const char kWebXrOrientationSensorDeviceDescription[];
-
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 
@@ -2159,6 +2156,9 @@ extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #if BUILDFLAG(ENABLE_VR)
+
+extern const char kWebXrOrientationSensorDeviceName[];
+extern const char kWebXrOrientationSensorDeviceDescription[];
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 extern const char kOculusVRName[];

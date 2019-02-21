@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "device/base/device_base_export.h"
+#include "device/vr/buildflags/buildflags.h"
 
 namespace device {
 
@@ -20,6 +21,10 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
 DEVICE_BASE_EXPORT extern const base::Feature kUnfilteredBluetoothDevices;
 #endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_VR)
+DEVICE_BASE_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
+#endif  // BUILDFLAG(ENABLE_VR)
 
 }  // namespace device
 

@@ -2080,14 +2080,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-gamepad-support", flag_descriptions::kWebXrGamepadSupportName,
      flag_descriptions::kWebXrGamepadSupportDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrGamepadSupport)},
-    {"webxr-orientation-sensor-device",
-     flag_descriptions::kWebXrOrientationSensorDeviceName,
-     flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXrOrientationSensorDevice)},
     {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
 #if BUILDFLAG(ENABLE_VR)
+    {"webxr-orientation-sensor-device",
+     flag_descriptions::kWebXrOrientationSensorDeviceName,
+     flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(device::kWebXrOrientationSensorDevice)},
 #if defined(OS_ANDROID)
     {"webxr-render-path", flag_descriptions::kWebXrRenderPathName,
      flag_descriptions::kWebXrRenderPathDescription, kOsAndroid,

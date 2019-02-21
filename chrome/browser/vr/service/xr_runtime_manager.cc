@@ -92,14 +92,12 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
 #endif
 #endif  // ENABLE_ISOLATED_XR_SERVICE
 
-    if (base::FeatureList::IsEnabled(features::kWebXrOrientationSensorDevice)) {
-      content::ServiceManagerConnection* connection =
-          content::ServiceManagerConnection::GetForProcess();
-      if (connection) {
-        providers.emplace_back(
-            std::make_unique<device::VROrientationDeviceProvider>(
-                connection->GetConnector()));
-      }
+    content::ServiceManagerConnection* connection =
+        content::ServiceManagerConnection::GetForProcess();
+    if (connection) {
+      providers.emplace_back(
+          std::make_unique<device::VROrientationDeviceProvider>(
+              connection->GetConnector()));
     }
 
     // The constructor sets g_xr_runtime_manager, which is cleaned up when
