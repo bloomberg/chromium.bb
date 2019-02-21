@@ -561,8 +561,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   int max_texture_size_ = 0;
   int sample_count_ = 0;
+  int eqaa_storage_sample_count_ = 0;
   bool destruction_in_progress_ = false;
   bool is_hidden_ = false;
+  bool has_eqaa_support = false;
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   scoped_refptr<cc::TextureLayer> layer_;

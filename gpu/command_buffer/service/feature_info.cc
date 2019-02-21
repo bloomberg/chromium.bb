@@ -1570,6 +1570,7 @@ void FeatureInfo::InitializeFeatures() {
   if (gfx::HasExtension(extensions,
                         "GL_AMD_framebuffer_multisample_advanced")) {
     feature_flags_.amd_framebuffer_multisample_advanced = true;
+    AddExtensionString("GL_AMD_framebuffer_multisample_advanced");
   }
 }
 

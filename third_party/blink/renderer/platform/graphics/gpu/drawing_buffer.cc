@@ -749,8 +749,16 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 
   sample_count_ = std::min(
       static_cast<int>(webgl_preferences.msaa_sample_count), max_sample_count);
+  eqaa_storage_sample_count_ = webgl_preferences.eqaa_storage_sample_count;
+  if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+          gpu::USE_EQAA_STORAGE_SAMPLES_2))
+    eqaa_storage_sample_count_ = 2;
+  if (extensions_util_->SupportsExtension(
+          "GL_AMD_framebuffer_multisample_advanced"))
+    has_eqaa_support = true;
 
   texture_target_ = GL_TEXTURE_2D;
+
 #if defined(OS_MACOSX)
   if (ShouldUseChromiumImage()) {
     // A CHROMIUM_image backed texture requires a specialized set of parameters
@@ -1053,9 +1061,15 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
       DCHECK(want_alpha_channel_);
       internal_format = GL_RGBA16F_EXT;
     }
-    gl_->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sample_count_,
-                                                internal_format, size.Width(),
-                                                size.Height());
+    if (has_eqaa_support) {
+      gl_->RenderbufferStorageMultisampleAdvancedAMD(
+          GL_RENDERBUFFER, sample_count_, eqaa_storage_sample_count_,
+          internal_format, size.Width(), size.Height());
+    } else {
+      gl_->RenderbufferStorageMultisampleCHROMIUM(
+          GL_RENDERBUFFER, sample_count_, internal_format, size.Width(),
+          size.Height());
+    }
 
     if (gl_->GetError() == GL_OUT_OF_MEMORY)
       return false;
