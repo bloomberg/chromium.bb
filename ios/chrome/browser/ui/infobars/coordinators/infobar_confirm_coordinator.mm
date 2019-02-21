@@ -28,8 +28,6 @@
 @synthesize bannerViewController = _bannerViewController;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
-// Property defined in InfobarUIDelegate.
-@synthesize presented = _presented;
 // Property defined in InfobarCoordinating.
 @synthesize started = _started;
 
@@ -38,7 +36,6 @@
   self = [super initWithBaseViewController:nil browserState:nil];
   if (self) {
     _confirmInfobarDelegate = confirmInfoBarDelegate;
-    _presented = YES;
   }
   return self;
 }

@@ -34,11 +34,7 @@
 @property(nonatomic, assign) TabModel* tabModel;
 
 // UIViewController that contains Infobars.
-@property(nonatomic, strong)
-    InfobarContainerViewController* containerViewController;
-// UIViewController that contains legacy Infobars.
-@property(nonatomic, strong)
-    LegacyInfobarContainerViewController* legacyContainerViewController;
+@property(nonatomic, strong) UIViewController* containerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
 
@@ -62,32 +58,34 @@
   DCHECK(self.positioner);
   DCHECK(self.dispatcher);
 
-  // Creates the InfobarContainerVC.
-  InfobarContainerViewController* container =
-      [[InfobarContainerViewController alloc] init];
-  self.containerViewController = container;
-
-  // Creates the LegacyInfobarContainerVC.
-  LegacyInfobarContainerViewController* legacyContainer =
-      [[LegacyInfobarContainerViewController alloc]
-          initWithFullscreenController:
-              FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-                  self.browserState)];
-  [self.baseViewController addChildViewController:legacyContainer];
-  // TODO(crbug.com/892376): Shouldn't modify the BaseVC hierarchy, BVC
-  // needs to handle this.
-  [self.baseViewController.view insertSubview:legacyContainer.view
-                                 aboveSubview:self.positioner.parentView];
-  [legacyContainer didMoveToParentViewController:self.baseViewController];
-  legacyContainer.positioner = self.positioner;
-  self.legacyContainerViewController = legacyContainer;
-
-  // Creates the mediator using both consumers.
-  self.mediator = [[InfobarContainerMediator alloc]
-      initWithConsumer:self
-        legacyConsumer:self.legacyContainerViewController
-          browserState:self.browserState
-              tabModel:self.tabModel];
+  // Create and setup the ViewController, and initialize the mediator.
+  if (experimental_flags::IsInfobarUIRebootEnabled()) {
+    InfobarContainerViewController* container =
+        [[InfobarContainerViewController alloc] init];
+    self.containerViewController = container;
+    self.mediator =
+        [[InfobarContainerMediator alloc] initWithConsumer:self
+                                              browserState:self.browserState
+                                                  tabModel:self.tabModel];
+  } else {
+    LegacyInfobarContainerViewController* legacyContainer =
+        [[LegacyInfobarContainerViewController alloc]
+            initWithFullscreenController:
+                FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+                    self.browserState)];
+    [self.baseViewController addChildViewController:legacyContainer];
+    // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC
+    // needs to handle this.
+    [self.baseViewController.view insertSubview:legacyContainer.view
+                                   aboveSubview:self.positioner.parentView];
+    [legacyContainer didMoveToParentViewController:self.baseViewController];
+    legacyContainer.positioner = self.positioner;
+    self.containerViewController = legacyContainer;
+    self.mediator =
+        [[InfobarContainerMediator alloc] initWithConsumer:legacyContainer
+                                              browserState:self.browserState
+                                                  tabModel:self.tabModel];
+  }
 
   self.mediator.syncPresenter = self.syncPresenter;
   self.mediator.signinPresenter = self;
@@ -103,19 +101,19 @@
 
 #pragma mark - Public Interface
 
-- (void)hideContainer:(BOOL)hidden {
-  [self.legacyContainerViewController.view setHidden:hidden];
-  [self.containerViewController.view setHidden:hidden];
-}
-
-- (UIView*)legacyContainerView {
-  return self.legacyContainerViewController.view;
+- (UIView*)view {
+  return self.containerViewController.view;
 }
 
 - (void)updateInfobarContainer {
-  // TODO(crbug.com/927064): No need to update the non legacy container since
+  // TODO(crbug.com/927064): No need to update the non legacy version since
   // updateLayoutAnimated is NO-OP.
-  [self.legacyContainerViewController updateLayoutAnimated:NO];
+  if (!experimental_flags::IsInfobarUIRebootEnabled()) {
+    LegacyInfobarContainerViewController* legacyContainer =
+        base::mac::ObjCCastStrict<LegacyInfobarContainerViewController>(
+            self.containerViewController);
+    [legacyContainer updateLayoutAnimated:NO];
+  }
 }
 
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState {
@@ -155,7 +153,8 @@
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
-  [self.containerViewController.view setUserInteractionEnabled:enabled];
+  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  [self.view setUserInteractionEnabled:enabled];
 }
 
 - (void)updateLayoutAnimated:(BOOL)animated {
