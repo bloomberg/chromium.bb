@@ -668,12 +668,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
                    &WebAXObjectProxy::SelectionFocusOffset)
       .SetProperty("selectionFocusAffinity",
                    &WebAXObjectProxy::SelectionFocusAffinity)
-      .SetProperty("selectionStart", &WebAXObjectProxy::SelectionStart)
-      .SetProperty("selectionEnd", &WebAXObjectProxy::SelectionEnd)
-      .SetProperty("selectionStartLineNumber",
-                   &WebAXObjectProxy::SelectionStartLineNumber)
-      .SetProperty("selectionEndLineNumber",
-                   &WebAXObjectProxy::SelectionEndLineNumber)
       .SetProperty("isAtomic", &WebAXObjectProxy::IsAtomic)
       .SetProperty("isAutofillAvailable",
                    &WebAXObjectProxy::IsAutofillAvailable)
@@ -1045,26 +1039,6 @@ std::string WebAXObjectProxy::SelectionFocusAffinity() {
                                   focusObject, focusOffset, focusAffinity);
   return focusAffinity == ax::mojom::TextAffinity::kUpstream ? "upstream"
                                                              : "downstream";
-}
-
-int WebAXObjectProxy::SelectionStart() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.SelectionStart();
-}
-
-int WebAXObjectProxy::SelectionEnd() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.SelectionEnd();
-}
-
-int WebAXObjectProxy::SelectionStartLineNumber() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.SelectionStartLineNumber();
-}
-
-int WebAXObjectProxy::SelectionEndLineNumber() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.SelectionEndLineNumber();
 }
 
 bool WebAXObjectProxy::IsAtomic() {
