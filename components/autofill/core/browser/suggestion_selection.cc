@@ -117,7 +117,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 }
 
 std::vector<Suggestion> GetUniqueSuggestions(
-    const std::vector<ServerFieldType>& other_field_types,
+    const std::vector<ServerFieldType>& field_types,
     const std::string app_locale,
     const std::vector<AutofillProfile*> matched_profiles,
     const std::vector<Suggestion>& suggestions,
@@ -126,7 +126,7 @@ std::vector<Suggestion> GetUniqueSuggestions(
 
   // Limit number of unique profiles as having too many makes the browser hang
   // due to drawing calculations (and is also not very useful for the user).
-  ServerFieldTypeSet types(other_field_types.begin(), other_field_types.end());
+  ServerFieldTypeSet types(field_types.begin(), field_types.end());
   for (size_t i = 0; i < matched_profiles.size() &&
                      unique_suggestions.size() < kMaxUniqueSuggestionsCount;
        ++i) {

@@ -269,15 +269,16 @@ class PersonalDataManager : public KeyedService,
       const AutofillType& type,
       std::vector<AutofillProfile*>* profiles);
 
-  // Loads profiles that can suggest data for |type|. |field_contents| is the
-  // part the user has already typed. |field_is_autofilled| is true if the field
-  // has already been autofilled. |other_field_types| represents the rest of
-  // form.
+  // Returns Suggestions corresponding to the focused field's |type| and
+  // |field_contents|, i.e. what the user has typed. |field_is_autofilled| is
+  // true if the field has already been autofilled, and |field_types| stores the
+  // types of all the form's input fields, including the field with which the
+  // user is interacting.
   std::vector<Suggestion> GetProfileSuggestions(
       const AutofillType& type,
       const base::string16& field_contents,
       bool field_is_autofilled,
-      const std::vector<ServerFieldType>& other_field_types);
+      const std::vector<ServerFieldType>& field_types);
 
   // Tries to delete disused addresses once per major version if the
   // feature is enabled.

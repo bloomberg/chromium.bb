@@ -34,8 +34,10 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 // Dedupes given suggestions based on if one is a subset of the other.
 // Returns unique_suggestions, and adds the corresponding profiles to
 // |unique_matched_profiles|. At most |kMaxUniqueSuggestionsCount| are returned.
+// |field_types| stores all of the form's ServerFieldTypes, including that of
+// the field on which the user is currently focused.
 std::vector<Suggestion> GetUniqueSuggestions(
-    const std::vector<ServerFieldType>& other_field_types,
+    const std::vector<ServerFieldType>& field_types,
     const std::string app_locale,
     const std::vector<AutofillProfile*> matched_profiles,
     const std::vector<Suggestion>& suggestions,
