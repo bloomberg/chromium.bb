@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
+#include "printing/print_job_constants.h"
 
 namespace printing {
 
@@ -33,7 +34,7 @@ base::Value GetPrintTicket(PrinterType type, bool cloud) {
   ticket.SetKey(kSettingColor, base::Value(2));  // color printing
   ticket.SetKey(kSettingHeaderFooterEnabled, base::Value(false));
   ticket.SetKey(kSettingMarginsType, base::Value(0));  // default margins
-  ticket.SetKey(kSettingDuplexMode, base::Value(1));   // LONG_EDGE
+  ticket.SetKey(kSettingDuplexMode, base::Value(LONG_EDGE));
   ticket.SetKey(kSettingCopies, base::Value(1));
   ticket.SetKey(kSettingCollate, base::Value(true));
   ticket.SetKey(kSettingShouldPrintBackgrounds, base::Value(false));
