@@ -92,7 +92,9 @@ class ScopedTaskEnvironment::MockTimeDomain
     : public sequence_manager::TimeDomain,
       public TickClock {
  public:
-  explicit MockTimeDomain(ScopedTaskEnvironment::NowSource now_source) {
+  MockTimeDomain(ScopedTaskEnvironment::NowSource now_source,
+                 sequence_manager::SequenceManager* sequence_manager)
+      : sequence_manager_(sequence_manager) {
     DCHECK_EQ(nullptr, current_mock_time_domain_);
     current_mock_time_domain_ = this;
     if (now_source == ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME) {
@@ -116,6 +118,13 @@ class ScopedTaskEnvironment::MockTimeDomain
 
   using TimeDomain::NextScheduledRunTime;
 
+  Optional<TimeTicks> NextScheduledRunTime() const {
+    // The TimeDomain doesn't know about immediate tasks, check if we have any.
+    if (!sequence_manager_->IsIdleForTesting())
+      return Now();
+    return TimeDomain::NextScheduledRunTime();
+  }
+
   static std::unique_ptr<ScopedTaskEnvironment::MockTimeDomain>
   CreateAndRegister(ScopedTaskEnvironment::MainThreadType main_thread_type,
                     ScopedTaskEnvironment::NowSource now_source,
@@ -124,7 +133,8 @@ class ScopedTaskEnvironment::MockTimeDomain
         main_thread_type == MainThreadType::UI_MOCK_TIME ||
         main_thread_type == MainThreadType::IO_MOCK_TIME) {
       auto mock_time_donain =
-          std::make_unique<ScopedTaskEnvironment::MockTimeDomain>(now_source);
+          std::make_unique<ScopedTaskEnvironment::MockTimeDomain>(
+              now_source, sequence_manager);
       sequence_manager->RegisterTimeDomain(mock_time_donain.get());
       return mock_time_donain;
     }
@@ -228,6 +238,8 @@ class ScopedTaskEnvironment::MockTimeDomain
   }
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  sequence_manager::SequenceManager* const sequence_manager_;
 
   std::unique_ptr<subtle::ScopedTimeClockOverrides> time_overrides_;
 
@@ -456,19 +468,13 @@ ScopedTaskEnvironment::GetMainThreadTaskRunner() {
   return task_runner_;
 }
 
-bool ScopedTaskEnvironment::MainThreadHasPendingTask() const {
+bool ScopedTaskEnvironment::MainThreadIsIdle() const {
   sequence_manager::internal::SequenceManagerImpl* sequence_manager_impl =
       static_cast<sequence_manager::internal::SequenceManagerImpl*>(
           sequence_manager_.get());
   // ReclaimMemory sweeps canceled delayed tasks.
   sequence_manager_impl->ReclaimMemory();
-  // Unfortunately this API means different things depending on whether mock
-  // time is used or not. If MockTime is used then tests want to know if there
-  // are any delayed or non-delayed tasks, otherwise only non-delayed tasks are
-  // considered.
-  if (mock_time_domain_)
-    return sequence_manager_impl->HasTasks();
-  return !sequence_manager_impl->IsIdleForTesting();
+  return sequence_manager_impl->IsIdleForTesting();
 }
 
 void ScopedTaskEnvironment::RunUntilIdle() {
@@ -604,6 +610,11 @@ TimeDelta ScopedTaskEnvironment::NextMainThreadPendingTaskDelay() const {
   if (run_time)
     return *run_time - mock_time_domain_->Now();
   return TimeDelta::Max();
+}
+
+bool ScopedTaskEnvironment::NextTaskIsDelayed() const {
+  TimeDelta delay = NextMainThreadPendingTaskDelay();
+  return !delay.is_zero() && !delay.is_max();
 }
 
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()

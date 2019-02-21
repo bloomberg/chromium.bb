@@ -156,8 +156,9 @@ class ScopedTaskEnvironment {
   // Returns a TaskRunner that schedules tasks on the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner();
 
-  // Returns whether the main thread's TaskRunner has pending tasks.
-  bool MainThreadHasPendingTask() const;
+  // Returns whether the main thread's TaskRunner has pending tasks. This will
+  // always return true if called right after RunUntilIdle.
+  bool MainThreadIsIdle() const;
 
   // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
   // TaskScheduler's non-delayed queues are empty.
@@ -193,13 +194,19 @@ class ScopedTaskEnvironment {
   base::TimeTicks NowTicks() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Returns the number of pending tasks of the main thread's TaskRunner.
+  // Returns the number of pending tasks (delayed and non-delayed) of the main
+  // thread's TaskRunner.
   size_t GetPendingMainThreadTaskCount() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Returns the delay until the next delayed pending task of the main thread's
-  // TaskRunner.
+  // Returns the delay until the next pending task of the main thread's
+  // TaskRunner if there is one, otherwise it returns TimeDelta::Max().
   TimeDelta NextMainThreadPendingTaskDelay() const;
+
+  // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Returns true iff the next task is delayed. Returns false if the next task
+  // is immediate or if there is no next task.
+  bool NextTaskIsDelayed() const;
 
  protected:
   explicit ScopedTaskEnvironment(ScopedTaskEnvironment&& other);

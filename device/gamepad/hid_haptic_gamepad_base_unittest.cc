@@ -146,7 +146,7 @@ TEST_F(HidHapticGamepadBaseTest, PlayEffectTest) {
   EXPECT_THAT(gamepad_->output_reports_,
               testing::ElementsAre(start_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Finish the effect.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -156,7 +156,7 @@ TEST_F(HidHapticGamepadBaseTest, PlayEffectTest) {
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, ResetVibrationTest) {
@@ -174,7 +174,7 @@ TEST_F(HidHapticGamepadBaseTest, ResetVibrationTest) {
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
@@ -191,7 +191,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
   EXPECT_THAT(gamepad_->output_reports_,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Finish the effect.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -201,7 +201,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
@@ -219,7 +219,7 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
   EXPECT_THAT(gamepad_->output_reports_,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Start vibration.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -228,7 +228,7 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
               testing::ElementsAre(stop_vibration_output_report_,
                                    start_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Finish the effect.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -239,7 +239,7 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
@@ -269,7 +269,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
   EXPECT_EQ(0, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultPreempted,
             first_callback_result_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Finish the effect.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -280,7 +280,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
   EXPECT_EQ(1, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
@@ -312,7 +312,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   EXPECT_EQ(0, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultPreempted,
             first_callback_result_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Start vibration.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -322,7 +322,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
                                    start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 
   // Finish the effect.
   scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
@@ -334,7 +334,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   EXPECT_EQ(1, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(HidHapticGamepadBaseTest, ResetVibrationPreemptionTest) {
@@ -363,7 +363,7 @@ TEST_F(HidHapticGamepadBaseTest, ResetVibrationPreemptionTest) {
             first_callback_result_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
-  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 }  // namespace

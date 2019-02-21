@@ -548,7 +548,7 @@ TEST_F(ParkableStringTest, CorrectAsanPoisoning) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
   // A main thread task is posted once compression is done.
-  while (!scoped_task_environment_.MainThreadHasPendingTask()) {
+  while (scoped_task_environment_.GetPendingMainThreadTaskCount() == 0) {
     parkable.Lock();
     parkable.ToString();
     parkable.Unlock();
@@ -735,7 +735,7 @@ class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
 
  protected:
   void WaitForAging() {
-    ASSERT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+    EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kAgingIntervalInSeconds));
     RunPostedTasks();
@@ -748,8 +748,9 @@ class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
   }
 
   void TearDown() override {
-    while (scoped_task_environment_.MainThreadHasPendingTask())
+    while (scoped_task_environment_.GetPendingMainThreadTaskCount() != 0) {
       WaitForAging();
+    }
 
     ParkableStringTestBase::TearDown();
   }
@@ -811,9 +812,9 @@ TEST_F(ParkableStringForegroundParkingTest, OldStringsAreParked) {
 
 TEST_F(ParkableStringForegroundParkingTest, AgingTicksStopsAndRestarts) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // Nothing more to do, the tick is not re-scheduled.
   WaitForAging();
@@ -821,7 +822,7 @@ TEST_F(ParkableStringForegroundParkingTest, AgingTicksStopsAndRestarts) {
 
   // Unparking, the tick restarts.
   parkable.ToString();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   WaitForAging();
   // And stops again. 2 ticks to park the string (age, then park), and one
@@ -840,18 +841,18 @@ TEST_F(ParkableStringForegroundParkingTest, AgingTicksStopsWithNoProgress) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   String retained = parkable.ToString();
 
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // The only string is referenced externally, nothing aging can change.
   CheckOnlyCpuCostTaskRemains();
 
   ParkableString parkable2(MakeLargeString().ReleaseImpl());
   WaitForAging();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   EXPECT_TRUE(parkable2.Impl()->is_parked());
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // Once |parkable2| has been parked, back to the case where the only
   // remaining strings are referenced externally.
@@ -872,7 +873,7 @@ TEST_F(ParkableStringForegroundParkingTest, OnlyOneAgingTask) {
 
   parkable1.ToString();
   parkable2.ToString();
-  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
   // Aging task + stats.
   EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
 }

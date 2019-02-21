@@ -819,6 +819,13 @@ void SequenceManagerImpl::CleanUpQueues() {
   main_thread_only().queues_to_delete.clear();
 }
 
+void SequenceManagerImpl::RemoveAllCanceledTasksFromFrontOfWorkQueues() {
+  for (internal::TaskQueueImpl* queue : main_thread_only().active_queues) {
+    queue->delayed_work_queue()->RemoveAllCanceledTasksFromFront();
+    queue->immediate_work_queue()->RemoveAllCanceledTasksFromFront();
+  }
+}
+
 WeakPtr<SequenceManagerImpl> SequenceManagerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -866,6 +873,7 @@ void SequenceManagerImpl::DeletePendingTasks() {
 
 bool SequenceManagerImpl::HasTasks() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  RemoveAllCanceledTasksFromFrontOfWorkQueues();
 
   for (TaskQueueImpl* task_queue : main_thread_only().active_queues) {
     if (task_queue->HasTasks())
@@ -901,10 +909,8 @@ void SequenceManagerImpl::AttachToMessagePump() {
 #endif
 
 bool SequenceManagerImpl::IsIdleForTesting() {
-  // We don't use DelayTillNextTask here because the MessageLoop version which
-  // we're emulating does not take Now() into account.  If it did tests would
-  // become flaky wrt delayed tasks that are just about to run.
   ReloadEmptyWorkQueues();
+  RemoveAllCanceledTasksFromFrontOfWorkQueues();
   return main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
 }
 

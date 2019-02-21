@@ -1141,7 +1141,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_TRUE(MainThreadIsIdle());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
   EXPECT_FALSE(session_);
   EXPECT_FALSE(spdy_stream1);
@@ -1873,7 +1873,7 @@ TEST_F(SpdySessionTestWithMockTime, FailedPing) {
 
   // Since no response to PING has been received,
   // CheckPingStatus() closes the connection.
-  EXPECT_FALSE(MainThreadHasPendingTask());
+  EXPECT_TRUE(MainThreadIsIdle());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
   EXPECT_FALSE(session_);
   EXPECT_FALSE(spdy_stream1);
