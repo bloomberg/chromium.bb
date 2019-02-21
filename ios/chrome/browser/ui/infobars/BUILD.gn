@@ -11,6 +11,7 @@ source_set("infobars") {
     "infobar_container_mediator.mm",
   ]
   deps = [
+    ":feature_flags",
     ":infobars_ui",
     ":public",
     "//base",

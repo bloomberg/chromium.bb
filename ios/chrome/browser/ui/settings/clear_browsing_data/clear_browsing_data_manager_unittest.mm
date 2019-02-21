@@ -12,8 +12,8 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
@@ -88,7 +88,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestModel) {
   [manager_ loadModel:model_];
 
   int section_offset = 0;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     EXPECT_EQ(4, [model_ numberOfSections]);
     EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
     section_offset = 1;
@@ -112,7 +112,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
   [manager_ loadModel:model_];
 
   int section_offset = 0;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     EXPECT_EQ(5, [model_ numberOfSections]);
     EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
     section_offset = 1;
@@ -162,7 +162,7 @@ TEST_F(ClearBrowsingDataManagerTest,
 
   // If the new UI is not enabled then the pref value for the time period
   // is ignored and the time period defaults to ALL_TIME.
-  if (!experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (!IsNewClearBrowsingDataUIEnabled()) {
     return;
   }
   PrefService* prefs = browser_state_->GetPrefs();

@@ -42,7 +42,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
@@ -220,7 +219,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
 
-    if (experimental_flags::IsAutomaticPasswordGenerationEnabled() &&
+    if (features::IsAutomaticPasswordGenerationEnabled() &&
         !_passwordManagerClient->IsIncognito()) {
       _passwordGenerationManager.reset(new PasswordGenerationManager(
           _passwordManagerClient.get(), _passwordManagerDriver.get()));
@@ -676,7 +675,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (BOOL)canGeneratePasswordForForm:(NSString*)formName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if (!experimental_flags::IsAutomaticPasswordGenerationEnabled())
+  if (!features::IsAutomaticPasswordGenerationEnabled())
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;

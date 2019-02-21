@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/webui/about_ui.h"
 #include "ios/chrome/browser/ui/webui/crashes_ui.h"
 #include "ios/chrome/browser/ui/webui/flags_ui.h"

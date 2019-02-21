@@ -15,10 +15,10 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,7 +41,7 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
       is_sync_user, std::move(form_manager)));
   delegate->set_dispatcher(dispatcher);
 
-  if (experimental_flags::IsInfobarUIRebootEnabled()) {
+  if (IsInfobarUIRebootEnabled()) {
     InfobarPasswordCoordinator* coordinator =
         [[InfobarPasswordCoordinator alloc]
             initWithInfoBarDelegate:delegate.get()];

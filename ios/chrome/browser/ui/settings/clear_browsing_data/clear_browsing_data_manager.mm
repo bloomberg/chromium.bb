@@ -20,9 +20,9 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -100,7 +100,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     _listType = listType;
 
     _timePeriod = browsing_data::TimePeriod::ALL_TIME;
-    if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+    if (IsNewClearBrowsingDataUIEnabled()) {
       constexpr int maxValue =
           static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
       const int prefValue = browserState->GetPrefs()->GetInteger(
@@ -119,7 +119,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)loadModel:(ListModel*)model {
   // Time range section.
   // Only implementing new UI for kListTypeCollectionView.
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
+  if (IsNewClearBrowsingDataUIEnabled() &&
       self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     [model addSectionWithIdentifier:SectionIdentifierTimeRange];
     [model addItem:[self timeRangeItem]
@@ -355,7 +355,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                           prefName:(const char*)prefName {
   PrefService* prefs = self.browserState->GetPrefs();
   std::unique_ptr<BrowsingDataCounterWrapper> counter;
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     __weak ClearBrowsingDataManager* weakSelf = self;
     counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
         prefName, self.browserState, prefs,
@@ -386,7 +386,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     // Because there is no counter for cookies, an explanatory text is
     // displayed.
     if (itemType == ItemTypeDataTypeCookiesSiteData &&
-        experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
+        IsNewClearBrowsingDataUIEnabled() &&
         prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
       collectionClearDataItem.detailText =
           l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);

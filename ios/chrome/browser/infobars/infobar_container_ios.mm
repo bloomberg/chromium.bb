@@ -4,9 +4,9 @@
 
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,7 +32,7 @@ void InfoBarContainerIOS::PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
   if ([delegate isPresented]) {
     // Only InfobarUIReboot Infobars should be presented using the non legacy
     // consumer.
-    DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+    DCHECK(IsInfobarUIRebootEnabled());
     [consumer_ addInfoBarWithDelegate:delegate position:position];
   } else {
     [legacyConsumer_ addInfoBarWithDelegate:delegate position:position];

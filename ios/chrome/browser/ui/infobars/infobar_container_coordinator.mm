@@ -7,7 +7,6 @@
 #include <memory>
 
 #import "base/mac/foundation_util.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
@@ -15,6 +14,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
@@ -131,7 +131,7 @@
 
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
                       position:(NSInteger)position {
-  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  DCHECK(IsInfobarUIRebootEnabled());
   ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
       static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
 
@@ -159,7 +159,7 @@
 }
 
 - (void)updateLayoutAnimated:(BOOL)animated {
-  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+  DCHECK(IsInfobarUIRebootEnabled());
   // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
   // since we use autolayout for the contained Infobars.
 }

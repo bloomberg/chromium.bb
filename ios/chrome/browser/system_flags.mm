@@ -5,7 +5,7 @@
 // This file can be empty. Its purpose is to contain the relatively short lived
 // definitions required for experimental flags.
 
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -49,9 +49,6 @@ namespace experimental_flags {
 
 const base::Feature kExternalFilesLoadedInWebState{
     "ExternalFilesLoadedInWebState", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kWebClearBrowsingData{"WebClearBrowsingData",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool AlwaysDisplayFirstRun() {
   return
@@ -111,10 +108,6 @@ bool MustClearApplicationGroupSandbox() {
   return value;
 }
 
-bool IsNewClearBrowsingDataUIEnabled() {
-  return base::FeatureList::IsEnabled(kNewClearBrowsingDataUI);
-}
-
 bool IsThirdPartyKeyboardWorkaroundEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -127,18 +120,6 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
 
   // Check if the Finch experiment is turned on.
   return base::FeatureList::IsEnabled(kEnableThirdPartyKeyboardWorkaround);
-}
-
-bool IsBookmarksUIRebootEnabled() {
-  return true;
-}
-
-bool IsInfobarUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kInfobarUIReboot);
-}
-
-bool IsAutomaticPasswordGenerationEnabled() {
-  return base::FeatureList::IsEnabled(features::kPasswordGeneration);
 }
 
 }  // namespace experimental_flags

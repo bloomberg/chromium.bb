@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/empty_reading_list_message_util.h"
 
 #include "base/logging.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
