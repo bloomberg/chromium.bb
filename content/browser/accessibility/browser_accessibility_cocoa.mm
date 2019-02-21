@@ -16,6 +16,7 @@
 #include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,10 +69,13 @@ NSString* const NSAccessibilityARIASetSizeAttribute = @"AXARIASetSize";
 NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
 NSString* const NSAccessibilityAutocompleteValueAttribute =
     @"AXAutocompleteValue";
+NSString* const NSAccessibilityBlockQuoteLevelAttribute = @"AXBlockQuoteLevel";
+NSString* const NSAccessibilityDOMClassList = @"AXDOMClassList";
 NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
 NSString* const NSAccessibilityEditableAncestorAttribute =
     @"AXEditableAncestor";
+NSString* const NSAccessibilityElementBusyAttribute = @"AXElementBusy";
 NSString* const NSAccessibilityFocusableAncestorAttribute =
     @"AXFocusableAncestor";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
@@ -591,6 +595,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityARIASetSizeAttribute, @"ariaSetSize"},
       {NSAccessibilityAccessKeyAttribute, @"accessKey"},
       {NSAccessibilityAutocompleteValueAttribute, @"autocompleteValue"},
+      {NSAccessibilityBlockQuoteLevelAttribute, @"blockQuoteLevel"},
       {NSAccessibilityChildrenAttribute, @"children"},
       {NSAccessibilityColumnsAttribute, @"columns"},
       {NSAccessibilityColumnHeaderUIElementsAttribute, @"columnHeaders"},
@@ -602,8 +607,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
       {NSAccessibilityDisclosedRowsAttribute, @"disclosedRows"},
       {NSAccessibilityDropEffectsAttribute, @"dropEffects"},
+      {NSAccessibilityDOMClassList, @"domClassList"},
       {NSAccessibilityDOMIdentifierAttribute, @"domIdentifier"},
       {NSAccessibilityEditableAncestorAttribute, @"editableAncestor"},
+      {NSAccessibilityElementBusyAttribute, @"elementBusy"},
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
@@ -779,6 +786,22 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   return NSStringForStringAttribute(owner_,
                                     ax::mojom::StringAttribute::kAutoComplete);
+}
+
+- (id)blockQuoteLevel {
+  if (![self instanceActive])
+    return nil;
+  // TODO(accessibility) This is for the number of ancestors that are a
+  // <blockquote>, including self, useful for tracking replies to replies etc.
+  // in an email.
+  int level = 0;
+  BrowserAccessibility* ancestor = owner_;
+  while (ancestor) {
+    if (ancestor->GetRole() == ax::mojom::Role::kBlockquote)
+      ++level;
+    ancestor = ancestor->PlatformGetParent();
+  }
+  return [NSNumber numberWithInt:level];
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
@@ -1053,6 +1076,22 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return nil;
 }
 
+- (NSArray*)domClassList {
+  if (![self instanceActive])
+    return nil;
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+
+  std::string classes;
+  if (owner_->GetHtmlAttribute("class", &classes)) {
+    std::vector<std::string> split_classes = base::SplitString(
+        classes, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& className : split_classes)
+      [ret addObject:(base::SysUTF8ToNSString(className))];
+  }
+  return ret;
+}
+
 - (NSString*)domIdentifier {
   if (![self instanceActive])
     return nil;
@@ -1061,7 +1100,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (owner_->GetHtmlAttribute("id", &id))
     return base::SysUTF8ToNSString(id);
 
-  return nil;
+  return @"";
 }
 
 - (id)editableAncestor {
@@ -1079,6 +1118,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     editableRoot = parent;
   }
   return editableRoot;
+}
+
+- (NSNumber*)elementBusy {
+  if (![self instanceActive])
+    return nil;
+  return [NSNumber numberWithBool:owner_->GetData().GetBoolAttribute(
+                                      ax::mojom::BoolAttribute::kBusy)];
 }
 
 - (NSNumber*)enabled {
@@ -1380,8 +1426,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   [self addLinkedUIElementsFromAttribute:ax::mojom::IntListAttribute::
                                              kRadioGroupIds
                                    addTo:ret];
-  if ([ret count] == 0)
-    return nil;
   return ret;
 }
 
@@ -1961,6 +2005,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return base::SysUTF16ToNSString(value.substr(selStart, selLength));
 }
 
+// Example, caret at offset 5:
+// AXSelectedTextRange:  “pos=5 len=0”
 - (NSValue*)selectedTextRange {
   if (![self instanceActive])
     return nil;
@@ -1970,6 +2016,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
                                &selStart) ||
       !owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &selEnd)) {
+    // TODO(accessibility) Incorrectly reaches this line in a rich text area.
     return nil;
   }
 
@@ -2127,7 +2174,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
                                       ax::mojom::StringAttribute::kName);
   }
 
-  return nil;
+  return @"";
 }
 
 - (id)titleUIElement {
@@ -2895,26 +2942,27 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   // General attributes.
   NSMutableArray* ret = [NSMutableArray
-      arrayWithObjects:NSAccessibilityAccessKeyAttribute,
+      arrayWithObjects:NSAccessibilityBlockQuoteLevelAttribute,
                        NSAccessibilityChildrenAttribute,
                        NSAccessibilityDescriptionAttribute,
+                       NSAccessibilityDOMClassList,
                        NSAccessibilityDOMIdentifierAttribute,
+                       NSAccessibilityElementBusyAttribute,
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
                        NSAccessibilityHelpAttribute,
-                       NSAccessibilityInvalidAttribute,
                        NSAccessibilityLinkedUIElementsAttribute,
                        NSAccessibilityParentAttribute,
                        NSAccessibilityPositionAttribute,
                        NSAccessibilityRoleAttribute,
                        NSAccessibilityRoleDescriptionAttribute,
+                       NSAccessibilitySelectedAttribute,
                        NSAccessibilitySelectedTextMarkerRangeAttribute,
                        NSAccessibilitySizeAttribute,
                        NSAccessibilityStartTextMarkerAttribute,
                        NSAccessibilitySubroleAttribute,
                        NSAccessibilityTitleAttribute,
-                       NSAccessibilityTitleUIElementAttribute,
                        NSAccessibilityTopLevelUIElementAttribute,
                        NSAccessibilityValueAttribute,
                        NSAccessibilityVisitedAttribute,
@@ -3005,10 +3053,21 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   // Caret navigation and text selection attributes.
   if (owner_->HasState(ax::mojom::State::kEditable)) {
+    // Add ancestor attributes if not a web area.
+    if (![role isEqualToString:@"AXWebArea"]) {
+      [ret addObjectsFromArray:@[
+        NSAccessibilityEditableAncestorAttribute,
+        NSAccessibilityFocusableAncestorAttribute,
+        NSAccessibilityHighestEditableAncestorAttribute
+      ]];
+    }
+  }
+
+  if (owner_->GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
     [ret addObjectsFromArray:@[
-      NSAccessibilityAutocompleteValueAttribute,
       NSAccessibilityInsertionPointLineNumberAttribute,
       NSAccessibilityNumberOfCharactersAttribute,
+      NSAccessibilityPlaceholderValueAttribute,
       NSAccessibilitySelectedTextAttribute,
       NSAccessibilitySelectedTextRangeAttribute,
       NSAccessibilityVisibleCharacterRangeAttribute,
@@ -3017,15 +3076,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       // NSAccessibilityValueAutofilledAttribute,
       // Not currently supported by Chrome:
       // NSAccessibilityValueAutofillTypeAttribute
-    ]];
-  }
-
-  // Add ancestor attributes if not a web area.
-  if (![role isEqualToString:@"AXWebArea"]) {
-    [ret addObjectsFromArray:@[
-      NSAccessibilityEditableAncestorAttribute,
-      NSAccessibilityFocusableAncestorAttribute,
-      NSAccessibilityHighestEditableAncestorAttribute
     ]];
   }
 
@@ -3087,14 +3137,19 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[ NSAccessibilityOrientationAttribute ]];
   }
 
-  if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder)) {
-    [ret addObjectsFromArray:@[ NSAccessibilityPlaceholderValueAttribute ]];
+  // Anything focusable or any control:
+  if (owner_->HasIntAttribute(ax::mojom::IntAttribute::kRestriction) ||
+      owner_->HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) ||
+      owner_->HasState(ax::mojom::State::kFocusable)) {
+    [ret addObjectsFromArray:@[
+      NSAccessibilityAccessKeyAttribute,
+      NSAccessibilityInvalidAttribute,
+      @"AXRequired",
+    ]];
   }
 
-  if (GetState(owner_, ax::mojom::State::kRequired)) {
-    [ret addObjectsFromArray:@[ @"AXRequired" ]];
-  }
-
+  // TODO(accessibility) What nodes should language be exposed on given new
+  // auto detection features?
   if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
     [ret addObjectsFromArray:@[ NSAccessibilityLanguageAttribute ]];
   }
@@ -3112,6 +3167,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
               .size() > 0) {
     [ret addObjectsFromArray:@[ NSAccessibilityTitleUIElementAttribute ]];
   }
+
+  if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete))
+    [ret addObject:NSAccessibilityAutocompleteValueAttribute];
+
+  if ([self shouldExposeTitleUIElement])
+    [ret addObject:NSAccessibilityTitleUIElementAttribute];
+
   // TODO(aboxhall): expose NSAccessibilityServesAsTitleForUIElementsAttribute
   // for elements which are referred to by labelledby or are labels
 

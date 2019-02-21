@@ -1084,6 +1084,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBlockquote) {
   RunHtmlTest(FILE_PATH_LITERAL("blockquote.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityBlockquoteLevels) {
+  RunHtmlTest(FILE_PATH_LITERAL("blockquote-levels.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBody) {
   RunHtmlTest(FILE_PATH_LITERAL("body.html"));
 }

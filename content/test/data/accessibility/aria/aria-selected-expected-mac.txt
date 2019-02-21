@@ -1,4 +1,4 @@
-AXWebArea
-++AXList AXSelectedChildren=["AXStaticText 1"]
+AXWebArea AXSelected='0'
+++AXList AXSelected='0' AXSelectedChildren=["AXStaticText 1"]
 ++++AXStaticText AXValue='1' AXSelected='1'
 ++++AXStaticText AXValue='2' AXSelected='0'
