@@ -146,10 +146,6 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
   base::TimeDelta time_waiting;
   base::AutoLock auto_lock(event_lock_);
   while (true) {
-    const base::TimeTicks start_time = base::TimeTicks::Now();
-    event_cv_.TimedWait(max_wait);
-    time_waiting += base::TimeTicks::Now() - start_time;
-
     // TODO(dstaessens@) Investigate whether we really need to keep the full
     // list of events for more complex testcases.
     // Go through list of events since last wait, looking for the event we're
@@ -166,6 +162,10 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
     // Check whether we've exceeded the maximum time we're allowed to wait.
     if (time_waiting >= max_wait)
       return false;
+
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+    event_cv_.TimedWait(max_wait);
+    time_waiting += base::TimeTicks::Now() - start_time;
   }
 }
 
