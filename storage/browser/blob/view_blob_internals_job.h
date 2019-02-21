@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ViewBlobInternalsJob
   static void GenerateHTMLForBlobData(const BlobEntry& blob_data,
                                       const std::string& content_type,
                                       const std::string& content_disposition,
-                                      int refcount,
+                                      size_t refcount,
                                       std::string* out);
 
   BlobStorageContext* blob_storage_context_;

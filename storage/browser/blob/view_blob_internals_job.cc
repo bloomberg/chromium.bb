@@ -225,7 +225,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
     const BlobEntry& blob_data,
     const std::string& content_type,
     const std::string& content_disposition,
-    int refcount,
+    size_t refcount,
     std::string* out) {
   StartHTMLList(out);
 
