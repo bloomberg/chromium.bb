@@ -17,9 +17,13 @@ static_library("send_tab_to_self") {
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync",
     "//components/version_info",
     "//url",
+  ]
+  public_deps = [
+    "//components/send_tab_to_self/proto:send_tab_to_self_proto",
   ]
 }
 
@@ -33,6 +37,7 @@ source_set("unit_tests") {
     ":send_tab_to_self",
     "//base",
     "//base/test:test_support",
+    "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",

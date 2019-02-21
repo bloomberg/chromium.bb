@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/version_info/channel.h"
 
 namespace syncer {
@@ -26,7 +27,8 @@ class SendTabToSelfSyncService : public KeyedService {
  public:
   SendTabToSelfSyncService(
       version_info::Channel channel,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider);
+      syncer::LocalDeviceInfoProvider* local_device_info_provider,
+      syncer::OnceModelTypeStoreFactory create_store_callback);
   ~SendTabToSelfSyncService() override;
 
   SendTabToSelfModel* GetSendTabToSelfModel();

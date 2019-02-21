@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/test/simple_test_tick_clock.h"
+#include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,8 +69,8 @@ TEST(SendTabToSelfEntry, AsProto) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
                            base::Time::FromTimeT(10), base::Time::FromTimeT(10),
                            "device");
-  std::unique_ptr<sync_pb::SendTabToSelfSpecifics> pb_entry(entry.AsProto());
-  EXPECT_TRUE(IsEqualForTesting(entry, *pb_entry));
+  SendTabToSelfLocal pb_entry(entry.AsLocalProto());
+  EXPECT_TRUE(IsEqualForTesting(entry, pb_entry.specifics()));
 }
 
 // Tests that the send tab to self entry is correctly parsed from

@@ -17,6 +17,8 @@ class SendTabToSelfSpecifics;
 
 namespace send_tab_to_self {
 
+class SendTabToSelfLocal;
+
 // A tab that is being shared. The URL is a unique identifier for an entry, as
 // such it should not be empty and is the only thing considered when comparing
 // entries.
@@ -49,13 +51,19 @@ class SendTabToSelfEntry {
   const std::string& GetDeviceName() const;
 
   // Returns a protobuf encoding the content of this SendTabToSelfEntry for
-  // sync.
-  std::unique_ptr<sync_pb::SendTabToSelfSpecifics> AsProto() const;
+  // local storage.
+  SendTabToSelfLocal AsLocalProto() const;
 
   // Creates a SendTabToSelfEntry from the protobuf format.
   // If creation time is not set, it will be set to |now|.
   static std::unique_ptr<SendTabToSelfEntry> FromProto(
       const sync_pb::SendTabToSelfSpecifics& pb_entry,
+      base::Time now);
+
+  // Creates a SendTabToSelfEntry from the protobuf format.
+  // If creation time is not set, it will be set to |now|.
+  static std::unique_ptr<SendTabToSelfEntry> FromLocalProto(
+      const SendTabToSelfLocal& pb_entry,
       base::Time now);
 
  private:
