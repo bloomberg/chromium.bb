@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -54,19 +55,12 @@ struct BLINK_COMMON_EXPORT PlatformNotificationData {
   PlatformNotificationData(const PlatformNotificationData& other);
   ~PlatformNotificationData();
 
-  enum Direction {
-    DIRECTION_LEFT_TO_RIGHT,
-    DIRECTION_RIGHT_TO_LEFT,
-    DIRECTION_AUTO,
-
-    DIRECTION_LAST = DIRECTION_AUTO
-  };
-
   // Title to be displayed with the Web Notification.
   base::string16 title;
 
   // Hint to determine the directionality of the displayed notification.
-  Direction direction = DIRECTION_LEFT_TO_RIGHT;
+  mojom::NotificationDirection direction =
+      mojom::NotificationDirection::LEFT_TO_RIGHT;
 
   // BCP 47 language tag describing the notification's contents. Optional.
   std::string lang;

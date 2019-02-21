@@ -19,17 +19,6 @@
 namespace mojo {
 
 template <>
-struct BLINK_COMMON_EXPORT
-    EnumTraits<blink::mojom::NotificationDirection,
-               blink::PlatformNotificationData::Direction> {
-  static blink::mojom::NotificationDirection ToMojom(
-      blink::PlatformNotificationData::Direction input);
-
-  static bool FromMojom(blink::mojom::NotificationDirection input,
-                        blink::PlatformNotificationData::Direction* out);
-};
-
-template <>
 struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::NotificationActionType,
                                       blink::PlatformNotificationActionType> {
   static blink::mojom::NotificationActionType ToMojom(
@@ -80,7 +69,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
     return data.title;
   }
 
-  static blink::PlatformNotificationData::Direction direction(
+  static blink::mojom::NotificationDirection direction(
       const blink::PlatformNotificationData& data) {
     return data.direction;
   }

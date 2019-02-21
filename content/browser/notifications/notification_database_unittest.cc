@@ -286,7 +286,7 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
   blink::PlatformNotificationData notification_data;
   notification_data.title = base::UTF8ToUTF16("My Notification");
   notification_data.direction =
-      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
   notification_data.lang = "nl-NL";
   notification_data.body = base::UTF8ToUTF16("Hello, world!");
   notification_data.tag = "replace id";
