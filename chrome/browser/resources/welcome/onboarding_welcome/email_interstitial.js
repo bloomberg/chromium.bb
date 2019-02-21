@@ -45,6 +45,10 @@ Polymer({
 
   /** @private */
   onContinueClick_: function() {
+    // Prevent duplicate metrics if a user clicks "Continue" multiple times.
+    if (this.finalized_) {
+      return;
+    }
     this.finalized_ = true;
     this.emailInterstitialProxy_.recordNext();
     const providerId =
