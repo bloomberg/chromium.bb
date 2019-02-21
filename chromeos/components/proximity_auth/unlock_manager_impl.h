@@ -35,6 +35,7 @@ class ProximityMonitor;
 class UnlockManagerImpl : public UnlockManager,
                           public MessengerObserver,
                           public ProximityMonitorObserver,
+                          public ScreenlockBridge::Observer,
                           chromeos::PowerManagerClient::Observer,
                           public device::BluetoothAdapter::Observer {
  public:
@@ -77,6 +78,13 @@ class UnlockManagerImpl : public UnlockManager,
 
   // ProximityMonitorObserver:
   void OnProximityStateChanged() override;
+
+  // ScreenlockBridge::Observer
+  void OnScreenDidLock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnScreenDidUnlock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnFocusedUserChanged(const AccountId& account_id) override;
 
   // Called when the screenlock state changes.
   void OnScreenLockedOrUnlocked(bool is_locked);
@@ -175,6 +183,9 @@ class UnlockManagerImpl : public UnlockManager,
 
   // Used to access the common prefs. Expected to outlive |this| instance.
   ProximityAuthPrefManager* pref_manager_;
+
+  // Whether the screen is currently locked.
+  bool is_locked_;
 
   // True if the manager is currently processing a user-initiated authentication
   // attempt, which is initiated when the user pod is clicked.
