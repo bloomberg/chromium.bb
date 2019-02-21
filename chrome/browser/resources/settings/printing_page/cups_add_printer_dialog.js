@@ -260,9 +260,8 @@ Polymer({
   },
 
   /** @private */
-  onCancelConfiguringTap_: function() {
+  onCloseConfiguringTap_: function() {
     this.close();
-    this.fire('configuring-dialog-closed');
   },
 
   close: function() {
@@ -315,7 +314,6 @@ Polymer({
   },
 
   listeners: {
-    'configuring-dialog-closed': 'configuringDialogClosed_',
     'open-manually-add-printer-dialog': 'openManuallyAddPrinterDialog_',
     'open-configuring-printer-dialog': 'openConfiguringPrinterDialog_',
     'open-discovery-printers-dialog': 'openDiscoveryPrintersDialog_',
@@ -441,26 +439,6 @@ Polymer({
     this.switchDialog_(
         this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
         'showManufacturerDialog_');
-  },
-
-  /** @private */
-  configuringDialogClosed_: function() {
-    // If the configuring dialog is closed, we want to return whence we came.
-    //
-    // TODO(justincarlson) - This shouldn't need to be a conditional;
-    // clean up the way we switch dialogs so we don't have to supply
-    // redundant information and can just return to the previous
-    // dialog.
-    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
-      this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showDiscoveryDialog_');
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
-      this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showManuallyAddDialog_');
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
-      this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showManufacturerDialog_');
-    }
   },
 
   /** @private */

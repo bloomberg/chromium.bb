@@ -410,4 +410,42 @@ suite('CupsAddPrinterDialogTests', function() {
           assertDeepEquals(usbInfo, printer.printerUsbInfo);
         });
   });
+
+  /**
+   * Test that the close button exists on the configure dialog.
+   */
+  test('ConfigureDialogCancelDisabled', function() {
+    // Starts in discovery dialog, select add manually button.
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    discoveryDialog.$$('.secondary-button').click();
+    Polymer.dom.flush();
+
+    // Now we should be in the manually add dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+    fillAddManuallyDialog(addDialog);
+
+    // Advance to the configure dialog.
+    addDialog.$$('.action-button').click();
+    Polymer.dom.flush();
+
+    // Configure is shown.
+    const configureDialog = dialog.$$('add-printer-configuring-dialog');
+    assertTrue(!!configureDialog);
+
+    const closeButton = configureDialog.$$('.cancel-button');
+    assertTrue(!!closeButton);
+    assertFalse(closeButton.disabled);
+
+    const waitForClose = test_util.eventToPromise('close', configureDialog);
+
+    closeButton.click();
+    Polymer.dom.flush();
+
+    return waitForClose.then(() => {
+      dialog = page.$$('settings-cups-add-printer-dialog');
+      assertFalse(dialog.showConfiguringDialog_);
+    });
+  });
 });
