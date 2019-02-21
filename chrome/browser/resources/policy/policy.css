@@ -5,7 +5,7 @@
 @import 'policy_common.css';
 
 #status-box-container {
-  display: -webkit-flex;
+  display: flex;
 }
 
 fieldset {
@@ -20,7 +20,7 @@ fieldset + fieldset {
 }
 
 div.status-entry {
-  display: -webkit-flex;
+  display: flex;
   margin-bottom: .8em;
 }
 

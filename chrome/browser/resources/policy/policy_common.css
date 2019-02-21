@@ -37,12 +37,12 @@ div.label {
 
 #show-unset-container {
   float: right;
-  text-align: right;
+  text-align: end;
 }
 
 html[dir='rtl'] #show-unset-container {
   float: left;
-  text-align: left;
+  text-align: start;
 }
 
 div.show-unset-checkbox {

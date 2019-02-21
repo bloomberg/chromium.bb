@@ -26,7 +26,7 @@ body header {
 }
 
 body header > h1 {
-  margin-left: 10px;
+  margin-inline-start: 10px;
 }
 
 body section {
@@ -39,7 +39,7 @@ body section > h3 {
 }
 
 #status-box-container {
-  display: -webkit-flex;
+  display: flex;
 }
 
 fieldset {
@@ -54,7 +54,7 @@ fieldset + fieldset {
 }
 
 div.status-entry {
-  display: -webkit-flex;
+  display: flex;
   margin-bottom: .8em;
 }
 
@@ -69,12 +69,12 @@ div.label {
 
 #show-unset-container {
   float: right;
-  text-align: right;
+  text-align: end;
 }
 
 html[dir='rtl'] #show-unset-container {
   float: left;
-  text-align: left;
+  text-align: start;
 }
 
 div.reload-policies-button {
