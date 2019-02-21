@@ -6,11 +6,22 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state)
+    : browser_state_(browser_state) {
+  DCHECK(browser_state_);
+  tab_model_ =
+      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
+                                  browserState:browser_state_];
+  web_state_list_ = tab_model_.webStateList;
+}
 
 BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state,
                          TabModel* tab_model)
@@ -35,7 +46,7 @@ WebStateList* BrowserImpl::GetWebStateList() const {
 }
 
 // static
-std::unique_ptr<Browser> Browser::Create(ios::ChromeBrowserState* browser_state,
-                                         TabModel* tab_model) {
-  return std::make_unique<BrowserImpl>(browser_state, tab_model);
+std::unique_ptr<Browser> Browser::Create(
+    ios::ChromeBrowserState* browser_state) {
+  return std::make_unique<BrowserImpl>(browser_state);
 }
