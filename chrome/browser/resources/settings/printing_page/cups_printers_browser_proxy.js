@@ -96,6 +96,8 @@ const PrinterSetupResult = {
   INVALID_PPD: 11,
   PPD_NOT_FOUND: 12,
   PPD_UNRETRIEVABLE: 13,
+  DBUS_NO_REPLY: 64,
+  DBUS_TIMEOUT: 65,
 };
 
 /**

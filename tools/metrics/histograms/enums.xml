@@ -44020,6 +44020,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="PPD Rejected by cupstestppd"/>
   <int value="12" label="Could not find PPD"/>
   <int value="13" label="Failed to download PPD"/>
+  <int value="64" label="No reply from debugd over D-Bus"/>
+  <int value="65" label="Generic D-Bus timeout"/>
 </enum>
 
 <enum name="PrintJobResult">
