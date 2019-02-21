@@ -541,6 +541,12 @@ without changes to the corresponding grd file. -->
                  file="js/webui_resource_test.js" type="chrome_html"
                  compress="gzip" />
 
+      <if expr="is_ios">
+        <structure name="IDR_WEBUI_JS_WEB_UI"
+                   file="js/ios/web_ui.js" type="chrome_html"
+                   compress="gzip" />
+      </if>
+
       <if expr="not is_android and not is_ios">
         <part file="cr_components/cr_components_resources.grdp" />
         <part file="cr_elements_resources.grdp" />

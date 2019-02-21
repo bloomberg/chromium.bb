@@ -2066,7 +2066,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     [self loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
               rendererInitiated];
   } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-             isCurrentURLAppSpecific && _webStateImpl->HasWebUI()) {
+             isCurrentURLAppSpecific && _webStateImpl->HasWebUI() &&
+             !web::features::WebUISchemeHandlingEnabled()) {
     [self loadPlaceholderInWebViewForURL:currentURL
                        rendererInitiated:rendererInitiated
                               forContext:nullptr];
@@ -3356,7 +3357,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // |HasWebUI| will return false.
   _webStateImpl->CreateWebUI(URL);
   bool isWebUIURL = _webStateImpl->HasWebUI();
-  if (isWebUIURL) {
+  if (isWebUIURL && !web::features::WebUISchemeHandlingEnabled()) {
     _webUIManager = [[CRWWebUIManager alloc] initWithWebState:_webStateImpl];
   }
 }
