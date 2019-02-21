@@ -6730,7 +6730,7 @@ the Bookmarks menu.">
         Google may use your history to personalize Search, ads, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO" desc="Information about customizing Sync settings in the sync confirmation dialog when Unity is enabled">
-        You can customize these settings anytime
+        You can always choose what to sync in settings
       </message>
 
       <!-- "Chrome sync" is the Google Cloud Based service used for sync. Thus this string resource is set to "Chrome sync" even for Chromium builds. -->
