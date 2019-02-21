@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -19,6 +20,8 @@
 namespace blink {
 
 class CORE_EXPORT StyleNonInheritedVariables {
+  USING_FAST_MALLOC(StyleNonInheritedVariables);
+
  public:
   static std::unique_ptr<StyleNonInheritedVariables> Create() {
     return base::WrapUnique(new StyleNonInheritedVariables);

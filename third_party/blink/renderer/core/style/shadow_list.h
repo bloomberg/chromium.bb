@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -47,6 +48,8 @@ typedef Vector<ShadowData, 1> ShadowDataVector;
 // These are used to store shadows in specified order, but we usually want to
 // iterate over them backwards as the first-specified shadow is painted on top.
 class ShadowList : public RefCounted<ShadowList> {
+  USING_FAST_MALLOC(ShadowList);
+
  public:
   // This consumes passed in vector.
   static scoped_refptr<ShadowList> Adopt(ShadowDataVector& shadows) {

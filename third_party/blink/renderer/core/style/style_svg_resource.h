@@ -9,11 +9,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
 class StyleSVGResource : public RefCounted<StyleSVGResource> {
+  USING_FAST_MALLOC(StyleSVGResource);
+
  public:
   static scoped_refptr<StyleSVGResource> Create(SVGResource* resource,
                                                 const AtomicString& url) {

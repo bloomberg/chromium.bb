@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
@@ -41,6 +42,8 @@ class StyleDifference;
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
+  USING_FAST_MALLOC(SVGComputedStyle);
+
  public:
   static scoped_refptr<SVGComputedStyle> Create() {
     return base::AdoptRef(new SVGComputedStyle);

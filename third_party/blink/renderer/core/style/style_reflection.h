@@ -28,11 +28,14 @@
 #include "third_party/blink/renderer/core/css/css_reflection_direction.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
+  USING_FAST_MALLOC(StyleReflection);
+
  public:
   static scoped_refptr<StyleReflection> Create() {
     return base::AdoptRef(new StyleReflection);

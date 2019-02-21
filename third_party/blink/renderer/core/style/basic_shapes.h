@@ -46,6 +46,8 @@ class FloatSize;
 class Path;
 
 class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
+  USING_FAST_MALLOC(BasicShape);
+
  public:
   virtual ~BasicShape() = default;
 
