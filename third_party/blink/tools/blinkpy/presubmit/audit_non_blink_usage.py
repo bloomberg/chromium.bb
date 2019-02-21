@@ -237,6 +237,7 @@ _CONFIG = [
             'cc::ScrollOffsetAnimationCurve',
             'cc::ScrollStateData',
             'cc::SnapAlignment',
+            'cc::SnapAreaData',
             'cc::SnapAxis',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',

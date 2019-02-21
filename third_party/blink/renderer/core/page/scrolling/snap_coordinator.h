@@ -47,8 +47,8 @@ class CORE_EXPORT SnapCoordinator final
 
   // Calculate the SnapAreaData for the specific snap area in its snap
   // container.
-  SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
-                                     const LayoutBox& snap_container);
+  cc::SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
+                                         const LayoutBox& snap_container);
 
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
   // are updated whenever a layout happens.

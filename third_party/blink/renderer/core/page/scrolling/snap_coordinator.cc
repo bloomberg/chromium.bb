@@ -193,12 +193,12 @@ static cc::ScrollSnapAlign GetPhysicalAlignment(
   return align;
 }
 
-SnapAreaData SnapCoordinator::CalculateSnapAreaData(
+cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
     const LayoutBox& snap_area,
     const LayoutBox& snap_container) {
   const ComputedStyle* container_style = snap_container.Style();
   const ComputedStyle* area_style = snap_area.Style();
-  SnapAreaData snap_area_data;
+  cc::SnapAreaData snap_area_data;
 
   // We assume that the snap_container is the snap_area's ancestor in layout
   // tree, as the snap_container is found by walking up the layout tree in
