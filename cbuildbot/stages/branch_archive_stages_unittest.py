@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import mock
+import os
 import shutil
 
 from chromite.cbuildbot.builders import workspace_builders_unittest
@@ -16,6 +17,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import branch_archive_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import workspace_stages_unittest
+from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
@@ -183,6 +185,8 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
     self.factory_zip_mock = self.PatchObject(
         commands, 'BuildFactoryZip',
         return_value='/factory.zip')
+    self.create_tar_mock = self.PatchObject(
+        cros_build_lib, 'CreateTarball')
 
   def ConstructStage(self):
     self._run.attrs.version_info = manifest_version.VersionInfo(
@@ -234,10 +238,23 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
             'R1-1.2.3'),
     ])
 
+    self.assertEqual(self.create_tar_mock.call_args_list, [
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            inputs=['chromiumos_test_image.bin'],
+            chroot=os.path.join(self.workspace, 'chroot'),
+            compression=1,
+            cwd=os.path.join(self.workspace,
+                             'src/build/images/board/latest')),
+    ])
+
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
             '/tempdir/board_factory.zip'),
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            '/tempdir/board_chromiumos_test_image.tar.xz'),
         mock.call(
             '/tempdir/metadata.json',
             '/tempdir/board_metadata.json'),
@@ -245,12 +262,17 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
 
     self.assertEqual(self.upload_mock.call_args_list, [
         mock.call('/tempdir/board_factory.zip', archive=True),
+        mock.call('/tempdir/board_chromiumos_test_image.tar.xz', archive=True),
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
+            'gs://chromeos-image-archive/board-factory/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
             'gs://chromeos-image-archive/board-factory/R1-1.2.3',
             recursive=True, parallel=True),
         mock.call(
@@ -314,10 +336,24 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
             'R1-1.2.3-bNone'),
     ])
 
+    self.assertEqual(self.create_tar_mock.call_args_list, [
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            inputs=['chromiumos_test_image.bin'],
+            chroot=os.path.join(self.workspace, 'chroot'),
+            compression=1,
+            cwd=os.path.join(self.workspace,
+                             'src/build/images/board/latest')),
+    ])
+
+
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
             '/tempdir/board_factory.zip'),
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            '/tempdir/board_chromiumos_test_image.tar.xz'),
         mock.call(
             '/tempdir/metadata.json',
             '/tempdir/board_metadata.json'),
@@ -325,12 +361,17 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
 
     self.assertEqual(self.upload_mock.call_args_list, [
         mock.call('/tempdir/board_factory.zip', archive=True),
+        mock.call('/tempdir/board_chromiumos_test_image.tar.xz', archive=True),
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
+            'gs://chromeos-image-archive/board-factory-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
             'gs://chromeos-image-archive/board-factory-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
         mock.call(

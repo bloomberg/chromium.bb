@@ -238,6 +238,27 @@ class FactoryArchiveStage(WorkspaceArchiveBase):
 
       self.UploadDummyArtifact(os.path.join(zip_dir, filename))
 
+  def CreateTestImageTar(self):
+    """Create and upload chromiumos_test_image.tar.xz.
+
+    This depends on the WorkspaceBuildImage stage having previously created
+    chromiumos_test_image.bin.
+    """
+    chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+
+    with osutils.TempDir(prefix='test_image_dir') as tempdir:
+      target = os.path.join(tempdir, constants.TEST_IMAGE_TAR)
+
+      cros_build_lib.CreateTarball(
+          target,
+          inputs=[constants.TEST_IMAGE_BIN],
+          cwd=self.GetImageDirSymlink(pointer='latest',
+                                      buildroot=self._build_root),
+          compression=cros_build_lib.COMP_GZIP,
+          chroot=chroot)
+
+      self.UploadDummyArtifact(target)
+
   def PerformStage(self):
     """Archive and publish the factory build artifacts."""
     logging.info('Factory version: %s', self.dummy_version)
@@ -252,5 +273,6 @@ class FactoryArchiveStage(WorkspaceArchiveBase):
 
     # factory_image.zip
     self.CreateFactoryZip()
+    self.CreateTestImageTar()
     self.CreateDummyMetadataJson()
     self.PushBoardImage()
