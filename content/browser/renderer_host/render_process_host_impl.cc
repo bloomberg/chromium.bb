@@ -32,8 +32,8 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
@@ -2356,7 +2356,7 @@ const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity() {
   return child_connection_->child_identity();
 }
 
-std::unique_ptr<base::SharedPersistentMemoryAllocator>
+std::unique_ptr<base::PersistentMemoryAllocator>
 RenderProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);
 }
@@ -4080,7 +4080,7 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   if (!base::GlobalHistogramAllocator::Get()) {
     if (is_initialized_) {
       HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
-          this, mojo::ScopedSharedBufferHandle());
+          this, base::WritableSharedMemoryRegion());
     }
     return;
   }
@@ -4090,27 +4090,26 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   if (destination == base::kNullProcessHandle)
     return;
 
+  // Create persistent/shared memory and allow histograms to be stored in
+  // it. Memory that is not actually used won't be physically mapped by the
+  // system. RendererMetrics usage, as reported in UMA, peaked around 0.7MiB
+  // as of 2016-12-20.
+  base::WritableSharedMemoryRegion shm_region =
+      base::WritableSharedMemoryRegion::Create(2 << 20);  // 2 MiB
+  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+  if (!shm_region.IsValid() || !shm_mapping.IsValid())
+    return;
+
   // If a renderer crashes before completing startup and gets restarted, this
   // method will get called a second time meaning that a metrics-allocator
-  // already exists. Don't recreate it.
-  if (!metrics_allocator_) {
-    // Create persistent/shared memory and allow histograms to be stored in
-    // it. Memory that is not actualy used won't be physically mapped by the
-    // system. RendererMetrics usage, as reported in UMA, peaked around 0.7MiB
-    // as of 2016-12-20.
-    auto shm = std::make_unique<base::SharedMemory>();
-    if (!shm->CreateAndMapAnonymous(2 << 20))  // 2 MiB
-      return;
-    metrics_allocator_ =
-        std::make_unique<base::SharedPersistentMemoryAllocator>(
-            std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false);
-  }
+  // already exists. We have to recreate it here because previously used
+  // |shm_region| is gone.
+  metrics_allocator_ =
+      std::make_unique<base::WritableSharedPersistentMemoryAllocator>(
+          std::move(shm_mapping), GetID(), "RendererMetrics");
 
   HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
-      this, mojo::WrapSharedMemoryHandle(
-                metrics_allocator_->shared_memory()->handle().Duplicate(),
-                metrics_allocator_->shared_memory()->mapped_size(),
-                mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite));
+      this, std::move(shm_region));
 }
 
 void RenderProcessHostImpl::ProcessDied(

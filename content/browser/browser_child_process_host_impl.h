@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -76,7 +76,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;
   ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
-  std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+  std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   void SetName(const base::string16& name) override;
   void SetMetricsName(const std::string& metrics_name) override;
@@ -181,7 +181,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 #endif
 
   // The memory allocator, if any, in which the process will write its metrics.
-  std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
+  std::unique_ptr<base::PersistentMemoryAllocator> metrics_allocator_;
+
+  // The shared memory region used by |metrics_allocator_| that should be
+  // transferred to the child process.
+  base::WritableSharedMemoryRegion metrics_shared_region_;
 
   IPC::Channel* channel_ = nullptr;
   bool is_channel_connected_;

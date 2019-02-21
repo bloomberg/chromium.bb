@@ -91,22 +91,22 @@ HistogramController::GetChildHistogramFetcherMap() {
 
 template void HistogramController::SetHistogramMemory(
     ChildProcessHost* host,
-    mojo::ScopedSharedBufferHandle shared_buffer);
+    base::WritableSharedMemoryRegion shared_region);
 
 template void HistogramController::SetHistogramMemory(
     RenderProcessHost* host,
-    mojo::ScopedSharedBufferHandle shared_buffer);
+    base::WritableSharedMemoryRegion shared_region);
 
 template <class T>
 void HistogramController::SetHistogramMemory(
     T* host,
-    mojo::ScopedSharedBufferHandle shared_buffer) {
+    base::WritableSharedMemoryRegion shared_region) {
   content::mojom::ChildHistogramFetcherFactoryPtr
       child_histogram_fetcher_factory;
   content::mojom::ChildHistogramFetcherPtr child_histogram_fetcher;
   content::BindInterface(host, &child_histogram_fetcher_factory);
   child_histogram_fetcher_factory->CreateFetcher(
-      std::move(shared_buffer), mojo::MakeRequest(&child_histogram_fetcher));
+      std::move(shared_region), mojo::MakeRequest(&child_histogram_fetcher));
   InsertChildHistogramFetcherInterface(host,
                                        std::move(child_histogram_fetcher));
 }

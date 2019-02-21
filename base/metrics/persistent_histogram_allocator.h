@@ -11,9 +11,9 @@
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/feature_list.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 
@@ -23,6 +23,7 @@ class BucketRanges;
 class FilePath;
 class PersistentSampleMapRecords;
 class PersistentSparseHistogramDataManager;
+class WritableSharedMemoryRegion;
 
 // Feature definition for enabling histogram persistence.
 BASE_EXPORT extern const Feature kPersistentHistogramsFeature;
@@ -430,11 +431,11 @@ class BASE_EXPORT GlobalHistogramAllocator
 #endif
 
   // Create a global allocator using a block of shared memory accessed
-  // through the given |handle| and |size|. The allocator takes ownership
-  // of the handle and closes it upon destruction, though the memory will
-  // continue to live if other processes have access to it.
-  static void CreateWithSharedMemoryHandle(const SharedMemoryHandle& handle,
-                                           size_t size);
+  // through the given |region|. The allocator maps the shared memory into
+  // current process's virtual address space and frees it upon destruction.
+  // The memory will continue to live if other processes have access to it.
+  static void CreateWithSharedMemoryRegion(
+      const WritableSharedMemoryRegion& region);
 
   // Sets a GlobalHistogramAllocator for globally storing histograms in
   // a space that can be persisted or shared between processes. There is only

@@ -14,6 +14,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -869,19 +871,18 @@ bool GlobalHistogramAllocator::CreateSpareFileInDir(const FilePath& dir,
 #endif  // !defined(OS_NACL)
 
 // static
-void GlobalHistogramAllocator::CreateWithSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    size_t size) {
-  std::unique_ptr<SharedMemory> shm(
-      new SharedMemory(handle, /*readonly=*/false));
-  if (!shm->Map(size) ||
-      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
+void GlobalHistogramAllocator::CreateWithSharedMemoryRegion(
+    const WritableSharedMemoryRegion& region) {
+  base::WritableSharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid() ||
+      !WritableSharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
+          mapping)) {
     return;
   }
 
   Set(WrapUnique(new GlobalHistogramAllocator(
-      std::make_unique<SharedPersistentMemoryAllocator>(
-          std::move(shm), 0, StringPiece(), /*readonly=*/false))));
+      std::make_unique<WritableSharedPersistentMemoryAllocator>(
+          std::move(mapping), 0, StringPiece()))));
 }
 
 // static

@@ -37,7 +37,7 @@
 class GURL;
 
 namespace base {
-class SharedPersistentMemoryAllocator;
+class PersistentMemoryAllocator;
 class TimeDelta;
 class Token;
 }
@@ -341,7 +341,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // between the Renderer and the Browser, the allocator is created when the
   // process is created and later retrieved by the SubprocessMetricsProvider
   // for management.
-  virtual std::unique_ptr<base::SharedPersistentMemoryAllocator>
+  virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
   // PlzNavigate
