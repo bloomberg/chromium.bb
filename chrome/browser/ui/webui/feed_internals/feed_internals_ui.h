@@ -12,7 +12,11 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_page_handler.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
-// UI controller for chrome://feed-internals, hooks up a concrete implementation
+// During the interim migration to Feed, this page will be co-located with
+// snippets-internals. Once migration is complete, and snippets-internals is
+// removed, this page will be moved to chrome://feed-internals.
+
+// UI controller for the Feed internals page, hooks up a concrete implementation
 // of feed_internals::mojom::PageHandler to requests for that page handler
 // that will come from the frontend.
 class FeedInternalsUI : public ui::MojoWebUIController {
@@ -23,6 +27,8 @@ class FeedInternalsUI : public ui::MojoWebUIController {
  private:
   void BindFeedInternalsPageHandler(
       feed_internals::mojom::PageHandlerRequest request);
+
+  feed::FeedHostService* feed_host_service_;
 
   std::unique_ptr<FeedInternalsPageHandler> page_handler_;
 

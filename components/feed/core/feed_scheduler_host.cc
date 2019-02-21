@@ -557,4 +557,8 @@ void FeedSchedulerHost::CancelFixedTimerWakeUp() {
   }
 }
 
+UserClassifier* FeedSchedulerHost::user_classifier() {
+  return &user_classifier_;
+}
+
 }  // namespace feed

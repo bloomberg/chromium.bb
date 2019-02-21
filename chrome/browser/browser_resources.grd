@@ -200,6 +200,7 @@
         <include name="IDR_EOC_INTERNALS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\eoc_internals\eoc_internals.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
         <include name="IDR_EXPLORE_SITES_INTERNALS_HTML" file="resources\explore_sites_internals\explore_sites_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_FEED_INTERNALS_HTML" file="resources\feed_internals\feed_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
+        <include name="IDR_FEED_INTERNALS_CSS" file="resources\feed_internals\feed_internals.css" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_FEED_INTERNALS_JS" file="resources\feed_internals\feed_internals.js" compress="gzip" type="BINDATA" />
         <include name="IDR_FEED_INTERNALS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\feed_internals\feed_internals.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
         <include name="IDR_OFFLINE_INTERNALS_HTML" file="resources\offline_pages\offline_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
