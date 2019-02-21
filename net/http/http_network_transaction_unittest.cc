@@ -9498,7 +9498,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 }
 
-// Test an HTTPS Proxy's ability to redirect a CONNECT request
+// Test that an HTTPS Proxy can redirect a CONNECT request for main frames.
 TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   session_deps_.proxy_resolution_service =
       ProxyResolutionService::CreateFixedFromPacResult(
@@ -9511,6 +9511,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   HttpRequestInfo request;
+  request.load_flags = LOAD_MAIN_FRAME_DEPRECATED;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   request.traffic_annotation =
@@ -9582,7 +9583,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   // name, and negotiate an SSL connection to it (Neither of which are done in
   // this case), which the DNS and SSL times for the proxy are all included in
   // connect_start / connect_end. See
-  // HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
+  // HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect
 
   EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
   EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
@@ -9600,8 +9601,114 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
-// Test an HTTPS (SPDY) Proxy's ability to redirect a CONNECT request
+// Test that an HTTPS Proxy cannot redirect a CONNECT request for subresources.
+TEST_F(HttpNetworkTransactionTest,
+       RedirectOfHttpsConnectSubresourceViaHttpsProxy) {
+  base::HistogramTester histograms;
+  session_deps_.proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestNetLog net_log;
+  session_deps_.net_log = &net_log;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 302 Redirect\r\n"),
+      MockRead(ASYNC, 2, "Location: http://login.example.com/\r\n"),
+      MockRead(ASYNC, 3, "Content-Length: 0\r\n\r\n"),
+  };
+
+  SequencedSocketData data(MockConnect(ASYNC, OK), data_reads, data_writes);
+  SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy_ssl);
+
+  TestCompletionCallback callback;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
+
+  histograms.ExpectUniqueSample(
+      "Net.Proxy.RedirectDuringConnect",
+      HttpNetworkTransaction::kSubresourceByExplicitProxy, 1);
+}
+
+// Test that an HTTPS Proxy which was auto-detected cannot redirect a CONNECT
+// request for main frames.
+TEST_F(HttpNetworkTransactionTest,
+       RedirectOfHttpsConnectViaAutoDetectedHttpsProxy) {
+  base::HistogramTester histograms;
+  session_deps_.proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromAutoDetectedPacResult(
+          "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestNetLog net_log;
+  session_deps_.net_log = &net_log;
+
+  HttpRequestInfo request;
+  request.load_flags = LOAD_MAIN_FRAME_DEPRECATED;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 302 Redirect\r\n"),
+      MockRead(ASYNC, 2, "Location: http://login.example.com/\r\n"),
+      MockRead(ASYNC, 3, "Content-Length: 0\r\n\r\n"),
+  };
+
+  SequencedSocketData data(MockConnect(ASYNC, OK), data_reads, data_writes);
+  SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy_ssl);
+
+  TestCompletionCallback callback;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
+
+  histograms.ExpectUniqueSample(
+      "Net.Proxy.RedirectDuringConnect",
+      HttpNetworkTransaction::kMainFrameByAutoDetectedProxy, 1);
+}
+
+// Test an HTTPS (SPDY) Proxy's ability to redirect a CONNECT request for main
+// frames.
 TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
+  base::HistogramTester histograms;
   session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
       "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
   TestNetLog net_log;
@@ -9613,6 +9720,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
 
   HttpRequestInfo request;
   request.method = "GET";
+  request.load_flags = LOAD_MAIN_FRAME_DEPRECATED;
   request.url = GURL("https://www.example.org/");
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -9692,7 +9800,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   // name, and negotiate an SSL connection to it (Neither of which are done in
   // this case), which the DNS and SSL times for the proxy are all included in
   // connect_start / connect_end. See
-  // HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
+  // HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect.
 
   EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
   EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
@@ -9706,6 +9814,10 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   EXPECT_TRUE(load_timing_info.send_start.is_null());
   EXPECT_TRUE(load_timing_info.send_end.is_null());
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+
+  histograms.ExpectUniqueSample(
+      "Net.Proxy.RedirectDuringConnect",
+      HttpNetworkTransaction::kMainFrameByExplicitProxy, 1);
 }
 
 // Test that an HTTPS proxy's response to a CONNECT request is filtered.

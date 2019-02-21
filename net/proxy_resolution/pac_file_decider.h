@@ -36,6 +36,24 @@ class NetLogCaptureMode;
 class ProxyResolver;
 class PacFileFetcher;
 
+// Structure that encapsulates the result a PacFileData along with an
+// indication of its origin: was it obtained implicitly from auto-detect,
+// or was it read from a more explicitly configured URL.
+//
+// Note that |!from_auto_detect| does NOT imply the script was securely
+// delivered. Most commonly PAC scripts are configured from http:// URLs,
+// both for auto-detect and not.
+struct NET_EXPORT_PRIVATE PacFileDataWithSource {
+  PacFileDataWithSource();
+  explicit PacFileDataWithSource(const PacFileDataWithSource&);
+  ~PacFileDataWithSource();
+
+  PacFileDataWithSource& operator=(const PacFileDataWithSource&);
+
+  scoped_refptr<PacFileData> data;
+  bool from_auto_detect = false;
+};
+
 // PacFileDecider is a helper class used by ProxyResolutionService to
 // determine which PAC script to use given our proxy configuration.
 //
@@ -87,7 +105,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
 
   const ProxyConfigWithAnnotation& effective_config() const;
 
-  const scoped_refptr<PacFileData>& script_data() const;
+  const PacFileDataWithSource& script_data() const;
 
   void set_quick_check_enabled(bool enabled) { quick_check_enabled_ = enabled; }
 
@@ -197,7 +215,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
 
   // Results.
   ProxyConfigWithAnnotation effective_config_;
-  scoped_refptr<PacFileData> script_data_;
+  PacFileDataWithSource script_data_;
 
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_request_;
 

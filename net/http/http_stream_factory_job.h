@@ -92,9 +92,9 @@ class HttpStreamFactory::Job {
                                     const SSLConfig& used_ssl_config,
                                     const SSLInfo& ssl_info) = 0;
 
-    // Invoked when |job| has a failure of the CONNECT request through an HTTPS
-    // proxy.
-    virtual void OnHttpsProxyTunnelResponse(
+    // Invoked when |job| has a failure of the CONNECT request (due to a 302
+    // redirect) through an HTTPS proxy.
+    virtual void OnHttpsProxyTunnelResponseRedirect(
         Job* job,
         const HttpResponseInfo& response_info,
         const SSLConfig& used_ssl_config,
@@ -302,8 +302,9 @@ class HttpStreamFactory::Job {
   void OnNeedsProxyAuthCallback(const HttpResponseInfo& response_info,
                                 HttpAuthController* auth_controller);
   void OnNeedsClientAuthCallback(SSLCertRequestInfo* cert_info);
-  void OnHttpsProxyTunnelResponseCallback(const HttpResponseInfo& response_info,
-                                          std::unique_ptr<HttpStream> stream);
+  void OnHttpsProxyTunnelResponseRedirectCallback(
+      const HttpResponseInfo& response_info,
+      std::unique_ptr<HttpStream> stream);
   void OnPreconnectsComplete();
 
   void OnIOComplete(int result);

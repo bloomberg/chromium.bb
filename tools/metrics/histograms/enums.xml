@@ -7698,7 +7698,7 @@ Called by update_net_error_codes.py.-->
   <int value="-143" label="SPDY_SESSION_ALREADY_EXISTS"/>
   <int value="-142" label="MSG_TOO_BIG"/>
   <int value="-141" label="SSL_CLIENT_AUTH_SIGNATURE_FAILED"/>
-  <int value="-140" label="HTTPS_PROXY_TUNNEL_RESPONSE"/>
+  <int value="-140" label="HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT"/>
   <int value="-139" label="TEMPORARILY_THROTTLED"/>
   <int value="-138" label="NETWORK_ACCESS_DENIED"/>
   <int value="-137" label="NAME_RESOLUTION_FAILED"/>
@@ -36623,7 +36623,7 @@ Called by update_net_error_codes.py.-->
   <int value="137" label="NAME_RESOLUTION_FAILED"/>
   <int value="138" label="NETWORK_ACCESS_DENIED"/>
   <int value="139" label="TEMPORARILY_THROTTLED"/>
-  <int value="140" label="HTTPS_PROXY_TUNNEL_RESPONSE"/>
+  <int value="140" label="HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT"/>
   <int value="141" label="SSL_CLIENT_AUTH_SIGNATURE_FAILED"/>
   <int value="142" label="MSG_TOO_BIG"/>
   <int value="143" label="SPDY_SESSION_ALREADY_EXISTS"/>
@@ -53129,6 +53129,13 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Fallback icon mot provided"/>
   <int value="2" label="Fallback for Status Bar"/>
   <int value="3" label="Fallback for Status Bar and content"/>
+</enum>
+
+<enum name="TunnelRedirectHistogramValue">
+  <int value="0" label="Subresource fetched using an explicit proxy"/>
+  <int value="1" label="Mainframe fetched using an explicit proxy"/>
+  <int value="2" label="Subresource fetched using an auto-detected proxy"/>
+  <int value="3" label="Mainframe fetched using an auto-detected proxy"/>
 </enum>
 
 <enum name="UIEventType">

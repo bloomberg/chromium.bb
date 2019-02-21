@@ -215,7 +215,8 @@ TEST(PacFileDeciderTest, CustomPacSucceeds) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsOk());
-  EXPECT_EQ(rule.text(), decider.script_data()->utf16());
+  EXPECT_EQ(rule.text(), decider.script_data().data->utf16());
+  EXPECT_FALSE(decider.script_data().from_auto_detect);
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -253,7 +254,7 @@ TEST(PacFileDeciderTest, CustomPacFails1) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(kFailedDownloading));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -289,7 +290,7 @@ TEST(PacFileDeciderTest, CustomPacFails2) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(kFailedParsing));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 }
 
 // Fail downloading the custom PAC script, because the fetcher was NULL.
@@ -306,7 +307,7 @@ TEST(PacFileDeciderTest, HasNullPacFileFetcher) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(ERR_UNEXPECTED));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 }
 
 // Succeeds in choosing autodetect (WPAD DNS).
@@ -326,7 +327,8 @@ TEST(PacFileDeciderTest, AutodetectSuccess) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsOk());
-  EXPECT_EQ(rule.text(), decider.script_data()->utf16());
+  EXPECT_EQ(rule.text(), decider.script_data().data->utf16());
+  EXPECT_TRUE(decider.script_data().from_auto_detect);
 
   EXPECT_TRUE(decider.effective_config().value().has_pac_url());
   EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
@@ -371,7 +373,8 @@ TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
   resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("wpad", "1.2.3.4");
 
   EXPECT_THAT(StartDecider(), IsOk());
-  EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
+  EXPECT_EQ(rule_.text(), decider_->script_data().data->utf16());
+  EXPECT_TRUE(decider_->script_data().from_auto_detect);
 
   EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
   EXPECT_EQ(rule_.url, decider_->effective_config().value().pac_url());
@@ -388,7 +391,8 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
   resolver_.ResolveAllPending();
   callback_.WaitForResult();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
+  EXPECT_EQ(rule_.text(), decider_->script_data().data->utf16());
+  EXPECT_TRUE(decider_->script_data().from_auto_detect);
   EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
   EXPECT_EQ(rule_.url, decider_->effective_config().value().pac_url());
 }
@@ -500,7 +504,8 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess1) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsOk());
-  EXPECT_EQ(rule.text(), decider.script_data()->utf16());
+  EXPECT_EQ(rule.text(), decider.script_data().data->utf16());
+  EXPECT_FALSE(decider.script_data().from_auto_detect);
 
   EXPECT_TRUE(decider.effective_config().value().has_pac_url());
   EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
@@ -529,7 +534,8 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess2) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsOk());
-  EXPECT_EQ(rule.text(), decider.script_data()->utf16());
+  EXPECT_EQ(rule.text(), decider.script_data().data->utf16());
+  EXPECT_FALSE(decider.script_data().from_auto_detect);
 
   // Verify that the effective configuration no longer contains auto detect or
   // any of the manual settings.
@@ -592,7 +598,7 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails1) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(kFailedDownloading));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (parsing).
@@ -614,7 +620,7 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails2) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(kFailedParsing));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 }
 
 // This is a copy-paste of CustomPacFails1, with the exception that we give it
@@ -642,7 +648,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
       IsError(ERR_IO_PENDING));
 
   EXPECT_THAT(callback.WaitForResult(), IsError(kFailedDownloading));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -684,7 +690,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
           ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
           base::TimeDelta::FromSeconds(-5), true, callback.callback()),
       IsError(kFailedDownloading));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -752,7 +758,8 @@ TEST(PacFileDeciderTest, AutodetectDhcpSuccess) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsOk());
-  EXPECT_EQ(dhcp_fetcher.expected_text(), decider.script_data()->utf16());
+  EXPECT_EQ(dhcp_fetcher.expected_text(), decider.script_data().data->utf16());
+  EXPECT_TRUE(decider.script_data().from_auto_detect);
 
   EXPECT_TRUE(decider.effective_config().value().has_pac_url());
   EXPECT_EQ(GURL("http://dhcppac/"),
@@ -779,7 +786,7 @@ TEST(PacFileDeciderTest, AutodetectDhcpFailParse) {
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
                             base::TimeDelta(), true, callback.callback()),
               IsError(kFailedDownloading));
-  EXPECT_FALSE(decider.script_data());
+  EXPECT_FALSE(decider.script_data().data);
 
   EXPECT_FALSE(decider.effective_config().value().has_pac_url());
 }
