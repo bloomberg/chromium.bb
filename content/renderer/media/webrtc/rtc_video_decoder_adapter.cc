@@ -226,7 +226,6 @@ int32_t RTCVideoDecoderAdapter::Decode(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
 
-#if defined(OS_WIN)
   // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
   // to software decoding. See https://crbug.com/webrtc/9304.
   if (codec_specific_info &&
@@ -235,7 +234,6 @@ int32_t RTCVideoDecoderAdapter::Decode(
       codec_specific_info->codecSpecific.VP9.num_spatial_layers > 1) {
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
-#endif  // defined(OS_WIN)
 
   if (missing_frames || !input_image._completeFrame) {
     DVLOG(2) << "Missing or incomplete frames";
