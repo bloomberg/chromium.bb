@@ -6,11 +6,18 @@
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_
 
 #include <map>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
 
 namespace credential_provider {
+
+// Root registry key where all settings and user information for GCPW is stored.
+extern const wchar_t kGcpRootKeyName[];
+
+// Root registry key where all user association information for GCPW is stored.
+extern const wchar_t kGcpUsersRootKeyName[];
 
 // Gets global DWORD flag.
 HRESULT GetGlobalFlag(const base::string16& name, DWORD* value);
@@ -58,8 +65,19 @@ HRESULT SetUserProperty(const base::string16& sid,
 // Removes all properties for the user.
 HRESULT RemoveAllUserProperties(const base::string16& sid);
 
-// Gets token handles for all users created by this credential provider.
-HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles);
+struct UserTokenHandleInfo {
+  base::string16 gaia_id;
+  base::string16 token_handle;
+};
+
+// Gets basic user association info as stored in the registry. For each found
+// sid under GCPW's Users registry key, this function will return:
+// 1. The gaia id associated to the user (if any).
+// 2. The value of the token handle (if any).
+// This function does not provide any guarantee as to the validity of the
+// information returned w.r.t. actual users that exist on the system.
+HRESULT GetUserTokenHandles(
+    std::map<base::string16, UserTokenHandleInfo>* sid_to_handle_info);
 
 // Gets the SID associated with the given gaia id.  If none exists, returns
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
@@ -69,19 +87,16 @@ HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length);
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
 HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id);
 
-// Returns the root registry key that needs to be verified in unit tests.
-const wchar_t* GetUsersRootKeyForTesting();
-
 // Gets a specific account picture registry key in HKEY_LOCAL_MACHINE
 HRESULT GetAccountPictureRegString(const base::string16& user_sid,
                                    int image_size,
-                            wchar_t* value,
-                            ULONG* length);
+                                   wchar_t* value,
+                                   ULONG* length);
 
 // Sets a specific account picture registry key in HKEY_LOCAL_MACHINE
 HRESULT SetAccountPictureRegString(const base::string16& user_sid,
                                    int image_size,
-                            const base::string16& value);
+                                   const base::string16& value);
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_

@@ -16,6 +16,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/credential_provider/test/com_fakes.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,18 +35,6 @@ class GcpCredentialProviderTest : public ::testing::Test {
     ASSERT_EQ(S_OK,
               fake_os_user_manager_.CreateTestOSUser(
                   username, password, fullname, comment, gaia_id, email, sid));
-  }
-
-  void CreateDeletedGCPWUser(BSTR* sid) {
-    PSID sid_deleted;
-    ASSERT_EQ(S_OK, fake_os_user_manager_.CreateNewSID(&sid_deleted));
-    wchar_t* user_sid_string = nullptr;
-    ASSERT_TRUE(ConvertSidToStringSid(sid_deleted, &user_sid_string));
-    *sid = SysAllocString(W2COLE(user_sid_string));
-
-    ASSERT_EQ(S_OK,
-              SetUserProperty(user_sid_string, kUserTokenHandle, L"th_value"));
-    LocalFree(user_sid_string);
   }
 
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
@@ -68,33 +57,6 @@ TEST_F(GcpCredentialProviderTest, Basic) {
   ASSERT_EQ(S_OK,
             CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
                 nullptr, IID_IGaiaCredentialProvider, (void**)&provider));
-}
-
-TEST_F(GcpCredentialProviderTest, CleanupStaleTokenHandles) {
-  // Simulate a user created by GCPW that does not have a stale handle.
-  CComBSTR sid_good;
-  CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id", &sid_good);
-
-  // Simulate a user created by GCPW that was deleted from the machine.
-  CComBSTR sid_bad;
-  CreateDeletedGCPWUser(&sid_bad);
-
-  // Now create the provider.
-  CComPtr<IGaiaCredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_IGaiaCredentialProvider, (void**)&provider));
-
-  // Expect "good" sid to still in the registry, "bad" one to be cleaned up.
-  base::win::RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE,
-                                    GetUsersRootKeyForTesting(), KEY_READ));
-  EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(OLE2CW(sid_good), KEY_READ));
-
-  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE,
-                                    GetUsersRootKeyForTesting(), KEY_READ));
-  EXPECT_NE(ERROR_SUCCESS, key.OpenKey(OLE2CW(sid_bad), KEY_READ));
 }
 
 TEST_F(GcpCredentialProviderTest, SetUserArray_NoGaiaUsers) {
@@ -121,40 +83,6 @@ TEST_F(GcpCredentialProviderTest, SetUserArray_NoGaiaUsers) {
   EXPECT_EQ(0u, count);
   EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
   EXPECT_FALSE(autologon);
-}
-
-TEST_F(GcpCredentialProviderTest, SetUserArray_WithGaiaUsers) {
-  CComBSTR sid;
-  CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id", &sid);
-
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(
-      S_OK,
-      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
-
-  FakeCredentialProviderUserArray array;
-  array.AddUser(OLE2CW(sid), L"username");
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
-
-  // There should be 1 credential. It should implement IReauthCredential.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-  ASSERT_EQ(1u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
-
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-  CComPtr<IReauthCredential> reauth;
-  EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
 }
 
 TEST_F(GcpCredentialProviderTest, CpusLogon) {
@@ -244,6 +172,9 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
 }
 
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
+  FakeTokenHandleValidator token_handle_validator;
+  FakeInternetAvailabilityChecker internet_checker;
+
   // Set up such that MDM is enabled, mulit-users is not, and a user already
   // exists.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
@@ -272,12 +203,13 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
   }
 
   // Delete the OS user.  At this point, info in the HKLM registry about this
-  // user will still exist.  However it get properly cleaned up on contruction
-  // of the provider and so GetCredentialCount() will now return a valid
-  // credential.
+  // user will still exist.  However it gets properly cleaned up when the token
+  // validator starts its refresh of token handle validity.
   ASSERT_EQ(S_OK,
             fake_os_user_manager()->RemoveUser(kDummyUsername, kDummyPassword));
 
+  // Start token handle refresh threads.
+  token_handle_validator.StartRefreshingTokenHandleValidity();
   {
     CComPtr<ICredentialProvider> provider;
     ASSERT_EQ(S_OK,
@@ -349,5 +281,94 @@ INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
                          ::testing::Combine(testing::Bool(),
                                             testing::Range(0, 3),
                                             testing::Bool()));
+
+// Check that reauth credentials only exist when the token handle for the
+// associated user is no longer valid and internet is available.
+// Parameters are:
+// 1. bool - does the fake user have a token handle set.
+// 2. bool - is the token handle for the fake user valid (i.e. the fetch of
+// the token handle info from win_http_url_fetcher returns a valid json).
+// 3. bool - is internet available.
+
+class GcpCredentialProviderWithGaiaUsersTest
+    : public GcpCredentialProviderTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+ public:
+  FakeWinHttpUrlFetcherFactory* fake_http_url_fetcher_factory() {
+    return &fake_http_url_fetcher_factory_;
+  }
+
+ private:
+  FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
+};
+
+TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
+  const bool has_token_handle = std::get<0>(GetParam());
+  const bool valid_token_handle = std::get<1>(GetParam());
+  const bool has_internet = std::get<2>(GetParam());
+  FakeTokenHandleValidator token_handle_validator;
+  FakeInternetAvailabilityChecker internet_checker(
+      has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
+                   : FakeInternetAvailabilityChecker::kHicForceNo);
+
+  CComBSTR sid;
+  CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
+                 L"Comment", L"gaia-id", &sid);
+
+  if (!has_token_handle)
+    ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle, L""));
+
+  // Token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(TokenHandleValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(),
+      valid_token_handle ? "{\"expires_in\":1}" : "{}");
+
+  // Start token handle refresh threads.
+  token_handle_validator.StartRefreshingTokenHandleValidity();
+
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(
+      S_OK,
+      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
+
+  FakeCredentialProviderUserArray array;
+  array.AddUser(OLE2CW(sid), L"username");
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+
+  bool should_reauth_user =
+      has_internet && (!has_token_handle || !valid_token_handle);
+
+  // Check if there is a IReauthCredential depending on the state of the token
+  // handle.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  // Since SetUsageScenario was not called on the provider, only the user
+  // associated credentials will be created so only expect 0 or 1 credentials
+  // in this test depending on if the user needs to reauth.
+  ASSERT_EQ(should_reauth_user ? 1u : 0u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  if (should_reauth_user) {
+    CComPtr<ICredentialProviderCredential> cred;
+    ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    CComPtr<IReauthCredential> reauth;
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        GcpCredentialProviderWithGaiaUsersTest,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool(),
+                                           ::testing::Bool()));
 
 }  // namespace credential_provider

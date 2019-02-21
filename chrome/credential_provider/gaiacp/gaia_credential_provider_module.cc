@@ -15,6 +15,7 @@
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -64,6 +65,14 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
 
   return ATL::_pAtlModule->UpdateRegistryFromResource(
       IDR_GAIACREDENTIALPROVIDER, do_register, regmap);
+}
+
+void CGaiaCredentialProviderModule::RefreshTokenHandleValidity() {
+  if (!token_handle_validity_refreshed_) {
+    credential_provider::TokenHandleValidator::Get()
+        ->StartRefreshingTokenHandleValidity();
+    token_handle_validity_refreshed_ = true;
+  }
 }
 
 BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,

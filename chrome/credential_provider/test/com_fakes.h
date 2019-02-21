@@ -88,8 +88,7 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Fake the GaiaCredentialProvider COM object.
-class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
-                                   public IGaiaCredentialProviderForTesting {
+class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
  public:
   FakeGaiaCredentialProvider();
   virtual ~FakeGaiaCredentialProvider();
@@ -110,18 +109,12 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
                                      BSTR password,
                                      BSTR sid,
                                      BOOL fire_credentials_changed) override;
-  IFACEMETHODIMP HasInternetConnection() override;
-
-  // IGaiaCredentialProviderForTesting
-  IFACEMETHODIMP SetHasInternetConnection(
-      HasInternetConnectionCheckType has_internet_connection) override;
 
  private:
   CComBSTR username_;
   CComBSTR password_;
   CComBSTR sid_;
   BOOL credentials_changed_fired_ = FALSE;
-  HasInternetConnectionCheckType has_internet_connection_ = kHicForceYes;
 };
 
 }  // namespace credential_provider

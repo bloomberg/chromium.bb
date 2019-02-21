@@ -34,6 +34,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeScopedUserProfileFactory fake_scoped_user_profile_factory_;
   registry_util::RegistryOverrideManager registry_override_;
   FakeGlsRunHelper run_helper_;
+  FakeInternetAvailabilityChecker internet_checker_;
 };
 
 }  // namespace testing

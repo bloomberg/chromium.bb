@@ -13,9 +13,6 @@
 
 namespace credential_provider {
 
-
-namespace {
-
 // Root registry key for GCP configuration and state.
 #if defined(GOOGLE_CHROME_BUILD)
 #define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Google\\GCP"
@@ -24,6 +21,12 @@ namespace {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const wchar_t kGcpRootKeyName[] = CREDENTIAL_PROVIDER_REGISTRY_KEY;
+
+const wchar_t kGcpUsersRootKeyName[] =
+    CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
+
+namespace {
+
 const wchar_t kAccountPicturesRootRegKey[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AccountPicture\\Users";
 const wchar_t kImageRegKey[] = L"Image";
@@ -57,7 +60,6 @@ HRESULT SetRegDWORD(const base::string16& key_name,
 
   return S_OK;
 }
-
 
 HRESULT GetMachineRegString(const base::string16& key_name,
                             const base::string16& name,
@@ -135,7 +137,6 @@ base::string16 GetImageRegKeyForSpecificSize(int image_size) {
   return base::StringPrintf(L"%ls%i", kImageRegKey, image_size);
 }
 
-
 base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
   return base::StringPrintf(L"%ls\\%ls", kAccountPicturesRootRegKey,
                             user_sid.c_str());
@@ -194,7 +195,7 @@ HRESULT GetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         DWORD* value) {
   wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users\\%s", kGcpRootKeyName,
+  swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
   return GetRegDWORD(key_name, name, value);
 }
@@ -204,7 +205,7 @@ HRESULT GetUserProperty(const base::string16& sid,
                         wchar_t* value,
                         ULONG* length) {
   wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users\\%s", kGcpRootKeyName,
+  swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
   return GetMachineRegString(key_name, name, value, length);
 }
@@ -213,7 +214,7 @@ HRESULT SetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         DWORD value) {
   wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users\\%s", kGcpRootKeyName,
+  swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
   return SetRegDWORD(key_name, name, value);
 }
@@ -222,17 +223,14 @@ HRESULT SetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         const base::string16& value) {
   wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users\\%s", kGcpRootKeyName,
+  swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
   return SetMachineRegString(key_name, name, value);
 }
 
 HRESULT RemoveAllUserProperties(const base::string16& sid) {
-  wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users", kGcpRootKeyName);
-
   base::win::RegKey key;
-  LONG sts = key.Open(HKEY_LOCAL_MACHINE, key_name, KEY_WRITE);
+  LONG sts = key.Open(HKEY_LOCAL_MACHINE, kGcpUsersRootKeyName, KEY_WRITE);
   if (sts != ERROR_SUCCESS)
     return HRESULT_FROM_WIN32(sts);
 
@@ -240,20 +238,25 @@ HRESULT RemoveAllUserProperties(const base::string16& sid) {
   return sts != ERROR_SUCCESS ? HRESULT_FROM_WIN32(sts) : S_OK;
 }
 
-HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles) {
-  DCHECK(handles);
+HRESULT GetUserTokenHandles(
+    std::map<base::string16, UserTokenHandleInfo>* sid_to_handle_info) {
+  DCHECK(sid_to_handle_info);
+  sid_to_handle_info->clear();
 
-  wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users", kGcpRootKeyName);
-
-  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, kGcpUsersRootKeyName);
   for (; iter.Valid(); ++iter) {
     const wchar_t* sid = iter.Name();
+    wchar_t gaia_id[256];
+    ULONG length = base::size(gaia_id);
+    HRESULT gaia_id_hr = GetUserProperty(sid, kUserId, gaia_id, &length);
     wchar_t token_handle[256];
-    ULONG length = base::size(token_handle);
-    HRESULT hr = GetUserProperty(sid, kUserTokenHandle, token_handle, &length);
-    if (SUCCEEDED(hr))
-      handles->emplace(sid, token_handle);
+    length = base::size(token_handle);
+    HRESULT token_handle_hr =
+        GetUserProperty(sid, kUserTokenHandle, token_handle, &length);
+    sid_to_handle_info->emplace(
+        sid,
+        UserTokenHandleInfo{SUCCEEDED(gaia_id_hr) ? gaia_id : L"",
+                            SUCCEEDED(token_handle_hr) ? token_handle : L""});
   }
   return S_OK;
 }
@@ -261,11 +264,9 @@ HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles) {
 HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
   DCHECK(sid);
 
-  wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
 
   bool result_found = false;
-  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, kGcpUsersRootKeyName);
   for (; iter.Valid(); ++iter) {
     const wchar_t* user_sid = iter.Name();
     wchar_t user_id[256];
@@ -287,10 +288,7 @@ HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
 HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
   DCHECK(id);
 
-  wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
-
-  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, kGcpUsersRootKeyName);
   for (; iter.Valid(); ++iter) {
     const wchar_t* user_sid = iter.Name();
 
@@ -305,10 +303,6 @@ HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
     }
   }
   return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
-}
-
-const wchar_t* GetUsersRootKeyForTesting() {
-  return CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
 }
 
 }  // namespace credential_provider

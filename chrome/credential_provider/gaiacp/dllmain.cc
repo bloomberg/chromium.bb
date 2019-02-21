@@ -73,7 +73,15 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
     return E_NOTIMPL;
   }
 
-  return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+  HRESULT hr = _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+
+  // Start refreshing token handle validity as soon as possible so that when
+  // their validity is requested later on by the credential providers they may
+  // already be available and no wait is needed.
+  if (SUCCEEDED(hr))
+    _AtlModule.RefreshTokenHandleValidity();
+
+  return hr;
 }
 
 // DllRegisterServer - Adds entries to the system registry.

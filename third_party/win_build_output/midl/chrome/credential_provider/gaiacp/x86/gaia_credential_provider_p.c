@@ -50,7 +50,7 @@
 #include "gaia_credential_provider_i.h"
 
 #define TYPE_FORMAT_STRING_SIZE   97                                
-#define PROC_FORMAT_STRING_SIZE   403                               
+#define PROC_FORMAT_STRING_SIZE   337                               
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   1            
@@ -88,13 +88,6 @@ extern const MIDL_STUB_DESC Object_StubDesc;
 
 extern const MIDL_SERVER_INFO IGaiaCredentialProvider_ServerInfo;
 extern const MIDL_STUBLESS_PROXY_INFO IGaiaCredentialProvider_ProxyInfo;
-
-
-extern const MIDL_STUB_DESC Object_StubDesc;
-
-
-extern const MIDL_SERVER_INFO IGaiaCredentialProviderForTesting_ServerInfo;
-extern const MIDL_STUBLESS_PROXY_INFO IGaiaCredentialProviderForTesting_ProxyInfo;
 
 
 extern const MIDL_STUB_DESC Object_StubDesc;
@@ -216,265 +209,210 @@ static const gaia_credential_provider_MIDL_PROC_FORMAT_STRING gaia_credential_pr
 /* 94 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Procedure HasInternetConnection */
+	/* Procedure Initialize */
 
 /* 96 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
 /* 98 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 102 */	NdrFcShort( 0x5 ),	/* 5 */
-/* 104 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 102 */	NdrFcShort( 0x3 ),	/* 3 */
+/* 104 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
 /* 106 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 108 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 110 */	0x44,		/* Oi2 Flags:  has return, has ext, */
-			0x1,		/* 1 */
+/* 110 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+			0x2,		/* 2 */
 /* 112 */	0x8,		/* 8 */
 			0x1,		/* Ext Flags:  new corr desc, */
 /* 114 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 116 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 118 */	NdrFcShort( 0x0 ),	/* 0 */
 
-	/* Return value */
-
-/* 120 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 122 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 124 */	0x8,		/* FC_LONG */
-			0x0,		/* 0 */
-
-	/* Procedure SetHasInternetConnection */
-
-/* 126 */	0x33,		/* FC_AUTO_HANDLE */
-			0x6c,		/* Old Flags:  object, Oi2 */
-/* 128 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 132 */	NdrFcShort( 0x3 ),	/* 3 */
-/* 134 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 136 */	NdrFcShort( 0x6 ),	/* 6 */
-/* 138 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 140 */	0x44,		/* Oi2 Flags:  has return, has ext, */
-			0x2,		/* 2 */
-/* 142 */	0x8,		/* 8 */
-			0x1,		/* Ext Flags:  new corr desc, */
-/* 144 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 146 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 148 */	NdrFcShort( 0x0 ),	/* 0 */
-
-	/* Parameter hic */
-
-/* 150 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
-/* 152 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 154 */	0xd,		/* FC_ENUM16 */
-			0x0,		/* 0 */
-
-	/* Return value */
-
-/* 156 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 158 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 160 */	0x8,		/* FC_LONG */
-			0x0,		/* 0 */
-
-	/* Procedure Initialize */
-
-/* 162 */	0x33,		/* FC_AUTO_HANDLE */
-			0x6c,		/* Old Flags:  object, Oi2 */
-/* 164 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 168 */	NdrFcShort( 0x3 ),	/* 3 */
-/* 170 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 172 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 174 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 176 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
-			0x2,		/* 2 */
-/* 178 */	0x8,		/* 8 */
-			0x1,		/* Ext Flags:  new corr desc, */
-/* 180 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 182 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 184 */	NdrFcShort( 0x0 ),	/* 0 */
-
 	/* Parameter provider */
 
-/* 186 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
-/* 188 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 190 */	NdrFcShort( 0x3c ),	/* Type Offset=60 */
+/* 120 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
+/* 122 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 124 */	NdrFcShort( 0x3c ),	/* Type Offset=60 */
 
 	/* Return value */
 
-/* 192 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 194 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 196 */	0x8,		/* FC_LONG */
+/* 126 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 128 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 130 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure Terminate */
 
-/* 198 */	0x33,		/* FC_AUTO_HANDLE */
+/* 132 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 200 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 204 */	NdrFcShort( 0x4 ),	/* 4 */
-/* 206 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 208 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 210 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 212 */	0x44,		/* Oi2 Flags:  has return, has ext, */
+/* 134 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 138 */	NdrFcShort( 0x4 ),	/* 4 */
+/* 140 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 142 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 144 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 146 */	0x44,		/* Oi2 Flags:  has return, has ext, */
 			0x1,		/* 1 */
-/* 214 */	0x8,		/* 8 */
+/* 148 */	0x8,		/* 8 */
 			0x1,		/* Ext Flags:  new corr desc, */
-/* 216 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 218 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 220 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 150 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 152 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 154 */	NdrFcShort( 0x0 ),	/* 0 */
 
 	/* Return value */
 
-/* 222 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 224 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 226 */	0x8,		/* FC_LONG */
+/* 156 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 158 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 160 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure OnUserAuthenticated */
 
-/* 228 */	0x33,		/* FC_AUTO_HANDLE */
+/* 162 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 230 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 234 */	NdrFcShort( 0x5 ),	/* 5 */
-/* 236 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
-/* 238 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 240 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 242 */	0x47,		/* Oi2 Flags:  srv must size, clt must size, has return, has ext, */
+/* 164 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 168 */	NdrFcShort( 0x5 ),	/* 5 */
+/* 170 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
+/* 172 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 174 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 176 */	0x47,		/* Oi2 Flags:  srv must size, clt must size, has return, has ext, */
 			0x3,		/* 3 */
-/* 244 */	0x8,		/* 8 */
+/* 178 */	0x8,		/* 8 */
 			0x7,		/* Ext Flags:  new corr desc, clt corr check, srv corr check, */
-/* 246 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 248 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 250 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 180 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 182 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 184 */	NdrFcShort( 0x0 ),	/* 0 */
 
 	/* Parameter authentication_info */
 
-/* 252 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 254 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 256 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 186 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 188 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 190 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Parameter status_text */
 
-/* 258 */	NdrFcShort( 0x2113 ),	/* Flags:  must size, must free, out, simple ref, srv alloc size=8 */
-/* 260 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 262 */	NdrFcShort( 0x56 ),	/* Type Offset=86 */
+/* 192 */	NdrFcShort( 0x2113 ),	/* Flags:  must size, must free, out, simple ref, srv alloc size=8 */
+/* 194 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 196 */	NdrFcShort( 0x56 ),	/* Type Offset=86 */
 
 	/* Return value */
 
-/* 264 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 266 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 268 */	0x8,		/* FC_LONG */
+/* 198 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 200 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 202 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure ReportError */
 
-/* 270 */	0x33,		/* FC_AUTO_HANDLE */
+/* 204 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 272 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 276 */	NdrFcShort( 0x6 ),	/* 6 */
-/* 278 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
-/* 280 */	NdrFcShort( 0x10 ),	/* 16 */
-/* 282 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 284 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+/* 206 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 210 */	NdrFcShort( 0x6 ),	/* 6 */
+/* 212 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
+/* 214 */	NdrFcShort( 0x10 ),	/* 16 */
+/* 216 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 218 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
 			0x4,		/* 4 */
-/* 286 */	0x8,		/* 8 */
+/* 220 */	0x8,		/* 8 */
 			0x5,		/* Ext Flags:  new corr desc, srv corr check, */
-/* 288 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 290 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 292 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 222 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 224 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 226 */	NdrFcShort( 0x0 ),	/* 0 */
 
 	/* Parameter status */
 
-/* 294 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
-/* 296 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 298 */	0x8,		/* FC_LONG */
+/* 228 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 230 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 232 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Parameter substatus */
 
-/* 300 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
-/* 302 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 304 */	0x8,		/* FC_LONG */
+/* 234 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 236 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 238 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Parameter status_text */
 
-/* 306 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 308 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 310 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 240 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 242 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 244 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Return value */
 
-/* 312 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 314 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
-/* 316 */	0x8,		/* FC_LONG */
+/* 246 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 248 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
+/* 250 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure SetEmailForReauth */
 
-/* 318 */	0x33,		/* FC_AUTO_HANDLE */
+/* 252 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 320 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 324 */	NdrFcShort( 0x3 ),	/* 3 */
-/* 326 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 328 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 330 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 332 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+/* 254 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 258 */	NdrFcShort( 0x3 ),	/* 3 */
+/* 260 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 262 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 264 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 266 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
 			0x2,		/* 2 */
-/* 334 */	0x8,		/* 8 */
+/* 268 */	0x8,		/* 8 */
 			0x5,		/* Ext Flags:  new corr desc, srv corr check, */
-/* 336 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 338 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 340 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 270 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 272 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 274 */	NdrFcShort( 0x0 ),	/* 0 */
 
 	/* Parameter email */
 
-/* 342 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 344 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 346 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 276 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 278 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 280 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Return value */
 
-/* 348 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 350 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 352 */	0x8,		/* FC_LONG */
+/* 282 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 284 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 286 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure SetOSUserInfo */
 
-/* 354 */	0x33,		/* FC_AUTO_HANDLE */
+/* 288 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 356 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 360 */	NdrFcShort( 0x4 ),	/* 4 */
-/* 362 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
-/* 364 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 366 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 368 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+/* 290 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 294 */	NdrFcShort( 0x4 ),	/* 4 */
+/* 296 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
+/* 298 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 300 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 302 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
 			0x4,		/* 4 */
-/* 370 */	0x8,		/* 8 */
+/* 304 */	0x8,		/* 8 */
 			0x5,		/* Ext Flags:  new corr desc, srv corr check, */
-/* 372 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 374 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 376 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 306 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 308 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 310 */	NdrFcShort( 0x0 ),	/* 0 */
 
 	/* Parameter sid */
 
-/* 378 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 380 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
-/* 382 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 312 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 314 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 316 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Parameter domain */
 
-/* 384 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 386 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
-/* 388 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 318 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 320 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 322 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Parameter username */
 
-/* 390 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 392 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
-/* 394 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
+/* 324 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 326 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 328 */	NdrFcShort( 0x32 ),	/* Type Offset=50 */
 
 	/* Return value */
 
-/* 396 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 398 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
-/* 400 */	0x8,		/* FC_LONG */
+/* 330 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 332 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
+/* 334 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 			0x0
@@ -588,8 +526,7 @@ static const USER_MARSHAL_ROUTINE_QUADRUPLE UserMarshalRoutines[ WIRE_MARSHAL_TA
 static const unsigned short IGaiaCredentialProvider_FormatStringOffsetTable[] =
     {
     0,
-    36,
-    96
+    36
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IGaiaCredentialProvider_ProxyInfo =
@@ -613,7 +550,7 @@ static const MIDL_SERVER_INFO IGaiaCredentialProvider_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(6) _IGaiaCredentialProviderProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(5) _IGaiaCredentialProviderProxyVtbl = 
 {
     &IGaiaCredentialProvider_ProxyInfo,
     &IID_IGaiaCredentialProvider,
@@ -621,69 +558,14 @@ CINTERFACE_PROXY_VTABLE(6) _IGaiaCredentialProviderProxyVtbl =
     IUnknown_AddRef_Proxy,
     IUnknown_Release_Proxy ,
     (void *) (INT_PTR) -1 /* IGaiaCredentialProvider::GetUsageScenario */ ,
-    (void *) (INT_PTR) -1 /* IGaiaCredentialProvider::OnUserAuthenticated */ ,
-    (void *) (INT_PTR) -1 /* IGaiaCredentialProvider::HasInternetConnection */
+    (void *) (INT_PTR) -1 /* IGaiaCredentialProvider::OnUserAuthenticated */
 };
 
 const CInterfaceStubVtbl _IGaiaCredentialProviderStubVtbl =
 {
     &IID_IGaiaCredentialProvider,
     &IGaiaCredentialProvider_ServerInfo,
-    6,
-    0, /* pure interpreted */
-    CStdStubBuffer_METHODS
-};
-
-
-/* Standard interface: __MIDL_itf_gaia_credential_provider_0000_0001, ver. 0.0,
-   GUID={0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}} */
-
-
-/* Object interface: IGaiaCredentialProviderForTesting, ver. 0.0,
-   GUID={0x224CE2FB,0x2977,0x4585,{0xBD,0x46,0x1B,0xAE,0x8D,0x79,0x64,0xDE}} */
-
-#pragma code_seg(".orpc")
-static const unsigned short IGaiaCredentialProviderForTesting_FormatStringOffsetTable[] =
-    {
-    126
-    };
-
-static const MIDL_STUBLESS_PROXY_INFO IGaiaCredentialProviderForTesting_ProxyInfo =
-    {
-    &Object_StubDesc,
-    gaia_credential_provider__MIDL_ProcFormatString.Format,
-    &IGaiaCredentialProviderForTesting_FormatStringOffsetTable[-3],
-    0,
-    0,
-    0
-    };
-
-
-static const MIDL_SERVER_INFO IGaiaCredentialProviderForTesting_ServerInfo = 
-    {
-    &Object_StubDesc,
-    0,
-    gaia_credential_provider__MIDL_ProcFormatString.Format,
-    &IGaiaCredentialProviderForTesting_FormatStringOffsetTable[-3],
-    0,
-    0,
-    0,
-    0};
-CINTERFACE_PROXY_VTABLE(4) _IGaiaCredentialProviderForTestingProxyVtbl = 
-{
-    &IGaiaCredentialProviderForTesting_ProxyInfo,
-    &IID_IGaiaCredentialProviderForTesting,
-    IUnknown_QueryInterface_Proxy,
-    IUnknown_AddRef_Proxy,
-    IUnknown_Release_Proxy ,
-    (void *) (INT_PTR) -1 /* IGaiaCredentialProviderForTesting::SetHasInternetConnection */
-};
-
-const CInterfaceStubVtbl _IGaiaCredentialProviderForTestingStubVtbl =
-{
-    &IID_IGaiaCredentialProviderForTesting,
-    &IGaiaCredentialProviderForTesting_ServerInfo,
-    4,
+    5,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
@@ -695,10 +577,10 @@ const CInterfaceStubVtbl _IGaiaCredentialProviderForTestingStubVtbl =
 #pragma code_seg(".orpc")
 static const unsigned short IGaiaCredential_FormatStringOffsetTable[] =
     {
+    96,
+    132,
     162,
-    198,
-    228,
-    270
+    204
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IGaiaCredential_ProxyInfo =
@@ -751,8 +633,8 @@ const CInterfaceStubVtbl _IGaiaCredentialStubVtbl =
 #pragma code_seg(".orpc")
 static const unsigned short IReauthCredential_FormatStringOffsetTable[] =
     {
-    318,
-    354
+    252,
+    288
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IReauthCredential_ProxyInfo =
@@ -825,7 +707,6 @@ const CInterfaceProxyVtbl * const _gaia_credential_provider_ProxyVtblList[] =
     ( CInterfaceProxyVtbl *) &_IGaiaCredentialProviderProxyVtbl,
     ( CInterfaceProxyVtbl *) &_IGaiaCredentialProxyVtbl,
     ( CInterfaceProxyVtbl *) &_IReauthCredentialProxyVtbl,
-    ( CInterfaceProxyVtbl *) &_IGaiaCredentialProviderForTestingProxyVtbl,
     0
 };
 
@@ -834,7 +715,6 @@ const CInterfaceStubVtbl * const _gaia_credential_provider_StubVtblList[] =
     ( CInterfaceStubVtbl *) &_IGaiaCredentialProviderStubVtbl,
     ( CInterfaceStubVtbl *) &_IGaiaCredentialStubVtbl,
     ( CInterfaceStubVtbl *) &_IReauthCredentialStubVtbl,
-    ( CInterfaceStubVtbl *) &_IGaiaCredentialProviderForTestingStubVtbl,
     0
 };
 
@@ -843,7 +723,6 @@ PCInterfaceName const _gaia_credential_provider_InterfaceNamesList[] =
     "IGaiaCredentialProvider",
     "IGaiaCredential",
     "IReauthCredential",
-    "IGaiaCredentialProviderForTesting",
     0
 };
 
@@ -854,9 +733,9 @@ int __stdcall _gaia_credential_provider_IID_Lookup( const IID * pIID, int * pInd
 {
     IID_BS_LOOKUP_SETUP
 
-    IID_BS_LOOKUP_INITIAL_TEST( _gaia_credential_provider, 4, 2 )
+    IID_BS_LOOKUP_INITIAL_TEST( _gaia_credential_provider, 3, 2 )
     IID_BS_LOOKUP_NEXT_TEST( _gaia_credential_provider, 1 )
-    IID_BS_LOOKUP_RETURN_RESULT( _gaia_credential_provider, 4, *pIndex )
+    IID_BS_LOOKUP_RETURN_RESULT( _gaia_credential_provider, 3, *pIndex )
     
 }
 
@@ -867,7 +746,7 @@ const ExtendedProxyFileInfo gaia_credential_provider_ProxyFileInfo =
     (const PCInterfaceName * ) & _gaia_credential_provider_InterfaceNamesList,
     0, /* no delegation */
     & _gaia_credential_provider_IID_Lookup, 
-    4,
+    3,
     2,
     0, /* table of [async_uuid] interfaces */
     0, /* Filler1 */

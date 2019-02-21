@@ -21,7 +21,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
       public CComCoClass<CGaiaCredentialProvider,
                          &CLSID_GaiaCredentialProvider>,
       public IGaiaCredentialProvider,
-      public IGaiaCredentialProviderForTesting,
       public ICredentialProviderSetUserArray,
       public ICredentialProvider {
  public:
@@ -34,7 +33,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
 
   BEGIN_COM_MAP(CGaiaCredentialProvider)
   COM_INTERFACE_ENTRY(IGaiaCredentialProvider)
-  COM_INTERFACE_ENTRY(IGaiaCredentialProviderForTesting)
   COM_INTERFACE_ENTRY(ICredentialProviderSetUserArray)
   COM_INTERFACE_ENTRY(ICredentialProvider)
   END_COM_MAP()
@@ -50,7 +48,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   HRESULT CreateGaiaCredential();
   HRESULT DestroyCredentials();
   void ClearTransient();
-  void CleanupStaleTokenHandles();
   void CleanupOlderVersions();
 
   // Checks of any of the Google account users need to re-auth.
@@ -63,11 +60,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
                                      BSTR password,
                                      BSTR sid,
                                      BOOL fire_credentials_changed) override;
-  IFACEMETHODIMP HasInternetConnection() override;
-
-  // IGaiaCredentialProviderForTesting
-  IFACEMETHODIMP SetHasInternetConnection(
-      HasInternetConnectionCheckType has_internet_connection) override;
 
   // ICredentialProviderSetUserArray
   IFACEMETHODIMP SetUserArray(ICredentialProviderUserArray* users) override;
@@ -106,11 +98,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // Index in the |users_| array of the credential that performed the
   // authentication.
   size_t index_ = std::numeric_limits<size_t>::max();
-
-  // Used during tests to force the credential provider to believe if an
-  // internet connection is possible or not.  In production the value is
-  // always set to HIC_CHECK_ALWAYS to perform a real check at runtime.
-  HasInternetConnectionCheckType has_internet_connection_ = kHicCheckAlways;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(GaiaCredentialProvider), CGaiaCredentialProvider)
