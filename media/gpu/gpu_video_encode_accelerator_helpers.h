@@ -21,7 +21,8 @@ MEDIA_GPU_EXPORT size_t GetEncodeBitstreamBufferSize(const gfx::Size& size,
                                                      uint32_t framerate);
 
 // Get the maximum bitstream buffer size for VideoEncodeAccelerator.
-MEDIA_GPU_EXPORT size_t GetEncodeBitstreamBufferSize();
+// |size|: the resolution of video stream
+MEDIA_GPU_EXPORT size_t GetEncodeBitstreamBufferSize(const gfx::Size& size);
 
 }  // namespace media
 
