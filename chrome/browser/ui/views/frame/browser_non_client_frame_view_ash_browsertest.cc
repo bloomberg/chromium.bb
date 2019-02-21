@@ -1530,11 +1530,11 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
-#define INSTANTIATE_TEST_CASE(name) \
+#define INSTANTIATE_TEST_SUITE(name) \
   INSTANTIATE_TEST_SUITE_P(, name, ::testing::Values(false, true))
 
-INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
-INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
-INSTANTIATE_TEST_CASE(HostedAppNonClientFrameViewAshTest);
-INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshBackButtonTest);
-INSTANTIATE_TEST_CASE(HomeLauncherBrowserNonClientFrameViewAshTest);
+INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTest);
+INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTest);
+INSTANTIATE_TEST_SUITE(HostedAppNonClientFrameViewAshTest);
+INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshBackButtonTest);
+INSTANTIATE_TEST_SUITE(HomeLauncherBrowserNonClientFrameViewAshTest);
