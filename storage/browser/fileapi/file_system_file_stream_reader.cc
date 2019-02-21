@@ -120,7 +120,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
     return;
   }
 
-  int rv = file_reader_->GetLength(base::BindOnce(
+  int64_t rv = file_reader_->GetLength(base::BindOnce(
       &FileSystemFileStreamReader::OnGetLength, weak_factory_.GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING)
     std::move(get_length_callback_).Run(rv);
