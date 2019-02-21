@@ -2746,6 +2746,9 @@
     'fuchsia_gtests': {
       'angle_unittests': {},
       'base_unittests': {},
+      'blink_common_unittests': {},
+      'blink_heap_unittests': {},
+      'blink_platform_unittests': {},
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
       'content_unittests': {
