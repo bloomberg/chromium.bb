@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/window_service.h"
@@ -18,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/gfx/transform.h"
 
 namespace ws {
 namespace {
@@ -50,6 +52,36 @@ class CascadingPropertyTestHelper : public aura::WindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(CascadingPropertyTestHelper);
 };
+
+class TransformWaiter : public aura::WindowObserver {
+ public:
+  explicit TransformWaiter(aura::Window* window)
+      : run_loop_(base::RunLoop::Type::kNestableTasksAllowed), window_(window) {
+    window_->AddObserver(this);
+  }
+  ~TransformWaiter() override { window_->RemoveObserver(this); }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowTransformed(aura::Window* window,
+                           ui::PropertyChangeReason reason) override {
+    run_loop_.QuitWhenIdle();
+  }
+
+  base::RunLoop run_loop_;
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransformWaiter);
+};
+
+void SetTransformAndWait(aura::Window* window,
+                         const gfx::Transform& transform) {
+  TransformWaiter waiter(window);
+  window->SetTransform(transform);
+  waiter.Wait();
+}
 
 // Verifies a property change that occurs while servicing a property change from
 // the client results in notifying the client of the new property.
@@ -245,6 +277,34 @@ TEST(ClientRoot, EmbedWindowClientVisibilityChanges) {
                                                                  false);
   EXPECT_FALSE(embed_window->TargetVisibility());
   EXPECT_TRUE(embedding_changes->empty());
+}
+
+TEST(ClientRoot, ClientNotifiedOfPositionChangefromTransform) {
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.window_tree_test_helper()->NewTopLevelWindow();
+  window->SetBounds(gfx::Rect(0, 5, 100, 200));
+  setup.changes()->clear();
+
+  window->SetBounds(gfx::Rect(10, 15, 100, 200));
+  auto iter =
+      FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, setup.changes()->end());
+  EXPECT_EQ(gfx::Rect(10, 15, 100, 200), iter->bounds);
+  setup.changes()->clear();
+
+  gfx::Transform transform;
+  transform.Translate(gfx::Vector2dF(10.0, 20.0));
+  SetTransformAndWait(window, transform);
+  iter = FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, setup.changes()->end());
+  EXPECT_EQ(gfx::Rect(20, 35, 100, 200), iter->bounds);
+  setup.changes()->clear();
+
+  SetTransformAndWait(window, gfx::Transform());
+  iter = FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, setup.changes()->end());
+  EXPECT_EQ(gfx::Rect(10, 15, 100, 200), iter->bounds);
+  setup.changes()->clear();
 }
 
 }  // namespace

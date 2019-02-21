@@ -393,6 +393,15 @@ void ClientRoot::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
   }
 }
 
+void ClientRoot::OnWindowTransformed(aura::Window* window,
+                                     ui::PropertyChangeReason reason) {
+  // Transform can affect the window bounds in screen. See
+  // https://crbug.com/931161.
+  DCHECK_EQ(window, window_);
+  if (window->GetBoundsInScreen().origin() != last_bounds_.origin())
+    NotifyClientOfNewBounds();
+}
+
 void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
   // This function is also called when the device-scale-factor changes too.
   CheckForScaleFactorChange();
