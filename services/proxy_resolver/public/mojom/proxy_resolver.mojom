@@ -7,26 +7,24 @@
 // TODO(amistry): Resolve the conflict between these two sets of definitions.
 module proxy_resolver.mojom;
 
-import "services/network/public/mojom/address_family.mojom";
-import "services/network/public/mojom/address_list.mojom";
+import "services/network/public/mojom/ip_address.mojom";
 import "url/mojom/url.mojom";
 
 const string kProxyResolverServiceName = "proxy_resolver";
 
-// Mirror of net::HostResolver::RequestInfo.
-// TODO(mmenke): Remove this struct, in favor of passing values directly.
-struct HostResolverRequestInfo {
-  string host;
-  uint16 port;
-  network.mojom.AddressFamily address_family;
-  bool is_my_ip_address;
+// Mirror of net::ProxyResolveDnsOperation.
+enum HostResolveOperation {
+  DNS_RESOLVE,
+  DNS_RESOLVE_EX,
+  MY_IP_ADDRESS,
+  MY_IP_ADDRESS_EX,
 };
 
 // Interface for waiting for the result of a HostResolver query.
-// TODO(mmenke): Remove this struct, in favor of callbacks.
+// TODO(mmenke): Remove this interface, in favor of callbacks.
 interface HostResolverRequestClient {
   // |error| is a value in net::Error.
-  ReportResult(int32 error, network.mojom.AddressList result);
+  ReportResult(int32 error, array<network.mojom.IPAddress> result);
 };
 
 // Mirror of net::ProxyServer::Scheme.
@@ -65,7 +63,8 @@ interface ProxyResolverRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
+  ResolveDns(string host,
+             HostResolveOperation operation,
              HostResolverRequestClient client);
 };
 
@@ -86,6 +85,7 @@ interface ProxyResolverFactoryRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
+  ResolveDns(string host,
+             HostResolveOperation operation,
              HostResolverRequestClient client);
 };
