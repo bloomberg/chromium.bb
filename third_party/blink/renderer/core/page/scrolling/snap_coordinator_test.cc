@@ -335,7 +335,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculation) {
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   SnapAreaData expected_area(ScrollSnapAlign(SnapAlignment::kStart),
@@ -368,7 +369,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   SnapAreaData expected_area(ScrollSnapAlign(SnapAlignment::kStart),
@@ -425,7 +427,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
   double width = body->clientWidth();
   double height = body->clientHeight();
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(0, 0, width, height),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
 
@@ -463,7 +466,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
 
   // rect.x = rect.y = scroller.border + scroller.scroll-padding
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(20, 20, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   // rect.x = scroller.border + scroller.padding + area.left + area.margin
@@ -504,7 +508,8 @@ TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
   double height = scroller_element->clientHeight();
 
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   SnapAreaData expected_area(ScrollSnapAlign(SnapAlignment::kStart),
@@ -550,7 +555,8 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
   double height = scroller_element->clientHeight();
 
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(16, 10, width - 28, height - 24),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   SnapAreaData expected_area(ScrollSnapAlign(SnapAlignment::kCenter),
@@ -582,7 +588,8 @@ TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
 
@@ -619,7 +626,8 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
   double height = scroller_element->clientHeight();
 
   SnapContainerData expected_container(
-      ScrollSnapType(false, cc::SnapAxis::kBoth, SnapStrictness::kMandatory),
+      ScrollSnapType(false, cc::SnapAxis::kBoth,
+                     cc::SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   // Under vertical-rl writing mode, 'start' should align to the right

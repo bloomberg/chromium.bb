@@ -156,7 +156,7 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   snap_container_data.set_rect(FloatRect(container_rect));
 
   if (snap_container_data.scroll_snap_type().strictness ==
-      SnapStrictness::kProximity) {
+      cc::SnapStrictness::kProximity) {
     LayoutSize size = container_rect.Size();
     size.Scale(kProximityRatio);
     gfx::ScrollOffset range(size.Width().ToFloat(), size.Height().ToFloat());
