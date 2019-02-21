@@ -64,12 +64,14 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public int getViewTypeId() {
-        return OmniboxSuggestionUiType.DEFAULT;
+        return mEnableNewAnswerLayout ? OmniboxSuggestionUiType.ANSWER_SUGGESTION
+                                      : OmniboxSuggestionUiType.DEFAULT;
     }
 
     @Override
     public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
-        return new PropertyModel(SuggestionViewProperties.ALL_KEYS);
+        return mEnableNewAnswerLayout ? new PropertyModel(AnswerSuggestionViewProperties.ALL_KEYS)
+                                      : new PropertyModel(SuggestionViewProperties.ALL_KEYS);
     }
 
     @Override
@@ -78,7 +80,11 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
-        setStateForClassicSuggestion(model, suggestion.getAnswer(), delegate);
+        if (mEnableNewAnswerLayout) {
+            setStateForNewSuggestion(model, suggestion.getAnswer(), delegate);
+        } else {
+            setStateForClassicSuggestion(model, suggestion.getAnswer(), delegate);
+        }
     }
 
     @Override
@@ -117,7 +123,12 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
                         for (int i = 0; i < models.size(); i++) {
                             PropertyModel model = models.get(i);
                             if (!mSuggestionHost.isActiveModel(model)) continue;
-                            model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
+
+                            if (mEnableNewAnswerLayout) {
+                                model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                            } else {
+                                model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                            }
                             didUpdate = true;
                         }
                         if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
