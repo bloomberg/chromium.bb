@@ -5803,6 +5803,12 @@ RenderFrameHostImpl::TakeNavigationRequestForSameDocumentCommit(
 std::unique_ptr<NavigationRequest>
 RenderFrameHostImpl::TakeNavigationRequestForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  // TODO(ahemery): Once we have IsPerNavigationMojoInterfaceEnabled() always
+  // true, it becomes obsolete to match the NavigationRequest since we are
+  // sure it is the correct one. However using the same request even though
+  // url might have changed ("" becomes "about:blank", etc.) requires some
+  // updating.
+
   // Determine if the current NavigationRequest can be used.
   NavigationHandleImpl* navigation_handle =
       navigation_request_ ? navigation_request_->navigation_handle() : nullptr;
@@ -6199,6 +6205,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
             !GetParent());
 
+  if (navigation_request) {
+    OnCrossDocumentCommitProcessed(navigation_request,
+                                   blink::mojom::CommitResult::Ok);
+  }
+
   if (!ValidateDidCommitParams(validated_params, is_same_document_navigation))
     return false;
 
@@ -6217,23 +6228,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     was_discarded_ = navigation_request_->commit_params().was_discarded;
 
   std::unique_ptr<NavigationRequest> committed_request;
-  // |navigation_request| is committed, we pass full ownership to the Navigator.
-  if (navigation_request) {
-    auto it = navigation_requests_.find(navigation_request);
-    // If we provided a navigation_request and it committed, it should always
-    // be in the map.
-    CHECK(it != navigation_requests_.end());
-    committed_request = std::move(it->second);
-    navigation_requests_.erase(it);
-  }
-
-  if (!committed_request) {
-    if (is_same_document_navigation) {
-      committed_request =
-          TakeNavigationRequestForSameDocumentCommit(*validated_params);
-    } else {
-      committed_request = TakeNavigationRequestForCommit(*validated_params);
-    }
+  if (is_same_document_navigation) {
+    committed_request =
+        TakeNavigationRequestForSameDocumentCommit(*validated_params);
+  } else {
+    committed_request = TakeNavigationRequestForCommit(*validated_params);
   }
 
   DCHECK(committed_request);
