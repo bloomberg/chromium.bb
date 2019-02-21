@@ -40,6 +40,13 @@ extern const base::Feature kHistoryClobberWorkaround;
 // and the user is browsing in off the record mode.
 extern const base::Feature kBlockUniversalLinksInOffTheRecordMode;
 
+// Used to have the WebUI schemes being handled by the WKWebView directly.
+extern const base::Feature kWebUISchemeHandling;
+
+// Whether the WebUI scheme handling in the WKWebView is enabled and can be
+// used.
+bool WebUISchemeHandlingEnabled();
+
 }  // namespace features
 }  // namespace web
 

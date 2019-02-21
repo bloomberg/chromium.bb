@@ -33,5 +33,16 @@ const base::Feature kHistoryClobberWorkaround{
 
 const base::Feature kBlockUniversalLinksInOffTheRecordMode{
     "BlockUniversalLinksInOffTheRecord", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool WebUISchemeHandlingEnabled() {
+  if (@available(iOS 11, *)) {
+    return base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling);
+  }
+  return false;
+}
+
 }  // namespace features
 }  // namespace web
