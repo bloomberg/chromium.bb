@@ -20,6 +20,8 @@ namespace test {
 
 namespace {
 
+constexpr char kTrialGroup[] = "scoped_feature_list_trial_group";
+
 std::vector<StringPiece> GetFeatureVector(
     const std::vector<Feature>& features) {
   std::vector<StringPiece> output;
@@ -89,10 +91,13 @@ ScopedFeatureList::~ScopedFeatureList() {
   if (!init_called_)
     return;
 
-  if (field_trial_override_) {
-    base::FieldTrialParamAssociator::GetInstance()->ClearParamsForTesting(
-        field_trial_override_->trial_name(),
-        field_trial_override_->group_name());
+  auto* field_trial_param_associator = FieldTrialParamAssociator::GetInstance();
+  for (auto field_trial_override : field_trial_overrides_) {
+    if (field_trial_override) {
+      field_trial_param_associator->ClearParamsForTesting(
+          field_trial_override->trial_name(),
+          field_trial_override->group_name());
+    }
   }
 
   FeatureList::ClearInstanceForTesting();
@@ -130,12 +135,6 @@ void ScopedFeatureList::InitWithFeatures(
 
 void ScopedFeatureList::InitAndEnableFeature(const Feature& feature) {
   InitWithFeaturesAndFieldTrials({feature}, {}, {});
-}
-
-void ScopedFeatureList::InitAndEnableFeatureWithFieldTrialOverride(
-    const Feature& feature,
-    FieldTrial* trial) {
-  InitWithFeaturesAndFieldTrials({feature}, {trial}, {});
 }
 
 void ScopedFeatureList::InitAndDisableFeature(const Feature& feature) {
@@ -203,9 +202,24 @@ void ScopedFeatureList::InitWithFeaturesAndFieldTrials(
 void ScopedFeatureList::InitAndEnableFeatureWithParameters(
     const Feature& feature,
     const std::map<std::string, std::string>& feature_parameters) {
+  InitWithFeaturesAndParameters({{feature, feature_parameters}}, {});
+}
+
+void ScopedFeatureList::InitWithFeaturesAndParameters(
+    const std::vector<FeatureAndParams>& enabled_features,
+    const std::vector<Feature>& disabled_features) {
+  DCHECK(field_trial_overrides_.empty());
+
   if (!FieldTrialList::IsGlobalSetForTesting()) {
     field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
   }
+
+  // Enabled features and field trials to use with
+  // InitWithFeaturesAndFieldTrials.
+  std::vector<Feature> features;
+  std::vector<FieldTrial*> field_trials;
+
+  auto* field_trial_param_associator = FieldTrialParamAssociator::GetInstance();
 
   // TODO(crbug.com/794021) Remove this unique field trial name hack when there
   // is a cleaner solution.
@@ -213,18 +227,21 @@ void ScopedFeatureList::InitAndEnableFeatureWithParameters(
   // Otherwise, nested calls might fail due to the shared FieldTrialList
   // already having the field trial registered.
   static int num_calls = 0;
-  ++num_calls;
-  std::string kTrialName =
-      "scoped_feature_list_trial_name" + base::NumberToString(num_calls);
-  std::string kTrialGroup = "scoped_feature_list_trial_group";
+  for (auto& enabled_feature : enabled_features) {
+    ++num_calls;
+    std::string trial_name =
+        "scoped_feature_list_trial_name" + base::NumberToString(num_calls);
+    scoped_refptr<FieldTrial> field_trial_override =
+        base::FieldTrialList::CreateFieldTrial(trial_name, kTrialGroup);
+    field_trial_overrides_.push_back(field_trial_override);
+    DCHECK(field_trial_overrides_.back());
+    field_trial_param_associator->AssociateFieldTrialParams(
+        trial_name, kTrialGroup, enabled_feature.params);
+    features.push_back(enabled_feature.feature);
+    field_trials.push_back(field_trial_override.get());
+  }
 
-  field_trial_override_ =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kTrialGroup);
-  DCHECK(field_trial_override_);
-  FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-      kTrialName, kTrialGroup, feature_parameters);
-  InitAndEnableFeatureWithFieldTrialOverride(feature,
-                                             field_trial_override_.get());
+  InitWithFeaturesAndFieldTrials(features, field_trials, disabled_features);
 }
 
 }  // namespace test

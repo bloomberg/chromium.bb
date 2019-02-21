@@ -37,6 +37,11 @@ class ScopedFeatureList final {
   ScopedFeatureList();
   ~ScopedFeatureList();
 
+  struct FeatureAndParams {
+    const Feature& feature;
+    const std::map<std::string, std::string>& params;
+  };
+
   // WARNING: This method will reset any globally configured features to their
   // default values, which can hide feature interaction bugs. Please use
   // sparingly.  https://crbug.com/713390
@@ -80,6 +85,15 @@ class ScopedFeatureList final {
       const std::map<std::string, std::string>& feature_parameters);
 
   // Initializes and registers a FeatureList instance based on present
+  // FeatureList and overridden with the given enabled features and the
+  // specified field trial parameters, and the given disabled features.
+  // Note: This creates a scoped global field trial list if there is not
+  // currently one.
+  void InitWithFeaturesAndParameters(
+      const std::vector<FeatureAndParams>& enabled_features,
+      const std::vector<Feature>& disabled_features);
+
+  // Initializes and registers a FeatureList instance based on present
   // FeatureList and overridden with single disabled feature.
   void InitAndDisableFeature(const Feature& feature);
 
@@ -112,7 +126,7 @@ class ScopedFeatureList final {
 
   bool init_called_ = false;
   std::unique_ptr<FeatureList> original_feature_list_;
-  scoped_refptr<FieldTrial> field_trial_override_;
+  std::vector<scoped_refptr<FieldTrial>> field_trial_overrides_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFeatureList);
