@@ -301,6 +301,10 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
         apps_vector->back()->set_relevance_threshold(
             kCrostiniTerminalRelevanceThreshold);
       }
+
+      for (const std::string& term : update.AdditionalSearchTerms()) {
+        apps_vector->back()->AddSearchableText(base::UTF8ToUTF16(term));
+      }
     });
   }
 

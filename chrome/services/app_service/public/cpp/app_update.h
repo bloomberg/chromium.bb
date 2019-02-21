@@ -67,6 +67,9 @@ class AppUpdate {
   const std::string& ShortName() const;
   bool ShortNameChanged() const;
 
+  std::vector<std::string> AdditionalSearchTerms() const;
+  bool AdditionalSearchTermsChanged() const;
+
   apps::mojom::IconKeyPtr IconKey() const;
   bool IconKeyChanged() const;
 

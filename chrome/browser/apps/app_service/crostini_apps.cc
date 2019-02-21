@@ -187,6 +187,14 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->name = registration.Name();
   app->short_name = app->name;
 
+  const std::string& executable_file_name = registration.ExecutableFileName();
+  if (!executable_file_name.empty()) {
+    app->additional_search_terms.push_back(executable_file_name);
+  }
+  for (const std::string& keyword : registration.Keywords()) {
+    app->additional_search_terms.push_back(keyword);
+  }
+
   if (new_icon_key) {
     app->icon_key = NewIconKey(app_id);
   }
