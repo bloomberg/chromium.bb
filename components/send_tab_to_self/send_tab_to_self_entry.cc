@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 
 namespace send_tab_to_self {
@@ -69,9 +70,9 @@ const std::string& SendTabToSelfEntry::GetDeviceName() const {
   return device_name_;
 }
 
-std::unique_ptr<sync_pb::SendTabToSelfSpecifics> SendTabToSelfEntry::AsProto()
-    const {
-  auto pb_entry = std::make_unique<sync_pb::SendTabToSelfSpecifics>();
+SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
+  SendTabToSelfLocal local_entry;
+  auto* pb_entry = local_entry.mutable_specifics();
 
   pb_entry->set_guid(GetGUID());
   pb_entry->set_title(GetTitle());
@@ -81,7 +82,7 @@ std::unique_ptr<sync_pb::SendTabToSelfSpecifics> SendTabToSelfEntry::AsProto()
       TimeToProtoTime(GetOriginalNavigationTime()));
   pb_entry->set_device_name(GetDeviceName());
 
-  return pb_entry;
+  return local_entry;
 }
 
 std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
@@ -106,6 +107,12 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
   return std::make_unique<SendTabToSelfEntry>(guid, url, pb_entry.title(),
                                               shared_time, navigation_time,
                                               pb_entry.device_name());
+}
+
+std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(
+    const SendTabToSelfLocal& local_entry,
+    base::Time now) {
+  return FromProto(local_entry.specifics(), now);
 }
 
 }  // namespace send_tab_to_self
