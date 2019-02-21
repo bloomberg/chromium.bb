@@ -109,12 +109,12 @@ bool StructTraits<network::mojom::ProxyRulesDataView,
 bool StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig>::Read(
     network::mojom::ProxyConfigDataView data,
     net::ProxyConfig* out_proxy_config) {
-  GURL pac_url;
+  std::string pac_url;
   if (!data.ReadPacUrl(&pac_url) ||
       !data.ReadProxyRules(&out_proxy_config->proxy_rules())) {
     return false;
   }
-  out_proxy_config->set_pac_url(pac_url);
+  out_proxy_config->set_pac_url(GURL(pac_url));
 
   out_proxy_config->set_auto_detect(data.auto_detect());
   out_proxy_config->set_pac_mandatory(data.pac_mandatory());
