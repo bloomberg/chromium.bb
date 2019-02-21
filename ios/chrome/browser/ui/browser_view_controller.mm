@@ -2276,9 +2276,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
-    UIView* bottomView = IsIPadIdiom()
-                             ? _fakeStatusBarView
-                             : [self.infobarContainerCoordinator view];
+    UIView* bottomView =
+        IsIPadIdiom() ? _fakeStatusBarView
+                      : [self.infobarContainerCoordinator legacyContainerView];
     [[self view]
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:bottomView];
@@ -3002,7 +3002,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     DCHECK(self.infobarContainerCoordinator);
     if ([self.infobarContainerCoordinator
             isInfobarPresentingForWebState:self.currentWebState]) {
-      return [self.infobarContainerCoordinator view];
+      return [self.infobarContainerCoordinator legacyContainerView];
     }
   }
   return nil;
@@ -4651,12 +4651,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible {
   if (visible) {
     [self updateToolbar];
-    [[self.infobarContainerCoordinator view] setHidden:NO];
+    [self.infobarContainerCoordinator hideContainer:NO];
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
     [self hideFindBarWithAnimation:NO];
-    [[self.infobarContainerCoordinator view] setHidden:YES];
+    [self.infobarContainerCoordinator hideContainer:YES];
   }
 }
 
@@ -4674,7 +4674,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   BOOL seenInfoBarContainer = NO;
   BOOL seenContentArea = NO;
   for (UIView* view in views.subviews) {
-    if (view == [self.infobarContainerCoordinator view])
+    if (view == [self.infobarContainerCoordinator legacyContainerView])
       seenInfoBarContainer = YES;
     else if (view == self.contentArea)
       seenContentArea = YES;

@@ -35,8 +35,6 @@
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 // The mediator's TabModel.
 @property(nonatomic, weak, readonly) TabModel* tabModel;
-// The mediator's consumer.
-@property(nonatomic, weak) id<InfobarContainerConsumer> consumer;
 // The WebStateList that this mediator listens for any changes on its Webstates.
 @property(nonatomic, assign) WebStateList* webStateList;
 
@@ -47,16 +45,16 @@
 #pragma mark - Public Interface
 
 - (instancetype)initWithConsumer:(id<InfobarContainerConsumer>)consumer
+                  legacyConsumer:(id<InfobarContainerConsumer>)legacyConsumer
                     browserState:(ios::ChromeBrowserState*)browserState
                         tabModel:(TabModel*)tabModel {
   self = [super init];
   if (self) {
     _browserState = browserState;
-    _consumer = consumer;
     _tabModel = tabModel;
     _webStateList = _tabModel.webStateList;
 
-    _infoBarContainer.reset(new InfoBarContainerIOS(_consumer));
+    _infoBarContainer.reset(new InfoBarContainerIOS(consumer, legacyConsumer));
     infobars::InfoBarManager* infoBarManager = nullptr;
     if (_tabModel.currentTab) {
       DCHECK(_tabModel.currentTab.webState);

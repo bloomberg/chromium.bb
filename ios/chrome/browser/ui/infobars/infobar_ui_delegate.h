@@ -24,6 +24,9 @@ class InfoBarControllerDelegate;
 // The InfobarControllerDelegate.
 @property(nonatomic, assign) InfoBarControllerDelegate* delegate;
 
+// YES if the container should modally present the Infobar.
+@property(nonatomic, assign, getter=isPresented) BOOL presented;
+
 @optional
 // The Infobar UIView.
 // TODO(crbug.com/927064): Only used in the Legacy implementation.
