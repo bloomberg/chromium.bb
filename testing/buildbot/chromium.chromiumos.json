@@ -606,11 +606,10 @@
       },
       {
         "args": [
-          "--enable-features=WebUIPolymer2",
-          "--disable-features=WebUIPolymer2Exceptions",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
+          "--disable-features=WebUIPolymer2",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
-        "name": "webui_polymer2_browser_tests",
+        "name": "webui_polymer1_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -873,11 +872,10 @@
       },
       {
         "args": [
-          "--enable-features=WebUIPolymer2",
-          "--disable-features=WebUIPolymer2Exceptions",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
+          "--disable-features=WebUIPolymer2",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer2_interactive_ui_tests",
+        "name": "webui_polymer1_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1303,11 +1301,10 @@
       },
       {
         "args": [
-          "--enable-features=WebUIPolymer2",
-          "--disable-features=WebUIPolymer2Exceptions",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
+          "--disable-features=WebUIPolymer2",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
-        "name": "webui_polymer2_browser_tests",
+        "name": "webui_polymer1_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -1570,11 +1567,10 @@
       },
       {
         "args": [
-          "--enable-features=WebUIPolymer2",
-          "--disable-features=WebUIPolymer2Exceptions",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
+          "--disable-features=WebUIPolymer2",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer2_interactive_ui_tests",
+        "name": "webui_polymer1_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

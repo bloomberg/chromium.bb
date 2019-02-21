@@ -4062,22 +4062,20 @@
       'snapshot_unittests': {},
       'sync_integration_tests': {},
       'views_unittests': {},
-      'webui_polymer2_browser_tests': {
+      'webui_polymer1_browser_tests': {
         'args': [
-          '--enable-features=WebUIPolymer2',
-          '--disable-features=WebUIPolymer2Exceptions',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter',
+          '--disable-features=WebUIPolymer2',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter',
         ],
         'swarming': {
           'shards': 4,
         },
         'test': 'browser_tests',
       },
-      'webui_polymer2_interactive_ui_tests': {
+      'webui_polymer1_interactive_ui_tests': {
         'args': [
-          '--enable-features=WebUIPolymer2',
-          '--disable-features=WebUIPolymer2Exceptions',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter',
+          '--disable-features=WebUIPolymer2',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter',
         ],
         'test': 'interactive_ui_tests',
       },

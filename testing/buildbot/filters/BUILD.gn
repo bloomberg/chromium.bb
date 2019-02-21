@@ -22,7 +22,7 @@ source_set("browser_tests_filters") {
   data = [
     "//testing/buildbot/filters/chromeos.mash.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter",
-    "//testing/buildbot/filters/webui_polymer2_browser_tests.filter",
+    "//testing/buildbot/filters/webui_polymer1_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
   ]
 }
@@ -76,7 +76,7 @@ source_set("interactive_ui_tests_filters") {
 
   data = [
     "//testing/buildbot/filters/chromeos.mash.fyi.interactive_ui_tests.filter",
-    "//testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
+    "//testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter",
   ]
 }
 

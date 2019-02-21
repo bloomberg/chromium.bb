@@ -1,43 +1,18 @@
-# crbug.com/738611: Need to test all of WebUI with Polymer 2 while the migration
+# crbug.com/738611: Need to test all of WebUI with Polymer 1 while the migration
 # is still ongoing.
+#
+# The following test does not work with Polymer 1. It should be fixed to pass
+# when run with --disable-features=WebUIPolymer2 (and with optimize_webui =
+# true and false), removed from this blacklist, and added to the list below.
+-AppManagementAppTest.*
 
-# Failing tests
-#
-# The following tests are currently failing with Polymer 2, either on Desktop or
-# CrOS. Need to be fixed and moved to the "Passing tests" section further down
-# in this file.
-#
-# NOTE: Please do not add new exclusions to this file. Instead fix the test in
-# question such that it passes with --enable-features=WebUIPolymer2 and, on
-# Chrome OS, --disable-features=WebUIPolymer2Exceptions (and with GN
-# optimize_webui=true and false).
-#
-# Note that some of these tests only fail inconsistently (like with
-# --gtest_repeat=5, but might pass on a single invocation).
-
-# ChromeOS only test failures.
--DemoSetupTest.BackOnArcTermsScreen
--DemoSetupTest.ClickConnectedNetworkOnNetworkScreen
--DemoSetupTest.ClickNetworkOnNetworkScreen
--DemoSetupTest.OfflineSetupFlowError
--DemoSetupTest.OfflineSetupFlowSuccess
--DemoSetupTest.OnlineSetupFlowCrosComponentFailure
--DemoSetupTest.OnlineSetupFlowError
--DemoSetupTest.OnlineSetupFlowSuccess
--DemoSetupTest.ShowOfflineSetupOptionOnNetworkList
--EulaTest.LoadOffline
-
-# Passing tests
-#
 # For practical reasons, we don't run all browser_tests with the WebUIPolymer2
-# flag enabled. Only the tests matching below are executed. It is possible that
+# flag disabled. Only the tests matching below are executed. It is possible that
 # some tests that might be affected by the flag are not in the list below.
-# Once all known failures have been fixed, we can upload a CL with the feature
-# enabled by default and run the full set of tests, and collect any missing
-# failing tests.
+# If additional failures are found, add the affected tests to the list below, to
+# prevent future regressions.
 
 ActiveDirectoryJoinTest.*
-AppManagementAppTest.*
 AudioPlayerBrowserTest.*
 AutofillBrowserTest.*
 BluetoothInternalsTest.*
