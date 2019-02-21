@@ -23,6 +23,7 @@ source_set("shortcuts") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/ntp_tile_views",
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
+    "//ios/chrome/browser/url_loading",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
   ]
@@ -50,6 +51,7 @@ source_set("shortcuts_internal") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/url_loading",
     "//ios/web/public",
   ]
 }

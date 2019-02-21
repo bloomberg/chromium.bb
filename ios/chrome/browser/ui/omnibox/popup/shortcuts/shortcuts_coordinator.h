@@ -9,7 +9,6 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol UrlLoader;
 @protocol OmniboxFocuser;
 
 // The coordinator for the shortcuts.
@@ -20,7 +19,7 @@
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, UrlLoader, OmniboxFocuser>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 @end
 

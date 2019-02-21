@@ -16,7 +16,6 @@ class WebStateList;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
-@protocol UrlLoader;
 @protocol NewTabPageControllerDelegate;
 
 // Coordinator handling the NTP.
@@ -47,8 +46,7 @@ class WebStateList;
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 
 // Returns |YES| if the coordinator is started.
