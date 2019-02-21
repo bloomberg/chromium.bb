@@ -470,9 +470,16 @@ const base::Feature kPreloadMediaEngagementData{
 const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables flash to be ducked by audio focus.
-const base::Feature kAudioFocusDuckFlash{"AudioFocusDuckFlash",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
+// has audio focus enabled.
+const base::Feature kAudioFocusDuckFlash {
+  "AudioFocusDuckFlash",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables the internal Media Session logic without enabling the Media Session
 // service.
