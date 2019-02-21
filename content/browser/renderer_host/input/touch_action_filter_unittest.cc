@@ -1196,6 +1196,28 @@ TEST_P(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
+TEST_P(TouchActionFilterTest, PinchGesturesAllowedByWhiteListedTouchAction) {
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ActiveTouchAction().has_value());
+  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
+
+  // white listed touch action has a default value of Auto, and pinch related
+  // gestures should be allowed.
+  WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+  WebGestureEvent pinch_update =
+      SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
+                                                        kSourceDevice);
+  WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+  EXPECT_EQ(filter_.FilterGestureEvent(&pinch_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&pinch_update),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&pinch_end),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
 // Test gesture event filtering with white listed touch action. It should test
 // all 3 kinds of results: Allowed / Dropped / Delayed.
 TEST_P(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
