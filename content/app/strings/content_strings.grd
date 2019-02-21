@@ -1007,6 +1007,15 @@ below:
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB
       </message>
 
+      <message name="CONTENT_INVALID_TRUE" desc="Error message for aria-invalid = true">
+        Invalid entry
+      </message>
+      <message name="CONTENT_INVALID_SPELLING" desc="Error message for aria-invalid = spelling">
+        Invalid spelling
+      </message>
+      <message name="CONTENT_INVALID_GRAMMAR" desc="Error message for aria-invalid = grammar">
+        Invalid grammar
+      </message>
     </messages>
   </release>
 </grit>

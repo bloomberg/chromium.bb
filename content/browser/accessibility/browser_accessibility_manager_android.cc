@@ -77,9 +77,9 @@ void BrowserAccessibilityManagerAndroid::FireFocusEvent(
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
   if (!wcax)
     return;
-
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
+  android_node->ResetContentInvalidTimer();
   wcax->HandleFocusChanged(android_node->unique_id());
 }
 
