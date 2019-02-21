@@ -71,8 +71,6 @@ void AnalyzeZipFile(base::File zip_file,
   bool contains_zip = false;
   bool advanced = true;
   int zip_entry_count = 0;
-  results->file_count = 0;
-  results->directory_count = 0;
   for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
     if (!advanced) {
       DVLOG(1) << "Could not advance to next entry, aborting zip scan.";
@@ -97,11 +95,6 @@ void AnalyzeZipFile(base::File zip_file,
         FILE_PATH_LITERAL(".zip"))
       contains_zip = true;
     zip_entry_count++;
-
-    if (reader.current_entry_info()->is_directory())
-      results->directory_count++;
-    else
-      results->file_count++;
   }
 
   results->success = true;
