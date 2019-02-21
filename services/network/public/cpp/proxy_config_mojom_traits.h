@@ -6,6 +6,8 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_MOJOM_TRAITS_H_
 
 #include "base/component_export.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
+#include "mojo/public/cpp/base/big_string_mojom_traits.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_list.h"
@@ -93,7 +95,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig> {
  public:
   static bool auto_detect(const net::ProxyConfig& r) { return r.auto_detect(); }
-  static const GURL& pac_url(const net::ProxyConfig& r) { return r.pac_url(); }
+  static const std::string& pac_url(const net::ProxyConfig& r) {
+    return r.pac_url().possibly_invalid_spec();
+  }
   static bool pac_mandatory(const net::ProxyConfig& r) {
     return r.pac_mandatory();
   }
