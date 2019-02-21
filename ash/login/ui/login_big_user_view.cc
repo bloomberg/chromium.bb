@@ -81,7 +81,9 @@ void LoginBigUserView::ShowParentAccessView() {
   DCHECK(OnlyOneSet(public_account_, auth_user_));
   DCHECK(auth_user_);
 
-  if (!auth_user_)
+  // Do not show parent access if LoginBigUserView does not host regular user
+  // view or if ParentAccessView is already shown.
+  if (!auth_user_ || parent_access_)
     return;
 
   DCHECK(IsChildAccountUser(auth_user_->current_user()));
