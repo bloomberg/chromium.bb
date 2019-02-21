@@ -4,10 +4,19 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include "base/stl_util.h"
+#include "ui/aura/window.h"
+#include "ui/display/screen.h"
+#include "ui/views/widget/widget.h"
+
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
-  NOTIMPLEMENTED()
-      << "For Ozone builds, window finder is not supported for now.";
-  return nullptr;
+  gfx::NativeWindow window =
+      display::Screen::GetScreen()->GetWindowAtScreenPoint(screen_point);
+  for (; window; window = window->parent()) {
+    if (views::Widget::GetWidgetForNativeWindow(window))
+      break;
+  }
+  return (window && !base::ContainsKey(ignore, window)) ? window : nullptr;
 }
