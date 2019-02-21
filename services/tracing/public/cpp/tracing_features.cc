@@ -20,8 +20,14 @@ const base::Feature kTracingPerfettoBackend{"TracingPerfettoBackend",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Runs the tracing service as an in-process browser service.
-const base::Feature kTracingServiceInProcess{"TracingServiceInProcess",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kTracingServiceInProcess {
+  "TracingServiceInProcess",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 }  // namespace features
 
