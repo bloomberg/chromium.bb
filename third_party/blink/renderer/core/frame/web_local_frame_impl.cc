@@ -1501,7 +1501,6 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
 
 int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
                                   const WebNode& constrain_to_node) {
-  DCHECK(!GetFrame()->GetDocument()->IsFrameSet());
   WebPluginContainerImpl* plugin_container = nullptr;
   if (constrain_to_node.IsNull()) {
     // If this is a plugin document, check if the plugin supports its own
