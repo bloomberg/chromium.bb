@@ -183,14 +183,17 @@ class CookieManagerTest : public testing::Test {
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           bool secure_source,
                           bool can_modify_httponly) {
-    net::ResultSavingCookieCallback<bool> callback;
+    net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
+        callback;
     cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie), secure_source,
         can_modify_httponly,
-        base::BindOnce(&net::ResultSavingCookieCallback<bool>::Run,
+        base::BindOnce(&net::ResultSavingCookieCallback<
+                           net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result();
+    return callback.result() ==
+           net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
 
   std::string DumpAllCookies() {

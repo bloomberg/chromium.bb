@@ -60,6 +60,18 @@ net::CookieStore::GetCookieListCallback IgnoreSecondArg(
       std::move(callback));
 }
 
+net::CookieStore::SetCookiesCallback StatusToBool(
+    base::OnceCallback<void(bool)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(bool)> callback,
+         const net::CanonicalCookie::CookieInclusionStatus status) {
+        bool success =
+            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        std::move(callback).Run(success);
+      },
+      std::move(callback));
+}
+
 }  // namespace
 
 CookieManager::ListenerRegistration::ListenerRegistration() {}
@@ -128,7 +140,7 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), secure_source,
-      modify_http_only, std::move(callback));
+      modify_http_only, StatusToBool(std::move(callback)));
 }
 
 void CookieManager::DeleteCanonicalCookie(

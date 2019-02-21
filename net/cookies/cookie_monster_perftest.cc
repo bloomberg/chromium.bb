@@ -68,8 +68,8 @@ class SetCookieCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(bool success) {
-    EXPECT_TRUE(success);
+  void Run(CanonicalCookie::CookieInclusionStatus status) {
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
     CookieTestCallback::Run();
   }
   CookieOptions options_;

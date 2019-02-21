@@ -267,7 +267,8 @@ class CookieStoreIOS : public net::CookieStore,
   // asynchronous cache update (using UpdateCachesFromCookieMonster()) and
   // calling the provided callback.
 
-  void UpdateCachesAfterSet(SetCookiesCallback callback, bool success);
+  void UpdateCachesAfterSet(SetCookiesCallback callback,
+                            net::CanonicalCookie::CookieInclusionStatus status);
   void UpdateCachesAfterDelete(DeleteCallback callback, uint32_t num_deleted);
   void UpdateCachesAfterClosure(base::OnceClosure callback);
 

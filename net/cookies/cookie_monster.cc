@@ -705,22 +705,29 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!HasCookieableScheme(url)) {
-    MaybeRunCookieCallback(std::move(callback), false);
+    MaybeRunCookieCallback(
+        std::move(callback),
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
     return;
   }
 
   VLOG(net::cookie_util::kVlogSetCookies)
       << "SetCookie() line: " << cookie_line;
 
-  std::unique_ptr<CanonicalCookie> cc(
-      CanonicalCookie::Create(url, cookie_line, Time::Now(), options));
+  CanonicalCookie::CookieInclusionStatus status;
 
-  if (!cc.get()) {
+  std::unique_ptr<CanonicalCookie> cc(
+      CanonicalCookie::Create(url, cookie_line, Time::Now(), options, &status));
+
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    DCHECK(!cc);
     VLOG(net::cookie_util::kVlogSetCookies)
         << "WARNING: Failed to allocate CanonicalCookie";
-    MaybeRunCookieCallback(std::move(callback), false);
+    MaybeRunCookieCallback(std::move(callback), status);
     return;
   }
+
+  DCHECK(cc);
   SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
                      !options.exclude_httponly(), std::move(callback));
 }
@@ -1059,7 +1066,7 @@ void CookieMonster::FilterCookiesWithOptions(
   }
 }
 
-bool CookieMonster::DeleteAnyEquivalentCookie(
+CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
     const std::string& key,
     const CanonicalCookie& ecc,
     bool source_secure,
@@ -1156,7 +1163,13 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
     }
   }
 
-  return skipped_httponly || skipped_secure_cookie;
+  if (skipped_httponly)
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY;
+
+  if (skipped_secure_cookie)
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE;
+
+  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
@@ -1194,9 +1207,17 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if ((cc->IsSecure() && !secure_source) ||
-      (cc->IsHttpOnly() && !modify_http_only)) {
-    MaybeRunCookieCallback(std::move(callback), false);
+  if ((cc->IsSecure() && !secure_source)) {
+    MaybeRunCookieCallback(
+        std::move(callback),
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
+    return;
+  }
+
+  if ((cc->IsHttpOnly() && !modify_http_only)) {
+    MaybeRunCookieCallback(
+        std::move(callback),
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
     return;
   }
 
@@ -1210,15 +1231,19 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   bool already_expired = cc->IsExpired(creation_date);
 
   base::Time creation_date_to_inherit;
-  if (DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
-                                already_expired, &creation_date_to_inherit)) {
+
+  CanonicalCookie::CookieInclusionStatus status =
+      DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
+                                already_expired, &creation_date_to_inherit);
+
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     std::string error;
     error =
         "SetCookie() not clobbering httponly cookie or secure cookie for "
         "insecure scheme";
 
     VLOG(net::cookie_util::kVlogSetCookies) << error;
-    MaybeRunCookieCallback(std::move(callback), false);
+    MaybeRunCookieCallback(std::move(callback), status);
     return;
   }
 
@@ -1266,7 +1291,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   // and we will purge the expired cookies in GetCookies().
   GarbageCollect(creation_date, key);
 
-  MaybeRunCookieCallback(std::move(callback), true);
+  MaybeRunCookieCallback(std::move(callback),
+                         CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 void CookieMonster::SetAllCookies(CookieList list,
@@ -1299,7 +1325,8 @@ void CookieMonster::SetAllCookies(CookieList list,
   // shouldn't have a return value.  But it should also be deleted (see
   // https://codereview.chromium.org/2882063002/#msg64), which would
   // solve the return value problem.
-  MaybeRunCookieCallback(std::move(callback), true);
+  MaybeRunCookieCallback(std::move(callback),
+                         CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,

@@ -189,17 +189,27 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    const CookieOptions& options) {
+    const CookieOptions& options,
+    CookieInclusionStatus* status) {
+  // Put a pointer on the stack so the rest of the function can assign to it if
+  // the default nullptr is passed in.
+  CookieInclusionStatus blank_status;
+  if (status == nullptr) {
+    status = &blank_status;
+  }
+
   ParsedCookie parsed_cookie(cookie_line);
 
   if (!parsed_cookie.IsValid()) {
     VLOG(net::cookie_util::kVlogSetCookies) << "WARNING: Couldn't parse cookie";
+    *status = CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE;
     return nullptr;
   }
 
   if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is not creating a httponly cookie";
+    *status = CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
     return nullptr;
   }
 
@@ -207,6 +217,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a cookie domain";
+    *status = CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
     return nullptr;
   }
 
@@ -217,6 +228,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (parsed_cookie.IsSecure() && !url.SchemeIsCryptographic()) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is trying to create a secure cookie from an insecure URL";
+    *status = CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
     return nullptr;
   }
 
@@ -238,6 +250,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!is_cookie_valid) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
+    *status = CookieInclusionStatus::EXCLUDE_INVALID_PREFIX;
     return nullptr;
   }
 
@@ -247,6 +260,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
       parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
       parsed_cookie.Priority()));
   DCHECK(cc->IsCanonical());
+  *status = CookieInclusionStatus::INCLUDE;
   return cc;
 }
 

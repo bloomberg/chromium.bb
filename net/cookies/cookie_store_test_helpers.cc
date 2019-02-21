@@ -68,11 +68,13 @@ DelayedCookieMonster::DelayedCookieMonster()
                                         nullptr /* channel_id_service */,
                                         nullptr /* netlog */)),
       did_run_(false),
-      result_(false) {}
+      result_(
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE) {}
 
 DelayedCookieMonster::~DelayedCookieMonster() = default;
 
-void DelayedCookieMonster::SetCookiesInternalCallback(bool result) {
+void DelayedCookieMonster::SetCookiesInternalCallback(
+    CanonicalCookie::CookieInclusionStatus result) {
   result_ = result;
   did_run_ = true;
 }

@@ -147,7 +147,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     GetCookieListCallback callback;
     cm->GetCookieListWithOptionsAsync(
         url, options,
-        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+        base::BindOnce(&GetCookieListCallback::Run,
+                       base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -168,12 +169,13 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
   bool SetAllCookies(CookieMonster* cm, const CookieList& list) {
     DCHECK(cm);
-    ResultSavingCookieCallback<bool> callback;
-    cm->SetAllCookiesAsync(list,
-                           base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                                      base::Unretained(&callback)));
+    ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+    cm->SetAllCookiesAsync(
+        list, base::BindOnce(&ResultSavingCookieCallback<
+                                 CanonicalCookie::CookieInclusionStatus>::Run,
+                             base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result();
+    return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
 
   bool SetCookieWithCreationTime(CookieMonster* cm,
@@ -182,15 +184,16 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                  base::Time creation_time) {
     DCHECK(cm);
     DCHECK(!creation_time.is_null());
-    ResultSavingCookieCallback<bool> callback;
+    ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
     cm->SetCanonicalCookieAsync(
         CanonicalCookie::Create(url, cookie_line, creation_time,
                                 CookieOptions()),
         url.SchemeIsCryptographic(), /* modify_httponly = */ false,
-        base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+        base::BindOnce(&ResultSavingCookieCallback<
+                           CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result();
+    return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
 
   uint32_t DeleteAllCreatedInTimeRange(CookieMonster* cm,
@@ -211,8 +214,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     ResultSavingCookieCallback<uint32_t> callback;
     cm->DeleteAllMatchingInfoAsync(
         std::move(delete_info),
-        base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                   base::Unretained(&callback)));
+        base::BindOnce(&ResultSavingCookieCallback<uint32_t>::Run,
+                       base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -1096,11 +1099,14 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(set_cookies_callback, Run(true))
+  EXPECT_CALL(set_cookies_callback,
+              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
       .WillOnce(SetCookieAction(&cookie_monster(), http_www_foo_.url(), "X=Y",
                                 &set_cookies_callback));
   base::RunLoop loop;
-  EXPECT_CALL(set_cookies_callback, Run(true)).WillOnce(QuitRunLoop(&loop));
+  EXPECT_CALL(set_cookies_callback,
+              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
+      .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
   loop.Run();
@@ -1123,11 +1129,14 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(set_cookies_callback, Run(true))
+  EXPECT_CALL(set_cookies_callback,
+              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
       .WillOnce(
           SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
   base::RunLoop loop;
-  EXPECT_CALL(set_cookies_callback, Run(true)).WillOnce(QuitRunLoop(&loop));
+  EXPECT_CALL(set_cookies_callback,
+              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
+      .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
   loop.Run();
@@ -1330,7 +1339,8 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
       .WillOnce(GetCookieListForUrlWithOptionsAction(
           &cookie_monster(), http_www_foo_.url(),
           &get_cookie_list_callback_deferred));
-  EXPECT_CALL(set_cookies_callback, Run(true));
+  EXPECT_CALL(set_cookies_callback,
+              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE));
   base::RunLoop loop;
   EXPECT_CALL(get_cookie_list_callback_deferred,
               Run(MatchesCookieLine("A=B; X=1"), testing::_))
@@ -1546,10 +1556,16 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   GURL foo_url("foo://host/path");
   GURL http_url("http://host/path");
 
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "x=1"));
-  EXPECT_FALSE(SetCookie(cm.get(), foo_url, "x=1"));
-  EXPECT_TRUE(SetCookie(cm_foo.get(), foo_url, "x=1"));
-  EXPECT_FALSE(SetCookie(cm_foo.get(), http_url, "x=1"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url, "x=1"));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
+      SetCookieReturnStatus(cm.get(), foo_url, "x=1"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm_foo.get(), foo_url, "x=1"));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
+      SetCookieReturnStatus(cm_foo.get(), http_url, "x=1"));
 }
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
@@ -2267,16 +2283,18 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
       new CookieMonster(store.get(), nullptr, &net_log_));
 
   // Get all cookies task that queues a task to set a cookie when executed.
-  ResultSavingCookieCallback<bool> set_cookie_callback;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookie_callback;
   cm->SetCookieWithOptionsAsync(
       kUrl, "a=b", CookieOptions(),
-      base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                 base::Unretained(&set_cookie_callback)));
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
+                     base::Unretained(&set_cookie_callback)));
 
   GetCookieListCallback get_cookie_list_callback1;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback1)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback1)));
 
   // Two load events should have been queued.
   ASSERT_EQ(2u, store->commands().size());
@@ -2291,7 +2309,8 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   // The tasks should run in order, and the get should see the cookies.
 
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookie_callback.result());
 
   get_cookie_list_callback1.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback1.cookies().size());
@@ -2304,8 +2323,8 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   // The just set cookie should still be in the store.
   GetCookieListCallback get_cookie_list_callback2;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback2)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback2)));
   get_cookie_list_callback2.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
 }
@@ -2322,14 +2341,14 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
       new CookieMonster(store.get(), nullptr, &net_log_));
 
   ResultSavingCookieCallback<uint32_t> delete_callback;
-  cm->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                                base::Unretained(&delete_callback)));
+  cm->DeleteAllAsync(base::BindOnce(&ResultSavingCookieCallback<uint32_t>::Run,
+                                    base::Unretained(&delete_callback)));
 
   GetCookieListCallback get_cookie_list_callback;
   cm->GetCookieListWithOptionsAsync(
       kUrl, CookieOptions(),
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback)));
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2364,19 +2383,21 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
 
   GetCookieListCallback get_cookie_list_callback1;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback1)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback1)));
 
-  ResultSavingCookieCallback<bool> set_cookie_callback;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookie_callback;
   cm->SetCookieWithOptionsAsync(
       kUrl, "a=b", CookieOptions(),
-      base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                 base::Unretained(&set_cookie_callback)));
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
+                     base::Unretained(&set_cookie_callback)));
 
   GetCookieListCallback get_cookie_list_callback2;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback2)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback2)));
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2390,7 +2411,8 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
 
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookie_callback.result());
 
   get_cookie_list_callback2.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
@@ -2398,10 +2420,10 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
 
 namespace {
 
-void RunClosureOnCookieListReceived(const base::Closure& closure,
+void RunClosureOnCookieListReceived(base::OnceClosure closure,
                                     const CookieList& cookie_list,
                                     const CookieStatusList& excluded_cookies) {
-  closure.Run();
+  std::move(closure).Run();
 }
 
 }  // namespace
@@ -2418,20 +2440,23 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
       new CookieMonster(store.get(), nullptr, &net_log_));
 
   // Get all cookies task that queues a task to set a cookie when executed.
-  ResultSavingCookieCallback<bool> set_cookie_callback;
-  cm->GetAllCookiesAsync(base::Bind(
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookie_callback;
+  cm->GetAllCookiesAsync(base::BindOnce(
       &RunClosureOnCookieListReceived,
-      base::Bind(&CookieStore::SetCookieWithOptionsAsync,
-                 base::Unretained(cm.get()), kUrl, "a=b", CookieOptions(),
-                 base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                            base::Unretained(&set_cookie_callback)))));
+      base::BindOnce(
+          &CookieStore::SetCookieWithOptionsAsync, base::Unretained(cm.get()),
+          kUrl, "a=b", CookieOptions(),
+          base::BindOnce(&ResultSavingCookieCallback<
+                             CanonicalCookie::CookieInclusionStatus>::Run,
+                         base::Unretained(&set_cookie_callback)))));
 
   // Get cookie task. Queued before the delete task is executed, so should not
   // see the set cookie.
   GetCookieListCallback get_cookie_list_callback1;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback1)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback1)));
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2446,13 +2471,14 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
   EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
 
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookie_callback.result());
 
   // A subsequent get cookies call should see the new cookie.
   GetCookieListCallback get_cookie_list_callback2;
   cm->GetAllCookiesAsync(
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&get_cookie_list_callback2)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_cookie_list_callback2)));
   get_cookie_list_callback2.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
 }
@@ -2467,7 +2493,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(0, counter->callback_count());
 
   // Before initialization, FlushStore() should just run the callback.
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
+  cm->FlushStore(base::BindOnce(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
@@ -2482,7 +2508,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   // After initialization, FlushStore() should delegate to the store.
   GetAllCookies(cm.get());  // Force init.
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
+  cm->FlushStore(base::BindOnce(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, store->flush_count());
@@ -2503,7 +2529,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   ASSERT_EQ(2, counter->callback_count());
 
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
+  cm->FlushStore(base::BindOnce(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(3, counter->callback_count());
@@ -2951,24 +2977,32 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
 
   // A non-secure cookie can be created from either a URL with a secure or
   // insecure scheme.
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "A=C;"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B;"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=C;"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B;"));
 
   // A secure cookie cannot be created from a URL with an insecure scheme.
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+            SetCookieReturnStatus(cm.get(), http_url, "A=B; Secure"));
 
   // A secure cookie can be created from a URL with a secure scheme.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and a
   // secure cookie with the same name already exists, do not update the cookie.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C;"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=C;"));
 
   // If a non-secure cookie is created from a URL with an secure scheme, and a
   // secure cookie with the same name already exists, update the cookie.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C;"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=C;"));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and
   // a secure cookie with the same name already exists, do not update the cookie
@@ -2976,27 +3010,40 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   //
   // With an existing cookie whose path is '/', a cookie with the same name
   // cannot be set on the same domain, regardless of path:
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/my/path"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=C; path=/"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=C; path=/my/path"));
 
   // But if the existing cookie has a path somewhere under the root, cookies
   // with the same name may be set for paths which don't overlap the existing
   // cookie.
   EXPECT_TRUE(
       SetCookie(cm.get(), https_url, "WITH_PATH=B; Secure; path=/my/path"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/your/path"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path/sub"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url, "WITH_PATH=C"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url, "WITH_PATH=C; path=/"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url,
+                                  "WITH_PATH=C; path=/your/path"));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+      SetCookieReturnStatus(cm.get(), http_url, "WITH_PATH=C; path=/my/path"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url,
+                                  "WITH_PATH=C; path=/my/path/sub"));
 
   DeleteAll(cm.get());
 
   // If a secure cookie is set on top of an existing insecure cookie but with a
   // different path, both are retained.
-  EXPECT_TRUE(SetCookie(cm.get(), http_url, "A=B; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; Secure; path=/"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=B; path=/foo"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=C; Secure; path=/"));
 
   // Querying from an insecure url gets only the insecure cookie, but querying
   // from a secure url returns both.
@@ -3007,8 +3054,10 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   // Attempting to set an insecure cookie (from an insecure scheme) that domain-
   // matches and path-matches the secure cookie fails i.e. the secure cookie is
   // left alone...
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/foo"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=D; path=/foo"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=D; path=/"));
   EXPECT_THAT(GetCookies(cm.get(), https_foo_url), testing::HasSubstr("A=C"));
 
   // ...but the original insecure cookie is still retained.
@@ -3017,23 +3066,34 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
               testing::Not(testing::HasSubstr("A=D")));
 
   // Deleting the secure cookie leaves only the original insecure cookie.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url,
-                        "A=C; path=/; Expires=Thu, 01-Jan-1970 00:00:01 GMT"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(
+                cm.get(), https_url,
+                "A=C; path=/; Expires=Thu, 01-Jan-1970 00:00:01 GMT"));
   EXPECT_EQ("A=B", GetCookies(cm.get(), https_foo_url));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and
   // a secure cookie with the same name already exists, if the domain strings
   // domain-match, do not update the cookie.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; domain=foo.com"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; domain=www.foo.com"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "A=C; domain=foo.com"));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+      SetCookieReturnStatus(cm.get(), http_url, "A=C; domain=www.foo.com"));
 
   // Since A=B was set above with no domain string, set a different cookie here
   // so the insecure examples aren't trying to overwrite the one above.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "B=C; Secure; domain=foo.com"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "B=D; domain=foo.com"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "B=D"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_superdomain_url, "B=D"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url,
+                                  "B=C; Secure; domain=foo.com"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "B=D; domain=foo.com"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_url, "B=D"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
+            SetCookieReturnStatus(cm.get(), http_superdomain_url, "B=D"));
 
   // Verify that if an httponly version of the cookie exists, adding a Secure
   // version of the cookie still does not overwrite it.
@@ -3043,7 +3103,8 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
                                    include_httponly));
   // Note that the lack of an explicit options object below uses the default,
   // which in this case includes "exclude_httponly = true".
-  EXPECT_FALSE(SetCookie(cm.get(), https_url, "C=E; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY,
+            SetCookieReturnStatus(cm.get(), https_url, "C=E; Secure"));
 
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
@@ -3185,14 +3246,19 @@ TEST_F(CookieMonsterTest, EquivalentCookies) {
 
   // Tests that non-equivalent cookies because of the path attribute can be set
   // successfully.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; path=/some/other/path"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::INCLUDE,
+      SetCookieReturnStatus(cm.get(), https_url, "A=C; path=/some/other/path"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/some/other/path"));
 
   // Tests that non-equivalent cookies because of the domain attribute can be
   // set successfully.
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; domain=foo.com"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            SetCookieReturnStatus(cm.get(), https_url, "A=C; domain=foo.com"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; domain=foo.com"));
 }
 
@@ -3204,12 +3270,14 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   CookieMonster cm(persistent_store.get(), nullptr, nullptr);
 
   // Start of a canonical cookie set.
-  ResultSavingCookieCallback<bool> callback_set;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      callback_set;
   cm.SetCanonicalCookieAsync(
       CanonicalCookie::Create(GURL("http://a.com/"), "A=B", base::Time::Now(),
                               CookieOptions()),
       false /* secure_source */, false /* modify_httponly */,
-      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&callback_set)));
 
   // Get cookies for a different URL.
@@ -3288,21 +3356,25 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
 
   // Write a cookie created at |t1|.
   auto cookie = CanonicalCookie::Create(url, cookie_line, t1, options);
-  ResultSavingCookieCallback<bool> set_callback_1;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_callback_1;
   cm.SetCanonicalCookieAsync(
       std::move(cookie), url.SchemeIsCryptographic(),
       !options.exclude_httponly(),
-      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_callback_1)));
   set_callback_1.WaitUntilDone();
 
   // Overwrite the cookie at |t2|.
   cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
-  ResultSavingCookieCallback<bool> set_callback_2;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_callback_2;
   cm.SetCanonicalCookieAsync(
       std::move(cookie), url.SchemeIsCryptographic(),
       !options.exclude_httponly(),
-      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+      base::BindOnce(&ResultSavingCookieCallback<
+                         CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_callback_2)));
   set_callback_2.WaitUntilDone();
 

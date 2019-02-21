@@ -45,7 +45,9 @@ class NET_EXPORT CookieStore {
   typedef base::OnceCallback<void(const CookieList& cookies,
                                   const CookieStatusList& excluded_list)>
       GetCookieListCallback;
-  typedef base::OnceCallback<void(bool success)> SetCookiesCallback;
+  typedef base::OnceCallback<void(
+      CanonicalCookie::CookieInclusionStatus status)>
+      SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
 
   virtual ~CookieStore();

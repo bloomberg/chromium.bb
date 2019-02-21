@@ -440,13 +440,16 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
-  ResultSavingCookieCallback<bool> cookie_callback;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      cookie_callback;
   context_.cookie_store()->SetCookieWithOptionsAsync(
       server_.GetURL("/"), "foo=bar", CookieOptions(),
-      base::BindRepeating(&ResultSavingCookieCallback<bool>::Run,
+      base::BindRepeating(&ResultSavingCookieCallback<
+                              CanonicalCookie::CookieInclusionStatus>::Run,
                           base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();
-  ASSERT_TRUE(cookie_callback.result());
+  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            cookie_callback.result());
 
   TestUploadCallback upload_callback;
   uploader_->StartUpload(kOrigin, server_.GetURL("/"), kUploadBody, 0,

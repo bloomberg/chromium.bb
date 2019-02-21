@@ -371,11 +371,14 @@ void DeleteCookiesOnIO(net::URLRequestContextGetter* context_getter,
       normalized_domain, path, std::move(callback)));
 }
 
-void CookieSetOnIO(std::unique_ptr<SetCookieCallback> callback, bool success) {
+void CookieSetOnIO(std::unique_ptr<SetCookieCallback> callback,
+                   net::CanonicalCookie::CookieInclusionStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&SetCookieCallback::sendSuccess,
-                                          std::move(callback), success));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          &SetCookieCallback::sendSuccess, std::move(callback),
+          (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE)));
 }
 
 void DeleteFilteredCookies(network::mojom::CookieManager* cookie_manager,
@@ -445,9 +448,11 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
       base::Time(), secure, http_only, css, net::COOKIE_PRIORITY_DEFAULT);
 }
 
-void SetCookieOnIO(net::URLRequestContextGetter* context_getter,
-                   std::unique_ptr<net::CanonicalCookie> cookie,
-                   base::OnceCallback<void(bool)> callback) {
+void SetCookieOnIO(
+    net::URLRequestContextGetter* context_getter,
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   net::URLRequestContext* request_context =
@@ -474,10 +479,12 @@ void SetCookiesOnIO(net::URLRequestContextGetter* context_getter,
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(cookies.size(), std::move(callback));
   for (auto& cookie : cookies) {
-    SetCookieOnIO(context_getter, std::move(cookie),
-                  base::BindOnce([](base::RepeatingClosure callback,
-                                    bool) { callback.Run(); },
-                                 barrier_closure));
+    SetCookieOnIO(
+        context_getter, std::move(cookie),
+        base::BindOnce(
+            [](base::RepeatingClosure callback,
+               net::CanonicalCookie::CookieInclusionStatus) { callback.Run(); },
+            barrier_closure));
   }
 }
 

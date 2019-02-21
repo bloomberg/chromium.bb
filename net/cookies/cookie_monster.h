@@ -463,12 +463,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // |creation_date_to_inherit| will be set to that cookie's creation date.
   //
   // NOTE: There should never be more than a single matching equivalent cookie.
-  bool DeleteAnyEquivalentCookie(const std::string& key,
-                                 const CanonicalCookie& ecc,
-                                 bool source_secure,
-                                 bool skip_httponly,
-                                 bool already_expired,
-                                 base::Time* creation_date_to_inherit);
+  CanonicalCookie::CookieInclusionStatus DeleteAnyEquivalentCookie(
+      const std::string& key,
+      const CanonicalCookie& ecc,
+      bool source_secure,
+      bool skip_httponly,
+      bool already_expired,
+      base::Time* creation_date_to_inherit);
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.

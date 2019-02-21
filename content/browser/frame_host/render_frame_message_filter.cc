@@ -620,7 +620,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
   // |callback| needs to be fired even if network process crashes as it's for
   // sync IPC.
-  net::CookieStore::SetCookiesCallback net_callback =
+  base::OnceCallback<void(bool)> net_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce([](SetCookieCallback callback,
                             bool success) { std::move(callback).Run(); },

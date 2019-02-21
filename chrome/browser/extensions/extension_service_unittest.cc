@@ -4805,8 +4805,8 @@ class ExtensionCookieCallback {
  public:
   ExtensionCookieCallback() : result_(false) {}
 
-  void SetCookieCallback(bool result) {
-    result_ = result;
+  void SetCookieCallback(net::CanonicalCookie::CookieInclusionStatus result) {
+    result_ = (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   }
 
   void GetAllCookiesCallback(const net::CookieList& list,

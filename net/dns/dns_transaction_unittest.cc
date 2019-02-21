@@ -1793,8 +1793,8 @@ class CookieCallback {
   CookieCallback()
       : result_(false), loop_to_quit_(std::make_unique<base::RunLoop>()) {}
 
-  void SetCookieCallback(bool result) {
-    result_ = result;
+  void SetCookieCallback(CanonicalCookie::CookieInclusionStatus result) {
+    result_ = (result == CanonicalCookie::CookieInclusionStatus::INCLUDE);
     loop_to_quit_->Quit();
   }
 
