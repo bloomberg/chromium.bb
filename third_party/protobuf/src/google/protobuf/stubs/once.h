@@ -126,7 +126,7 @@ class GoogleOnceDynamic {
   }
 
 #define GOOGLE_PROTOBUF_FORWARD_ONCE(NAME) \
-  ::google::protobuf::ProtobufOnceType& get_once_##NAME();
+  ::google::protobuf::ProtobufOnceType& get_once_##NAME()
 
 #define GOOGLE_PROTOBUF_GET_ONCE(NAME) (get_once_##NAME())
 

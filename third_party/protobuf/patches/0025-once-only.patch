@@ -308,7 +308,7 @@ index b6d9fea3f3ef..d481bdf40f98 100644
 +  }
 +
 +#define GOOGLE_PROTOBUF_FORWARD_ONCE(NAME) \
-+  ::google::protobuf::ProtobufOnceType& get_once_##NAME();
++  ::google::protobuf::ProtobufOnceType& get_once_##NAME()
 +
 +#define GOOGLE_PROTOBUF_GET_ONCE(NAME) (get_once_##NAME())
  
