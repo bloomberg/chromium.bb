@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -685,7 +684,6 @@ void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resources_data_);
-  visitor->Trace(pending_request_);
   visitor->Trace(replay_xhrs_);
   visitor->Trace(replay_xhrs_to_be_deleted_);
   visitor->Trace(pending_xhr_replay_data_);
@@ -769,8 +767,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   else if (initiator_info.name == fetch_initiator_type_names::kFetch)
     type = InspectorPageAgent::kFetchResource;
 
-  if (pending_request_)
-    type = pending_request_type_;
+  if (pending_request_type_)
+    type = *pending_request_type_;
   resources_data_->SetResourceType(request_id, type);
 
   String frame_id = loader && loader->GetFrame()
@@ -819,7 +817,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       GetFrontend()->flush();
     pending_xhr_replay_data_.Clear();
   }
-  pending_request_ = nullptr;
+  pending_request_type_ = base::nullopt;
 }
 
 void InspectorNetworkAgent::WillSendNavigationRequest(
@@ -1115,7 +1113,7 @@ void InspectorNetworkAgent::WillLoadXHR(ExecutionContext* execution_context,
                                         EncodedFormData* form_data,
                                         const HTTPHeaderMap& headers,
                                         bool include_credentials) {
-  DCHECK(!pending_request_);
+  DCHECK(!pending_request_type_);
   pending_xhr_replay_data_ = XHRReplayData::Create(
       execution_context, method, UrlWithoutFragment(url), async,
       form_data ? form_data->DeepCopy() : nullptr, include_credentials);
@@ -1133,10 +1131,8 @@ void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
   remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
-void InspectorNetworkAgent::WillSendEventSourceRequest(
-    ThreadableLoaderClient* event_source) {
-  DCHECK(!pending_request_);
-  pending_request_ = event_source;
+void InspectorNetworkAgent::WillSendEventSourceRequest() {
+  DCHECK(!pending_request_type_);
   pending_request_type_ = InspectorPageAgent::kEventSourceResource;
 }
 
@@ -1344,7 +1340,7 @@ void InspectorNetworkAgent::Enable() {
 }
 
 Response InspectorNetworkAgent::disable() {
-  DCHECK(!pending_request_);
+  DCHECK(!pending_request_type_);
   instrumenting_agents_->removeInspectorNetworkAgent(this);
   agent_state_.ClearAllFields();
   resources_data_->Clear();
@@ -1671,7 +1667,6 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       devtools_token_(worker_global_scope_
                           ? worker_global_scope_->GetParentDevToolsToken()
                           : inspected_frames->Root()->GetDevToolsFrameToken()),
-      pending_request_(nullptr),
       remove_finished_replay_xhr_timer_(
           worker_global_scope_
               ? worker_global_scope->GetTaskRunner(TaskType::kInternalLoading)
