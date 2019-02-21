@@ -207,6 +207,9 @@ class CORE_EXPORT Element : public ContainerNode {
   bool hasAttributeNS(const AtomicString& namespace_uri,
                       const AtomicString& local_name) const;
 
+  // Ignores namespace.
+  bool HasAttributeIgnoringNamespace(const AtomicString& local_name) const;
+
   const AtomicString& getAttribute(const AtomicString& name) const;
   const AtomicString& getAttributeNS(const AtomicString& namespace_uri,
                                      const AtomicString& local_name) const;
