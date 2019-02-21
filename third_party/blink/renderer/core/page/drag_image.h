@@ -23,12 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_DRAG_IMAGE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_DRAG_IMAGE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_IMAGE_H_
 
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ class FontDescription;
 class Image;
 class KURL;
 
-class PLATFORM_EXPORT DragImage {
+class CORE_EXPORT DragImage {
   USING_FAST_MALLOC(DragImage);
 
  public:
@@ -74,13 +74,6 @@ class PLATFORM_EXPORT DragImage {
 
   void Scale(float scale_x, float scale_y);
 
-  static PaintImage ResizeAndOrientImage(
-      const PaintImage&,
-      ImageOrientation,
-      FloatSize image_scale = FloatSize(1, 1),
-      float opacity = 1.0,
-      InterpolationQuality = kInterpolationNone);
-
  private:
   DragImage(const SkBitmap&, float resolution_scale, InterpolationQuality);
 
@@ -93,4 +86,4 @@ class PLATFORM_EXPORT DragImage {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_DRAG_IMAGE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_IMAGE_H_

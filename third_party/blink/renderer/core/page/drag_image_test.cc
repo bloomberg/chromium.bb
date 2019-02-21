@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/drag_image.h"
+#include "third_party/blink/renderer/core/page/drag_image.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -39,10 +39,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
