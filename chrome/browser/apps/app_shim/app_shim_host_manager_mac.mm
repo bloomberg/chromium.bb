@@ -66,7 +66,8 @@ void AppShimHostManager::Init() {
 }
 
 AppShimHostManager::~AppShimHostManager() {
-  acceptor_.reset();
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+      ->DeleteSoon(FROM_HERE, std::move(acceptor_));
 
   // The AppShimHostManager is only initialized if the Chrome process
   // successfully took the singleton lock. If it was not initialized, do not
