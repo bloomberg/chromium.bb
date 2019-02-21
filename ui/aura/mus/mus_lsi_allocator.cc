@@ -222,9 +222,10 @@ void TopLevelAllocator::DidGenerateLocalSurfaceIdAllocation(
 }
 
 void TopLevelAllocator::NotifyServerOfLocalSurfaceId() {
-  window_tree_client()->OnWindowTreeHostBoundsWillChange(
-      static_cast<WindowTreeHostMus*>(GetWindow()->GetHost()),
-      GetWindow()->GetHost()->GetBoundsInPixels());
+  WindowTreeHostMus* host =
+      static_cast<WindowTreeHostMus*>(GetWindow()->GetHost());
+  window_tree_client()->OnWindowTreeHostBoundsWillChange(host,
+                                                         host->bounds_in_dip());
 }
 
 // EmbeddedAllocator -----------------------------------------------------------

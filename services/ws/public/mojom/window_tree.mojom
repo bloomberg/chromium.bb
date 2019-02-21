@@ -112,6 +112,7 @@ interface WindowTree {
   // change the child-sequence number portion of the id. Supplying a different
   // embed token results in failure, and changes to the parent sequence number
   // are ignored.
+  // |bounds| are in DIPs.
   SetWindowBounds(
       uint32 change_id,
       uint64 window_id,

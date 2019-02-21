@@ -716,8 +716,8 @@ void WindowTreeClient::UpdateObservedEventTypes() {
 
 void WindowTreeClient::ScheduleInFlightBoundsChange(
     WindowMus* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& old_bounds_in_dip,
+    const gfx::Rect& new_bounds_in_dip) {
   base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation =
       window->GetLocalSurfaceIdAllocation();
   if (!local_surface_id_allocation->IsValid()) {
@@ -736,9 +736,9 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
   }
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
-          this, window, old_bounds, /* from_server */ false,
+          this, window, old_bounds_in_dip, /* from_server */ false,
           local_surface_id_allocation));
-  tree_->SetWindowBounds(change_id, window->server_id(), new_bounds,
+  tree_->SetWindowBounds(change_id, window->server_id(), new_bounds_in_dip,
                          local_surface_id_allocation);
 }
 

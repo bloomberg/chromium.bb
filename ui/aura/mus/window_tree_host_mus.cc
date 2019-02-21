@@ -188,7 +188,7 @@ WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
 }
 
 void WindowTreeHostMus::SetBounds(
-    const gfx::Rect& bounds,
+    const gfx::Rect& bounds_in_dip,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   viz::LocalSurfaceIdAllocation actual_local_surface_id_allocation =
       local_surface_id_allocation;
@@ -199,8 +199,9 @@ void WindowTreeHostMus::SetBounds(
   // Do not use ConvertRectToPixel, enclosing rects cause problems. In
   // particular, ConvertRectToPixel's result varies based on the location.
   const float dsf = ui::GetScaleFactorForNativeView(window());
-  const gfx::Rect pixel_bounds(gfx::ScaleToFlooredPoint(bounds.origin(), dsf),
-                               gfx::ScaleToCeiledSize(bounds.size(), dsf));
+  const gfx::Rect pixel_bounds(
+      gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), dsf),
+      gfx::ScaleToCeiledSize(bounds_in_dip.size(), dsf));
   if (!in_set_bounds_from_server_) {
     // Update the LocalSurfaceIdAllocation here, rather than in WindowTreeHost
     // as WindowTreeClient (the delegate) needs that information before
@@ -212,9 +213,9 @@ void WindowTreeHostMus::SetBounds(
       actual_local_surface_id_allocation =
           window()->GetLocalSurfaceIdAllocation();
     }
-    delegate_->OnWindowTreeHostBoundsWillChange(this, bounds);
+    delegate_->OnWindowTreeHostBoundsWillChange(this, bounds_in_dip);
   }
-  bounds_in_dip_ = bounds;
+  bounds_in_dip_ = bounds_in_dip;
   WindowTreeHostPlatform::SetBoundsInPixels(pixel_bounds,
                                             actual_local_surface_id_allocation);
 }
