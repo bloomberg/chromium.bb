@@ -3587,7 +3587,11 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
-    std::move(callback).Run(blink::mojom::CommitResult::Aborted);
+    if (callback) {
+      std::move(callback).Run(blink::mojom::CommitResult::Aborted);
+    } else {
+      navigation_client_impl_.reset();
+    }
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3605,10 +3609,15 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
       // either, as the frame has already been populated with something
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
-      std::move(callback).Run(blink::mojom::CommitResult::Aborted);
+      if (callback) {
+        std::move(callback).Run(blink::mojom::CommitResult::Aborted);
+      } else {
+        navigation_client_impl_.reset();
+      }
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     } else {
-      std::move(callback).Run(blink::mojom::CommitResult::Ok);
+      if (callback)
+        std::move(callback).Run(blink::mojom::CommitResult::Ok);
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
