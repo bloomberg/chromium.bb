@@ -385,7 +385,6 @@ public class WebContentsAccessibilityTest {
         Assert.fail("ACTION_SET_TEXT not found");
     }
 
-
     /**
      * ContentEditable elements should get a class name of EditText.
      **/
@@ -405,5 +404,96 @@ public class WebContentsAccessibilityTest {
         Assert.assertNotNull(editableNode);
         Assert.assertEquals(editableNode.isEditable(), true);
         Assert.assertEquals(editableNode.getText().toString(), "Edit This");
+    }
+
+    /**
+     * Tests presence of ContentInvalid attribute and correctness of
+     * error message given aria-invalid = true
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testEditTextFieldAriaInvalidTrueErrorMessage() throws Throwable {
+        final String data = "<form>\n"
+                + "  First name:<br>\n"
+                + "  <input id='fn' type='text' aria-invalid='true'><br>\n"
+                + "<input type='submit'><br>"
+                + "</form>";
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        Assert.assertEquals(textNode.isContentInvalid(), true);
+        Assert.assertEquals(textNode.getError(), "Invalid entry");
+    }
+
+    /**
+     * Tests presence of ContentInvalid attribute and correctness of
+     * error message given aria-invalid = spelling
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testEditTextFieldAriaInvalidSpellingErrorMessage() throws Throwable {
+        final String data = "<input type='text' aria-invalid='spelling'><br>\n";
+
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        Assert.assertEquals(textNode.isContentInvalid(), true);
+        Assert.assertEquals(textNode.getError(), "Invalid spelling");
+    }
+
+    /**
+     * Tests presence of ContentInvalid attribute and correctness of
+     * error message given aria-invalid = grammar
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testEditTextFieldAriaInvalidGrammarErrorMessage() throws Throwable {
+        final String data = "<input type='text' aria-invalid='grammar'><br>\n";
+
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        Assert.assertEquals(textNode.isContentInvalid(), true);
+        Assert.assertEquals(textNode.getError(), "Invalid grammar");
+    }
+
+    /**
+     * Tests ContentInvalid is false and empty error message for well-formed input
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+
+    public void testEditTextFieldValidNoErrorMessage() throws Throwable {
+        final String data = "<input type='text'><br>\n";
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        Assert.assertEquals(textNode.isContentInvalid(), false);
+        Assert.assertEquals(textNode.getError(), "");
     }
 }

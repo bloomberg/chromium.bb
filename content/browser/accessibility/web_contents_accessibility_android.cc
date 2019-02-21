@@ -719,12 +719,14 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
       node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart),
       node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd),
-      node->HasImage());
+      node->HasImage(), node->IsContentInvalid());
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
-      node->AndroidLiveRegionType());
+      node->AndroidLiveRegionType(),
+      base::android::ConvertUTF16ToJavaString(
+          env, node->GetContentInvalidErrorMessage()));
 
   bool has_character_locations = node->HasCharacterLocations();
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoOAttributes(

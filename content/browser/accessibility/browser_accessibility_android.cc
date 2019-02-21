@@ -101,6 +101,8 @@ static bool IsHierarchicalList(const content::BrowserAccessibility* node) {
 
 namespace content {
 
+const float kContentInvalidTimeoutMillisecs = 6000.0;
+
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityAndroid();
@@ -264,6 +266,20 @@ bool BrowserAccessibilityAndroid::IsCollectionItem() const {
 }
 
 bool BrowserAccessibilityAndroid::IsContentInvalid() const {
+  if (IsFocused()) {
+    // When a node has focus, only report that it's invalid for a short period
+    // of time. Otherwise it's annoying to hear the invalid message every time
+    // a character is entered.
+    if (content_invalid_timer_.Elapsed().InMillisecondsF() <
+        kContentInvalidTimeoutMillisecs) {
+      bool invalid_state =
+          HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
+          GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse;
+      if (invalid_state)
+        return true;
+    }
+    return false;
+  }
   return HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
          GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse;
 }
@@ -1711,6 +1727,44 @@ int BrowserAccessibilityAndroid::CountChildrenWithRole(
       count++;
   }
   return count;
+}
+
+base::string16 BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
+    const {
+  content::ContentClient* content_client = content::GetContentClient();
+  int message_id = -1;
+
+  if (!IsContentInvalid())
+    return base::string16();
+
+  switch (GetData().GetInvalidState()) {
+    case ax::mojom::InvalidState::kNone:
+    case ax::mojom::InvalidState::kFalse:
+      // No error message necessary
+      break;
+
+    case ax::mojom::InvalidState::kTrue:
+    case ax::mojom::InvalidState::kOther:
+      message_id = CONTENT_INVALID_TRUE;
+      break;
+
+    case ax::mojom::InvalidState::kSpelling:
+      message_id = CONTENT_INVALID_SPELLING;
+      break;
+
+    case ax::mojom::InvalidState::kGrammar:
+      message_id = CONTENT_INVALID_GRAMMAR;
+      break;
+  }
+
+  if (message_id != -1)
+    return content_client->GetLocalizedString(message_id);
+
+  return base::string16();
+}
+
+void BrowserAccessibilityAndroid::ResetContentInvalidTimer() {
+  content_invalid_timer_ = base::ElapsedTimer();
 }
 
 }  // namespace content
