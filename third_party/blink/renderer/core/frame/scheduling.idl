@@ -5,5 +5,5 @@
 // https://github.com/tdresser/is-input-pending
 [OriginTrialEnabled=ExperimentalIsInputPending]
 interface Scheduling {
-    [CallWith=ScriptState, OriginTrialEnabled=ExperimentalIsInputPending] boolean isInputPending(optional sequence<DOMString> inputTypes = []);
+    [CallWith=ScriptState, MeasureAs=SchedulingIsInputPending, OriginTrialEnabled=ExperimentalIsInputPending] boolean isInputPending(optional sequence<DOMString> inputTypes = []);
 };

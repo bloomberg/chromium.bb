@@ -2230,6 +2230,7 @@ enum WebFeature {
   kClientHintsUAPlatform = 2791,
   kClientHintsUAModel = 2792,
   kAnimationFrameCancelledWithinFrame = 2793,
+  kSchedulingIsInputPending = 2794,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
