@@ -38,6 +38,7 @@ enum AntialiasingMode {
 struct GPU_EXPORT WebglPreferences {
   AntialiasingMode anti_aliasing_mode = kAntialiasingModeUnspecified;
   uint32_t msaa_sample_count = 8;
+  uint32_t eqaa_storage_sample_count = 4;
   // WebGL-specific numeric limits.
   uint32_t max_active_webgl_contexts = 0;
   uint32_t max_active_webgl_contexts_on_worker = 0;
