@@ -69,12 +69,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     public static final String EXTRA_LAUNCH_MODE =
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
-    /**
-     * Whether or not the toolbar should indicate that a tab was spawned by another Activity.
-     */
-    public static final String EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT =
-            "org.chromium.chrome.browser.document.IS_ALLOWED_TO_RETURN_TO_PARENT";
-
     private static final String TAG = "ActivitiyDispatcher";
 
     /**

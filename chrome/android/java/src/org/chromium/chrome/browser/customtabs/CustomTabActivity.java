@@ -940,7 +940,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (TextUtils.isEmpty(url)) url = mIntentDataProvider.getUrlToLoad();
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(LaunchIntentDispatcher.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
         boolean willChromeHandleIntent =
                 getIntentDataProvider().isOpenedByChrome() || getIntentDataProvider().isIncognito();

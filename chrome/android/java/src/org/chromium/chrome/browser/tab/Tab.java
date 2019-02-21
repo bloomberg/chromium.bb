@@ -327,9 +327,6 @@ public class Tab
      */
     private boolean mIsDetached;
 
-    /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
-    private boolean mIsAllowedToReturnToExternalApp;
-
     /**
      * The publisher URL for pages hosted on a trusted CDN, or null otherwise.
      */
@@ -581,7 +578,6 @@ public class Tab
             if ((params.getTransitionType() & PageTransition.FROM_ADDRESS_BAR)
                     == PageTransition.FROM_ADDRESS_BAR) {
                 mAppAssociatedWith = null;
-                setIsAllowedToReturnToExternalApp(false);
             }
             if ("chrome://java-crash/".equals(params.getUrl())) {
                 return handleJavaCrash();
@@ -2650,20 +2646,6 @@ public class Tab
      */
     protected boolean isRendererUnresponsive() {
         return mIsRendererUnresponsive;
-    }
-
-    /**
-     * Set whether closing this Tab should return the user to the app that spawned Chrome.
-     */
-    public void setIsAllowedToReturnToExternalApp(boolean state) {
-        mIsAllowedToReturnToExternalApp = state;
-    }
-
-    /**
-     * @return Whether closing this Tab should return the user to the app that spawned Chrome.
-     */
-    public boolean isAllowedToReturnToExternalApp() {
-        return mIsAllowedToReturnToExternalApp;
     }
 
     /**
