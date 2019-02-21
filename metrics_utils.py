@@ -260,7 +260,7 @@ def get_repo_timestamp(path_to_repo):
   # Get the upstream for the current branch. If we're not in a branch, fallback
   # to HEAD.
   try:
-    upstream = scm.GIT.GetUpstreamBranch(path_to_repo)
+    upstream = scm.GIT.GetUpstreamBranch(path_to_repo) or 'HEAD'
   except subprocess2.CalledProcessError:
     upstream = 'HEAD'
 
