@@ -86,6 +86,10 @@
 #       A list of config labels that will be appended to the configs applying
 #       to the source set.
 #
+#   remove_configs (optional)
+#       A list of config labels that will be removed from the configs apllying
+#       to the source set.
+#
 # Example:
 #  proto_library("mylib") {
 #    sources = [
@@ -352,6 +356,10 @@ template("proto_library") {
                            ])
 
     sources = get_target_outputs(":$action_name")
+
+    if (defined(invoker.remove_configs)) {
+      configs -= invoker.remove_configs
+    }
 
     if (defined(invoker.extra_configs)) {
       configs += invoker.extra_configs
