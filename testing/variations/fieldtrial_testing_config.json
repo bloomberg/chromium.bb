@@ -3842,7 +3842,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "connection_options": "NSTP"
+                        "connection_options": "5RTO,NSTP"
                     }
                 }
             ]
