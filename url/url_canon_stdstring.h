@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "url/url_canon.h"
 
@@ -45,6 +46,7 @@ class COMPONENT_EXPORT(URL) StdStringCanonOutput : public CanonOutput {
 
  protected:
   std::string* str_;
+  DISALLOW_COPY_AND_ASSIGN(StdStringCanonOutput);
 };
 
 // An extension of the Replacements class that allows the setters to use
