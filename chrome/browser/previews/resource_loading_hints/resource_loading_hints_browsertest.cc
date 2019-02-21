@@ -16,6 +16,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +28,8 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_constants.h"
@@ -132,15 +136,21 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    base::HistogramTester histogram_tester;
-
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
 
-    RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-        1);
+    // Wait for hint update processing to complete.
+    base::RunLoop run_loop;
+    PreviewsServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()))
+        ->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   // Performs a navigation to |url| and waits for the the url's host's hints to

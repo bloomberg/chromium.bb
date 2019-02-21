@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -90,6 +91,9 @@ class PreviewsOptimizationGuide
 
   PreviewsHints* GetHintsForTesting() { return hints_.get(); }
 
+  // |next_update_closure| is called the next time the hints have been updated.
+  void ListenForNextUpdateForTesting(base::OnceClosure next_update_closure);
+
  private:
   // Callback run after the hint cache is fully initialized. At this point, the
   // PreviewsOptimizationGuide is ready to process components from the
@@ -125,6 +129,9 @@ class PreviewsOptimizationGuide
 
   // The current hints used for this optimization guide.
   std::unique_ptr<PreviewsHints> hints_;
+
+  // Used in testing to subscribe to an update event in this class.
+  base::OnceClosure next_update_closure_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;

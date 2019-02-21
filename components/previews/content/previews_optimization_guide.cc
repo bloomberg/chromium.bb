@@ -251,11 +251,21 @@ void PreviewsOptimizationGuide::UpdateHints(
 
 void PreviewsOptimizationGuide::OnHintsUpdated() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  if (!next_update_closure_.is_null())
+    std::move(next_update_closure_).Run();
+
   // Record the result of updating the hints. This is used as a signal for the
   // hints being fully processed in testing.
   LOCAL_HISTOGRAM_BOOLEAN(
       kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
       hints_ != NULL);
+}
+
+void PreviewsOptimizationGuide::ListenForNextUpdateForTesting(
+    base::OnceClosure next_update_closure) {
+  DCHECK(next_update_closure_.is_null())
+      << "Only one update closure is supported at a time";
+  next_update_closure_ = std::move(next_update_closure);
 }
 
 }  // namespace previews
