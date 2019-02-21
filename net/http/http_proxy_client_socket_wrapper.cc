@@ -793,16 +793,8 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuthComplete(int result) {
   if (reconnect) {
     // Attempt to create a new one.
     transport_socket_.reset();
-
-    // Reconnect with HIGHEST priority to get in front of other requests that
-    // don't yet have the information |http_auth_controller_| does.
-    // TODO(mmenke): This may still result in waiting in line, if there are
-    //               other HIGHEST priority requests. Consider a workaround for
-    //               that. Starting the new request before releasing the old
-    //               socket and using RespectLimits::Disabled would work,
-    //               without exceding the the socket pool limits (Since the old
-    //               socket would free up the extra socket slot when destroyed).
-    priority_ = HIGHEST;
+    using_spdy_ = false;
+    negotiated_protocol_ = NextProto();
     next_state_ = STATE_BEGIN_CONNECT;
     return OK;
   }
