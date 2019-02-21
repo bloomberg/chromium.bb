@@ -376,7 +376,8 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
         if (CanStartTwoFingerMove(target, first_finger_hittest_,
                                   second_finger_hittest)) {
           AttemptToStartDrag(target, first_finger_touch_point_, HTCAPTION,
-                             ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure());
+                             ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure(),
+                             /*update_gesture_target=*/false);
           event->StopPropagation();
         }
       }
@@ -398,7 +399,8 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
       aura::Window::ConvertPointToTarget(target, target->parent(),
                                          &location_in_parent);
       AttemptToStartDrag(target, location_in_parent, component,
-                         ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure());
+                         ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure(),
+                         /*update_gesture_target=*/false);
       event->StopPropagation();
       return;
     }
@@ -461,7 +463,8 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
     const gfx::Point& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source,
-    EndClosure end_closure) {
+    EndClosure end_closure,
+    bool update_gesture_target) {
   if (!PrepareForDrag(window, point_in_parent, window_component, source)) {
     // Treat failure to start as a revert.
     if (end_closure)
@@ -473,8 +476,14 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
   in_gesture_drag_ = (source == ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   // |gesture_target_| needs to be updated if the drag originated from a
   // client (i.e. |this| never handled ET_GESTURE_EVENT_BEGIN).
-  if (in_gesture_drag_ && !gesture_target_)
+  if (in_gesture_drag_ && (!gesture_target_ || update_gesture_target)) {
+    if (gesture_target_ && gesture_target_ != window) {
+      // Transfer events for gesture if switching to new target.
+      window->env()->gesture_recognizer()->TransferEventsTo(
+          gesture_target_, window, ui::TransferTouchesBehavior::kDontCancel);
+    }
     UpdateGestureTarget(window);
+  }
 
   return true;
 }
@@ -543,7 +552,8 @@ void WmToplevelWindowEventHandler::HandleMousePressed(aura::Window* target,
     aura::Window::ConvertPointToTarget(target, target->parent(),
                                        &location_in_parent);
     AttemptToStartDrag(target, location_in_parent, component,
-                       ::wm::WINDOW_MOVE_SOURCE_MOUSE, EndClosure());
+                       ::wm::WINDOW_MOVE_SOURCE_MOUSE, EndClosure(),
+                       /*update_gesture_target=*/false);
     // Set as handled so that other event handlers do no act upon the event
     // but still receive it so that they receive both parts of each pressed/
     // released pair.

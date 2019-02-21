@@ -137,7 +137,8 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
       ->wm_toplevel_window_event_handler()
       ->AttemptToStartDrag(
           window, location_in_parent, window_component, aura_source,
-          base::BindOnce(&OnMoveLoopCompleted, std::move(callback)));
+          base::BindOnce(&OnMoveLoopCompleted, std::move(callback)),
+          /*update_gesture_target=*/false);
 }
 
 void WindowServiceDelegateImpl::CancelWindowMoveLoop() {
