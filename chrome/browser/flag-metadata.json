@@ -789,8 +789,8 @@
   },
   {
     "name": "enable-async-dns",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ericorth", "net-dev" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-async-image-decoding",
