@@ -21490,7 +21490,7 @@ Called by update_net_error_codes.py.-->
   <int value="2646" label="CSSSelectorNotWithInvalidList"/>
   <int value="2647" label="CSSSelectorNotWithPartiallyValidList"/>
   <int value="2648" label="V8IDBFactory_Databases_Method"/>
-  <int value="2649" label="OpenerNavigationDownloadCrossOriginNoGesture"/>
+  <int value="2649" label="OpenerNavigationDownloadCrossOrigin"/>
   <int value="2650" label="V8RegExpMatchIsTrueishOnNonJSRegExp"/>
   <int value="2651" label="V8RegExpMatchIsFalseishOnJSRegExp"/>
   <int value="2652" label="DownloadInAdFrameWithUserGesture"/>
@@ -36368,10 +36368,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Allowed"/>
   <int value="1" label="Disallowed (view-source)"/>
   <int value="2" label="Disallowed (interstitial)"/>
-  <int value="3" label="Allowed (opener)"/>
-  <int value="4" label="Allowed (no gesture)"/>
-  <int value="5" label="Allowed (x-origin)"/>
-  <int value="6" label="Allowed (no gesture and x-origin)"/>
+  <int value="5" label="Disallowed (x-origin)"/>
   <int value="7" label="Disallowed (sandbox)"/>
 </enum>
 

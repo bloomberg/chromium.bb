@@ -40,13 +40,10 @@ ResourceInterceptPolicy GetResourceInterceptPolicy(
   switch (policy) {
     case NavigationDownloadPolicy::kDisallowViewSource:
     case NavigationDownloadPolicy::kDisallowInterstitial:
+    case NavigationDownloadPolicy::kDisallowOpenerCrossOrigin:
     case NavigationDownloadPolicy::kDisallowSandbox:
       return ResourceInterceptPolicy::kAllowNone;
     case NavigationDownloadPolicy::kAllow:
-    case NavigationDownloadPolicy::kAllowOpener:
-    case NavigationDownloadPolicy::kAllowOpenerNoGesture:
-    case NavigationDownloadPolicy::kAllowOpenerCrossOrigin:
-    case NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture:
       return ResourceInterceptPolicy::kAllowAll;
   }
 }
