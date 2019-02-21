@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/download/download_history.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
@@ -34,7 +33,7 @@ class DownloadItem;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadItemNotifier::Observer,
-      public DownloadHistory::Observer,
+      public content::DownloadManager::Observer,
       public content::NotificationObserver,
       public service_manager::Service {
  public:
@@ -136,10 +135,11 @@ class DownloadManagerService
                             const JavaParamRef<jstring>& jdownload_guid,
                             bool is_off_the_record);
 
-  // DownloadHistory::Observer methods.
-  void OnHistoryQueryComplete() override;
+  // content::DownloadManager::Observer methods.
+  void OnManagerInitialized() override;
 
   // AllDownloadItemNotifier::Observer methods.
+  void OnManagerInitialized(content::DownloadManager* manager) override;
   void OnDownloadCreated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
@@ -225,7 +225,7 @@ class DownloadManagerService
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  bool is_history_query_complete_;
+  bool is_manager_initialized_;
   bool is_pending_downloads_loaded_;
 
   enum PendingGetDownloadsFlags {
@@ -239,7 +239,7 @@ class DownloadManagerService
 
   // Holds params provided to the download function calls.
   struct DownloadActionParams {
-    DownloadActionParams(DownloadAction download_action);
+    explicit DownloadActionParams(DownloadAction download_action);
     DownloadActionParams(DownloadAction download_action, bool user_gesture);
     DownloadActionParams(const DownloadActionParams& other);
 
