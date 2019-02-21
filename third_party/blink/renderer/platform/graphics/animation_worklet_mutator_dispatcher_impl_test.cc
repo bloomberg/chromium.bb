@@ -323,6 +323,28 @@ TEST_F(
   Mock::VerifyAndClearExpectations(client_.get());
 }
 
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
+       DispatcherShouldNotHangWhenMutatorGoesAway) {
+  // Create a thread to run mutator tasks.
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+
+  EXPECT_CALL(*first_mutator, GetWorkletId()).WillRepeatedly(Return(11));
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
+
+  // Shutdown the thread so its task runner no longer executes tasks.
+  first_thread.reset();
+
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
+
+  Mock::VerifyAndClearExpectations(client_.get());
+}
+
 // -----------------------------------------------------------------------
 // Asynchronous version of tests.
 
