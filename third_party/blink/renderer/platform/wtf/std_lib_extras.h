@@ -31,6 +31,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
