@@ -24,9 +24,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LINKED_HASH_SET_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 
 namespace WTF {
 

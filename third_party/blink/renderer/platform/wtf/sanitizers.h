@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_
-// TODO(kojii): This file will need to be renamed, because it's no more
-// specific to AddressSanitizer.
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SANITIZERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SANITIZERS_H_
 
 // TODO(sof): Add SyZyASan support?
 #if defined(ADDRESS_SANITIZER)
@@ -54,4 +52,4 @@
 #define NO_SANITIZE_CFI_ICALL
 #endif
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SANITIZERS_H_

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONTAINER_ANNOTATIONS_H_
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 
 // TODO(ochang): Remove the ARCH_CPU_X86_64 condition to enable this for X86
 // once the crashes there have been fixed: http://crbug.com/461406
