@@ -58,12 +58,12 @@ void NavigableContentsImpl::GoBack(
   delegate_->GoBack(std::move(callback));
 }
 
-void NavigableContentsImpl::CreateView(bool in_service_process,
+void NavigableContentsImpl::CreateView(bool use_window_service,
                                        CreateViewCallback callback) {
   DCHECK(native_content_view_);
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  if (!in_service_process) {
+  if (use_window_service) {
     remote_view_provider_ =
         std::make_unique<views::RemoteViewProvider>(native_content_view_);
     remote_view_provider_->GetEmbedToken(
@@ -72,7 +72,7 @@ void NavigableContentsImpl::CreateView(bool in_service_process,
     return;
   }
 #else
-  if (!in_service_process) {
+  if (use_window_service) {
     DLOG(ERROR) << "Remote NavigableContentsView clients are not supported on "
                 << "this platform.";
     return;
