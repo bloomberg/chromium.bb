@@ -37,7 +37,7 @@ class CORE_EXPORT SnapCoordinator final
   ~SnapCoordinator();
   void Trace(blink::Visitor* visitor) {}
 
-  void SnapContainerDidChange(LayoutBox&, ScrollSnapType);
+  void SnapContainerDidChange(LayoutBox&, cc::ScrollSnapType);
   void SnapAreaDidChange(LayoutBox&, ScrollSnapAlign);
 
   // Returns the SnapContainerData if the snap container has one.

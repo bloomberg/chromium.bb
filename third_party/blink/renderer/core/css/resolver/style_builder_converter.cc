@@ -29,7 +29,6 @@
 #include <algorithm>
 
 #include "build/build_config.h"
-#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
@@ -1498,9 +1497,11 @@ TransformOrigin StyleBuilderConverter::ConvertTransformOrigin(
       z);
 }
 
-ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
-                                                      const CSSValue& value) {
-  ScrollSnapType snapType = ComputedStyleInitialValues::InitialScrollSnapType();
+cc::ScrollSnapType StyleBuilderConverter::ConvertSnapType(
+    StyleResolverState&,
+    const CSSValue& value) {
+  cc::ScrollSnapType snapType =
+      ComputedStyleInitialValues::InitialScrollSnapType();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     snapType.is_none = false;

@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -231,7 +232,8 @@ class StyleBuilderConverter {
       const OrderedNamedGridLines&,
       NamedGridLinesMap&);
 
-  static ScrollSnapType ConvertSnapType(StyleResolverState&, const CSSValue&);
+  static cc::ScrollSnapType ConvertSnapType(StyleResolverState&,
+                                            const CSSValue&);
   static ScrollSnapAlign ConvertSnapAlign(StyleResolverState&, const CSSValue&);
   static scoped_refptr<TranslateTransformOperation> ConvertTranslate(
       StyleResolverState&,

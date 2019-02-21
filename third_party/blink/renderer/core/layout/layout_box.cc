@@ -28,6 +28,8 @@
 
 #include <math.h>
 #include <algorithm>
+
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -458,11 +460,11 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
   bool allows_snap_container =
       GetNode() != GetDocument().ViewportDefiningElement();
 
-  ScrollSnapType old_snap_type =
-      old_style ? old_style->GetScrollSnapType() : ScrollSnapType();
-  ScrollSnapType new_snap_type = new_style && allows_snap_container
-                                     ? new_style->GetScrollSnapType()
-                                     : ScrollSnapType();
+  cc::ScrollSnapType old_snap_type =
+      old_style ? old_style->GetScrollSnapType() : cc::ScrollSnapType();
+  cc::ScrollSnapType new_snap_type = new_style && allows_snap_container
+                                         ? new_style->GetScrollSnapType()
+                                         : cc::ScrollSnapType();
   if (old_snap_type != new_snap_type)
     snap_coordinator->SnapContainerDidChange(*this, new_snap_type);
 

@@ -2035,7 +2035,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
 }
 
 CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
-    const ScrollSnapType& type,
+    const cc::ScrollSnapType& type,
     const ComputedStyle& style) {
   if (!type.is_none) {
     return CSSValuePair::Create(CSSIdentifierValue::Create(type.axis),
