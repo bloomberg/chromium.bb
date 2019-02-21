@@ -1501,10 +1501,13 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
       permission_service_context_(new PermissionServiceContext(this)),
-      indexed_db_factory_(new IndexedDBDispatcherHost(
-          id_,
-          storage_partition_impl_->GetIndexedDBContext(),
-          ChromeBlobStorageContext::GetFor(browser_context_))),
+      indexed_db_factory_(
+          new IndexedDBDispatcherHost(
+              id_,
+              storage_partition_impl_->GetIndexedDBContext(),
+              ChromeBlobStorageContext::GetFor(browser_context_)),
+          base::OnTaskRunnerDeleter(
+              storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
       service_worker_dispatcher_host_(new ServiceWorkerDispatcherHost(
           storage_partition_impl_->GetServiceWorkerContext(),
           id_)),
@@ -1973,13 +1976,17 @@ void RenderProcessHostImpl::BindIndexedDB(
     return;
   }
 
-  // Send the binding to IO thread to let IndexedDB handle Mojo IPC on the IO
-  // thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&IndexedDBDispatcherHost::AddBinding,
-                     base::Unretained(indexed_db_factory_.get()),
-                     std::move(request), origin));
+  // Send the binding to IDB sequenced task runner to let IndexedDB handle Mojo
+  // IPC there.  |indexed_db_factory_| is being invoked on the IDB task runner,
+  // and |this| owns |indexed_db_factory_| via a unique_ptr with an IDB task
+  // runner deleter, so if |this| is destroyed immediately after this call,
+  // the IDB task runner deleter's task will be run after the next call,
+  // guaranteeing that the usage of base::Unretained(indexed_db_factory_.get())
+  // here is safe.
+  indexed_db_factory_->context()->TaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&IndexedDBDispatcherHost::AddBinding,
+                                base::Unretained(indexed_db_factory_.get()),
+                                std::move(request), origin));
 }
 
 void RenderProcessHostImpl::BindFileSystemManager(

@@ -14,10 +14,11 @@ using blink::IndexedDBKey;
 
 namespace content {
 
-// Expected to be constructed on IO thread, and used/destroyed on IDB sequence.
+// TODO(cmp): Flatten calls / remove this class once IDB task runner CL settles.
 class CursorImpl::IDBSequenceHelper {
  public:
-  explicit IDBSequenceHelper(std::unique_ptr<IndexedDBCursor> cursor);
+  explicit IDBSequenceHelper(std::unique_ptr<IndexedDBCursor> cursor,
+                             base::SequencedTaskRunner* idb_runner);
   ~IDBSequenceHelper();
 
   void Advance(uint32_t count,
@@ -32,6 +33,8 @@ class CursorImpl::IDBSequenceHelper {
  private:
   std::unique_ptr<IndexedDBCursor> cursor_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(IDBSequenceHelper);
 };
 
@@ -39,66 +42,69 @@ CursorImpl::CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
                        const url::Origin& origin,
                        IndexedDBDispatcherHost* dispatcher_host,
                        scoped_refptr<base::SequencedTaskRunner> idb_runner)
-    : helper_(new IDBSequenceHelper(std::move(cursor))),
-      dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(dispatcher_host),
       origin_(origin),
-      idb_runner_(std::move(idb_runner)) {}
+      idb_runner_(std::move(idb_runner)) {
+  DCHECK(idb_runner_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  helper_ = base::WrapUnique(
+      new IDBSequenceHelper(std::move(cursor), idb_runner_.get()));
+}
 
 CursorImpl::~CursorImpl() {
-  idb_runner_->DeleteSoon(FROM_HERE, helper_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void CursorImpl::Advance(uint32_t count,
                          blink::mojom::IDBCursor::AdvanceCallback callback) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Advance, base::Unretained(helper_),
-                     count, dispatcher_host_->AsWeakPtr(),
-                     std::move(callback)));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  helper_->Advance(count, dispatcher_host_->AsWeakPtr(), std::move(callback));
 }
 
 void CursorImpl::CursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Continue, base::Unretained(helper_),
-                     key, primary_key, std::move(callbacks)));
+  helper_->Continue(key, primary_key, std::move(callbacks));
 }
 
 void CursorImpl::Prefetch(
     int32_t count,
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Prefetch,
-                                                  base::Unretained(helper_),
-                                                  count, std::move(callbacks)));
+  helper_->Prefetch(count, std::move(callbacks));
 }
 
 void CursorImpl::PrefetchReset(int32_t used_prefetches,
                                int32_t unused_prefetches) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::PrefetchReset,
-                                base::Unretained(helper_), used_prefetches,
-                                unused_prefetches));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  helper_->PrefetchReset(used_prefetches, unused_prefetches);
 }
 
 CursorImpl::IDBSequenceHelper::IDBSequenceHelper(
-    std::unique_ptr<IndexedDBCursor> cursor)
-    : cursor_(std::move(cursor)) {}
+    std::unique_ptr<IndexedDBCursor> cursor,
+    base::SequencedTaskRunner* idb_runner)
+    : cursor_(std::move(cursor)) {
+  DCHECK(idb_runner->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
-CursorImpl::IDBSequenceHelper::~IDBSequenceHelper() {}
+CursorImpl::IDBSequenceHelper::~IDBSequenceHelper() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void CursorImpl::IDBSequenceHelper::Advance(
     uint32_t count,
     base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
     blink::mojom::IDBCursor::AdvanceCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cursor_->Advance(count, std::move(dispatcher_host), std::move(callback));
 }
 
@@ -106,6 +112,7 @@ void CursorImpl::IDBSequenceHelper::Continue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cursor_->Continue(
       key.IsValid() ? std::make_unique<IndexedDBKey>(key) : nullptr,
       primary_key.IsValid() ? std::make_unique<IndexedDBKey>(primary_key)
@@ -116,11 +123,13 @@ void CursorImpl::IDBSequenceHelper::Continue(
 void CursorImpl::IDBSequenceHelper::Prefetch(
     int32_t count,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cursor_->PrefetchContinue(count, std::move(callbacks));
 }
 
 void CursorImpl::IDBSequenceHelper::PrefetchReset(int32_t used_prefetches,
                                                   int32_t unused_prefetches) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   leveldb::Status s =
       cursor_->PrefetchReset(used_prefetches, unused_prefetches);
   // TODO(cmumford): Handle this error (crbug.com/363397)

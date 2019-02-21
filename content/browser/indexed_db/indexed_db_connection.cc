@@ -29,11 +29,16 @@ IndexedDBConnection::IndexedDBConnection(
       child_process_id_(child_process_id),
       database_(database),
       callbacks_(callbacks),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
-IndexedDBConnection::~IndexedDBConnection() {}
+IndexedDBConnection::~IndexedDBConnection() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void IndexedDBConnection::Close() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!callbacks_.get())
     return;
   base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
@@ -46,6 +51,7 @@ void IndexedDBConnection::Close() {
 }
 
 void IndexedDBConnection::ForceClose() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!callbacks_.get())
     return;
 
@@ -62,6 +68,7 @@ void IndexedDBConnection::ForceClose() {
 }
 
 void IndexedDBConnection::VersionChangeIgnored() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!database_.get())
     return;
   database_->VersionChangeIgnored();
@@ -74,6 +81,7 @@ bool IndexedDBConnection::IsConnected() {
 // The observers begin listening to changes only once they are activated.
 void IndexedDBConnection::ActivatePendingObservers(
     std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : pending_observers) {
     active_observers_.push_back(std::move(observer));
   }
@@ -82,6 +90,7 @@ void IndexedDBConnection::ActivatePendingObservers(
 
 void IndexedDBConnection::RemoveObservers(
     const std::vector<int32_t>& observer_ids_to_remove) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<int32_t> pending_observer_ids;
   for (int32_t id_to_remove : observer_ids_to_remove) {
     const auto& it = std::find_if(
@@ -107,6 +116,7 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(GetTransaction(id), nullptr) << "Duplicate transaction id." << id;
   std::unique_ptr<IndexedDBTransaction> transaction =
       IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
@@ -119,12 +129,14 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
 void IndexedDBConnection::AbortTransaction(
     IndexedDBTransaction* transaction,
     const IndexedDBDatabaseError& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IDB_TRACE1("IndexedDBDatabase::Abort(error)", "txn.id", transaction->id());
   transaction->Abort(error);
 }
 
 void IndexedDBConnection::FinishAllTransactions(
     const IndexedDBDatabaseError& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>> temp_map;
   std::swap(temp_map, transactions_);
   for (const auto& pair : temp_map) {
@@ -142,6 +154,7 @@ void IndexedDBConnection::FinishAllTransactions(
 }
 
 IndexedDBTransaction* IndexedDBConnection::GetTransaction(int64_t id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = transactions_.find(id);
   if (it == transactions_.end())
     return nullptr;
@@ -151,6 +164,7 @@ IndexedDBTransaction* IndexedDBConnection::GetTransaction(int64_t id) const {
 base::WeakPtr<IndexedDBTransaction>
 IndexedDBConnection::AddTransactionForTesting(
     std::unique_ptr<IndexedDBTransaction> transaction) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsKey(transactions_, transaction->id()));
   base::WeakPtr<IndexedDBTransaction> transaction_ptr =
       transaction->ptr_factory_.GetWeakPtr();
@@ -159,6 +173,7 @@ IndexedDBConnection::AddTransactionForTesting(
 }
 
 void IndexedDBConnection::RemoveTransaction(int64_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   transactions_.erase(id);
 }
 

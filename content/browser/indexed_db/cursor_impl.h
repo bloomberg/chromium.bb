@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -20,7 +21,6 @@ namespace content {
 class IndexedDBCursor;
 class IndexedDBDispatcherHost;
 
-// Expected to be constructed, called, and destructed on the IO thread.
 class CursorImpl : public blink::mojom::IDBCursor {
  public:
   CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
@@ -44,12 +44,14 @@ class CursorImpl : public blink::mojom::IDBCursor {
  private:
   class IDBSequenceHelper;
 
-  IDBSequenceHelper* helper_;
+  std::unique_ptr<IDBSequenceHelper> helper_;
   // This raw pointer is safe because all CursorImpl instances are owned by an
   // IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;
   const url::Origin origin_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CursorImpl);
 };

@@ -104,6 +104,9 @@ class CONTENT_EXPORT IndexedDBConnection {
   // May be NULL in unit tests.
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   std::vector<std::unique_ptr<IndexedDBObserver>> active_observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<IndexedDBConnection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBConnection);

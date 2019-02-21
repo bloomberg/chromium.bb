@@ -58,6 +58,7 @@ class CONTENT_EXPORT IndexedDBCursor {
   leveldb::Status CursorAdvanceOperation(
       uint32_t count,
       base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       blink::mojom::IDBCursor::AdvanceCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorPrefetchIterationOperation(

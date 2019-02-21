@@ -189,15 +189,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
   const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
-  auto open_db_callbacks =
-      base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-  auto closed_db_callbacks =
-      base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-  auto open_callbacks =
-      base::MakeRefCounted<ForceCloseDBCallbacks>(idb_context, kTestOrigin);
-  auto closed_callbacks =
-      base::MakeRefCounted<ForceCloseDBCallbacks>(idb_context, kTestOrigin);
-
   base::RunLoop loop;
   idb_context->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -209,6 +200,15 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
         base::FilePath test_path =
             idb_context->GetFilePathForTesting(kTestOrigin);
+
+        auto open_db_callbacks =
+            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+        auto closed_db_callbacks =
+            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+        auto open_callbacks = base::MakeRefCounted<ForceCloseDBCallbacks>(
+            idb_context, kTestOrigin);
+        auto closed_callbacks = base::MakeRefCounted<ForceCloseDBCallbacks>(
+            idb_context, kTestOrigin);
 
         factory->Open(base::ASCIIToUTF16("opendb"),
                       std::make_unique<IndexedDBPendingConnection>(
@@ -270,8 +270,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   auto temp_path = temp_dir.GetPath();
-  auto callbacks = base::MakeRefCounted<MockIndexedDBCallbacks>();
-  auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
   base::RunLoop loop;
   idb_context->TaskRunner()->PostTask(
@@ -284,6 +282,9 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
         const int child_process_id = 0;
         const int64_t transaction_id = 1;
 
+        auto callbacks = base::MakeRefCounted<MockIndexedDBCallbacks>();
+        auto db_callbacks =
+            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
         auto connection = std::make_unique<IndexedDBPendingConnection>(
             callbacks, db_callbacks, child_process_id, transaction_id,
             IndexedDBDatabaseMetadata::DEFAULT_VERSION);
