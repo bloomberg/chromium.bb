@@ -31,7 +31,7 @@ interface MediaDrmStorage {
   // provisioning is to be used. If Initialize() fails or returns an empty
   // origin ID then the other methods below should not be called, and will
   // fail if they are called.
-  Initialize() => (bool success, mojo_base.mojom.UnguessableToken origin_id);
+  Initialize() => (bool success, mojo_base.mojom.UnguessableToken? origin_id);
 
   // Saves origin information (e.g. origin ID, provision time) in the storage
   // after MediaDrm is provisioned for current origin. It will clear all

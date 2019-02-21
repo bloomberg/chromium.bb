@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +32,7 @@ void CreateOriginId(Profile* profile,
   auto* origin_id_manager =
       MediaDrmOriginIdManagerFactory::GetForProfile(profile);
   if (!origin_id_manager) {
-    std::move(callback).Run(false, base::UnguessableToken());
+    std::move(callback).Run(false, base::nullopt);
     return;
   }
 

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -510,17 +511,19 @@ class InitializationSerializer {
   }
 
  private:
-  void OnOriginIdObtained(PrefService* pref_service,
-                          const url::Origin& origin,
-                          bool success,
-                          const base::UnguessableToken& origin_id) {
+  void OnOriginIdObtained(
+      PrefService* pref_service,
+      const url::Origin& origin,
+      bool success,
+      const MediaDrmStorageImpl::MediaDrmOriginId& origin_id) {
     DVLOG(3) << __func__ << " origin: " << origin;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     // Save the origin ID in the preference as long as it is not null.
     if (origin_id) {
       DictionaryPrefUpdate update(pref_service, kMediaDrmStorage);
-      CreateOriginDictAndReturnSessionsDict(update.Get(), origin, origin_id);
+      CreateOriginDictAndReturnSessionsDict(update.Get(), origin,
+                                            origin_id.value());
     }
 
     // Now call any callbacks waiting for this origin ID to be allocated.
@@ -657,7 +660,7 @@ MediaDrmStorageImpl::~MediaDrmStorageImpl() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (init_cb_)
-    std::move(init_cb_).Run(false, base::UnguessableToken());
+    std::move(init_cb_).Run(false, base::nullopt);
 }
 
 void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
@@ -685,9 +688,11 @@ void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
 
 void MediaDrmStorageImpl::OnOriginIdObtained(
     bool success,
-    const base::UnguessableToken& origin_id) {
+    const MediaDrmOriginId& origin_id) {
   is_initialized_ = true;
-  origin_id_ = origin_id;
+  if (success)
+    origin_id_ = origin_id;
+
   std::move(init_cb_).Run(success, origin_id_);
 }
 
@@ -715,7 +720,8 @@ void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {
   // Update origin dict once origin provisioning completes. There may be
   // orphaned session info from a previous provisioning. Clear them by
   // recreating the dicts.
-  CreateOriginDictAndReturnSessionsDict(storage_dict, origin(), origin_id_);
+  CreateOriginDictAndReturnSessionsDict(storage_dict, origin(),
+                                        origin_id_.value());
   std::move(callback).Run(true);
 }
 
@@ -752,15 +758,15 @@ void MediaDrmStorageImpl::SavePersistentSession(
   // branch. Deleting the profile causes reprovisioning of the origin.
   if (!sessions_dict) {
     DVLOG(1) << __func__ << ": No entry for origin " << origin();
-    sessions_dict = CreateOriginDictAndReturnSessionsDict(storage_dict,
-                                                          origin(), origin_id_);
+    sessions_dict = CreateOriginDictAndReturnSessionsDict(
+        storage_dict, origin(), origin_id_.value());
     DCHECK(sessions_dict);
   }
 
   DVLOG_IF(1, sessions_dict->FindKey(session_id))
       << __func__ << ": Session ID already exists and will be replaced.";
 
-  // The key type of the session should be valid. MeidaDrmKeyType::MIN/UNKNOWN
+  // The key type of the session should be valid. MediaDrmKeyType::MIN/UNKNOWN
   // is an invalid type and caller should never pass it here.
   DCHECK_GT(session_data->key_type, media::MediaDrmKeyType::MIN);
   DCHECK_LE(session_data->key_type, media::MediaDrmKeyType::MAX);

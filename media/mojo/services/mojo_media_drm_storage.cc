@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
@@ -30,7 +31,7 @@ void MojoMediaDrmStorage::Initialize(InitCB init_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->Initialize(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(init_cb), false,
-                                                  base::UnguessableToken()));
+                                                  base::nullopt));
 }
 
 void MojoMediaDrmStorage::OnProvisioned(ResultCB result_cb) {
