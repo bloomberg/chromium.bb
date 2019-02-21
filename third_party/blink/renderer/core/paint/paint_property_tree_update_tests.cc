@@ -1341,7 +1341,7 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis,
             cc::SnapAxis::kBoth);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
-            SnapStrictness::kProximity);
+            cc::SnapStrictness::kProximity);
   EXPECT_EQ(doc_snap_container_data->rect(), gfx::RectF(0, 0, 300, 300));
   EXPECT_EQ(doc_snap_container_data->size(), 1u);
   EXPECT_EQ(doc_snap_container_data->at(0).rect,

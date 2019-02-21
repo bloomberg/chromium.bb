@@ -1507,7 +1507,7 @@ ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
     snapType.axis =
         ToCSSIdentifierValue(pair.First()).ConvertTo<cc::SnapAxis>();
     snapType.strictness =
-        ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapStrictness>();
+        ToCSSIdentifierValue(pair.Second()).ConvertTo<cc::SnapStrictness>();
     return snapType;
   }
 

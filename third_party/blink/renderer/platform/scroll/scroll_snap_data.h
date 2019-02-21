@@ -14,7 +14,6 @@
 namespace blink {
 
 using SearchAxis = cc::SearchAxis;
-using SnapStrictness = cc::SnapStrictness;
 using SnapAlignment = cc::SnapAlignment;
 using SnapSelectionStrategy = cc::SnapSelectionStrategy;
 using ScrollSnapType = cc::ScrollSnapType;

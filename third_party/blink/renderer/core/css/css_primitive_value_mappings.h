@@ -1878,30 +1878,30 @@ inline cc::SnapAxis CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(SnapStrictness strictness)
+inline CSSIdentifierValue::CSSIdentifierValue(cc::SnapStrictness strictness)
     : CSSValue(kIdentifierClass) {
   switch (strictness) {
-    case SnapStrictness::kProximity:
+    case cc::SnapStrictness::kProximity:
       value_id_ = CSSValueProximity;
       break;
-    case SnapStrictness::kMandatory:
+    case cc::SnapStrictness::kMandatory:
       value_id_ = CSSValueMandatory;
       break;
   }
 }
 
 template <>
-inline SnapStrictness CSSIdentifierValue::ConvertTo() const {
+inline cc::SnapStrictness CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueProximity:
-      return SnapStrictness::kProximity;
+      return cc::SnapStrictness::kProximity;
     case CSSValueMandatory:
-      return SnapStrictness::kMandatory;
+      return cc::SnapStrictness::kMandatory;
     default:
       break;
   }
   NOTREACHED();
-  return SnapStrictness::kProximity;
+  return cc::SnapStrictness::kProximity;
 }
 
 template <>
