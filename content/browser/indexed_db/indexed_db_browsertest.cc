@@ -286,8 +286,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_not_blocked.html"));
 }
 
-// TODO(crbug.com/934250) The test is flaky (crashes) on trybots.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_Bug84933Test) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
   const GURL url = GetTestUrl("indexeddb", "bug_84933.html");
 
   // Just navigate to the URL. Test will crash if it fails.
@@ -519,13 +518,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
-#if defined(OS_WIN)
-#define MAYBE_EmptyBlob DISABLED_EmptyBlob
-#else
-#define MAYBE_EmptyBlob EmptyBlob
-#endif
-// TODO(crbug.com/934243) The test is flaky on Windows.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_EmptyBlob) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   // First delete all IDB's for the test origin
   DeleteForOrigin(kFileOrigin);
   EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));  // Start with no blob files.

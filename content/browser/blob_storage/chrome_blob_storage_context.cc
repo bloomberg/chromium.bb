@@ -243,16 +243,7 @@ blink::mojom::BlobPtr ChromeBlobStorageContext::GetBlobPtr(
   return blob_ptr;
 }
 
-ChromeBlobStorageContext::~ChromeBlobStorageContext() {}
-
-void ChromeBlobStorageContext::DeleteOnCorrectThread() const {
-  if (BrowserThread::IsThreadInitialized(BrowserThread::IO) &&
-      !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
-    return;
-  }
-  delete this;
-}
+ChromeBlobStorageContext::~ChromeBlobStorageContext() = default;
 
 storage::BlobStorageContext* GetBlobStorageContext(
     ChromeBlobStorageContext* blob_storage_context) {
