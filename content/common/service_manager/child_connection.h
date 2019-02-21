@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -54,10 +54,10 @@ class CONTENT_EXPORT ChildConnection {
   // initialize its end of the Service Manager connection pipe.
   std::string service_token() const { return service_token_; }
 
-  // Sets the child connection's process handle. This should be called as soon
+  // Sets the child connection's process. This should be called as soon
   // as the process has been launched, and the connection will not be fully
   // functional until this is called.
-  void SetProcessHandle(base::ProcessHandle handle);
+  void SetProcess(base::Process process);
 
  private:
   class IOThreadContext;
@@ -65,7 +65,6 @@ class CONTENT_EXPORT ChildConnection {
   scoped_refptr<IOThreadContext> context_;
   service_manager::Identity child_identity_;
   std::string service_token_;
-  base::ProcessHandle process_handle_ = base::kNullProcessHandle;
 
   base::WeakPtrFactory<ChildConnection> weak_factory_;
 
