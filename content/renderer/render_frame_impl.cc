@@ -3669,7 +3669,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
   navigation_params->service_worker_network_provider =
-      BuildServiceWorkerNetworkProviderForNavigation(&commit_params, nullptr);
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   FillMiscNavigationParams(common_params, commit_params,
                            navigation_params.get());
   WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
