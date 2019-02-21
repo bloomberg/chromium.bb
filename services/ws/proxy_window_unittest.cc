@@ -16,6 +16,7 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 namespace ws {
@@ -88,4 +89,52 @@ TEST(ProxyWindow, FindTargetForWindowWithResizeInset) {
   EXPECT_EQ(top_level, setup.root()->targeter()->FindTargetForEvent(
                            setup.root(), &mouse_event_2));
 }
+
+TEST(ProxyWindow, ShouldSendPinchEventFromTouchpads) {
+  WindowServiceTestSetup setup;
+
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  const gfx::Rect top_level_bounds(100, 200, 200, 200);
+  top_level->SetBounds(top_level_bounds);
+  top_level->Show();
+
+  setup.changes()->clear();
+
+  ui::test::EventGenerator event_generator(top_level->GetRootWindow());
+
+  // The pinch zoom from touchscreen -- that shouldn't be sent; the gesture
+  // recognition in the client will create them.
+  const gfx::Point points[] = {gfx::Point(110, 210), gfx::Point(190, 290)};
+  const gfx::Vector2d deltas[] = {gfx::Vector2d(20, 20),
+                                  gfx::Vector2d(-20, -20)};
+  const int delay_fingers[] = {0, 10};
+  event_generator.GestureMultiFingerScrollWithDelays(
+      2, points, deltas, delay_fingers, delay_fingers, 0, 10);
+  bool has_input_event = false;
+  for (auto& c : *setup.changes()) {
+    if (c.type != CHANGE_TYPE_INPUT_EVENT)
+      continue;
+    has_input_event = true;
+    EXPECT_LE(ui::ET_TOUCH_RELEASED, c.event_action);
+    EXPECT_GE(ui::ET_TOUCH_CANCELLED, c.event_action);
+  }
+  EXPECT_TRUE(has_input_event);
+
+  setup.changes()->clear();
+
+  // The pinch event from touchpad, this should be sent since the gesture
+  // recognition isn't involved.
+  ui::GestureEventDetails details(ui::ET_GESTURE_PINCH_BEGIN);
+  details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  ui::GestureEvent pinch_event(110, 220, 0 /* flags */, base::TimeTicks::Now(),
+                               details);
+  ignore_result(
+      setup.aura_test_helper()->event_sink()->OnEventFromSource(&pinch_event));
+  auto iter = FirstChangeOfType(*setup.changes(), CHANGE_TYPE_INPUT_EVENT);
+  ASSERT_NE(iter, setup.changes()->end());
+  EXPECT_EQ(ui::ET_GESTURE_PINCH_BEGIN, iter->event_action);
+}
+
 }  // namespace ws

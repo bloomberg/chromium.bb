@@ -173,11 +173,20 @@ class ProxyWindowEventHandler : public ui::EventHandler {
   }
 
  protected:
+  // Returns true if the event is a pinch event generated from the touchpad.
+  bool IsPinchEventOnTouchpad(const ui::Event& event) {
+    return event.IsPinchEvent() &&
+           event.AsGestureEvent()->details().device_type() ==
+               ui::GestureDeviceType::DEVICE_TOUCHPAD;
+  }
+
   // Returns true if the event should be ignored (not forwarded to the client).
   bool ShouldIgnoreEvent(const ui::Event& event) {
     // It's assumed clients do their own gesture recognizition, which means
-    // GestureEvents should not be forwarded to clients.
-    if (event.IsGestureEvent())
+    // GestureEvents should not be forwarded to clients. Pinch events are
+    // exceptional since they aren't created through gesture recognition but
+    // from the touchpad directly. See https://crbug.com/933985.
+    if (event.IsGestureEvent() && !IsPinchEventOnTouchpad(event))
       return true;
 
     if (static_cast<aura::Window*>(event.target()) != window()) {

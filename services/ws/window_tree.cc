@@ -166,8 +166,8 @@ void WindowTree::SendEventToClient(aura::Window* window,
                                    const ui::Event& event) {
   // As gesture recognition runs in the client, GestureEvents should not be
   // forwarded. ProxyWindow's event processing should ensure no GestureEvents
-  // are sent.
-  DCHECK(!event.IsGestureEvent());
+  // are sent. Some pinch events are allowed.
+  DCHECK(!event.IsGestureEvent() || event.IsPinchEvent());
 
   const uint32_t event_id = GenerateEventAckId();
   auto* in_flight_event_queue =
