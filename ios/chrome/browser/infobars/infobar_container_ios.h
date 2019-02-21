@@ -13,14 +13,11 @@
 
 @protocol InfobarContainerConsumer;
 
-// IOS infobar container specialization, managing infobars visibility and
-// presentation via the InfobarContainerConsumer protocol.|legacyConsumer| is
-// used to support the legacy InfobarPresentation concurrently with the new one
-// that uses |consumer|.
+// IOS infobar container specialization, managing infobars visibility so
+// that only the front most one is visible at any time.
 class InfoBarContainerIOS : public infobars::InfoBarContainer {
  public:
-  InfoBarContainerIOS(id<InfobarContainerConsumer> consumer,
-                      id<InfobarContainerConsumer> legacyConsumer);
+  InfoBarContainerIOS(id<InfobarContainerConsumer> consumer);
   ~InfoBarContainerIOS() override;
 
  protected:
@@ -31,7 +28,6 @@ class InfoBarContainerIOS : public infobars::InfoBarContainer {
 
  private:
   id<InfobarContainerConsumer> consumer_;
-  id<InfobarContainerConsumer> legacyConsumer_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerIOS);
 };
