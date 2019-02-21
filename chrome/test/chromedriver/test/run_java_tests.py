@@ -291,8 +291,6 @@ def main():
   if options.android_package:
     if options.android_package not in constants.PACKAGE_INFO:
       parser.error('Invalid --android-package')
-    if options.chrome_version != 'HEAD':
-      parser.error('Android does not support the --chrome-version argument.')
     environment = test_environment.AndroidTestEnvironment(
         options.android_package)
   else:
