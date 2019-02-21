@@ -273,7 +273,7 @@ gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorNotRegisteredErrorModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_TITLE);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_WRONG_KEY_TITLE);
 }
 
 base::string16 AuthenticatorNotRegisteredErrorModel::GetStepDescription()
@@ -299,7 +299,7 @@ gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_TITLE);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_WRONG_KEY_TITLE);
 }
 
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
