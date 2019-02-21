@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabParentIntent;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -132,7 +133,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                         !openInForeground);
                 tab.initialize(
                         webContents, mTabContentManager, delegateFactory, !openInForeground, false);
-                tab.setParentIntent(parentIntent);
+                TabParentIntent.from(tab).set(parentIntent);
                 webContents.resumeLoadingCreatedWebContents();
             } else if (!openInForeground && SysUtils.isLowEndDevice()) {
                 // On low memory devices the tabs opened in background are not loaded automatically

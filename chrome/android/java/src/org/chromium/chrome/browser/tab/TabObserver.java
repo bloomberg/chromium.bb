@@ -162,6 +162,12 @@ public interface TabObserver {
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**
+     * Called when the WebContents is closed.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onCloseContents(Tab tab);
+
+    /**
      * Called when the WebContents starts loading. Different from
      * {@link #onPageLoadStarted(Tab, String)}, if the user is navigated to a different url while
      * staying in the same html document, {@link #onLoadStarted(Tab)} will be called, while
