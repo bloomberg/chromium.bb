@@ -51,10 +51,18 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
 }
 
 bool SurfaceDependencyTracker::HasSurfaceBlockedOn(
-    const FrameSinkId& frame_sink_id) const {
-  auto it = blocked_surfaces_from_dependency_.find(frame_sink_id);
-  DCHECK(it == blocked_surfaces_from_dependency_.end() || !it->second.empty());
-  return it != blocked_surfaces_from_dependency_.end();
+    const SurfaceId& surface_id) const {
+  auto it = blocked_surfaces_from_dependency_.find(surface_id.frame_sink_id());
+  if (it == blocked_surfaces_from_dependency_.end())
+    return false;
+
+  for (const SurfaceId& blocked_surface_by_id : it->second) {
+    Surface* blocked_surface =
+        surface_manager_->GetSurfaceForId(blocked_surface_by_id);
+    if (blocked_surface && blocked_surface->IsBlockedOn(surface_id))
+      return true;
+  }
+  return false;
 }
 
 void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {
