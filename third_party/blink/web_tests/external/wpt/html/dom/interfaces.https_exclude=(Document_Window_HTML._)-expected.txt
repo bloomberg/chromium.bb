@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1148 tests; 1131 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1154 tests; 1137 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -643,6 +643,12 @@ PASS CustomElementRegistry interface: operation define(DOMString, CustomElementC
 PASS CustomElementRegistry interface: operation get(DOMString)
 PASS CustomElementRegistry interface: operation whenDefined(DOMString)
 PASS CustomElementRegistry interface: operation upgrade(Node)
+PASS ElementInternals interface: existence and properties of interface object
+PASS ElementInternals interface object length
+PASS ElementInternals interface object name
+PASS ElementInternals interface: existence and properties of interface prototype object
+PASS ElementInternals interface: existence and properties of interface prototype object's "constructor" property
+PASS ElementInternals interface: existence and properties of interface prototype object's @@unscopables property
 PASS DataTransfer interface: existence and properties of interface object
 PASS DataTransfer interface object length
 PASS DataTransfer interface object name

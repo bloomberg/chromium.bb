@@ -6,7 +6,7 @@ FAIL NFCWriter interface object name assert_own_property: self does not have own
 FAIL NFCWriter interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
-FAIL NFCWriter interface: operation push(NFCMessageSource, NFCPushOptions) assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface: operation push(NDEFMessageSource, NFCPushOptions) assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCReader interface: existence and properties of interface object assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
 FAIL NFCReader interface object length assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
 FAIL NFCReader interface object name assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing

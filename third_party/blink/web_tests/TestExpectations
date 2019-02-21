@@ -5989,7 +5989,6 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 crbug.com/929678 [ Mac ] virtual/feature-policy-for-sandbox/http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Failure ]
 
 # Sheriff 2019-02-06
-crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout Failure ]
 crbug.com/929435 [ Mac ] external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/sub-sample-buffer-stitching.html [ Pass Failure ]
 
 # Sheriff 2019-02-11
