@@ -72,7 +72,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
       auto& child = *it;
       if (base::Optional<LayoutUnit> candidate = EllipsisOffset(
               line_width, ellipsis_width, &child == first_child, &child)) {
-        ellipsis_inline_offset = candidate.value();
+        ellipsis_inline_offset = *candidate;
         ellipsized_fragment = child.PhysicalFragment();
         DCHECK(ellipsized_fragment);
         break;
@@ -84,7 +84,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
     for (auto& child : *line_box) {
       if (base::Optional<LayoutUnit> candidate = EllipsisOffset(
               line_width, ellipsis_width, &child == first_child, &child)) {
-        ellipsis_inline_offset = candidate.value();
+        ellipsis_inline_offset = *candidate;
         ellipsized_fragment = child.PhysicalFragment();
         DCHECK(ellipsized_fragment);
         break;

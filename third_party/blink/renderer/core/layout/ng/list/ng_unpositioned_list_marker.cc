@@ -160,7 +160,7 @@ LayoutUnit NGUnpositionedListMarker::ComputeIntrudedFloatOffset(
   NGBfcOffset origin_offset = {
       container_builder->BfcLineOffset() +
           border_scrollbar_padding.inline_start,
-      container_builder->BfcBlockOffset().value() + marker_block_offset};
+      *container_builder->BfcBlockOffset() + marker_block_offset};
   LayoutUnit available_size = container_builder->InlineSize() -
                               border_scrollbar_padding.inline_start -
                               border_scrollbar_padding.inline_end;

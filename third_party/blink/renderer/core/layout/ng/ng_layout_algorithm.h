@@ -79,7 +79,7 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   NGBfcOffset ContainerBfcOffset() const {
     DCHECK(container_builder_.BfcBlockOffset());
     return {container_builder_.BfcLineOffset(),
-            container_builder_.BfcBlockOffset().value()};
+            *container_builder_.BfcBlockOffset()};
   }
 
   NGInputNodeType Node() const { return node_; }

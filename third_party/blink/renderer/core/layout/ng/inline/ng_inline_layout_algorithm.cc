@@ -938,7 +938,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
       continue;
 
     LayoutUnit origin_bfc_block_offset =
-        is_empty_inline ? ConstraintSpace().FloatsBfcBlockOffset().value()
+        is_empty_inline ? *ConstraintSpace().FloatsBfcBlockOffset()
                         : ConstraintSpace().BfcOffset().block_offset;
 
     NGPositionedFloat positioned_float = PositionFloat(

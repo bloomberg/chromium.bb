@@ -27,7 +27,7 @@ NGInlineChildLayoutContext::BoxStatesIfValidForItemIndex(
     const Vector<NGInlineItem>& items,
     unsigned item_index) {
   if (box_states_.has_value() && items_ == &items && item_index_ == item_index)
-    return &box_states_.value();
+    return &*box_states_;
   return nullptr;
 }
 

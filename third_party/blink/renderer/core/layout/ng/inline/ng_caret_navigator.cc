@@ -338,7 +338,7 @@ NGCaretNavigator::MoveCaretWithoutValidation(
 
   DCHECK(forward_character.index.has_value());
   const Position forward_caret =
-      EdgeOfInternal(forward_character.index.value(), opposite_direction);
+      EdgeOfInternal(*forward_character.index, opposite_direction);
   return {VisualMovementResultType::kWithinContext, forward_caret};
 }
 
@@ -357,14 +357,14 @@ NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::MoveCaretInternal(
     if (next.has_passed_character)
       has_passed_character = true;
 
-    runner = next.position.value();
+    runner = *next.position;
     last_position = runner;
 
     // TODO(xiaochengh): Handle the case where we reach a different line with a
     // different base direction, which occurs with 'unicode-bidi: plain-text'.
   }
   DCHECK(last_position.has_value());
-  return {VisualMovementResultType::kWithinContext, last_position.value()};
+  return {VisualMovementResultType::kWithinContext, *last_position};
 }
 
 }  // namespace blink

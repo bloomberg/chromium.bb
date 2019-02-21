@@ -683,7 +683,7 @@ bool NGLineBreaker::HandleTextForFastMinContent(
   }
 
   if (saved_line_break_type.has_value())
-    break_iterator_.SetBreakType(saved_line_break_type.value());
+    break_iterator_.SetBreakType(*saved_line_break_type);
 
   // If there was only one break opportunity in this item, it may form a word
   // with previous and/or next item. Fallback to |HandleText()|.

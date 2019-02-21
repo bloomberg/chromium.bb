@@ -53,8 +53,7 @@ void GatherInlineContainerFragmentsFromLinebox(
         linebox_offset + descendant.offset_to_container_box,
         descendant.fragment->Size());
     if (containing_lineboxes.first == linebox) {
-      containing_block_geometry.value().start_fragment_union_rect.Unite(
-          fragment_rect);
+      containing_block_geometry->start_fragment_union_rect.Unite(fragment_rect);
     } else if (!containing_lineboxes.first) {
       containing_lineboxes.first = linebox;
       containing_block_geometry =
@@ -63,11 +62,10 @@ void GatherInlineContainerFragmentsFromLinebox(
     }
     // Skip fragments within an empty line boxes for the end fragment.
     if (containing_lineboxes.second == linebox) {
-      containing_block_geometry.value().end_fragment_union_rect.Unite(
-          fragment_rect);
+      containing_block_geometry->end_fragment_union_rect.Unite(fragment_rect);
     } else if (!containing_lineboxes.second || !linebox->IsEmptyLineBox()) {
       containing_lineboxes.second = linebox;
-      containing_block_geometry.value().end_fragment_union_rect = fragment_rect;
+      containing_block_geometry->end_fragment_union_rect = fragment_rect;
     }
   }
 }
