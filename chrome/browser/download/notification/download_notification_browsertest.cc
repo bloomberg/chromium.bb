@@ -692,10 +692,6 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
-  // TODO(crbug.com/933963): Flaky with network service.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   GURL url1(SlowDownloadInterceptor::kUnknownSizeUrl);
   GURL url2(SlowDownloadInterceptor::kKnownSizeUrl);
 
@@ -1063,11 +1059,19 @@ class MultiProfileDownloadNotificationTest
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
                        PRE_DownloadMultipleFiles) {
+  // TODO(crbug.com/933963): Flaky with network service.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   AddAllUsers();
 }
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
                        DownloadMultipleFiles) {
+  // TODO(crbug.com/933963): Flaky with network service.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   AddAllUsers();
 
   GURL url(SlowDownloadInterceptor::kUnknownSizeUrl);
