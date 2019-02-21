@@ -6015,3 +6015,6 @@ crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrc
 
 # Sheriff 2019-02-19
 crbug.com/933346 [ Debug ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Failure Timeout Pass ]
+
+# Sheriff 2019-02-21
+crbug.com/934278 [ Mac ] virtual/video-surface-layer/media/video-object-fit.html [ Failure Pass ]
