@@ -510,8 +510,10 @@ void SignedExchangeHandler::OnCertReceived(
         error_field ? base::make_optional(
                           std::make_pair(0 /* signature_index */, *error_field))
                     : base::nullopt);
-    RunErrorCallback(SignedExchangeLoadResult::kSignatureVerificationError,
-                     net::ERR_INVALID_SIGNED_EXCHANGE);
+    RunErrorCallback(
+        signed_exchange_utils::GetLoadResultFromSignatureVerifierResult(
+            verify_result),
+        net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 

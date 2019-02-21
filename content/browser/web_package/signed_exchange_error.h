@@ -45,7 +45,9 @@ enum class SignedExchangeLoadResult {
   kSXGServedWithoutNosniff,
   // Merkle integrity error.
   kMerkleIntegrityError,
-  kMaxValue = kMerkleIntegrityError
+  // Invalid integrity header error.
+  kInvalidIntegrityHeader,
+  kMaxValue = kInvalidIntegrityHeader
 };
 
 struct SignedExchangeError {
