@@ -658,7 +658,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   main_html_response->Send(kHttpResponseHeader);
   main_html_response->Send(
       "<html><body></body><script src=\"ad_script.js\"></script></html>");
-  main_html_response->Send(std::string(1024, ' '));
   main_html_response->Done();
 
   ad_script_response->WaitForRequest();
@@ -704,17 +703,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 2);
 
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.FullPage.Network", 5, 1);
-  // We have received 4 KB of ads and 1 KB of mainframe ads.
+      "PageLoad.Clients.Ads.Bytes.FullPage.Network", 4, 1);
+  // We have received 4 KB of ads and 1 KB of toplevel ads.
   histogram_tester.ExpectBucketCount("PageLoad.Clients.Ads.Resources.Bytes.Ads",
                                      4, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.MainFrame.Ads.Total", 1, 1);
-
-  // The main frame should have 2 KB of resources, 1KB from the main resource
-  // and one from the ad script in the main frame.
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.MainFrame.Total", 2, 1);
+      "PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds", 1, 1);
 
   // 4 resources loaded, one unfinished.
   histogram_tester.ExpectBucketCount(
