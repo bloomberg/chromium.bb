@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -316,6 +317,8 @@ class TestingProfile : public Profile {
   }
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
+  SimpleFactoryKey* GetOriginalKey() const override;
+  SimpleFactoryKey* GetOffTheRecordKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -447,6 +450,14 @@ class TestingProfile : public Profile {
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<policy::PolicyService> policy_service_;
+
+  // The keys to index KeyedService instances created by
+  // SimpleKeyedServiceFactory if this is an original profile.
+  std::unique_ptr<SimpleFactoryKey> owned_key_;
+  std::unique_ptr<SimpleFactoryKey> owned_off_the_record_key_;
+  // The key to index KeyedService instances created by
+  // SimpleKeyedServiceFactory if this is an incognito profile.
+  SimpleFactoryKey* off_the_record_key_ = nullptr;
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

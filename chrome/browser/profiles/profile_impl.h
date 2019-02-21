@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 #include "chrome/common/buildflags.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
@@ -136,6 +137,8 @@ class ProfileImpl : public Profile {
 #if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 #endif
+  SimpleFactoryKey* GetOriginalKey() const override;
+  SimpleFactoryKey* GetOffTheRecordKey() const override;
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContext() override;
@@ -247,6 +250,11 @@ class ProfileImpl : public Profile {
 #endif
 
   std::unique_ptr<Profile> off_the_record_profile_;
+
+  // The keys to index KeyedService instances created by
+  // SimpleKeyedServiceFactory.
+  std::unique_ptr<SimpleFactoryKey> key_;
+  std::unique_ptr<SimpleFactoryKey> off_the_record_key_;
 
   // See GetStartTime for details.
   base::Time start_time_;
