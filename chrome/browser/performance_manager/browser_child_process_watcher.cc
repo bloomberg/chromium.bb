@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/browser_child_process_watcher.h"
+#include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 
 #include <memory>
 
@@ -12,9 +12,11 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
-BrowserChildProcessWatcher::BrowserChildProcessWatcher() {
+BrowserChildProcessWatcher::BrowserChildProcessWatcher()
+    : browser_node_(PerformanceManager::GetInstance()) {
+  browser_node_.OnProcessLaunched(base::Process::Current());
   BrowserChildProcessObserver::Add(this);
 }
 
@@ -26,8 +28,8 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     gpu_process_resource_coordinator_ =
-        std::make_unique<performance_manager::ProcessResourceCoordinator>(
-            performance_manager::PerformanceManager::GetInstance());
+        std::make_unique<ProcessResourceCoordinator>(
+            PerformanceManager::GetInstance());
     gpu_process_resource_coordinator_->OnProcessLaunched(data.GetProcess());
   }
 }
@@ -56,4 +58,4 @@ void BrowserChildProcessWatcher::GPUProcessStopped() {
   gpu_process_resource_coordinator_.reset();
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
