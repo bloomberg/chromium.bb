@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -207,6 +208,7 @@ class LocationBarView : public LocationBar,
   // views::View:
   bool HasFocus() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnThemeChanged() override;
@@ -263,9 +265,11 @@ class LocationBarView : public LocationBar,
                            IMEInlineAutocompletePosition);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
-  // Helper for GetMinimumWidth().  Calculates the incremental minimum width
-  // |view| should add to the trailing width after the omnibox.
-  int IncrementalMinimumWidth(views::View* view) const;
+  // Returns the amount of space required to the left of the omnibox text.
+  int GetMinimumLeadingWidth() const;
+
+  // Returns the amount of space required to the right of the omnibox text.
+  int GetMinimumTrailingWidth() const;
 
   // The border color, drawn on top of the toolbar.
   SkColor GetBorderColor() const;
