@@ -66,7 +66,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
                   completionHandler:(void (^)(BOOL, CGPoint))completionHandler;
 // Helper functions to extract FindInPageEntry from JSON.
 - (FindInPageEntry)findInPageEntryForJson:(NSString*)jsonStr;
-- (FindInPageEntry)entryForListValue:(base::ListValue*)position;
+- (FindInPageEntry)entryForListValue:(const base::Value&)position;
 // Executes |script| which is a piece of JavaScript to move to the next or
 // previous element in the page and executes |completionHandler| after moving
 // with the new scroll position passed in.
@@ -175,29 +175,24 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
   // Parse JSONs.
   std::string json = base::SysNSStringToUTF8(result_str);
-  std::unique_ptr<base::Value> root(
-      base::JSONReader::ReadDeprecated(json, false));
-  if (!root.get())
+  base::Optional<base::Value> root = base::JSONReader::Read(json);
+  if (!root.has_value())
     return YES;
-  if (!root->is_list())
+  if (!root.value().is_list())
     return YES;
 
-  base::ListValue* resultList = static_cast<base::ListValue*>(root.get());
-  DCHECK(resultList);
-  if (resultList) {
-    if (resultList->GetSize() == 2) {
-      int numHighlighted = 0;
-      if (resultList->GetInteger(0, &numHighlighted)) {
-        if (numHighlighted > 0) {
-          base::ListValue* position;
-          if (resultList->GetList(1, &position)) {
-            [self.findInPageModel updateQuery:nil matches:numHighlighted];
-            // Scroll to first match.
-            FindInPageEntry entry = [self entryForListValue:position];
-            [self.findInPageModel updateIndex:entry.index atPoint:entry.point];
-            if (point)
-              *point = entry.point;
-          }
+  base::Value::ListStorage& listValues = root.value().GetList();
+  if (listValues.size() == 2) {
+    if (listValues[0].is_int()) {
+      int numHighlighted = listValues[0].GetInt();
+      if (numHighlighted > 0) {
+        if (listValues[1].is_list()) {
+          [self.findInPageModel updateQuery:nil matches:numHighlighted];
+          // Scroll to first match.
+          FindInPageEntry entry = [self entryForListValue:listValues[1]];
+          [self.findInPageModel updateIndex:entry.index atPoint:entry.point];
+          if (point)
+            *point = entry.point;
         }
       }
     }
@@ -223,40 +218,33 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (FindInPageEntry)findInPageEntryForJson:(NSString*)jsonStr {
   std::string json = base::SysNSStringToUTF8(jsonStr);
-  std::unique_ptr<base::Value> root(
-      base::JSONReader::ReadDeprecated(json, false));
-  if (!root.get())
+  base::Optional<base::Value> root = base::JSONReader::Read(json);
+  if (!root.has_value())
     return kFindInPageEntryZero;
 
-  if (!root->is_list())
+  if (!root.value().is_list())
     return kFindInPageEntryZero;
 
-  base::ListValue* position = static_cast<base::ListValue*>(root.get());
-  return [self entryForListValue:position];
+  return [self entryForListValue:root.value()];
 }
 
-- (FindInPageEntry)entryForListValue:(base::ListValue*)position {
-  if (!position)
-    return kFindInPageEntryZero;
+- (FindInPageEntry)entryForListValue:(const base::Value&)position {
+  DCHECK(position.is_list());
 
   // Position should always be of length 3, from [index,x,y].
-  DCHECK(position->GetSize() == 3);
-  if (position->GetSize() != 3)
+  const base::Value::ListStorage& positionList = position.GetList();
+  if (positionList.size() != 3)
     return kFindInPageEntryZero;
 
   // The array position comes from the JSON string [index, x, y], which
   // represents the index of the currently found string, and the x and y
   // position necessary to center that string.  Pull out that data into a
   // FindInPageEntry struct.
-  int index;
-  double x = 0, y = 0;
-  position->GetInteger(0, &index);
-  position->GetDouble(1, &x);
-  position->GetDouble(2, &y);
+
   FindInPageEntry entry;
-  entry.index = index;
-  entry.point.x = x;
-  entry.point.y = y;
+  entry.index = positionList[0].is_int() ? positionList[0].GetInt() : 0;
+  entry.point.x = positionList[1].is_double() ? positionList[1].GetDouble() : 0;
+  entry.point.y = positionList[2].is_double() ? positionList[2].GetDouble() : 0;
   return entry;
 }
 
