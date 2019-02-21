@@ -1982,6 +1982,7 @@
         "test": "storage_unittests"
       },
       {
+        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
