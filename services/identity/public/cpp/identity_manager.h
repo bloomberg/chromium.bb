@@ -19,6 +19,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
 
@@ -51,6 +52,7 @@ namespace identity {
 
 class AccountsMutator;
 class AccountsCookieMutator;
+class DiagnosticsProvider;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
 struct CookieParams;
@@ -202,7 +204,8 @@ class IdentityManager : public SigninManagerBase::Observer,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
-      std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator);
+      std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
+      std::unique_ptr<DiagnosticsProvider> diagnostics_provider);
   ~IdentityManager() override;
 
   // Provides access to the extended information of the user's primary account.
@@ -369,6 +372,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/860492): Eliminate the need to expose this.
   void LegacyLoadCredentialsForSupervisedUser(
       const std::string& primary_account_id);
+
+  // Returns pointer to the object used to obtain diagnostics about the internal
+  // state of IdentityManager.
+  DiagnosticsProvider* GetDiagnosticsProvider();
 
   // Picks the correct account_id for the specified account depending on the
   // migration state.
@@ -558,6 +565,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // AccountsCookieMutator instance. Guaranteed to be non-null, as this
   // functionality is supported on all platforms.
   std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator_;
+
+  // DiagnosticsProvider instance.
+  std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

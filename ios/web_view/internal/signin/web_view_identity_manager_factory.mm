@@ -16,6 +16,7 @@
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
@@ -51,6 +52,11 @@ class IdentityManagerWrapper : public KeyedService,
                 WebViewSigninManagerFactory::GetForBrowserState(browser_state)),
             nullptr,
             std::make_unique<identity::AccountsCookieMutatorImpl>(
+                WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
+                    browser_state)),
+            std::make_unique<identity::DiagnosticsProviderImpl>(
+                WebViewOAuth2TokenServiceFactory::GetForBrowserState(
+                    browser_state),
                 WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
                     browser_state))) {}
 };

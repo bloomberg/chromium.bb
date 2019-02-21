@@ -14,6 +14,9 @@ source_set("cpp") {
     "accounts_in_cookie_jar_info.cc",
     "accounts_in_cookie_jar_info.h",
     "accounts_mutator.h",
+    "diagnostics_provider.h",
+    "diagnostics_provider_impl.cc",
+    "diagnostics_provider_impl.h",
     "identity_manager.cc",
     "identity_manager.h",
     "primary_account_access_token_fetcher.cc",
@@ -77,13 +80,14 @@ source_set("test_support") {
 
   public_deps = [
     ":cpp",
+    "//components/signin/core/browser:internals_test_support",
+    "//components/sync_preferences:test_support",
+    "//google_apis:test_support",
   ]
 
   deps = [
     "//components/image_fetcher/core:test_support",
     "//components/signin/core/browser",
-    "//components/signin/core/browser:internals_test_support",
-    "//components/sync_preferences:test_support",
   ]
 }
 
@@ -92,6 +96,7 @@ source_set("tests") {
   sources = [
     "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",
+    "diagnostics_provider_unittest.cc",
     "primary_account_mutator_unittest.cc",
   ]
 
@@ -103,6 +108,7 @@ source_set("tests") {
     "//components/signin/core/browser:internals_test_support",
     "//components/sync_preferences:test_support",
     "//services/network:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

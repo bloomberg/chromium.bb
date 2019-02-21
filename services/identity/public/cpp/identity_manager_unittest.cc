@@ -30,6 +30,7 @@
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -399,7 +400,9 @@ class IdentityManagerTest : public testing::Test {
         signin_manager_.get(), &token_service_, &account_fetcher_,
         &account_tracker_, &gaia_cookie_manager_service_, nullptr, nullptr,
         std::make_unique<AccountsCookieMutatorImpl>(
-            &gaia_cookie_manager_service_)));
+            &gaia_cookie_manager_service_),
+        std::make_unique<DiagnosticsProviderImpl>(
+            &token_service_, &gaia_cookie_manager_service_)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(

@@ -5,6 +5,25 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 
+namespace {
+// Values used from |MutableProfileOAuth2TokenServiceDelegate|.
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    0 /* int num_errors_to_ignore */,
+
+    1000 /* int initial_delay_ms */,
+
+    2.0 /* double multiply_factor */,
+
+    0.2 /* double jitter_factor */,
+
+    15 * 60 * 1000 /* int64_t maximum_backoff_ms */,
+
+    -1 /* int64_t entry_lifetime_ms */,
+
+    false /* bool always_use_initial_delay */,
+};
+}  // namespace
+
 FakeOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
     const std::string& refresh_token)
     : refresh_token(refresh_token),
@@ -13,7 +32,8 @@ FakeOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
 FakeOAuth2TokenServiceDelegate::FakeOAuth2TokenServiceDelegate()
     : shared_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {}
+              &test_url_loader_factory_)),
+      backoff_entry_(&kBackoffPolicy) {}
 
 FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() {
 }
@@ -47,6 +67,10 @@ std::string FakeOAuth2TokenServiceDelegate::GetRefreshToken(
   if (it != refresh_tokens_.end())
     return it->second->refresh_token;
   return std::string();
+}
+
+const net::BackoffEntry* FakeOAuth2TokenServiceDelegate::BackoffEntry() const {
+  return &backoff_entry_;
 }
 
 std::vector<std::string> FakeOAuth2TokenServiceDelegate::GetAccounts() {
@@ -124,6 +148,7 @@ bool FakeOAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
 void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  backoff_entry_.InformOfRequest(!error.IsTransientError());
   // Drop transient errors to match OAuth2TokenService's stated contract for
   // GetAuthError() and to allow clients to test proper behavior in the case of
   // transient errors.

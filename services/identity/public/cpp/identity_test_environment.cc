@@ -16,6 +16,7 @@
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/identity/public/cpp/test_identity_manager_observer.h"
@@ -299,6 +300,9 @@ IdentityTestEnvironment::IdentityTestEnvironment(
         token_service_, account_tracker_service_, signin_manager_,
         pref_service_);
 #endif
+    std::unique_ptr<DiagnosticsProvider> diagnostics_provider =
+        std::make_unique<DiagnosticsProviderImpl>(token_service_,
+                                                  gaia_cookie_manager_service_);
 
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator =
         std::make_unique<AccountsCookieMutatorImpl>(
@@ -308,7 +312,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
         signin_manager_, token_service_, account_fetcher_service_,
         account_tracker_service_, gaia_cookie_manager_service_,
         std::move(primary_account_mutator), std::move(accounts_mutator),
-        std::move(accounts_cookie_mutator));
+        std::move(accounts_cookie_mutator), std::move(diagnostics_provider));
   }
 
   test_identity_manager_observer_ =
@@ -582,6 +586,15 @@ void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(
   account_fetcher_service_->FakeUserInfoFetchSuccess(
       account_id, email, gaia, hosted_domain, full_name, given_name, locale,
       picture_url);
+}
+
+void IdentityTestEnvironment::SimulateMergeSessionFailure(
+    const GoogleServiceAuthError& auth_error) {
+  // GaiaCookieManagerService changes the visibility of inherited method
+  // OnMergeSessionFailure from public to private. Cast to a base class pointer
+  // to use call the method.
+  static_cast<GaiaAuthConsumer*>(gaia_cookie_manager_service_)
+      ->OnMergeSessionFailure(auth_error);
 }
 
 }  // namespace identity

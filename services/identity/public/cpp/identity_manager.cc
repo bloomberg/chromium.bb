@@ -12,6 +12,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/diagnostics_provider.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -42,7 +43,8 @@ IdentityManager::IdentityManager(
     GaiaCookieManagerService* gaia_cookie_manager_service,
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
     std::unique_ptr<AccountsMutator> accounts_mutator,
-    std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator)
+    std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
+    std::unique_ptr<DiagnosticsProvider> diagnostics_provider)
     : signin_manager_(signin_manager),
       token_service_(token_service),
       account_fetcher_service_(account_fetcher_service),
@@ -50,9 +52,11 @@ IdentityManager::IdentityManager(
       gaia_cookie_manager_service_(gaia_cookie_manager_service),
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
-      accounts_cookie_mutator_(std::move(accounts_cookie_mutator)) {
+      accounts_cookie_mutator_(std::move(accounts_cookie_mutator)),
+      diagnostics_provider_(std::move(diagnostics_provider)) {
   DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
+  DCHECK(diagnostics_provider_);
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
@@ -285,6 +289,10 @@ void IdentityManager::OnNetworkInitialized() {
 void IdentityManager::LegacyLoadCredentialsForSupervisedUser(
     const std::string& primary_account_id) {
   token_service_->LoadCredentials(primary_account_id);
+}
+
+DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
+  return diagnostics_provider_.get();
 }
 
 std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
