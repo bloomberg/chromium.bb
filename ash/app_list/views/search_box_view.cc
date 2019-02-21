@@ -330,7 +330,7 @@ SkColor SearchBoxView::GetBackgroundColorForState(
     ash::AppListState state) const {
   if (state == ash::AppListState::kStateSearchResults)
     return AppListConfig::instance().card_background_color();
-  return background_color();
+  return search_box::kSearchBoxBackgroundDefault;
 }
 
 void SearchBoxView::UpdateOpacity() {
@@ -436,7 +436,7 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
       gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
                             search_box_color()));
   search_box()->set_placeholder_text_color(search_box_color());
-  UpdateBackgroundColor(background_color());
+  UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
   SchedulePaint();
 }
 
