@@ -10,8 +10,6 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
