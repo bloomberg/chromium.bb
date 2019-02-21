@@ -235,13 +235,13 @@ StringImpl* InvalidationSet::FindAnyClass(Element& element) const {
 
 StringImpl* InvalidationSet::FindAnyAttribute(Element& element) const {
   if (StringImpl* string_impl = attributes_.GetStringImpl(backing_flags_)) {
-    if (element.hasAttribute(AtomicString(string_impl)))
+    if (element.HasAttributeIgnoringNamespace(AtomicString(string_impl)))
       return string_impl;
   }
   if (const HashSet<AtomicString>* set =
           attributes_.GetHashSet(backing_flags_)) {
     for (const auto& attribute : *set) {
-      if (element.hasAttribute(attribute))
+      if (element.HasAttributeIgnoringNamespace(attribute))
         return attribute.Impl();
     }
   }

@@ -422,6 +422,19 @@ bool Element::hasAttribute(const QualifiedName& name) const {
   return hasAttributeNS(name.NamespaceURI(), name.LocalName());
 }
 
+bool Element::HasAttributeIgnoringNamespace(
+    const AtomicString& local_name) const {
+  if (!GetElementData())
+    return false;
+  SynchronizeAttribute(local_name);
+  AtomicString name = LowercaseIfNecessary(local_name);
+  for (const Attribute& attribute : GetElementData()->Attributes()) {
+    if (attribute.LocalName() == name)
+      return true;
+  }
+  return false;
+}
+
 void Element::SynchronizeAllAttributes() const {
   if (!GetElementData())
     return;
