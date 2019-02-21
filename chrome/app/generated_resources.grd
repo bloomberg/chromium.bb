@@ -9225,17 +9225,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_ERROR_GENERIC_TITLE" desc="Title of most dialogs shown when an error occurs while the user trying to sign in to a web site using a hardware-based authentication mechanism.">
         Something went wrong
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_TITLE" desc="Title of the dialog informing the user that they are trying to register a security key (an external physical device for user authentication) that they have already registered with the given web site before." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Try a different key
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_TITLE" desc="Title of the dialog informing the user that they are trying to register a security key (an external physical device for user authentication) that they have already registered with the given web site before or they are trying to sign in to a given web site with a key they have not previously registered on that site.">
+        Try a different security key
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to register a security key (an external physical device for user authentication) that they have already registered with the given web site before." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        You already registered this key before. You don't have to register it again.
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to register a security key (an external physical device for user authentication) that they have already registered with the given web site before.">
+        You already registered this security key. You don't have to register it again.
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_TITLE" desc="Title of the dialog informing the user that they are trying to use the wrong security key (an external physical device for user authentication) to sign in to a given web site, that is, not the one they have previously registered on that site." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Try a different key
-      </message>
-      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to use the wrong security key (an external physical device for user authentication) to sign in to a given web site, that is, not the one they have previously registered on that site." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        You're using a key that's not registered with this website
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to use the wrong security key (an external physical device for user authentication) to sign in to a given web site, that is, not the one they have previously registered on that site.">
+        You're using a security key that's not registered with this website
       </message>
       <message name="IDS_WEBAUTHN_ERROR_TIMEOUT_DESCRIPTION" desc="Description in the dialog shown when the user takes too long to sign in to a web site using a hardware-based authentication mechanism.">
         The request timed out
@@ -9273,8 +9270,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE" desc="Title of the dialog explaining to the user that they first need to pair a Bluetooth security key (an external physical device for user authentication) with their computer, and only after they can use it to sign in to web sites on their computer.">
         Ready to pair your security key?
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION" desc="Description in the dialog explaining to the user that they first need to pair a Bluetooth security key (an external physical device for user authentication) with their computer, and only after they can use it to sign in to web sites on their computer." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Pair your key to this device so you can use it to sign into your account
+      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION" desc="Description in the dialog explaining to the user that they first need to pair a Bluetooth security key (an external physical device for user authentication) with their computer, and only after they can use it to sign in to web sites on their computer.">
+        Pair your security key to this device so you can use it to sign into your account
       </message>
       <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_NEXT" desc="Button text to initiate pairing of a Bluetooth security key with their computer.">
         Begin
@@ -9288,20 +9285,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE" desc="Title of the dialog instructing the user to select their Bluetooth security key (an external physical device for user authentication) from a list of nearby Bluetooth devices. The user can identify their security key in the list by the name printed on the back of the security key.">
         Select your security key
       </message>
-      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION" desc="Description in the dialog instructing the user to select their Bluetooth security key (an external physical device for user authentication) from a list of nearby Bluetooth devices. The user can identify their security key in the list by the name printed on the back of the security key." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Find the name printed on the back of your key
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION" desc="Description in the dialog instructing the user to select their Bluetooth security key (an external physical device for user authentication) from a list of nearby Bluetooth devices. The user can identify their security key in the list by the name printed on the back of the security key.">
+        Find the name printed on the back of your security key
       </message>
       <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_SEARCHING_LABEL" desc="Label text. Displayed while Chrome is scanning for nearby Bluetooth devices.">
         Searching...
       </message>
-      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_REMINDER_LABEL" desc="Label text. Reminds the user that their Bluetooth security key (an external physical device for user authentication) will only show up in the list of nearby Bluetooth devices if they put it into pairing mode. This is achieved by holding down the button on the device for 5 seconds, or longer." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        If your security key isn't listed, press the key's button for at least 5 seconds.
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_REMINDER_LABEL" desc="Label text. Reminds the user that their Bluetooth security key (an external physical device for user authentication) will only show up in the list of nearby Bluetooth devices if they put it into pairing mode. This is achieved by holding down the button on the device for 5 seconds, or longer.">
+        If your security key isn't listed, press its button for at least 5 seconds.
       </message>
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code (a 6-digit number) to pair a Bluetooth security key (an external physical device for user authentication) with their computer.">
         Pair with <ph name="DEVICE_NAME">$1<ex>VHGSHSSN</ex></ph>
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION" desc="Description in the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key (an external physical device for user authentication) with their computer. The PIN code is a 6-digit secret number written on the back of the device." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Find the 6-digit PIN on the back of your key
+      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION" desc="Description in the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key (an external physical device for user authentication) with their computer. The PIN code is a 6-digit secret number written on the back of the device.">
+        Find the 6-digit PIN on the back of your security key
       </message>
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_PIN_LABEL" desc="Label text. Displayed next to a text box where the user enters the PIN code (a 6-digit number) to pair a Bluetooth device.">
         Pin
@@ -9309,17 +9306,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT" desc="Button text. The user clicks this button once they have entered the PIN code (a 6-digit number) into a text vbox, so that the pairing of the Bluetooth device can continue.">
         Next
       </message>
-      <message name="IDS_WEBAUTHN_BLE_OS_PIN_ENTRY_TITLE" desc="Description in the dialog instructing the user to enter the PIN code to pair a Bluetooth security key (an external physical device for user authentication) with their computer. The PIN code is a 6-digit secret number written on the back of the device." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        Find the 6-digit PIN on the back of your key
-      </message>
-      <message name="IDS_WEBAUTHN_BLE_OS_PIN_ENTRY_DESCRIPTION" desc="Description in the drepresenting using the user's phone as a physical device that is connected to the user's computer over Bluetooth Low Energy to authenticate the user on the web.ialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key (an external physical device for user authentication).">
-        Continue when you're ready to enter the PIN
-      </message>
       <message name="IDS_WEBAUTHN_BLE_VERIFYING_TITLE" desc="Title of the dialog informing the user that verifying a Bluetooth security key (an external physical device for user authentication) is in progress.">
         Verifying your security key...
       </message>
-      <message name="IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to activate (e.g. press a button on) their Bluetooth security key (an external physical device for user authentication)." meaning="Here, `key` refers to a security key, an external physical device for user authentication.">
-        To use most keys, simply press the button
+      <message name="IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to activate (e.g. press a button on) their Bluetooth security key (an external physical device for user authentication).">
+        Press the button on the security key
       </message>
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a different hardware-based authentication mechanism from what they have selected previously.">
         Choose another option
@@ -9346,7 +9337,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Check your phone
       </message>
       <message name="IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a phone as a security key.">
-        A notification was sent to your phone. Follow the prompts to confirm it's you.
+        A notification was sent to your phone to confirm it's you.
       </message>
       <message name="IDS_WEBAUTHN_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code to use a security key (an external physical device for user authentication) with their computer.">
         PIN required
