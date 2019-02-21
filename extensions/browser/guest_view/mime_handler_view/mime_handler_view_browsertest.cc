@@ -367,10 +367,6 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
-  // TODO(https://crbug.com/923051): Flaky in single process mash.
-  if (features::IsSingleProcessMash())
-    return;
-
   RunTest("test_iframe.html");
 }
 
