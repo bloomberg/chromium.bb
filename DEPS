@@ -31,6 +31,7 @@ gclient_gn_args = [
   'build_with_chromium',
   'checkout_android',
   'checkout_android_native_support',
+  'checkout_ios_webkit',
   'checkout_nacl',
   'checkout_oculus_sdk',
 ]

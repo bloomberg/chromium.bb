@@ -4,6 +4,7 @@
 
 assert(!is_component_build, "component build is unsupported on iOS")
 
+import("//build/config/gclient_args.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//ios/features.gni")
 
@@ -62,5 +63,9 @@ group("all") {
       "//ios/web_view:all_tests",
       "//ios/web_view/shell/test:all_tests",
     ]
+
+    if (checkout_ios_webkit) {
+      deps += [ "//ios/third_party/webkit" ]
+    }
   }
 }
