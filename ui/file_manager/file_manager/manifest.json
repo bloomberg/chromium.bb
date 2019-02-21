@@ -66,8 +66,7 @@
       "default_title": "__MSG_MOUNT_ARCHIVE__",
       "default_icon": "common/images/file_types/200/archive.png",
       "file_filters": [
-        "filesystem:*.rar",
-        "filesystem:*.zip"
+        "filesystem:*.rar"
       ]
     },
     {

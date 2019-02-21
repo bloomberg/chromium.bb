@@ -584,11 +584,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-new-zip-unpacker",
-    "owners": [ "chromeos-files-syd@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-office-editing-component-app",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
