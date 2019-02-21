@@ -399,8 +399,11 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
   if (in_process_gpu_)
     return;
   base::OnceClosure task = base::BindOnce([]() {
+    auto kind = GpuProcessHost::HasInProcess()
+                    ? GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED
+                    : GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED;
     GpuProcessHost* host = GpuProcessHost::Get(
-        GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED, true /* force_create */);
+      kind, true /* force_create */);
     if (!host)
       return;
     host->gpu_service()->GetGpuSupportedRuntimeVersion(

@@ -140,6 +140,9 @@ class UI_BASE_EXPORT ResourceBundle {
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceWithPakPath(const base::FilePath& path);
 
+  // Initialize an empty ResourceBundle.
+  static void InitSharedInstance();
+
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
 
@@ -161,6 +164,9 @@ class UI_BASE_EXPORT ResourceBundle {
   // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
   // accordingly.
   void AddDataPack(std::unique_ptr<DataPack> data_pack);
+
+  // Add the resources from the resource data DLL.
+  void AddDLLResources();
 
   // Registers additional data pack files with this ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the

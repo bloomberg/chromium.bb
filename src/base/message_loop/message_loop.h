@@ -192,6 +192,17 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // out of tasks which can be processed at the current run-level -- there might
   // be deferred non-nestable tasks remaining if currently in a nested run
   // level.
+#if defined(OS_WIN)
+  void set_ipc_sync_messages_should_peek(bool ipc_sync_messages_should_peek) {
+    ipc_sync_messages_should_peek_ = ipc_sync_messages_should_peek;
+  }
+
+  bool ipc_sync_messages_should_peek() const {
+    return ipc_sync_messages_should_peek_;
+  }
+#endif  // OS_WIN
+
+  // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
   // Runs the specified PendingTask.
@@ -299,6 +310,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // application or by a ScopedNestableTaskAllower preceding a system call that
   // is known to generate a system-driven nested loop.
   bool task_execution_allowed_ = true;
+
+#if defined(OS_WIN)
+  // Should be set to true if IPC sync messages should PeekMessage periodically.
+  bool ipc_sync_messages_should_peek_ = false;
+#endif
 
   // pump_factory_.Run() is called to create a message pump for this loop
   // if type_ is TYPE_CUSTOM and pump_ is null.

@@ -19,6 +19,9 @@
 
 namespace base {
 
+// The application-defined code passed to the hook procedure.
+static const int kMessageFilterCode = 0x5001;
+
 // MessagePumpWin serves as the base for specialized versions of the MessagePump
 // for Windows. It provides basic functionality like handling of observers and
 // controlling the lifetime of the message pump.
@@ -33,6 +36,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
  protected:
   struct RunState {
     Delegate* delegate;
+    RunState* previous_state;
 
     // Used to flag that the current Run() invocation should return ASAP.
     bool should_quit;
@@ -48,6 +52,9 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
     WORKING = 2     // Handling the work.
   };
 
+  void PushRunState(RunState* run_state,
+                    Delegate* delegate);
+  void PopRunState();
   virtual void DoRunLoop() = 0;
   int GetCurrentDelay() const;
 
@@ -134,6 +141,14 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* obseerver);
 
+ protected:
+  bool DoIdleWork();
+  void ResetWorkState();
+
+  // Determines if the pump should dispatch a non-Chrome message
+  // to reduce starvation
+  bool should_process_pump_replacement_ = true;
+
  private:
   bool MessageCallback(
       UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
@@ -146,6 +161,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
+ protected:
   base::win::MessageWindow message_window_;
 
   // Whether MessagePumpForUI responds to WM_QUIT messages or not.
