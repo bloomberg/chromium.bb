@@ -162,7 +162,11 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     delegate_binding_.Close();
 
   mojom::blink::PictureInPictureDelegatePtr delegate;
-  delegate_binding_.Bind(mojo::MakeRequest(&delegate));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      picture_in_picture_element_->GetDocument().GetTaskRunner(
+          TaskType::kMediaElementEvent);
+  delegate_binding_.Bind(mojo::MakeRequest(&delegate, task_runner),
+                         task_runner);
   picture_in_picture_service_->SetDelegate(std::move(delegate));
 
   if (resolver)
@@ -324,8 +328,11 @@ bool PictureInPictureControllerImpl::EnsureService() {
   if (!GetSupplementable()->GetFrame())
     return false;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetSupplementable()->GetFrame()->GetTaskRunner(
+          TaskType::kMediaElementEvent);
   GetSupplementable()->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&picture_in_picture_service_));
+      mojo::MakeRequest(&picture_in_picture_service_, task_runner));
   return true;
 }
 
