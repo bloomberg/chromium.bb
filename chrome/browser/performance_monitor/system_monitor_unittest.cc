@@ -26,46 +26,19 @@ class MockMetricsMonitorObserver : public SystemObserver {
   MOCK_METHOD1(OnFreePhysicalMemoryMbSample, void(int free_phys_memory_mb));
 };
 
-class TestSystemMonitor : public SystemMonitor {
+// Test version of a MetricEvaluatorsHelper that returns constant values.
+class TestMetricEvaluatorsHelper : public MetricEvaluatorsHelper {
  public:
-  using SystemMonitor::FreePhysMemoryMetricEvaluator;
-  using SystemMonitor::GetMetricEvaluatorMetadataForTesting;
-  using SystemMonitor::GetMetricSamplingFrequencyArrayForTesting;
-  using SystemMonitor::MetricEvaluator;
-  using SystemMonitor::MetricMetadata;
+  TestMetricEvaluatorsHelper() = default;
+  ~TestMetricEvaluatorsHelper() override = default;
 
-  TestSystemMonitor();
-  ~TestSystemMonitor() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestSystemMonitor);
-};
-
-class TestFreePhysMemoryMetricEvaluator
-    : public TestSystemMonitor::FreePhysMemoryMetricEvaluator {
- public:
-  TestFreePhysMemoryMetricEvaluator() = default;
-  ~TestFreePhysMemoryMetricEvaluator() override = default;
-
-  // FreePhysMemoryMetricEvaluator::Metric:
-  void Evaluate() override {
-    set_value_for_testing(kFakeFreePhysMemoryMb);
-    has_value_ = true;
+  base::Optional<int> GetFreePhysicalMemoryMb() override {
+    return kFakeFreePhysMemoryMb;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestFreePhysMemoryMetricEvaluator);
+  DISALLOW_COPY_AND_ASSIGN(TestMetricEvaluatorsHelper);
 };
-
-TestSystemMonitor::TestSystemMonitor() {
-  auto* free_memory_helper = GetMetricEvaluatorMetadataForTesting(
-      MetricEvaluator::Type::kFreeMemoryMb);
-  free_memory_helper->create_metric_evaluator_function = []() {
-    std::unique_ptr<SystemMonitor::MetricEvaluator> metric =
-        base::WrapUnique(new TestFreePhysMemoryMetricEvaluator());
-    return metric;
-  };
-}
 
 }  // namespace
 
@@ -77,7 +50,8 @@ class SystemMonitorTest : public testing::Test {
 
   void SetUp() override {
     EXPECT_EQ(nullptr, SystemMonitor::Get());
-    system_monitor_ = std::make_unique<TestSystemMonitor>();
+    system_monitor_ = base::WrapUnique(
+        new SystemMonitor(std::make_unique<TestMetricEvaluatorsHelper>()));
   }
 
   void TearDown() override { system_monitor_.reset(); }
@@ -90,10 +64,10 @@ class SystemMonitorTest : public testing::Test {
     EXPECT_EQ(1U, observed_metrics_and_frequencies.size());
     EXPECT_EQ(expected_free_memory_mb_freq,
               observed_metrics_and_frequencies[static_cast<size_t>(
-                  TestSystemMonitor::MetricEvaluator::Type::kFreeMemoryMb)]);
+                  SystemMonitor::MetricEvaluator::Type::kFreeMemoryMb)]);
   }
 
-  std::unique_ptr<TestSystemMonitor> system_monitor_;
+  std::unique_ptr<SystemMonitor> system_monitor_;
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

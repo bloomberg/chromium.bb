@@ -12,6 +12,12 @@
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
+#elif defined(OS_POSIX)
+#include "chrome/browser/performance_monitor/metric_evaluator_helper_posix.h"
+#endif
+
 namespace performance_monitor {
 
 namespace {
@@ -26,13 +32,27 @@ SystemMonitor* g_system_metrics_monitor = nullptr;
 constexpr base::TimeDelta kDefaultRefreshInterval =
     base::TimeDelta::FromSeconds(2);
 
+std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper() {
+#if defined(OS_WIN)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperWin();
+#elif defined(OS_POSIX)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperPosix();
+#else
+#error Unsupported platform
+#endif
+  return base::WrapUnique(helper);
+}
+
 }  // namespace
 
-SystemMonitor::SystemMonitor()
-    : metric_evaluators_metadata_(CreateMetricMetadataArray()),
-      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+SystemMonitor::SystemMonitor(std::unique_ptr<MetricEvaluatorsHelper> helper)
+    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      metric_evaluators_helper_(
+          helper.release(),
+          base::OnTaskRunnerDeleter(blocking_task_runner_)),
+      metric_evaluators_metadata_(CreateMetricMetadataArray()),
       weak_factory_(this) {
   DCHECK(!g_system_metrics_monitor);
   g_system_metrics_monitor = this;
@@ -46,7 +66,7 @@ SystemMonitor::~SystemMonitor() {
 // static
 std::unique_ptr<SystemMonitor> SystemMonitor::Create() {
   DCHECK(!g_system_metrics_monitor);
-  return base::WrapUnique(new SystemMonitor());
+  return base::WrapUnique(new SystemMonitor(CreateMetricEvaluatorsHelper()));
 }
 
 // static
@@ -76,9 +96,6 @@ void SystemMonitor::RemoveObserver(SystemMonitor::SystemObserver* observer) {
   UpdateObservedMetrics();
 }
 
-SystemMonitor::MetricEvaluator::MetricEvaluator(Type type) : type_(type) {}
-SystemMonitor::MetricEvaluator::~MetricEvaluator() = default;
-
 SystemMonitor::MetricVector SystemMonitor::GetMetricsToEvaluate() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SystemMonitor::MetricVector metrics_to_evaluate;
@@ -87,7 +104,8 @@ SystemMonitor::MetricVector SystemMonitor::GetMetricsToEvaluate() const {
     if (metrics_refresh_frequencies_[i] == SamplingFrequency::kNoSampling)
       continue;
     metrics_to_evaluate.emplace_back(
-        metric_evaluators_metadata_[i].create_metric_evaluator_function());
+        metric_evaluators_metadata_[i].create_metric_evaluator_function(
+            metric_evaluators_helper_.get()));
   }
   return metrics_to_evaluate;
 }
@@ -101,21 +119,32 @@ SystemMonitor::MetricVector SystemMonitor::EvaluateMetrics(
   return metrics_to_evaluate;
 }
 
-// static
 SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
-  return {// kFreeMemoryMb:
-          SystemMonitor::MetricMetadata(
-              []() {
-                std::unique_ptr<SystemMonitor::MetricEvaluator> metric =
-                    base::WrapUnique(
-                        new SystemMonitor::FreePhysMemoryMetricEvaluator());
-                return metric;
-              },
-              [](const SystemMonitor::SystemObserver::MetricRefreshFrequencies&
-                     metric_refresh_frequencies) {
-                return metric_refresh_frequencies.free_phys_memory_mb_frequency;
-              })};
-}
+#define CREATE_METRIC_METADATA(metric_type, metric_value_type,           \
+                               helper_function, notify_function,         \
+                               metric_freq_field)                        \
+  MetricMetadata(                                                        \
+      [](MetricEvaluatorsHelper* helper) {                               \
+        std::unique_ptr<MetricEvaluator> metric =                        \
+            base::WrapUnique(new MetricEvaluatorImpl<metric_value_type>( \
+                MetricEvaluator::Type::metric_type,                      \
+                base::BindOnce(&MetricEvaluatorsHelper::helper_function, \
+                               base::Unretained(helper)),                \
+                &SystemObserver::notify_function));                      \
+        return metric;                                                   \
+      },                                                                 \
+      [](const SystemObserver::MetricRefreshFrequencies&                 \
+             metric_refresh_frequencies) {                               \
+        return metric_refresh_frequencies.metric_freq_field;             \
+      })
+  return {
+      // kFreeMemoryMb:
+      CREATE_METRIC_METADATA(kFreeMemoryMb, int, GetFreePhysicalMemoryMb,
+                             OnFreePhysicalMemoryMbSample,
+                             free_phys_memory_mb_frequency),
+  };
+#undef CREATE_METRIC_METADATA
+}  // namespace performance_monitor
 
 void SystemMonitor::UpdateObservedMetrics() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -178,20 +207,40 @@ void SystemMonitor::NotifyObservers(SystemMonitor::MetricVector metrics) {
   }
 }
 
+SystemMonitor::MetricEvaluator::MetricEvaluator(Type type) : type_(type) {}
+SystemMonitor::MetricEvaluator::~MetricEvaluator() = default;
+
+template <typename T>
+SystemMonitor::MetricEvaluatorImpl<T>::MetricEvaluatorImpl(
+    Type type,
+    base::OnceCallback<base::Optional<T>()> evaluate_function,
+    void (SystemObserver::*notify_function)(T))
+    : MetricEvaluator(type),
+      evaluate_function_(std::move(evaluate_function)),
+      notify_function_(notify_function) {}
+
+template <typename T>
+SystemMonitor::MetricEvaluatorImpl<T>::~MetricEvaluatorImpl() = default;
+
 SystemMonitor::MetricMetadata::MetricMetadata(
-    std::unique_ptr<MetricEvaluator> (*create_function)(),
+    std::unique_ptr<MetricEvaluator> (*create_function)(
+        MetricEvaluatorsHelper* helper),
     SamplingFrequency (*get_refresh_field_function)(
         const SystemMonitor::SystemObserver::MetricRefreshFrequencies&))
     : create_metric_evaluator_function(create_function),
       get_refresh_frequency_field_function(get_refresh_field_function) {}
 
-SystemMonitor::FreePhysMemoryMetricEvaluator::FreePhysMemoryMetricEvaluator()
-    : SystemMonitor::MetricEvaluator(
-          SystemMonitor::MetricEvaluator::Type::kFreeMemoryMb) {}
-
-void SystemMonitor::FreePhysMemoryMetricEvaluator::NotifyObserver(
+template <typename T>
+void SystemMonitor::MetricEvaluatorImpl<T>::NotifyObserver(
     SystemObserver* observer) {
-  observer->OnFreePhysicalMemoryMbSample(value_);
+  DCHECK(value());
+  (observer->*notify_function_)(value().value());
+}
+
+template <typename T>
+void SystemMonitor::MetricEvaluatorImpl<T>::Evaluate() {
+  DCHECK(evaluate_function_);
+  value_ = std::move(evaluate_function_).Run();
 }
 
 }  // namespace performance_monitor

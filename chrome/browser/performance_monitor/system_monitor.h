@@ -12,12 +12,15 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
 namespace performance_monitor {
+
+class MetricEvaluatorsHelper;
 
 // Monitors various various system metrics such as free memory, disk idle time,
 // etc.
@@ -30,8 +33,7 @@ namespace performance_monitor {
 // metrics and frequencies can then be updated at runtime.
 //
 // Platforms that want to use this class need to provide a platform specific
-// implementation of the |Evaluate| functions of the various
-// SystemMonitor::MetricEvaluator classes defined in this file.
+// implementation of the MetricEvaluatorHelper class.
 class SystemMonitor {
  public:
   // The frequency at which a metric will be collected. Exact frequencies are
@@ -92,6 +94,8 @@ class SystemMonitor {
   }
 
  protected:
+  friend class SystemMonitorTest;
+
   // Represents a metric. Overridden for each metric tracked by this monitor.
   class MetricEvaluator {
    public:
@@ -114,10 +118,7 @@ class SystemMonitor {
     Type type() const { return type_; }
 
     // Indicates if the metric has a valid value.
-    bool has_value() const { return has_value_; }
-
-   protected:
-    bool has_value_ = false;
+    virtual bool has_value() const = 0;
 
    private:
     const Type type_;
@@ -125,23 +126,58 @@ class SystemMonitor {
     DISALLOW_COPY_AND_ASSIGN(MetricEvaluator);
   };
 
+  // Templated implementation of the MetricEvaluator interface.
+  template <typename T>
+  class MetricEvaluatorImpl : public MetricEvaluator {
+   public:
+    MetricEvaluatorImpl<T>(
+        Type type,
+        base::OnceCallback<base::Optional<T>()> evaluate_function,
+        void (SystemObserver::*notify_function)(T));
+    virtual ~MetricEvaluatorImpl();
+
+    // Called when the metrics needs to be refreshed.
+    void Evaluate() override;
+
+    bool has_value() const override { return value_.has_value(); }
+
+    base::Optional<T> value() { return value_; }
+
+    void set_value_for_testing(T value) { value_ = value; }
+
+   private:
+    void NotifyObserver(SystemObserver* observer) override;
+
+    // The callback that should be run to evaluate the metric value.
+    base::OnceCallback<base::Optional<T>()> evaluate_function_;
+
+    // A function pointer to the SystemObserver function that should be called
+    // to notify of a value refresh.
+    void (SystemObserver::*notify_function_)(T);
+
+    // The value, initialized in |Evaluate|.
+    base::Optional<T> value_;
+
+    DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorImpl);
+  };
+
   // Structure storing all the functions specific to a metric.
   struct MetricMetadata {
     MetricMetadata() = delete;
-    MetricMetadata(std::unique_ptr<MetricEvaluator> (*create_function)(),
+    MetricMetadata(std::unique_ptr<MetricEvaluator> (*create_function)(
+                       MetricEvaluatorsHelper* helper),
                    SamplingFrequency (*get_refresh_field_function)(
                        const SystemObserver::MetricRefreshFrequencies&));
     // A pointer to the function that creates the appropriate |MetricEvaluator|
     // instance for a given metric.
-    // TODO(sebmarchand): Make this a const member.
-    std::unique_ptr<MetricEvaluator> (*create_metric_evaluator_function)();
+    std::unique_ptr<MetricEvaluator> (*const create_metric_evaluator_function)(
+        MetricEvaluatorsHelper* helper);
     // A pointer to the function that extract the sampling frequency for a given
     // metric from a MetricRefreshFrequencies struct.
     SamplingFrequency (*get_refresh_frequency_field_function)(
         const SystemObserver::MetricRefreshFrequencies&);
   };
 
-  class FreePhysMemoryMetricEvaluator;
   using MetricVector = std::vector<std::unique_ptr<MetricEvaluator>>;
   using MetricSamplingFrequencyArray =
       std::array<SamplingFrequency,
@@ -149,7 +185,7 @@ class SystemMonitor {
 
   // Creates SystemMonitor. Only one SystemMonitor instance per application is
   // allowed.
-  SystemMonitor();
+  explicit SystemMonitor(std::unique_ptr<MetricEvaluatorsHelper> helper);
 
   // Returns a vector with all the metrics that should be evaluated given the
   // current list of observers.
@@ -203,12 +239,17 @@ class SystemMonitor {
   // observers.
   base::OneShotTimer refresh_timer_;
 
+  // The task runner used to run all the blocking operations.
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  // The MetricEvaluatorsHelper instance used by the MetricEvaluator to evaluate
+  // the metrics. This should only be used on |blocking_task_runner_|.
+  std::unique_ptr<MetricEvaluatorsHelper, base::OnTaskRunnerDeleter>
+      metric_evaluators_helper_;
+
   // There should be one |MetricMetadata| for each value of
   // |MetricEvaluator::Type|.
   MetricMetadataArray metric_evaluators_metadata_;
-
-  // The task runner used to run all the blocking operations.
-  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -217,25 +258,18 @@ class SystemMonitor {
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };
 
-// Implementation of the |MetricEvaluator| interface that tracks the amount of
-// free physical memory.
-class SystemMonitor::FreePhysMemoryMetricEvaluator
-    : public SystemMonitor::MetricEvaluator {
+// An helper class used by the MetricEvaluator object to retrieve the info
+// they need.
+class MetricEvaluatorsHelper {
  public:
-  FreePhysMemoryMetricEvaluator();
-  ~FreePhysMemoryMetricEvaluator() override = default;
+  MetricEvaluatorsHelper() = default;
+  virtual ~MetricEvaluatorsHelper() = default;
 
-  // SystemMonitor::MetricEvaluator:
-  void Evaluate() override;
-  void NotifyObserver(SystemObserver* observer) override;
-
-  int value() const { return value_; }
-  void set_value_for_testing(int value) { value_ = value; }
+  // Returns the free physical memory, in megabytes.
+  virtual base::Optional<int> GetFreePhysicalMemoryMb() = 0;
 
  private:
-  int value_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FreePhysMemoryMetricEvaluator);
+  DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelper);
 };
 
 }  // namespace performance_monitor
