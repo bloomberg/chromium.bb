@@ -160,10 +160,9 @@ void MetricsRenderFrameObserver::FrameDetached() {
   page_timing_metrics_sender_.reset();
 }
 
-void MetricsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
-  // Create a new data use tracker for the new provisional load.
+void MetricsRenderFrameObserver::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
+  // Create a new data use tracker for the new document load.
   provisional_frame_resource_data_use_ =
       std::make_unique<PageResourceDataUse>();
   provisional_frame_resource_id = 0;

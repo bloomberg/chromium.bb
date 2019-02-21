@@ -1,7 +1,9 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
-frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - DidStartNavigation
+frame "<!--framePath //<!--frame0-->-->" - ReadyToCommitNavigation
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame

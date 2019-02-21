@@ -911,11 +911,6 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
     RequestTestInterfaceOnFrameEvent(kFrameEventWillCommitProvisionalLoad);
   }
 
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override {}
-
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override {}
-
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override {
     RequestTestInterfaceOnFrameEvent(is_same_document_navigation

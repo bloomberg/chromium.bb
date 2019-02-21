@@ -1,8 +1,8 @@
 frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
-frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - DidStartNavigation
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
-frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - ReadyToCommitNavigation
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFailLoadWithError
 main frame - didHandleOnloadEventsForFrame

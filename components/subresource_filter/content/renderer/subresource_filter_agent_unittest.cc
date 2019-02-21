@@ -138,12 +138,14 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   }
 
   void StartLoadWithoutSettingActivationState() {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
+    agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
+    agent_as_rfo()->ReadyToCommitNavigation(nullptr);
     agent_as_rfo()->DidCreateNewDocument();
   }
 
   void PerformSameDocumentNavigationWithoutSettingActivationLevel() {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
+    agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
+    agent_as_rfo()->ReadyToCommitNavigation(nullptr);
     // No DidCreateNewDocument, since same document navigations by definition
     // don't create a new document.
     // No DidFinishLoad is called in this case.
@@ -160,7 +162,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void StartLoadAndSetActivationState(
       mojom::ActivationState state,
       AdFrameType ad_type = AdFrameType::kNonAd) {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
+    agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
+    agent_as_rfo()->ReadyToCommitNavigation(nullptr);
     agent()->ActivateForNextCommittedLoad(state.Clone(), ad_type);
     agent_as_rfo()->DidCreateNewDocument();
   }
@@ -464,7 +467,8 @@ TEST_F(SubresourceFilterAgentTest,
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
-  agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
+  agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
+  agent_as_rfo()->ReadyToCommitNavigation(nullptr);
   mojom::ActivationStatePtr state = mojom::ActivationState::New();
   state->activation_level = mojom::ActivationLevel::kEnabled;
   state->measure_performance = true;
@@ -472,7 +476,8 @@ TEST_F(SubresourceFilterAgentTest,
                                         AdFrameType::kNonAd /* ad_type */);
   agent_as_rfo()->DidFailProvisionalLoad(
       blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
-  agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
+  agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
+  agent_as_rfo()->ReadyToCommitNavigation(nullptr);
   agent_as_rfo()->DidCommitProvisionalLoad(
       false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
   FinishLoad();

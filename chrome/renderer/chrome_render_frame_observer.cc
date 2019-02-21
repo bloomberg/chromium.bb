@@ -376,9 +376,8 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
 #endif
 }
 
-void ChromeRenderFrameObserver::DidStartProvisionalLoad(
-    WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
+void ChromeRenderFrameObserver::ReadyToCommitNavigation(
+    WebDocumentLoader* document_loader) {
   // Let translate_helper do any preparatory work for loading a URL.
   if (!translate_helper_)
     return;

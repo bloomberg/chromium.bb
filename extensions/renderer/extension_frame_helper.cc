@@ -317,9 +317,8 @@ void ExtensionFrameHelper::ScheduleAtDocumentIdle(
   document_idle_callbacks_.push_back(callback);
 }
 
-void ExtensionFrameHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
+void ExtensionFrameHelper::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
   // New window created by chrome.app.window.create() must not start parsing the
   // document immediately. The chrome.app.window.create() callback (if any)
   // needs to be called prior to the new window's 'load' event. The parser will

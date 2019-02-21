@@ -62,6 +62,11 @@ void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {
   SetDisconnectionHandler();
 }
 
+void NavigationClient::MarkWasInitiatedInThisFrame() {
+  DCHECK(!was_initiated_in_this_frame_);
+  was_initiated_in_this_frame_ = true;
+}
+
 void NavigationClient::SetDisconnectionHandler() {
   navigation_client_binding_.set_connection_error_handler(base::BindOnce(
       &NavigationClient::OnDroppedNavigation, base::Unretained(this)));

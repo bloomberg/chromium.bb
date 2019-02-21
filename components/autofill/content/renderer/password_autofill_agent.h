@@ -248,8 +248,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // RenderFrameObserver:
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;

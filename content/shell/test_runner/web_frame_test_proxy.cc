@@ -43,17 +43,27 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   // content::RenderFrameObserver overrides.
   void OnDestruct() override { delete this; }
 
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override {
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override {
     if (test_runner()->shouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
-      delegate()->PrintMessage(" - didStartProvisionalLoadForFrame\n");
+      delegate()->PrintMessage(" - DidStartNavigation\n");
     }
 
     if (test_runner()->shouldDumpUserGestureInFrameLoadCallbacks()) {
       PrintFrameUserGestureStatus(delegate(), render_frame()->GetWebFrame(),
-                                  " - in didStartProvisionalLoadForFrame\n");
+                                  " - in DidStartNavigation\n");
+    }
+  }
+
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override {
+    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+      WebFrameTestClient::PrintFrameDescription(delegate(),
+                                                render_frame()->GetWebFrame());
+      delegate()->PrintMessage(" - ReadyToCommitNavigation\n");
     }
   }
 
