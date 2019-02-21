@@ -80,6 +80,37 @@ ScopedVariant SELF(CHILDID_SELF);
     EXPECT_EQ(expectedVariant.ptr()->intVal, actual.ptr()->intVal); \
   } while (false)
 
+#define EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(node, array_property_id,           \
+                                         element_test_property_id,          \
+                                         expected_property_values)          \
+  do {                                                                      \
+    ScopedVariant array;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        node->GetPropertyValue(array_property_id, array.Receive()));        \
+    EXPECT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                         \
+    EXPECT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                    \
+    long array_lower_bound;                                                 \
+    EXPECT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));    \
+    EXPECT_EQ(0, array_lower_bound);                                        \
+    long array_upper_bound;                                                 \
+    EXPECT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));    \
+    EXPECT_EQ(1, array_upper_bound);                                        \
+    CComPtr<IUnknown>* array_data;                                          \
+    EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
+        array.ptr()->parray, reinterpret_cast<void**>(&array_data)));       \
+    size_t count = array_upper_bound - array_lower_bound + 1;               \
+    ASSERT_EQ(count, expected_property_values.size());                      \
+    for (size_t i = 0; i < count; i++) {                                    \
+      CComPtr<IRawElementProviderSimple> element;                           \
+      EXPECT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));    \
+      EXPECT_UIA_BSTR_EQ(element, element_test_property_id,                 \
+                         expected_property_values[i].c_str());              \
+    }                                                                       \
+    EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray)); \
+  } while (false)
+
 AXPlatformNodeWinTest::AXPlatformNodeWinTest() {}
 AXPlatformNodeWinTest::~AXPlatformNodeWinTest() {}
 
@@ -2847,35 +2878,121 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
                           "fake description");
   root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                           "role description");
-  root.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
   root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 2);
   root.AddIntAttribute(ax::mojom::IntAttribute::kInvalidState, 1);
-  root.role = ax::mojom::Role::kMarquee;
+  root.id = 0;
+  root.role = ax::mojom::Role::kList;
 
-  Init(root);
+  AXNodeData child1;
+  child1.id = 1;
+  child1.role = ax::mojom::Role::kListItem;
+  child1.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
+  child1.SetName("child1");
+  root.child_ids.push_back(1);
+
+  Init(root, child1);
 
   ComPtr<IRawElementProviderSimple> root_node =
       GetRootIRawElementProviderSimple();
   ScopedVariant uia_id;
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AccessKeyPropertyId, L"Ctrl+Q");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AcceleratorKeyPropertyId, L"Alt+F4");
   ASSERT_HRESULT_SUCCEEDED(root_node->GetPropertyValue(
       UIA_AutomationIdPropertyId, uia_id.Receive()));
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AutomationIdPropertyId,
                      uia_id.ptr()->bstrVal);
-  EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaRolePropertyId, L"marquee");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_FullDescriptionPropertyId,
+                     L"fake description");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_LocalizedControlTypePropertyId,
+                     L"role description");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaRolePropertyId, L"list");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
-                     L"expanded=false;multiline=false;multiselectable=false;"
-                     L"posinset=1;required=false;setsize=2");
+                     L"readonly=true;expanded=false;multiline=false;"
+                     L"multiselectable=false;required=false;setsize=2");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_ClassNamePropertyId, L"fake name");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_CulturePropertyId, L"en-us");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_NamePropertyId, L"fake name");
   EXPECT_UIA_INT_EQ(root_node, UIA_ControlTypePropertyId,
-                    int{UIA_TextControlTypeId});
+                    int{UIA_ListControlTypeId});
   EXPECT_UIA_INT_EQ(root_node, UIA_OrientationPropertyId,
                     int{OrientationType_None});
+  EXPECT_UIA_INT_EQ(root_node, UIA_SizeOfSetPropertyId, 2);
+  EXPECT_UIA_INT_EQ(root_node, UIA_ToggleToggleStatePropertyId,
+                    int{ToggleState_Off});
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsPasswordPropertyId, false);
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsEnabledPropertyId, true);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_HasKeyboardFocusPropertyId, false);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsRequiredForFormPropertyId, false);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsDataValidForFormPropertyId, true);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsKeyboardFocusablePropertyId, false);
+  ComPtr<IRawElementProviderSimple> child_node1 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]);
+  EXPECT_UIA_INT_EQ(child_node1, UIA_PositionInSetPropertyId, 1);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {
+  AXNodeData root;
+  std::vector<int32_t> describedby_ids = {1, 2, 3};
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
+                           describedby_ids);
+  root.id = 0;
+  root.role = ax::mojom::Role::kMarquee;
+  root.SetName("root");
+
+  AXNodeData child1;
+  child1.id = 1;
+  child1.role = ax::mojom::Role::kStaticText;
+  child1.SetName("child1");
+
+  root.child_ids.push_back(1);
+
+  AXNodeData child2;
+  child2.id = 2;
+  child2.role = ax::mojom::Role::kStaticText;
+  child2.SetName("child2");
+
+  root.child_ids.push_back(2);
+
+  Init(root, child1, child2);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  std::vector<std::wstring> expected_names = {L"child1", L"child2"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(root_node, UIA_DescribedByPropertyId,
+                                   UIA_NamePropertyId, expected_names);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetFlowsToPropertyId) {
+  AXNodeData root;
+  std::vector<int32_t> flowto_ids = {1, 2, 3};
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds, flowto_ids);
+  root.id = 0;
+  root.role = ax::mojom::Role::kMarquee;
+  root.SetName("root");
+
+  AXNodeData child1;
+  child1.id = 1;
+  child1.role = ax::mojom::Role::kStaticText;
+  child1.SetName("child1");
+
+  root.child_ids.push_back(1);
+
+  AXNodeData child2;
+  child2.id = 2;
+  child2.role = ax::mojom::Role::kStaticText;
+  child2.SetName("child2");
+
+  root.child_ids.push_back(2);
+
+  Init(root, child1, child2);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  std::vector<std::wstring> expected_names = {L"child1", L"child2"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(root_node, UIA_FlowsToPropertyId,
+                                   UIA_NamePropertyId, expected_names);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
