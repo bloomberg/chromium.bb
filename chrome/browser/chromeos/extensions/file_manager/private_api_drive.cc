@@ -939,8 +939,8 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   if (processed_count_ < properties_list_.size())
     return;
 
-  results_ = extensions::api::file_manager_private_internal::
-      GetEntryProperties::Results::Create(properties_list_);
+  SetResultList(extensions::api::file_manager_private_internal::
+                    GetEntryProperties::Results::Create(properties_list_));
   SendResponse(true);
 }
 

@@ -77,13 +77,14 @@ bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
   file_manager::file_tasks::TaskDescriptor task;
   if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
     SetError(kInvalidTask + params->task_id);
-    results_ =
-        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+    SetResultList(
+        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED));
     return false;
   }
 
   if (params->urls.empty()) {
-    results_ = Create(extensions::api::file_manager_private::TASK_RESULT_EMPTY);
+    SetResultList(
+        Create(extensions::api::file_manager_private::TASK_RESULT_EMPTY));
     SendResponse(true);
     return true;
   }
@@ -98,8 +99,8 @@ bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
         file_system_context->CrackURL(GURL(params->urls[i]));
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       SetError(kInvalidFileUrl);
-      results_ =
-          Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+      SetResultList(
+          Create(extensions::api::file_manager_private::TASK_RESULT_FAILED));
       return false;
     }
     urls.push_back(url);
@@ -111,16 +112,16 @@ bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
           &FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted,
           this));
   if (!result) {
-    results_ =
-        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+    SetResultList(
+        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED));
   }
   return result;
 }
 
 void FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted(
     extensions::api::file_manager_private::TaskResult result) {
-  results_ = extensions::api::file_manager_private_internal::ExecuteTask::
-      Results::Create(result);
+  SetResultList(extensions::api::file_manager_private_internal::ExecuteTask::
+                    Results::Create(result));
   SendResponse(result !=
                extensions::api::file_manager_private::TASK_RESULT_FAILED);
 }
@@ -213,8 +214,8 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed(
     results.push_back(std::move(converted));
   }
 
-  results_ = extensions::api::file_manager_private_internal::GetFileTasks::
-      Results::Create(results);
+  SetResultList(extensions::api::file_manager_private_internal::GetFileTasks::
+                    Results::Create(results));
   SendResponse(true);
 }
 
