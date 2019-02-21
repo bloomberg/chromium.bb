@@ -64,7 +64,6 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   suggestion_chip_container_view_ =
       new SuggestionChipContainerView(contents_view);
   AddChildView(suggestion_chip_container_view_);
-  UpdateSuggestionChips();
 
   apps_grid_view_ = new AppsGridView(contents_view_, nullptr);
   apps_grid_view_->SetLayout(AppListConfig::instance().preferred_cols(),
@@ -420,6 +419,14 @@ gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {
   return search_box_bounds;
 }
 
+void AppsContainerView::UpdateSuggestionChips() {
+  suggestion_chip_container_view_->SetResults(
+      contents_view_->GetAppListMainView()
+          ->view_delegate()
+          ->GetSearchModel()
+          ->results());
+}
+
 void AppsContainerView::SetShowState(ShowState show_state,
                                      bool show_apps_with_animation) {
   if (show_state_ == show_state)
@@ -435,7 +442,6 @@ void AppsContainerView::SetShowState(ShowState show_state,
     case SHOW_APPS:
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
-      UpdateSuggestionChips();
       if (show_apps_with_animation)
         app_list_folder_view_->ScheduleShowHideAnimation(false, false);
       else
@@ -452,14 +458,6 @@ void AppsContainerView::SetShowState(ShowState show_state,
     default:
       NOTREACHED();
   }
-}
-
-void AppsContainerView::UpdateSuggestionChips() {
-  suggestion_chip_container_view_->SetResults(
-      contents_view_->GetAppListMainView()
-          ->view_delegate()
-          ->GetSearchModel()
-          ->results());
 }
 
 void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {

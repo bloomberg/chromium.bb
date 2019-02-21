@@ -274,6 +274,8 @@ class ASH_EXPORT AppListControllerImpl
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
+  void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
@@ -296,7 +298,7 @@ class ASH_EXPORT AppListControllerImpl
 
   mojom::AppListClientPtr client_;
 
-  app_list::AppListModel model_;
+  std::unique_ptr<app_list::AppListModel> model_;
   app_list::SearchModel search_model_;
 
   // |presenter_| should be put below |client_| and |model_| to prevent a crash
