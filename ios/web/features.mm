@@ -17,7 +17,7 @@ const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
