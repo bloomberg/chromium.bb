@@ -174,6 +174,7 @@ NSArray* AllAttributesArray() {
     @"AXARIAPosInSet",
     @"AXAutocomplete",
     @"AXAutocompleteValue",
+    @"AXBlockQuoteLevel",
     NSAccessibilityColumnHeaderUIElementsAttribute,
     NSAccessibilityColumnIndexRangeAttribute,
     @"AXDOMIdentifier",
