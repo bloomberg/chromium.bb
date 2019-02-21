@@ -226,7 +226,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void Trace(blink::Visitor*);
 
   void RevealSelectionAfterEditingOperation(
-      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded);
+      const ScrollAlignment& = ScrollAlignment::kAlignToEdgeIfNeeded);
 
  private:
   Member<LocalFrame> frame_;

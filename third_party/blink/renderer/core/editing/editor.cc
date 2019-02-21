@@ -506,7 +506,7 @@ bool Editor::InsertTextWithoutSendingTextEvent(
       LocalFrame* focused_or_main_frame =
           ToLocalFrame(page->GetFocusController().FocusedOrMainFrame());
       focused_or_main_frame->Selection().RevealSelection(
-          ScrollAlignment::kAlignCenterIfNeeded);
+          ScrollAlignment::kAlignToEdgeIfNeeded);
     }
   }
 
@@ -519,13 +519,10 @@ bool Editor::InsertLineBreak() {
 
   VisiblePosition caret =
       GetFrameSelection().ComputeVisibleSelectionInDOMTree().VisibleStart();
-  bool align_to_edge = IsEndOfEditableOrNonEditableContent(caret);
   DCHECK(GetFrame().GetDocument());
   if (!TypingCommand::InsertLineBreak(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(
-      align_to_edge ? ScrollAlignment::kAlignToEdgeIfNeeded
-                    : ScrollAlignment::kAlignCenterIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
 
   return true;
 }
@@ -539,14 +536,11 @@ bool Editor::InsertParagraphSeparator() {
 
   VisiblePosition caret =
       GetFrameSelection().ComputeVisibleSelectionInDOMTree().VisibleStart();
-  bool align_to_edge = IsEndOfEditableOrNonEditableContent(caret);
   DCHECK(GetFrame().GetDocument());
   EditingState editing_state;
   if (!TypingCommand::InsertParagraphSeparator(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(
-      align_to_edge ? ScrollAlignment::kAlignToEdgeIfNeeded
-                    : ScrollAlignment::kAlignCenterIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
 
   return true;
 }
