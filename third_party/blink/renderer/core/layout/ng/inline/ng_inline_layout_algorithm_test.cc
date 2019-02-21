@@ -233,7 +233,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
 
   auto* block_box = ToNGPhysicalBoxFragment(layout_result->PhysicalFragment());
   EXPECT_TRUE(layout_result->BfcBlockOffset().has_value());
-  EXPECT_EQ(0, layout_result->BfcBlockOffset().value());
+  EXPECT_EQ(0, *layout_result->BfcBlockOffset());
   EXPECT_EQ(0, layout_result->BfcLineOffset());
 
   NGPhysicalOffset line_offset = block_box->Children()[0].Offset();

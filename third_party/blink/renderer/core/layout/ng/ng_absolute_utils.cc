@@ -106,8 +106,8 @@ LayoutUnit ComputeAvailableWidth(LayoutUnit container_width,
   } else {  // !left
     available_width -= *right;
   }
-  LayoutUnit margins = (margin_left ? margin_left.value() : LayoutUnit()) +
-                       (margin_right ? margin_right.value() : LayoutUnit());
+  LayoutUnit margins = (margin_left ? *margin_left : LayoutUnit()) +
+                       (margin_right ? *margin_right : LayoutUnit());
   return (available_width - margins).ClampNegativeToZero();
 }
 
@@ -130,8 +130,8 @@ LayoutUnit ComputeAvailableHeight(
   } else {  // !top
     available_height -= *bottom;
   }
-  LayoutUnit margins = (margin_top ? margin_top.value() : LayoutUnit()) +
-                       (margin_bottom ? margin_bottom.value() : LayoutUnit());
+  LayoutUnit margins = (margin_top ? *margin_top : LayoutUnit()) +
+                       (margin_bottom ? *margin_bottom : LayoutUnit());
   return (available_height - margins).ClampNegativeToZero();
 }
 
@@ -550,7 +550,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
       width = ResolveWidth(space, style, border_padding, child_minmax,
                            style.Width(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
-      width = replaced_size.value().inline_size;
+      width = replaced_size->inline_size;
     }
     ComputeAbsoluteHorizontal(
         space, style, border_padding, width, static_position, child_minmax,
@@ -561,7 +561,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
       height = ResolveHeight(space, style, border_padding, child_minmax,
                              style.Height(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
-      height = replaced_size.value().inline_size;
+      height = replaced_size->inline_size;
     }
     ComputeAbsoluteVertical(
         space, style, border_padding, height, static_position, child_minmax,
@@ -594,7 +594,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
       height = ResolveHeight(space, style, border_padding, child_minmax,
                              style.Height(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
-      height = replaced_size.value().block_size;
+      height = replaced_size->block_size;
     }
     ComputeAbsoluteVertical(
         space, style, border_padding, height, static_position, child_minmax,
@@ -605,7 +605,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
       width = ResolveWidth(space, style, border_padding, child_minmax,
                            style.Width(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
-      width = replaced_size.value().block_size;
+      width = replaced_size->block_size;
     }
     ComputeAbsoluteHorizontal(
         space, style, border_padding, width, static_position, child_minmax,

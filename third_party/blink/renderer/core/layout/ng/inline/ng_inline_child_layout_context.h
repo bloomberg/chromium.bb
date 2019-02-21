@@ -23,7 +23,7 @@ class NGInlineChildLayoutContext {
  public:
   // Returns the NGInlineLayoutStateStack in this context.
   bool HasBoxStates() const { return box_states_.has_value(); }
-  NGInlineLayoutStateStack* BoxStates() { return &box_states_.value(); }
+  NGInlineLayoutStateStack* BoxStates() { return &*box_states_; }
   NGInlineLayoutStateStack* ResetBoxStates() { return &box_states_.emplace(); }
 
   // Returns the box states in this context if it exists and it can be used to

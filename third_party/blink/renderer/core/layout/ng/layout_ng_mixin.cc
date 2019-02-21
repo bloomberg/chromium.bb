@@ -247,7 +247,7 @@ LayoutUnit LayoutNGMixin<Base>::FirstLineBoxBaseline() const {
   if (Base::ChildrenInline()) {
     if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kFirstLine)) {
-      return offset.value();
+      return *offset;
     }
   }
   return Base::FirstLineBoxBaseline();
@@ -259,7 +259,7 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
   if (Base::ChildrenInline()) {
     if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kAtomicInline)) {
-      return offset.value();
+      return *offset;
     }
   }
   return Base::InlineBlockBaseline(line_direction);
@@ -312,7 +312,7 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
       return nullptr;
 
     if (bfc_block_offset.has_value()) {
-      bfc_block_offset = bfc_block_offset.value() -
+      bfc_block_offset = *bfc_block_offset -
                          old_space.BfcOffset().block_offset +
                          new_space.BfcOffset().block_offset;
     }

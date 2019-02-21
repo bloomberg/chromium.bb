@@ -79,8 +79,7 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     DCHECK_EQ(style.GetWritingMode(), parent_space.GetWritingMode());
 
     LayoutUnit fragmentation_offset =
-        parent_space.FragmentainerSpaceAtBfcStart() -
-        origin_block_offset.value();
+        parent_space.FragmentainerSpaceAtBfcStart() - *origin_block_offset;
     builder.SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
     builder.SetFragmentainerSpaceAtBfcStart(fragmentation_offset);
     builder.SetFragmentationType(parent_space.BlockFragmentationType());

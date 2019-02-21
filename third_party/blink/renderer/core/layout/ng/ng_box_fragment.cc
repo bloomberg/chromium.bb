@@ -32,7 +32,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
   // Check if we have a propagated baseline.
   if (base::Optional<LayoutUnit> baseline =
           physical_fragment.Baseline(request)) {
-    LayoutUnit ascent = baseline.value();
+    LayoutUnit ascent = *baseline;
     LayoutUnit descent = BlockSize() - ascent;
 
     // For replaced elements, inline-block elements, and inline-table

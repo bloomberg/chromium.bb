@@ -89,7 +89,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
                LayoutUnit());
   default_containing_block_.content_size_for_fixed =
       initial_containing_block_fixed_size
-          ? initial_containing_block_fixed_size.value()
+          ? *initial_containing_block_fixed_size
           : default_containing_block_.content_size_for_absolute;
 
   default_containing_block_.container_offset = NGLogicalOffset(
@@ -263,7 +263,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
 
       // Step 1 - determine the start_offset.
       const NGPhysicalOffsetRect& start_rect =
-          block_info.value.value().start_fragment_union_rect;
+          block_info.value->start_fragment_union_rect;
       NGLogicalOffset start_offset = start_rect.offset.ConvertToLogical(
           container_writing_mode, container_direction,
           container_builder_physical_size, start_rect.size);
@@ -276,7 +276,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
 
       // Step 2 - determine the end_offset.
       const NGPhysicalOffsetRect& end_rect =
-          block_info.value.value().end_fragment_union_rect;
+          block_info.value->end_fragment_union_rect;
       NGLogicalOffset end_offset = end_rect.offset.ConvertToLogical(
           container_writing_mode, container_direction,
           container_builder_physical_size, end_rect.size);
@@ -449,9 +449,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       layout_result->PhysicalFragment()->Size().height);
   if (y.has_value()) {
     if (IsHorizontalWritingMode(container_writing_mode))
-      offset->block_offset = y.value();
+      offset->block_offset = *y;
     else
-      offset->inline_offset = y.value();
+      offset->inline_offset = *y;
   }
 
   // Special case: oof css container is a split inline.

@@ -209,7 +209,7 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   base::Optional<MinMaxSize> min_max_sizes =
       algorithm.ComputeMinMaxSize(child_input);
   DCHECK(min_max_sizes.has_value());
-  MinMaxSize sizes = min_max_sizes.value();
+  MinMaxSize sizes = *min_max_sizes;
 
   // If column-width is non-auto, pick the larger of that and intrinsic column
   // width.

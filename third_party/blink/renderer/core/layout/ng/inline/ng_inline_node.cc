@@ -506,7 +506,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   NGInlineItemsBuilder builder(&data->items);
   const bool update_layout = true;
   CollectInlinesInternal(block, &builder, previous_text,
-                         marker.has_value() ? &marker.value() : nullptr,
+                         marker.has_value() ? &*marker : nullptr,
                          update_layout);
   data->text_content = builder.ToString();
 
