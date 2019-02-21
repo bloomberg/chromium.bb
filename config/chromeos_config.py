@@ -1988,8 +1988,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'cave',
       'coral',
+      'cyan',
       'nyan_blaze',
       'reef',
+      'scarlet',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
@@ -1998,6 +2000,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_enable_skylab_partial_boards = {
       'coral': ['astronaut'],
+      'scarlet': ['dru'],
   }
 
   ### Master paladin (CQ builder).
