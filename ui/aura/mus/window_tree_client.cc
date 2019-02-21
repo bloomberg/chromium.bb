@@ -640,10 +640,17 @@ void WindowTreeClient::SetWindowBoundsFromServer(
   // Server should always supply a LocalSurfaceIdAllocation for roots.
   DCHECK(local_surface_id_allocation);
 
+  WindowTreeHostMus* window_tree_host = GetWindowTreeHostMus(window);
+  // This function is always called with the most recent LocalSurfaceId from the
+  // server. As such, the pending LocalSurfaceId is no longer applicabable and
+  // should be discarded. If we didn't reset it here, it's entirely possible a
+  // future change could attempt to incorrectly apply an old LocalSurfaceId.
+  if (window_tree_host->has_pending_local_surface_id_from_server())
+    window_tree_host->TakePendingLocalSurfaceIdFromServer();
   window->UpdateLocalSurfaceIdFromParent(*local_surface_id_allocation);
 
-  GetWindowTreeHostMus(window)->SetBoundsFromServer(
-      revert_bounds, window->GetLocalSurfaceIdAllocation());
+  window_tree_host->SetBoundsFromServer(revert_bounds,
+                                        window->GetLocalSurfaceIdAllocation());
 
   window->DidSetWindowTreeHostBoundsFromServer();
 }
@@ -663,9 +670,12 @@ void WindowTreeClient::ApplyPendingSurfaceIdFromServer(WindowMus* window) {
         window->GetWindow()->GetLocalSurfaceIdAllocation();
     window_tree_host->SetBoundsFromServer(window_tree_host->bounds_in_dip(),
                                           lsia);
-    // This does *not* use SetWindowBoundsFromServer() as it leads to race
-    // conditions. In particular, it might incorrectly lead to the client
-    // changing the bounds when the server is also trying to change the bounds.
+    // Send the newly generated id to the server. This does *not* use
+    // WindowTreeHost:SetBounds() (which notifies the server of a bounds and id)
+    // as WindowTreeHost::SetBounds() leads to race conditions. In particular,
+    // it might incorrectly lead to the client changing the bounds when the
+    // server is also trying to change the bounds. The important thing here is
+    // to update the server of the id, not the bounds.
     tree_->UpdateLocalSurfaceIdFromChild(window->server_id(), lsia);
   } else {
     window_tree_host->SetBoundsFromServer(
