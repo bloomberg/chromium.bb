@@ -137,9 +137,6 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 
   if (origin_trials::JankTrackingEnabled(frame_view.GetFrame().GetDocument()))
     frame_view.GetJankTracker().NotifyPrePaintFinished();
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    frame_view.GetPaintTimingDetector().NotifyPrePaintFinished();
-  }
 
   context_storage_.pop_back();
 }

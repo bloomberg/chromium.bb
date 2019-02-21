@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -124,12 +123,6 @@ class ImagePaintTimingDetectorTest
     ToSVGImageElement(element)->SetImageForTest(content);
   }
 
-  void RegisterMockedHttpURLLoad(const std::string& file_name) {
-    url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        WebString::FromUTF8(file_name));
-  }
-
   void SimulateScroll() { GetPaintTimingDetector().NotifyScroll(kUserScroll); }
 
  private:
@@ -156,7 +149,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
     <div></div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -394,7 +386,6 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
     <div></div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -423,7 +414,6 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
       <img height="7" width="7" id="3"></img>
     </div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   SetImageAndPaint("1", 10, 10);
   UpdateAllLifecyclePhasesForTest();
   clock.Advance(TimeDelta::FromSecondsD(1));
@@ -620,50 +610,44 @@ TEST_F(ImagePaintTimingDetectorTest, SVGImage) {
 }
 
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage) {
-  RegisterMockedHttpURLLoad("white-1x1.png");
   SetBodyInnerHTML(R"HTML(
     <style>
       div {
-        background-image: url('white-1x1.png');
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
       }
     </style>
     <div>
       place-holder
     </div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
   EXPECT_EQ(CountRecords(), 1u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
-  RegisterMockedHttpURLLoad("white-1x1.png");
   SetBodyInnerHTML(R"HTML(
     <style>
       body {
-        background-image: url('white-1x1.png');
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
       }
     </style>
     <body>
     </body>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountRecords(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreHtml) {
-  RegisterMockedHttpURLLoad("white-1x1.png");
   SetBodyInnerHTML(R"HTML(
     <html>
     <style>
       html {
-        background-image: url('white-1x1.png');
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
       }
     </style>
     </html>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountRecords(), 0u);
 }
 
@@ -678,7 +662,6 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreGradient) {
       place-holder
     </div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountRecords(), 0u);
 }
 

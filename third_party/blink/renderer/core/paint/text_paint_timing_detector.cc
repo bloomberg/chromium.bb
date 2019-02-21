@@ -184,6 +184,8 @@ void TextPaintTimingDetector::RecordText(
     const PropertyTreeState& current_paint_chunk_properties) {
   if (!is_recording_)
     return;
+  // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
+  // anonymous objects' rect.
   Node* node = object.GetNode();
   if (!node)
     return;

@@ -320,10 +320,13 @@ bool ImagePaintTimingDetector::HasContentfulBackgroundImage(
 
 void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
                                            const PaintLayer& painting_layer) {
+  // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
+  // anonymous objects' rect.
   Node* node = object.GetNode();
   if (!node)
     return;
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
+  DCHECK_NE(node_id, kInvalidDOMNodeId);
   if (size_zero_ids_.Contains(node_id))
     return;
   // The node is reattached.
@@ -331,15 +334,15 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     detached_ids_.erase(node_id);
 
   if (!id_record_map_.Contains(node_id) && is_recording_) {
-    LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
+    LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
     // Before the image resource is loaded, <img> has size 0, so we do not
     // record the first size until the invalidated rect's size becomes
     // non-empty.
-    if (invalidated_rect.IsEmpty())
+    if (visual_rect.IsEmpty())
       return;
     uint64_t rect_size =
         frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-            invalidated_rect, painting_layer);
+            visual_rect, painting_layer);
     if (rect_size == 0) {
       // When rect_size == 0, it either means the image is size 0 or the image
       // is out of viewport. Either way, we don't track this image anymore, to
