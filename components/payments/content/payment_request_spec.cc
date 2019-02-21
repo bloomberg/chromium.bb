@@ -106,7 +106,8 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
     details_->display_items = std::move(details->display_items);
   if (details->shipping_options)
     details_->shipping_options = std::move(details->shipping_options);
-  details_->modifiers = std::move(details->modifiers);
+  if (!details->modifiers.empty())
+    details_->modifiers = std::move(details->modifiers);
   details_->error = std::move(details->error);
   if (details->shipping_address_errors)
     details_->shipping_address_errors =
