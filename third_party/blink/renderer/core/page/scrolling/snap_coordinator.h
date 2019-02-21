@@ -42,7 +42,7 @@ class CORE_EXPORT SnapCoordinator final
   void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
 
   // Returns the SnapContainerData if the snap container has one.
-  base::Optional<SnapContainerData> GetSnapContainerData(
+  base::Optional<cc::SnapContainerData> GetSnapContainerData(
       const LayoutBox& snap_container) const;
 
   // Calculate the SnapAreaData for the specific snap area in its snap
@@ -87,7 +87,7 @@ class CORE_EXPORT SnapCoordinator final
   bool PerformSnapping(const LayoutBox& snap_container,
                        const cc::SnapSelectionStrategy& strategy) const;
 
-  HashMap<const LayoutBox*, SnapContainerData> snap_container_map_;
+  HashMap<const LayoutBox*, cc::SnapContainerData> snap_container_map_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
 };
 

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 
 #include "base/optional.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -52,7 +53,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     CompositorElementId compositor_element_id;
     OverscrollBehavior overscroll_behavior = blink::OverscrollBehavior(
         blink::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
-    base::Optional<SnapContainerData> snap_container_data;
+    base::Optional<cc::SnapContainerData> snap_container_data;
 
     bool operator==(const State& o) const {
       return container_rect == o.container_rect &&
@@ -105,7 +106,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return state_.overscroll_behavior.y;
   }
 
-  base::Optional<SnapContainerData> GetSnapContainerData() const {
+  base::Optional<cc::SnapContainerData> GetSnapContainerData() const {
     return state_.snap_container_data;
   }
 

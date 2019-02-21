@@ -138,7 +138,7 @@ void GraphicsLayer::SetOverscrollBehavior(
 }
 
 void GraphicsLayer::SetSnapContainerData(
-    base::Optional<SnapContainerData> data) {
+    base::Optional<cc::SnapContainerData> data) {
   CcLayer()->SetSnapContainerData(std::move(data));
 }
 

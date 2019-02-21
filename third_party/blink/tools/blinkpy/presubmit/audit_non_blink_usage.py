@@ -239,6 +239,7 @@ _CONFIG = [
             'cc::SnapAlignment',
             'cc::SnapAreaData',
             'cc::SnapAxis',
+            'cc::SnapContainerData',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
             'gfx::RectToSkRect',

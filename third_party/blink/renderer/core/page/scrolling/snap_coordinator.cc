@@ -111,7 +111,8 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   if (snap_container.Style()->GetScrollSnapType().is_none)
     return;
 
-  SnapContainerData snap_container_data(GetPhysicalSnapType(snap_container));
+  cc::SnapContainerData snap_container_data(
+      GetPhysicalSnapType(snap_container));
 
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (!scrollable_area)
@@ -244,7 +245,7 @@ base::Optional<FloatPoint> SnapCoordinator::GetSnapPosition(
   if (iter == snap_container_map_.end())
     return base::nullopt;
 
-  const SnapContainerData& data = iter->value;
+  const cc::SnapContainerData& data = iter->value;
   if (!data.size())
     return base::nullopt;
 
@@ -347,7 +348,7 @@ void SnapCoordinator::SnapContainerDidChange(
   // container or from existing areas in orphan pool.
 }
 
-base::Optional<SnapContainerData> SnapCoordinator::GetSnapContainerData(
+base::Optional<cc::SnapContainerData> SnapCoordinator::GetSnapContainerData(
     const LayoutBox& snap_container) const {
   auto iter = snap_container_map_.find(&snap_container);
   if (iter != snap_container_map_.end()) {
