@@ -184,7 +184,10 @@ function updateEngagementTable() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  uiHandler = media.mojom.MediaEngagementScoreDetailsProvider.getProxy();
+  uiHandler = new media.mojom.MediaEngagementScoreDetailsProviderPtr;
+  Mojo.bindInterface(
+      media.mojom.MediaEngagementScoreDetailsProvider.name,
+      mojo.makeRequest(uiHandler).handle);
   updateEngagementTable();
 
   engagementTableBody = $('engagement-table-body');
@@ -233,5 +236,6 @@ document.addEventListener('DOMContentLoaded', function() {
     showNoPlaybacks = e.target.checked;
     renderTable();
   });
+
 });
 })();
