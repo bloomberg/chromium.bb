@@ -253,7 +253,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                                const ResourceResponse& redirect_response,
                                const FetchInitiatorInfo&,
                                InspectorPageAgent::ResourceType);
-  void RemoveFinishedReplayXHRFired(TimerBase*);
 
   bool CanGetResponseBodyBlob(const String& request_id);
   void GetResponseBodyBlob(const String& request_id,
@@ -283,8 +282,6 @@ class CORE_EXPORT InspectorNetworkAgent final
       frame_navigation_initiator_map_;
 
   HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_;
-  HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_to_be_deleted_;
-  TaskRunnerTimer<InspectorNetworkAgent> remove_finished_replay_xhr_timer_;
   InspectorAgentState::Boolean enabled_;
   InspectorAgentState::Boolean cache_disabled_;
   InspectorAgentState::Boolean bypass_service_worker_;

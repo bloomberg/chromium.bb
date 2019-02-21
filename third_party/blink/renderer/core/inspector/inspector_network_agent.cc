@@ -685,7 +685,6 @@ void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resources_data_);
   visitor->Trace(replay_xhrs_);
-  visitor->Trace(replay_xhrs_to_be_deleted_);
   visitor->Trace(pending_xhr_replay_data_);
   InspectorBaseAgent::Trace(visitor);
 }
@@ -1122,13 +1121,7 @@ void InspectorNetworkAgent::WillLoadXHR(ExecutionContext* execution_context,
 }
 
 void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
-  // This method will be called from the XHR.
-  // We delay deleting the replay XHR, as deleting here may delete the caller.
-  if (!replay_xhrs_.Contains(xhr))
-    return;
-  replay_xhrs_to_be_deleted_.insert(xhr);
   replay_xhrs_.erase(xhr);
-  remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void InspectorNetworkAgent::WillSendEventSourceRequest() {
@@ -1651,10 +1644,6 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
       ->toJSON();
 }
 
-void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {
-  replay_xhrs_to_be_deleted_.clear();
-}
-
 InspectorNetworkAgent::InspectorNetworkAgent(
     InspectedFrames* inspected_frames,
     WorkerGlobalScope* worker_global_scope,
@@ -1667,13 +1656,6 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       devtools_token_(worker_global_scope_
                           ? worker_global_scope_->GetParentDevToolsToken()
                           : inspected_frames->Root()->GetDevToolsFrameToken()),
-      remove_finished_replay_xhr_timer_(
-          worker_global_scope_
-              ? worker_global_scope->GetTaskRunner(TaskType::kInternalLoading)
-              : inspected_frames->Root()->GetTaskRunner(
-                    TaskType::kInternalLoading),
-          this,
-          &InspectorNetworkAgent::RemoveFinishedReplayXHRFired),
       enabled_(&agent_state_, /*default_value=*/false),
       cache_disabled_(&agent_state_, /*default_value=*/false),
       bypass_service_worker_(&agent_state_, /*default_value=*/false),
