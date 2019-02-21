@@ -356,8 +356,8 @@ class AURA_EXPORT WindowTreeClient
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
   void ScheduleInFlightBoundsChange(WindowMus* window,
-                                    const gfx::Rect& old_bounds,
-                                    const gfx::Rect& new_bounds);
+                                    const gfx::Rect& old_bounds_in_dip,
+                                    const gfx::Rect& new_bounds_in_dip);
 
   // Following are called from WindowMus.
   void OnWindowMusCreated(WindowMus* window);

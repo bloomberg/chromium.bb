@@ -41,7 +41,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   static WindowTreeHostMus* ForWindow(aura::Window* window);
 
   virtual void SetBounds(
-      const gfx::Rect& bounds,
+      const gfx::Rect& bounds_in_dip,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void SetBoundsFromServer(
       const gfx::Rect& bounds,
