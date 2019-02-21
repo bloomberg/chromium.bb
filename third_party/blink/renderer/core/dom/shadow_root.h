@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -234,13 +235,19 @@ inline ShadowRootV0& ShadowRoot::V0() const {
   return *shadow_root_v0_;
 }
 
-DEFINE_NODE_TYPE_CASTS(ShadowRoot, IsShadowRoot());
-DEFINE_TYPE_CASTS(ShadowRoot,
-                  TreeScope,
-                  treeScope,
-                  treeScope->RootNode().IsShadowRoot(),
-                  treeScope.RootNode().IsShadowRoot());
-DEFINE_TYPE_CASTS(TreeScope, ShadowRoot, shadowRoot, true, true);
+template <>
+struct DowncastTraits<ShadowRoot> {
+  static bool AllowFrom(const Node& node) { return node.IsShadowRoot(); }
+
+  static bool AllowFrom(const TreeScope& tree_scope) {
+    return tree_scope.RootNode().IsShadowRoot();
+  }
+};
+
+template <>
+struct DowncastTraits<TreeScope> {
+  static bool AllowFrom(const ShadowRoot& shadow_root) { return true; }
+};
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ShadowRootType&);
 

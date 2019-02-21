@@ -984,7 +984,8 @@ bool Node::IsClosedShadowHiddenFrom(const Node& other) const {
   const TreeScope* scope = &GetTreeScope();
   for (; scope->ParentTreeScope(); scope = scope->ParentTreeScope()) {
     const ContainerNode& root = scope->RootNode();
-    if (root.IsShadowRoot() && !ToShadowRoot(root).IsOpenOrV0())
+    auto* shadow_root = DynamicTo<ShadowRoot>(root);
+    if (shadow_root && !shadow_root->IsOpenOrV0())
       break;
   }
 
@@ -1558,7 +1559,7 @@ Element* Node::OwnerShadowHost() const {
 
 ShadowRoot* Node::ContainingShadowRoot() const {
   Node& root = GetTreeScope().RootNode();
-  return root.IsShadowRoot() ? ToShadowRoot(&root) : nullptr;
+  return DynamicTo<ShadowRoot>(root);
 }
 
 Node* Node::NonBoundaryShadowTreeRootNode() {
@@ -1585,8 +1586,8 @@ Element* Node::ParentOrShadowHostElement() const {
   if (!parent)
     return nullptr;
 
-  if (parent->IsShadowRoot())
-    return &ToShadowRoot(parent)->host();
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(parent))
+    return &shadow_root->host();
 
   if (!parent->IsElementNode())
     return nullptr;
@@ -2064,11 +2065,11 @@ std::ostream& operator<<(std::ostream& ostream, const Node* node) {
 String Node::ToString() const {
   if (getNodeType() == Node::kProcessingInstructionNode)
     return "?" + nodeName();
-  if (IsShadowRoot()) {
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(this)) {
     // nodeName of ShadowRoot is #document-fragment.  It's confused with
     // DocumentFragment.
     std::stringstream shadow_root_type;
-    shadow_root_type << ToShadowRoot(this)->GetType();
+    shadow_root_type << shadow_root->GetType();
     String shadow_root_type_str(shadow_root_type.str().c_str());
     return "#shadow-root(" + shadow_root_type_str + ")";
   }

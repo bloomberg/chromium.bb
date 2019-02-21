@@ -117,8 +117,9 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   Node* target_node = mev.InnerNode();
   if (!target_node || !target_node->parentNode())
     return true;
-  return target_node->IsShadowRoot() &&
-         IsHTMLInputElement(ToShadowRoot(target_node)->host());
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(target_node))
+    return IsHTMLInputElement(shadow_root->host());
+  return false;
 }
 
 }  // namespace

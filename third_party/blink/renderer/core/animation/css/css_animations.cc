@@ -1336,7 +1336,7 @@ bool CSSAnimations::IsAffectedByKeyframesFromScope(
     return false;
   if (tree_scope.RootNode() == tree_scope.GetDocument())
     return false;
-  return ToShadowRoot(tree_scope.RootNode()).host() == element;
+  return To<ShadowRoot>(tree_scope.RootNode()).host() == element;
 }
 
 bool CSSAnimations::IsAnimatingCustomProperties(

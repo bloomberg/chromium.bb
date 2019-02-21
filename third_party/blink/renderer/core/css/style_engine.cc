@@ -115,7 +115,7 @@ TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
   if (result.is_new_entry) {
     result.stored_value->value =
         MakeGarbageCollected<ShadowTreeStyleSheetCollection>(
-            ToShadowRoot(tree_scope));
+            To<ShadowRoot>(tree_scope));
   }
   return *result.stored_value->value.Get();
 }
@@ -271,7 +271,7 @@ void StyleEngine::RemoveStyleSheetCandidateNode(
     shadow_root = insertion_point.ContainingShadowRoot();
 
   TreeScope& tree_scope =
-      shadow_root ? *ToTreeScope(shadow_root) : GetDocument();
+      shadow_root ? *To<TreeScope>(shadow_root) : GetDocument();
   TreeScopeStyleSheetCollection* collection =
       StyleSheetCollectionFor(tree_scope);
   // After detaching document, collection could be null. In the case,
@@ -1102,10 +1102,11 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          node);
 
-  if (!node.IsShadowRoot())
+  auto* shadow_root = DynamicTo<ShadowRoot>(node);
+  if (!shadow_root)
     return;
 
-  Element& host = ToShadowRoot(node).host();
+  Element& host = shadow_root->host();
   if (host.NeedsStyleRecalc())
     return;
 
@@ -1168,8 +1169,8 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
   ScheduleTypeRuleSetInvalidations(tree_scope.RootNode(), rule_sets);
 
   bool invalidate_slotted = false;
-  if (tree_scope.RootNode().IsShadowRoot()) {
-    Element& host = ToShadowRoot(tree_scope.RootNode()).host();
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(&tree_scope.RootNode())) {
+    Element& host = shadow_root->host();
     ScheduleRuleSetInvalidationsForElement(host, rule_sets);
     if (host.GetStyleChangeType() >= kSubtreeStyleChange)
       return;

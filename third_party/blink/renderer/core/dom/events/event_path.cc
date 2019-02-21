@@ -118,9 +118,8 @@ void EventPath::CalculatePath() {
         continue;
       }
     }
-    if (current->IsShadowRoot()) {
-      if (event_ &&
-          ShouldStopAtShadowRoot(*event_, *ToShadowRoot(current), *node_))
+    if (auto* shadow_root = DynamicTo<ShadowRoot>(current)) {
+      if (event_ && ShouldStopAtShadowRoot(*event_, *shadow_root, *node_))
         break;
       current = current->OwnerShadowHost();
       nodes_in_path.push_back(current);

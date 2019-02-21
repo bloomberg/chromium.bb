@@ -506,7 +506,8 @@ Element* Fullscreen::FullscreenElementForBindingFrom(TreeScope& scope) {
 
   // TODO(kochi): Once V0 code is removed, we can use the same logic for
   // Document and ShadowRoot.
-  if (!scope.RootNode().IsShadowRoot()) {
+  auto* shadow_root = DynamicTo<ShadowRoot>(scope.RootNode());
+  if (!shadow_root) {
     // For Shadow DOM V0 compatibility: We allow returning an element in V0
     // shadow tree, even though it leaks the Shadow DOM.
     if (element->IsInV0ShadowTree()) {
@@ -514,7 +515,7 @@ Element* Fullscreen::FullscreenElementForBindingFrom(TreeScope& scope) {
                         WebFeature::kDocumentFullscreenElementInV0Shadow);
       return element;
     }
-  } else if (!ToShadowRoot(scope.RootNode()).IsV1()) {
+  } else if (!shadow_root->IsV1()) {
     return nullptr;
   }
   return scope.AdjustedElement(*element);

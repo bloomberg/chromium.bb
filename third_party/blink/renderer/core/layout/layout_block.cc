@@ -1710,9 +1710,10 @@ bool LayoutBlock::HasLineIfEmpty() const {
   if (IsRootEditableElement(*GetNode()))
     return true;
 
-  if (GetNode()->IsShadowRoot() &&
-      IsHTMLInputElement(ToShadowRoot(GetNode())->host()))
-    return true;
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
+    if (IsHTMLInputElement(shadow_root->host()))
+      return true;
+  }
 
   return false;
 }

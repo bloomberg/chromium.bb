@@ -540,14 +540,14 @@ unsigned short Internals::compareTreeScopePosition(
   const TreeScope* tree_scope1 =
       IsA<Document>(node1)
           ? static_cast<const TreeScope*>(To<Document>(node1))
-          : node1->IsShadowRoot()
-                ? static_cast<const TreeScope*>(ToShadowRoot(node1))
+          : IsA<ShadowRoot>(node1)
+                ? static_cast<const TreeScope*>(To<ShadowRoot>(node1))
                 : nullptr;
   const TreeScope* tree_scope2 =
       IsA<Document>(node2)
           ? static_cast<const TreeScope*>(To<Document>(node2))
-          : node2->IsShadowRoot()
-                ? static_cast<const TreeScope*>(ToShadowRoot(node2))
+          : IsA<ShadowRoot>(node2)
+                ? static_cast<const TreeScope*>(To<ShadowRoot>(node2))
                 : nullptr;
   if (!tree_scope1 || !tree_scope2) {
     exception_state.ThrowDOMException(
@@ -619,37 +619,37 @@ void Internals::advanceImageAnimation(Element* image,
 bool Internals::hasShadowInsertionPoint(const Node* root,
                                         ExceptionState& exception_state) const {
   DCHECK(root);
-  if (!root->IsShadowRoot()) {
+  if (!IsA<ShadowRoot>(root)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The node argument is not a shadow root.");
     return false;
   }
-  return ToShadowRoot(root)->V0().ContainsShadowElements();
+  return To<ShadowRoot>(root)->V0().ContainsShadowElements();
 }
 
 bool Internals::hasContentElement(const Node* root,
                                   ExceptionState& exception_state) const {
   DCHECK(root);
-  if (!root->IsShadowRoot()) {
+  if (!IsA<ShadowRoot>(root)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The node argument is not a shadow root.");
     return false;
   }
-  return ToShadowRoot(root)->V0().ContainsContentElements();
+  return To<ShadowRoot>(root)->V0().ContainsContentElements();
 }
 
 uint32_t Internals::countElementShadow(const Node* root,
                                        ExceptionState& exception_state) const {
   DCHECK(root);
-  if (!root->IsShadowRoot()) {
+  if (!IsA<ShadowRoot>(root)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The node argument is not a shadow root.");
     return 0;
   }
-  return ToShadowRoot(root)->ChildShadowRootCount();
+  return To<ShadowRoot>(root)->ChildShadowRootCount();
 }
 
 Node* Internals::nextSiblingInFlatTree(Node* node,
@@ -766,14 +766,15 @@ ShadowRoot* Internals::shadowRoot(Element* host) {
 String Internals::shadowRootType(const Node* root,
                                  ExceptionState& exception_state) const {
   DCHECK(root);
-  if (!root->IsShadowRoot()) {
+  auto* shadow_root = DynamicTo<ShadowRoot>(root);
+  if (!shadow_root) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The node provided is not a shadow root.");
     return String();
   }
 
-  switch (ToShadowRoot(root)->GetType()) {
+  switch (shadow_root->GetType()) {
     case ShadowRootType::kUserAgent:
       return String("UserAgentShadowRoot");
     case ShadowRootType::V0:

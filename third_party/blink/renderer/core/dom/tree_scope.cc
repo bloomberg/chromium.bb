@@ -452,7 +452,7 @@ Element* TreeScope::Retarget(const Element& target) const {
     return const_cast<Element*>(&target);
   Node& first_different_scope_root =
       (*target_ancestor_riterator).Get()->RootNode();
-  return &ToShadowRoot(first_different_scope_root).host();
+  return &To<ShadowRoot>(first_different_scope_root).host();
 }
 
 Element* TreeScope::AdjustedFocusedElementInternal(
