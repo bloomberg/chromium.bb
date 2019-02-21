@@ -34,6 +34,8 @@ jumbo_static_library("test_support") {
     "../browser/accessibility/accessibility_event_recorder.cc",
     "../browser/accessibility/accessibility_event_recorder.h",
     "../browser/accessibility/accessibility_event_recorder_mac.mm",
+    "../browser/accessibility/accessibility_event_recorder_uia_win.cc",
+    "../browser/accessibility/accessibility_event_recorder_uia_win.h",
     "../browser/accessibility/accessibility_event_recorder_win.cc",
     "../browser/background_fetch/background_fetch_embedded_worker_test_helper.cc",
     "../browser/background_fetch/background_fetch_embedded_worker_test_helper.h",

@@ -104,9 +104,10 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
   base::ProcessId pid = base::GetCurrentProcId();
-  std::unique_ptr<AccessibilityEventRecorder> event_recorder(
-      AccessibilityEventRecorder::Create(
-          web_contents->GetRootBrowserAccessibilityManager(), pid));
+  std::unique_ptr<AccessibilityEventRecorder> event_recorder =
+      event_recorder_factory_(
+          web_contents->GetRootBrowserAccessibilityManager(), pid,
+          base::StringPiece{});
   event_recorder->set_only_web_events(true);
 
   // Save a copy of the accessibility tree (as a text dump); we'll

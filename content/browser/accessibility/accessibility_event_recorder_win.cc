@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_event_recorder_uia_win.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -129,6 +130,18 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
 
   return std::make_unique<AccessibilityEventRecorderWin>(
       manager, pid, application_name_match_pattern);
+}
+
+std::vector<AccessibilityEventRecorder::EventRecorderFactory>
+AccessibilityEventRecorder::GetTestPasses() {
+  // In addition to the 'Blink' pass, Windows includes two accessibility APIs
+  // that need to be tested independently (MSAA & UIA); the Blink pass uses the
+  // same recorder as the MSAA pass.
+  return {
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorderUia::CreateUia,
+  };
 }
 
 // static

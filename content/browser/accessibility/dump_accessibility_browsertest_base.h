@@ -11,6 +11,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
 
@@ -96,10 +97,6 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
       std::vector<std::string>* wait_for,
       std::vector<std::string>* run_until);
 
-  // Create the right AccessibilityTreeFormatter subclass.
-  std::unique_ptr<AccessibilityTreeFormatter>
-  CreateAccessibilityTreeFormatter();
-
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
   // The default property filters plus the property filters loaded from the test
@@ -114,11 +111,12 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   ScopedLeakSanitizerDisabler lsan_disabler;
 #endif
 
+  // The current tree-formatter and event-recorder factories.
+  AccessibilityTreeFormatter::FormatterFactory formatter_factory_;
+  AccessibilityEventRecorder::EventRecorderFactory event_recorder_factory_;
+
   // The current AccessibilityTreeFormatter.
   std::unique_ptr<AccessibilityTreeFormatter> formatter_;
-
-  // Whether we're doing a native pass or internal/blink tree pass.
-  bool is_blink_pass_;
 
   // Whether we should enable accessibility after navigating to the page,
   // otherwise we enable it first.

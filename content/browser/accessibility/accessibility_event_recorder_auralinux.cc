@@ -97,6 +97,15 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
       manager, pid, application_name_match_pattern);
 }
 
+std::vector<AccessibilityEventRecorder::EventRecorderFactory>
+AccessibilityEventRecorder::GetTestPasses() {
+  // Both the Blink pass and native pass use the same recorder
+  return {
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorder::Create,
+  };
+}
+
 bool AccessibilityEventRecorderAuraLinux::ShouldUseATSPI() {
   return pid_ != base::GetCurrentProcId() ||
          !application_name_match_pattern_.empty();

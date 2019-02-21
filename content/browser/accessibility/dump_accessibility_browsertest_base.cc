@@ -15,11 +15,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
-#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -80,9 +81,9 @@ typedef AccessibilityTreeFormatter::PropertyFilter PropertyFilter;
 typedef AccessibilityTreeFormatter::NodeFilter NodeFilter;
 
 DumpAccessibilityTestBase::DumpAccessibilityTestBase()
-    : is_blink_pass_(false),
-      enable_accessibility_after_navigating_(false) {
-}
+    : formatter_factory_(nullptr),
+      event_recorder_factory_(nullptr),
+      enable_accessibility_after_navigating_(false) {}
 
 DumpAccessibilityTestBase::~DumpAccessibilityTestBase() {
 }
@@ -100,8 +101,7 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 
 base::string16
 DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
-  std::unique_ptr<AccessibilityTreeFormatter> formatter(
-      CreateAccessibilityTreeFormatter());
+  std::unique_ptr<AccessibilityTreeFormatter> formatter(formatter_factory_());
   std::vector<PropertyFilter> property_filters;
   property_filters.push_back(
       PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
@@ -188,29 +188,30 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
   }
 }
 
-std::unique_ptr<AccessibilityTreeFormatter>
-DumpAccessibilityTestBase::CreateAccessibilityTreeFormatter() {
-  if (is_blink_pass_)
-    return std::make_unique<AccessibilityTreeFormatterBlink>();
-  else
-    return AccessibilityTreeFormatter::Create();
-}
-
 void DumpAccessibilityTestBase::RunTest(
     const base::FilePath file_path, const char* file_dir) {
-#if !defined(OS_ANDROID)
-  // The blink tree is different on Android because we exclude inline
-  // text boxes, for performance.
-  is_blink_pass_ = true;
-  RunTestForPlatform(file_path, file_dir);
-#endif
-  is_blink_pass_ = false;
-  RunTestForPlatform(file_path, file_dir);
+  // Get all the tree formatters; the test is run independently on each one.
+  auto formatters = AccessibilityTreeFormatter::GetTestPasses();
+  auto event_recorders = AccessibilityEventRecorder::GetTestPasses();
+  DCHECK(event_recorders.size() == formatters.size());
+
+  int pass_count = formatters.size();
+  for (int pass = 0; pass < pass_count; ++pass) {
+    formatter_factory_ = formatters[pass];
+    event_recorder_factory_ = event_recorders[pass];
+    RunTestForPlatform(file_path, file_dir);
+  }
+  formatter_factory_ = nullptr;
+  event_recorder_factory_ = nullptr;
 }
 
 void DumpAccessibilityTestBase::RunTestForPlatform(
     const base::FilePath file_path, const char* file_dir) {
-  formatter_ = CreateAccessibilityTreeFormatter();
+  formatter_ = formatter_factory_();
+
+  base::test::ScopedCommandLine scoped_command_line;
+  formatter_->SetUpCommandLineForTestPass(
+      scoped_command_line.GetProcessCommandLine());
 
   // Disable the "hot tracked" state (set when the mouse is hovering over
   // an object) because it makes test output change based on the mouse position.

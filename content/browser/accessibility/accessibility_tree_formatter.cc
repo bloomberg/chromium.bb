@@ -211,4 +211,7 @@ bool AccessibilityTreeFormatter::WriteAttribute(bool include_by_default,
   return true;
 }
 
+void AccessibilityTreeFormatter::SetUpCommandLineForTestPass(
+    base::CommandLine* command_line) {}
+
 }  // namespace content
