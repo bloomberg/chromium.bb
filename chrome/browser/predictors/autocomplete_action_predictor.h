@@ -211,6 +211,12 @@ class AutocompleteActionPredictor
       history::URLDatabase* url_db,
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
 
+  // Deletes up to |count| rows having lowest confidence scores from the local
+  // caches. Deleted row ids will be added to |id_list|.
+  void DeleteLowestConfidenceRowsFromCaches(
+      size_t count,
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
+
   // Called on an incognito-owned predictor to copy the current caches from the
   // main profile.
   void CopyFromMainProfile();
