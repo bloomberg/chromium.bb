@@ -1353,6 +1353,21 @@
             ]
         }
     ],
+    "DarkModeWindows": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DarkMode",
+                    "enable_features": [
+                        "DarkMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataCompressionProxyLoFi": [
         {
             "platforms": [
