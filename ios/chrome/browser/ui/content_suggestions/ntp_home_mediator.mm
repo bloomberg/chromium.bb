@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -39,8 +40,8 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
@@ -73,6 +74,8 @@ const char kNTPHelpURL[] =
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
+  // Used to load URLs.
+  UrlLoadingService* _urlLoadingService;
 }
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -104,6 +107,7 @@ const char kNTPHelpURL[] =
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
                   templateURLService:(TemplateURLService*)templateURLService
+                   urlLoadingService:(UrlLoadingService*)urlLoadingService
                           logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
@@ -111,6 +115,7 @@ const char kNTPHelpURL[] =
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
     _templateURLService = templateURLService;
+    _urlLoadingService = urlLoadingService;
     // Listen for default search engine changes.
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);
@@ -232,7 +237,7 @@ const char kNTPHelpURL[] =
                     web::ReferrerPolicyDefault);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   ChromeLoadParams chromeParams(params);
-  [self.dispatcher loadURLWithParams:chromeParams];
+  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -276,7 +281,7 @@ const char kNTPHelpURL[] =
   web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   ChromeLoadParams chromeParams(params);
-  [self.dispatcher loadURLWithParams:chromeParams];
+  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -343,7 +348,7 @@ const char kNTPHelpURL[] =
                                    inIncognito:NO
                                   inBackground:NO
                                       appendTo:kCurrentTab];
-    [self.dispatcher webPageOrderedOpen:command];
+    _urlLoadingService->OpenUrlInNewTab(command);
     return;
   }
 
@@ -364,7 +369,7 @@ const char kNTPHelpURL[] =
     return;
   GURL URL(kNTPHelpURL);
   ChromeLoadParams params(URL);
-  [self.dispatcher loadURLWithParams:params];
+  _urlLoadingService->LoadUrlInCurrentTab(params);
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -551,7 +556,7 @@ const char kNTPHelpURL[] =
     // prevent staying stuck.
     [self.dispatcher cancelOmniboxEdit];
   }
-  [self.dispatcher webPageOrderedOpen:command];
+  _urlLoadingService->OpenUrlInNewTab(command);
 }
 
 // Logs a histogram due to a Most Visited item being opened.

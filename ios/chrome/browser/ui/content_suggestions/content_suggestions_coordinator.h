@@ -19,7 +19,6 @@ class ChromeBrowserState;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
-@protocol UrlLoader;
 class WebStateList;
 
 // Coordinator to manage the Suggestions UI via a
@@ -35,8 +34,7 @@ class WebStateList;
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;

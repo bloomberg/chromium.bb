@@ -28,12 +28,11 @@
 #error "This file requires ARC support."
 #endif
 
-@protocol NewTabPageTabDispatcher<ApplicationCommands,
-                                  BrowserCommands,
-                                  OmniboxFocuser,
-                                  FakeboxFocuser,
-                                  SnackbarCommands,
-                                  UrlLoader>
+@protocol NewTabPageTabDispatcher <ApplicationCommands,
+                                   BrowserCommands,
+                                   OmniboxFocuser,
+                                   FakeboxFocuser,
+                                   SnackbarCommands>
 @end
 
 // Test fixture for testing NewTabPageCoordinator class.

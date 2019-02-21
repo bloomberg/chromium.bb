@@ -36,6 +36,8 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -112,12 +114,17 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(_browserState);
+
   self.NTPMediator = [[NTPHomeMediator alloc]
       initWithWebStateList:self.webStateList
         templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                self.browserState)
+         urlLoadingService:urlLoadingService
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                               self.browserState, self.dispatcher)];
+                               self.browserState,
+                               urlLoadingService->GetUrlLoader())];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()

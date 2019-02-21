@@ -20,7 +20,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
-#import "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/browser/url_loading/test_url_loading_service.h"
+#include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -36,8 +37,7 @@
 #error "This file requires ARC support."
 #endif
 
-@protocol
-    NTPHomeMediatorDispatcher<BrowserCommands, SnackbarCommands, UrlLoader>
+@protocol NTPHomeMediatorDispatcher <BrowserCommands, SnackbarCommands>
 @end
 
 namespace {
@@ -54,6 +54,9 @@ class NTPHomeMediatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         IOSChromeContentSuggestionsServiceFactory::GetInstance(),
         IOSChromeContentSuggestionsServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        UrlLoadingServiceFactory::GetInstance(),
+        UrlLoadingServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
 
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
@@ -67,10 +70,14 @@ class NTPHomeMediatorTest : public PlatformTest {
     dispatcher_ = OCMProtocolMock(@protocol(NTPHomeMediatorDispatcher));
     suggestions_view_controller_ =
         OCMClassMock([ContentSuggestionsViewController class]);
+    url_loader_ =
+        (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
     mediator_ = [[NTPHomeMediator alloc]
         initWithWebStateList:web_state_list_.get()
           templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                  chrome_browser_state_.get())
+           urlLoadingService:url_loader_
                   logoVendor:logo_vendor_];
     mediator_.suggestionsService =
         IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -113,6 +120,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
+  TestUrlLoadingService* url_loader_;
 
  private:
   std::unique_ptr<web::TestWebState> test_web_state_;
@@ -240,7 +248,7 @@ TEST_F(NTPHomeMediatorTest, TestOpenReadingList) {
   EXPECT_OCMOCK_VERIFY(dispatcher_);
 }
 
-// Tests that the command is sent to the dispatcher when opening a suggestion.
+// Tests that the command is sent to the loader when opening a suggestion.
 TEST_F(NTPHomeMediatorTest, TestOpenPage) {
   // Setup.
   [mediator_ setUp];
@@ -253,20 +261,18 @@ TEST_F(NTPHomeMediatorTest, TestOpenPage) {
   id model = OCMClassMock([CollectionViewModel class]);
   OCMStub([suggestions_view_controller_ collectionViewModel]).andReturn(model);
   OCMStub([model itemAtIndexPath:indexPath]).andReturn(item);
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  OCMExpect(
-      [[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:chromeParams]);
 
   // Action.
   [mediator_ openPageForItemAtIndexPath:indexPath];
 
   // Test.
-  EXPECT_OCMOCK_VERIFY(dispatcher_);
+  EXPECT_EQ(url, url_loader_->last_web_params.url);
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+      url_loader_->last_web_params.transition_type));
 }
 
-// Tests that the command is sent to the dispatcher when opening a most visited.
+// Tests that the command is sent to the loader when opening a most visited.
 TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   // Setup.
   [mediator_ setUp];
@@ -274,15 +280,13 @@ TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   ContentSuggestionsMostVisitedItem* item =
       [[ContentSuggestionsMostVisitedItem alloc] initWithType:0];
   item.URL = url;
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  OCMExpect(
-      [[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:chromeParams]);
 
   // Action.
   [mediator_ openMostVisitedItem:item atIndex:0];
 
   // Test.
-  EXPECT_OCMOCK_VERIFY(dispatcher_);
+  EXPECT_EQ(url, url_loader_->last_web_params.url);
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+      url_loader_->last_web_params.transition_type));
 }

@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 
@@ -50,14 +51,16 @@ const CGFloat kFaviconMinimalSize = 32;
   // ShortcutsMediator observes the reading list model to get the reading list
   // badge.
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
+  UrlLoadingService* _loadingService;
 }
 
 - (instancetype)
-initWithLargeIconService:(favicon::LargeIconService*)largeIconService
-          largeIconCache:(LargeIconCache*)largeIconCache
-         mostVisitedSite:
-             (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-        readingListModel:(ReadingListModel*)readingListModel {
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+              largeIconCache:(LargeIconCache*)largeIconCache
+             mostVisitedSite:
+                 (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+            readingListModel:(ReadingListModel*)readingListModel
+              loadingService:(UrlLoadingService*)loadingService {
   self = [super init];
   if (self) {
     _faviconAttributesProvider = [[FaviconAttributesProvider alloc]
@@ -74,6 +77,8 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
+
+    _loadingService = loadingService;
   }
   return self;
 }
@@ -106,7 +111,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   ChromeLoadParams chromeParams(params);
   [self.dispatcher cancelOmniboxEdit];
-  [self.dispatcher loadURLWithParams:chromeParams];
+  _loadingService->LoadUrlInCurrentTab(chromeParams);
 }
 
 - (void)openBookmarks {

@@ -774,8 +774,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                         presentingViewController:self];
     self.commandDispatcher = commandDispatcher;
-    [self.commandDispatcher startDispatchingToTarget:self
-                                         forProtocol:@protocol(UrlLoader)];
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
@@ -847,11 +845,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       PopupMenuCommands,
       FakeboxFocuser,
       SnackbarCommands,
-      ToolbarCommands,
-      UrlLoader>)dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                        PopupMenuCommands, FakeboxFocuser, SnackbarCommands,
-                        ToolbarCommands, UrlLoader>>(self.commandDispatcher);
+      ToolbarCommands>)dispatcher {
+  return static_cast<
+      id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+         PopupMenuCommands, FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
+      self.commandDispatcher);
 }
 
 - (UIView*)contentArea {
@@ -4029,24 +4027,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (MainContentUIState*)mainContentUIState {
   return _mainContentUIUpdater.state;
-}
-
-#pragma mark - UrlLoader (Public)
-
-- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  // TODO(crbug.com/907527): call UrlLoadingService directly where we call
-  // this method.
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
-  urlLoadingService->LoadUrlInCurrentTab(chromeParams);
-}
-
-- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
-  // TODO(crbug.com/907527): call UrlLoadingService directly where we call
-  // this method.
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
-  urlLoadingService->OpenUrlInNewTab(command);
 }
 
 #pragma mark - ToolbarCoordinatorDelegate (Public)

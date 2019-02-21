@@ -18,28 +18,29 @@ class MostVisitedSites;
 }
 class LargeIconCache;
 class ReadingListModel;
+class UrlLoadingService;
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
 @protocol ShortcutsConsumer;
-@protocol UrlLoader;
 
 // Coordinator for the Omnibox Popup Shortcuts.
 @interface ShortcutsMediator : NSObject<ShortcutsViewControllerDelegate>
 
 - (instancetype)
-initWithLargeIconService:(favicon::LargeIconService*)largeIconService
-          largeIconCache:(LargeIconCache*)largeIconCache
-         mostVisitedSite:
-             (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-        readingListModel:(ReadingListModel*)readingListModel;
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+              largeIconCache:(LargeIconCache*)largeIconCache
+             mostVisitedSite:
+                 (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+            readingListModel:(ReadingListModel*)readingListModel
+              loadingService:(UrlLoadingService*)loadingService;
 
 // The consumer for the data fetched by this mediator.
 @property(nonatomic, weak) id<ShortcutsConsumer> consumer;
 // Dispatcher.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, UrlLoader, OmniboxFocuser>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 @end
 

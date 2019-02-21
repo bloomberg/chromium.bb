@@ -14,8 +14,6 @@ class BrowserState;
 class WebState;
 }
 
-@protocol UrlLoader;
-
 // A |StaticHtmlNativeContent| that displays offline pages located in the
 // application data folder that have been distilled by DOMdistiller.
 @interface OfflinePageNativeContent : StaticHtmlNativeContent

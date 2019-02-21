@@ -64,8 +64,7 @@ using base::UserMetricsAction;
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 
 // Coordinator for the ContentSuggestions.
@@ -97,8 +96,7 @@ using base::UserMetricsAction;
                              BrowserCommands,
                              OmniboxFocuser,
                              FakeboxFocuser,
-                             SnackbarCommands,
-                             UrlLoader>)dispatcher
+                             SnackbarCommands>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset {
   self = [super initWithNibName:nil url:url];
   if (self) {

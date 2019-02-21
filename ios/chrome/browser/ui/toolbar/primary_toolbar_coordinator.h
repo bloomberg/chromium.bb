@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 
 @protocol ToolbarCoordinatorDelegate;
-@protocol UrlLoader;
 
 // Coordinator for the primary part, the one containing the omnibox, of the
 // adaptive toolbar.

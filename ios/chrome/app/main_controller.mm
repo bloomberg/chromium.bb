@@ -1841,7 +1841,8 @@ enum class EnterTabSwitcherSnapshotResult {
       search_args, templateURLService->search_terms_data()));
   web::NavigationManager::WebLoadParams params(result);
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  [self.currentBVC.dispatcher loadURLWithParams:ChromeLoadParams(params)];
+  UrlLoadingServiceFactory::GetForBrowserState([self.currentBVC browserState])
+      ->LoadUrlInCurrentTab(ChromeLoadParams(params));
 }
 
 #pragma mark - Preferences Management

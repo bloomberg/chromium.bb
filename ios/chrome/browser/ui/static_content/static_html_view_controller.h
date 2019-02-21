@@ -15,7 +15,6 @@
 
 namespace web {
 class BrowserState;
-struct Referrer;
 }
 
 // Callback for the HtmlGenerator protocol.
