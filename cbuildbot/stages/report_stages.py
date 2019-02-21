@@ -295,6 +295,12 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_status['build_number'])
         logging.PrintBuildbotLink('Link to master build', master_url)
 
+    # Set annealing snapshot revision build property for Findit integration.
+    if self._run.options.cbb_snapshot_revision:
+      logging.PrintKitchenSetBuildProperty(
+          'GOT_REVISION',
+          self._run.options.cbb_snapshot_revision)
+
     # Write the tag metadata last so that a build_id is available.
     WriteTagMetadata(self._run)
 

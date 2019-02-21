@@ -683,6 +683,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       chroot_args = chroot_args or []
       chroot_args += ['--cache-dir', self._run.options.cache_dir]
 
+    # Set property to specify bisection builder job to run for Findit.
+    logging.PrintKitchenSetBuildProperty(
+        'BISECT_BUILDER',
+        self._current_board + '-postsubmit-tryjob')
     try:
       commands.Build(
           self._build_root,
@@ -710,7 +714,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       gs_url = os.path.join(self.upload_url, 'BuildCompileFailureOutput.json')
       logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', gs_url)
       raise
-
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
