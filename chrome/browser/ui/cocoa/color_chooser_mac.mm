@@ -39,16 +39,18 @@ void ColorChooserMac::DidChooseColorInColorPanel(SkColor color) {
     web_contents_->DidChooseColorInColorChooser(color);
 }
 
-void ColorChooserMac::DidCloseColorPabel() {
+void ColorChooserMac::DidCloseColorPanel() {
   End();
 }
 
 void ColorChooserMac::End() {
-  panel_.reset();
-  DCHECK(current_color_chooser_ == this);
-  current_color_chooser_ = NULL;
-  if (web_contents_)
+  if (panel_) {
+    panel_.reset();
+    DCHECK(current_color_chooser_ == this);
+    current_color_chooser_ = NULL;
+    if (web_contents_)
       web_contents_->DidEndColorChooser();
+  }
 }
 
 void ColorChooserMac::SetSelectedColor(SkColor color) {
@@ -67,9 +69,14 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
     chooser_ = chooser;
     NSColorPanel* panel = [NSColorPanel sharedColorPanel];
     [panel setShowsAlpha:NO];
-    [panel setDelegate:self];
     [panel setTarget:self];
     [panel setAction:@selector(didChooseColor:)];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(windowWillClose:)
+               name:NSWindowWillCloseNotification
+             object:panel];
   }
   return self;
 }
@@ -82,19 +89,21 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
   // the ColorPanelCocoa is still the target.
   BOOL respondsToPrivateTargetMethod =
       [panel respondsToSelector:@selector(__target)];
-
-  if ([panel delegate] == self ||
-      (respondsToPrivateTargetMethod && [panel __target] == self)) {
-    [panel setDelegate:nil];
+  if (respondsToPrivateTargetMethod && [panel __target] == self) {
     [panel setTarget:nil];
     [panel setAction:nullptr];
   }
+
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowWillCloseNotification
+              object:panel];
 
   [super dealloc];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  chooser_->DidCloseColorPabel();
+  chooser_->DidCloseColorPanel();
   nonUserChange_ = NO;
 }
 
