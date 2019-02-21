@@ -689,7 +689,7 @@
   },
   {
     "name": "download-home-v2",
-    // "owners": [ "your-team" ],
+    "owners": [ "shaktisahu", "xingliu", "dtrainor" ],
     "expiry_milestone": 76
   },
   {
