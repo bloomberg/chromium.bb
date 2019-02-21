@@ -22,17 +22,10 @@
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -274,11 +267,6 @@ class AccountReconcilorTest : public ::testing::Test {
   signin::AccountConsistencyMethod account_consistency_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient test_signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-  AccountTrackerService account_tracker_;
-  FakeAccountFetcherService account_fetcher_;
-  GaiaCookieManagerService cookie_manager_service_;
-  FakeSigninManagerForTesting signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<MockAccountReconcilor> mock_reconcilor_;
   base::HistogramTester histogram_tester_;
@@ -326,46 +314,14 @@ INSTANTIATE_TEST_SUITE_P(Dice_Mirror,
 AccountReconcilorTest::AccountReconcilorTest()
     : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       test_signin_client_(&pref_service_),
-      token_service_(&pref_service_),
-      cookie_manager_service_(
-          &token_service_,
-          &test_signin_client_,
-          base::BindRepeating(
-              [](network::TestURLLoaderFactory* test_url_loader_factory)
-                  -> scoped_refptr<network::SharedURLLoaderFactory> {
-                return test_url_loader_factory->GetSafeWeakWrapper();
-              },
-              &test_url_loader_factory_)),
-#if defined(OS_CHROMEOS)
-      signin_manager_(&test_signin_client_, &token_service_, &account_tracker_),
-#else
-      signin_manager_(&test_signin_client_,
-                      &token_service_,
-                      &account_tracker_,
-                      &cookie_manager_service_),
-
-#endif
-      identity_test_env_(&pref_service_,
-                         &account_tracker_,
-                         &account_fetcher_,
-                         &token_service_,
-                         &signin_manager_,
-                         &cookie_manager_service_,
-                         &test_url_loader_factory_) {
-  AccountTrackerService::RegisterPrefs(pref_service_.registry());
-  AccountFetcherService::RegisterPrefs(pref_service_.registry());
-  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
-  SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-  SigninManagerBase::RegisterPrefs(pref_service_.registry());
+      identity_test_env_(&test_url_loader_factory_,
+                         &pref_service_,
+                         account_consistency_,
+                         &test_signin_client_) {
   pref_service_.registry()->RegisterBooleanPref(
       prefs::kTokenServiceDiceCompatible, false);
 
-  account_tracker_.Initialize(&pref_service_, base::FilePath());
-  account_fetcher_.Initialize(
-      &test_signin_client_, &token_service_, &account_tracker_,
-      std::make_unique<image_fetcher::FakeImageDecoder>());
   signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
-  signin_manager_.Initialize(nullptr);
 
   // The reconcilor should not be built before the test can set the account
   // consistency method.
@@ -394,12 +350,7 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor(
 AccountReconcilorTest::~AccountReconcilorTest() {
   if (mock_reconcilor_)
     mock_reconcilor_->Shutdown();
-  signin_manager_.Shutdown();
-  cookie_manager_service_.Shutdown();
-  account_fetcher_.Shutdown();
-  account_tracker_.Shutdown();
   test_signin_client_.Shutdown();
-  token_service_.Shutdown();
 }
 
 AccountInfo AccountReconcilorTest::ConnectProfileToAccount(
