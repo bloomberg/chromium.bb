@@ -46,10 +46,14 @@ class TabListSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jlayer_title_cache,
       const base::android::JavaParamRef<jobject>& jtab_content_manager,
       const base::android::JavaParamRef<jobject>& jresource_manager);
+  // TODO(meiliang): This method needs another parameter, a resource that can be
+  // used to indicate the currently selected tab for the TabLayer.
   // TODO(dtrainor): This method is ridiculous.  Break this apart?
   void PutTabLayer(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jobj,
                    jint id,
+                   const base::android::JavaRef<jintArray>& tab_ids_list,
+                   jboolean use_tab_ids_list,
                    jint toolbar_resource_id,
                    jint close_button_resource_id,
                    jint shadow_resource_id,
