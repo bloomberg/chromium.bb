@@ -22,8 +22,13 @@ AppServiceProxy* AppServiceProxy::Get(Profile* profile) {
 }
 
 AppServiceProxy::AppServiceProxy(Profile* profile) {
-  content::BrowserContext::GetConnectorFor(profile)->BindInterface(
-      apps::mojom::kServiceName, mojo::MakeRequest(&app_service_));
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(profile);
+  if (!connector) {
+    return;
+  }
+  connector->BindInterface(apps::mojom::kServiceName,
+                           mojo::MakeRequest(&app_service_));
 
   // The AppServiceProxy is a subscriber: something that wants to be able to
   // list all known apps.
@@ -61,18 +66,21 @@ void AppServiceProxy::LoadIcon(
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   bool found = false;
-  cache_.ForOneApp(app_id, [this, &icon_compression, &size_hint_in_dip,
-                            &allow_placeholder_icon, &callback,
-                            &found](const apps::AppUpdate& update) {
-    apps::mojom::IconKeyPtr icon_key = update.IconKey();
-    if (icon_key.is_null()) {
-      return;
-    }
-    found = true;
-    app_service_->LoadIcon(update.AppType(), std::move(icon_key),
-                           icon_compression, size_hint_in_dip,
-                           allow_placeholder_icon, std::move(callback));
-  });
+
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(app_id, [this, &icon_compression, &size_hint_in_dip,
+                              &allow_placeholder_icon, &callback,
+                              &found](const apps::AppUpdate& update) {
+      apps::mojom::IconKeyPtr icon_key = update.IconKey();
+      if (icon_key.is_null()) {
+        return;
+      }
+      found = true;
+      app_service_->LoadIcon(update.AppType(), std::move(icon_key),
+                             icon_compression, size_hint_in_dip,
+                             allow_placeholder_icon, std::move(callback));
+    });
+  }
 
   if (!found) {
     // On failure, we still run the callback, with the zero IconValue.
@@ -84,37 +92,48 @@ void AppServiceProxy::Launch(const std::string& app_id,
                              int32_t event_flags,
                              apps::mojom::LaunchSource launch_source,
                              int64_t display_id) {
-  cache_.ForOneApp(app_id, [this, event_flags, launch_source,
-                            display_id](const apps::AppUpdate& update) {
-    app_service_->Launch(update.AppType(), update.AppId(), event_flags,
-                         launch_source, display_id);
-  });
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(app_id, [this, event_flags, launch_source,
+                              display_id](const apps::AppUpdate& update) {
+      app_service_->Launch(update.AppType(), update.AppId(), event_flags,
+                           launch_source, display_id);
+    });
+  }
 }
 
 void AppServiceProxy::SetPermission(const std::string& app_id,
                                     apps::mojom::PermissionPtr permission) {
-  cache_.ForOneApp(app_id, [this, &permission](const apps::AppUpdate& update) {
-    app_service_->SetPermission(update.AppType(), update.AppId(),
-                                std::move(permission));
-  });
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(
+        app_id, [this, &permission](const apps::AppUpdate& update) {
+          app_service_->SetPermission(update.AppType(), update.AppId(),
+                                      std::move(permission));
+        });
+  }
 }
 
 void AppServiceProxy::Uninstall(const std::string& app_id) {
-  cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-    app_service_->Uninstall(update.AppType(), update.AppId());
-  });
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+      app_service_->Uninstall(update.AppType(), update.AppId());
+    });
+  }
 }
 
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
-  cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-    app_service_->OpenNativeSettings(update.AppType(), update.AppId());
-  });
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+      app_service_->OpenNativeSettings(update.AppType(), update.AppId());
+    });
+  }
 }
 
 void AppServiceProxy::Shutdown() {
 #if defined(OS_CHROMEOS)
-  extension_apps_.Shutdown();
-  extension_web_apps_.Shutdown();
+  if (app_service_.is_bound()) {
+    extension_apps_.Shutdown();
+    extension_web_apps_.Shutdown();
+  }
 #endif  // OS_CHROMEOS
 }
 
