@@ -66,10 +66,6 @@ void SecurityInterstitialPage::DontCreateViewForTesting() {
   create_view_ = false;
 }
 
-bool SecurityInterstitialPage::ShouldDisplayURL() const {
-  return true;
-}
-
 std::string SecurityInterstitialPage::GetHTMLContents() {
   base::DictionaryValue load_time_data;
   PopulateInterstitialStrings(&load_time_data);
