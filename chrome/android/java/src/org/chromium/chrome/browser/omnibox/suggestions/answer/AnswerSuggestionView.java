@@ -33,6 +33,21 @@ public class AnswerSuggestionView extends RelativeLayout {
     private ImageView mAnswerIconView;
     private ImageView mRefineView;
 
+    /**
+     * Container view for omnibox suggestions allowing soft focus from keyboard.
+     */
+    public static class FocusableView extends RelativeLayout {
+        /** Creates new instance of FocusableView. */
+        public FocusableView(Context context, AttributeSet attributes) {
+            super(context, attributes);
+        }
+
+        @Override
+        public boolean isFocused() {
+            return super.isFocused() || (isSelected() && !isInTouchMode());
+        }
+    }
+
     /** Creates new instance of AnswerSuggestionView. */
     public AnswerSuggestionView(Context context, AttributeSet attributes) {
         super(context, attributes);
@@ -51,6 +66,7 @@ public class AnswerSuggestionView extends RelativeLayout {
     @Override
     public void setSelected(boolean selected) {
         super.setSelected(selected);
+        mAnswerView.setSelected(selected);
         if (selected && !isInTouchMode()) {
             postDelegateAction(() -> mSuggestionDelegate.onSetUrlToSuggestion());
         }
