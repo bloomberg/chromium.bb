@@ -76,7 +76,7 @@ class MediaDrmStorageBridge {
   void RunAndroidBoolCallback(JavaObjectPtr j_callback, bool success);
   void OnInitialized(InitCB init_cb,
                      bool success,
-                     const base::UnguessableToken& origin_id);
+                     const MediaDrmStorage::MediaDrmOriginId& origin_id);
   void OnSessionDataLoaded(
       JavaObjectPtr j_callback,
       const std::string& session_id,

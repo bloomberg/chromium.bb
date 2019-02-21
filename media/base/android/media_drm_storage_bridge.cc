@@ -149,13 +149,13 @@ void MediaDrmStorageBridge::RunAndroidBoolCallback(JavaObjectPtr j_callback,
 void MediaDrmStorageBridge::OnInitialized(
     InitCB init_cb,
     bool success,
-    const base::UnguessableToken& origin_id) {
+    const MediaDrmStorage::MediaDrmOriginId& origin_id) {
   // Note: It's possible that |success| is true but |origin_id| is empty,
   // to indicate per-device provisioning. In this case, we cannot use
   // ToString() which would be the string 0000000000000000. Instead, do
   // not set |origin_id_| so that it remains empty.
-  if (success && origin_id) {
-    origin_id_ = origin_id.ToString();
+  if (success && origin_id && origin_id.value()) {
+    origin_id_ = origin_id->ToString();
   } else {
     DCHECK(!origin_id);
   }

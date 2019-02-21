@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -37,10 +38,14 @@ namespace cdm {
 class MediaDrmStorageImpl final
     : public content::FrameServiceBase<media::mojom::MediaDrmStorage> {
  public:
+  // When using per-origin provisioning, this is the ID for the origin.
+  // If not specified, the device specific origin ID is to be used.
+  using MediaDrmOriginId = base::Optional<base::UnguessableToken>;
+
   // |success| is true if an origin ID was obtained and |origin_id| is
   // specified, false otherwise.
   using OriginIdObtainedCB =
-      base::OnceCallback<void(bool success, const base::UnguessableToken&)>;
+      base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
   using GetOriginIdCB = base::RepeatingCallback<void(OriginIdObtainedCB)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -89,15 +94,15 @@ class MediaDrmStorageImpl final
 
   // Called when |get_origin_id_cb_| asynchronously returns a origin ID as part
   // of Initialize().
-  void OnOriginIdObtained(bool success,
-                          const base::UnguessableToken& origin_id);
+  void OnOriginIdObtained(bool success, const MediaDrmOriginId& origin_id);
 
   PrefService* const pref_service_;
   GetOriginIdCB get_origin_id_cb_;
 
   // ID for the current origin. Per EME spec on individualization,
   // implementation should not expose application-specific information.
-  base::UnguessableToken origin_id_;
+  // If not specified, the device specific origin ID is to be used.
+  MediaDrmOriginId origin_id_;
 
   // As Initialize() may be asynchronous, save the InitializeCallback when
   // necessary.

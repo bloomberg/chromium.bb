@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -34,6 +35,8 @@ const char kAvailableOriginIds[] = "origin_ids";
 constexpr size_t kExpectedPreferenceListSize = 5;
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 
+using MediaDrmOriginId = base::Optional<base::UnguessableToken>;
+
 }  // namespace
 
 class MediaDrmOriginIdManagerTest : public testing::Test {
@@ -46,13 +49,13 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
   }
 
   // Call MediaDrmOriginIdManager::GetOriginId() synchronously.
-  base::UnguessableToken GetOriginId() {
+  MediaDrmOriginId GetOriginId() {
     base::RunLoop run_loop;
-    base::UnguessableToken result;
+    MediaDrmOriginId result;
 
     origin_id_manager_->GetOriginId(base::BindOnce(
-        [](base::OnceClosure callback, base::UnguessableToken* result,
-           bool success, const base::UnguessableToken& origin_id) {
+        [](base::OnceClosure callback, MediaDrmOriginId* result, bool success,
+           const MediaDrmOriginId& origin_id) {
           EXPECT_TRUE(success);
           *result = origin_id;
           std::move(callback).Run();
@@ -100,8 +103,8 @@ TEST_F(MediaDrmOriginIdManagerTest, OneOriginId) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, TwoOriginIds) {
-  base::UnguessableToken origin_id1 = GetOriginId();
-  base::UnguessableToken origin_id2 = GetOriginId();
+  MediaDrmOriginId origin_id1 = GetOriginId();
+  MediaDrmOriginId origin_id2 = GetOriginId();
   EXPECT_TRUE(origin_id1);
   EXPECT_TRUE(origin_id2);
   EXPECT_NE(origin_id1, origin_id2);
@@ -164,20 +167,18 @@ TEST_F(MediaDrmOriginIdManagerTest, GetOriginIdCreatesList) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
-  base::UnguessableToken origin_id;
-
   // After fetching one origin ID MediaDrmOriginIdManager will create the list
   // of pre-provisioned origin IDs (asynchronously). It doesn't matter if the
   // device supports per-application provisioning or not.
-  origin_id = GetOriginId();
+  MediaDrmOriginId origin_id = GetOriginId();
   test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that the preference does not contain |origin_id|.
   DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
   auto* dict = GetDictionary(kMediaDrmOriginIds);
   auto* list = dict->FindKey(kAvailableOriginIds);
-  EXPECT_FALSE(
-      ContainsValue(list->GetList(), CreateUnguessableTokenValue(origin_id)));
+  EXPECT_FALSE(ContainsValue(list->GetList(),
+                             CreateUnguessableTokenValue(origin_id.value())));
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {

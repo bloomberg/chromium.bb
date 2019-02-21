@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,8 +29,11 @@ class PrefService;
 // destroyed when the Profile goes away.
 class MediaDrmOriginIdManager : public KeyedService {
  public:
-  using ProvisionedOriginIdCB =
-      base::OnceCallback<void(bool success, const base::UnguessableToken&)>;
+  // |success| is true if an origin ID was obtained and |origin_id| is
+  // not null, false otherwise.
+  using ProvisionedOriginIdCB = base::OnceCallback<void(
+      bool success,
+      const base::Optional<base::UnguessableToken>& origin_id)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
