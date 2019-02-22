@@ -369,6 +369,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // TODO(crbug.com/907311): Remove after we identified the cause of crash.
   void RecordDebugLog(const char* message);
+  void CrashWithDebugLog(const std::string& reason);
 
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
