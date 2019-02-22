@@ -69,10 +69,15 @@ def main():
         subwaterfalls[subwaterfall].append(builder)
 
   # subwaterfalls contains the waterfalls referenced by the main console
-  # Check that every referenced subwaterfall has its own console.
-  all_console_names = set([console.id for console in project.consoles])
+  # Check that every referenced subwaterfall has its own console, unless it's
+  # explicitly excluded below.
+  excluded_names = [
+      # This is the chrome/chromium.chrome console in src-internal.
+      'chromium.chrome',
+  ]
+  all_console_names = [console.id for console in project.consoles]
   referenced_names = set(subwaterfalls.keys())
-  missing_names = referenced_names - all_console_names
+  missing_names = referenced_names - set(all_console_names + excluded_names)
   if missing_names:
     print 'Missing subwaterfall console for', missing_names
     return 1
