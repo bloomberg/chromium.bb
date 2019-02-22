@@ -150,6 +150,16 @@ TEST(ContentSettingsPatternParserTest, ParsePatterns) {
       ::testing::Return(&builder));
   content_settings::PatternParser::Parse("www.youtube.com*", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
+
+  // Test for kDomainWildcardWithSuperfluousDot
+  EXPECT_CALL(builder, WithSchemeWildcard())
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, Invalid())
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  content_settings::PatternParser::Parse("[*.].youtube.com", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
 }
 
 TEST(ContentSettingsPatternParserTest, ParseFilePatterns) {
