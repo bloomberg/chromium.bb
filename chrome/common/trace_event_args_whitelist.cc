@@ -18,7 +18,8 @@ struct WhitelistEntry {
   const char* const* arg_name_filter;
 };
 
-const char* const kBaseAllowedArgs[] = {"blocking_type", nullptr};
+const char* const kScopedBlockingCallAllowedArgs[] = {"file_name",
+                                                      "function_name", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
@@ -35,7 +36,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
-    {"base", "*", kBaseAllowedArgs},
+    {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
