@@ -67,7 +67,8 @@ LayoutUnit LayoutBoxUtils::AvailableLogicalHeight(const LayoutBox& box,
 }
 
 NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
-    const LayoutBox& box) {
+    const LayoutBox& box,
+    const NGBoxFragmentBuilder* container_builder) {
   LayoutBoxModelObject* css_container = ToLayoutBoxModelObject(box.Container());
   LayoutBox* container = css_container->IsBox() ? ToLayoutBox(css_container)
                                                 : box.ContainingBlock();
@@ -96,10 +97,10 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
   Length logical_bottom;
 
   box.ComputeInlineStaticDistance(logical_left, logical_right, &box,
-                                  css_container,
-                                  containing_block_logical_width);
+                                  css_container, containing_block_logical_width,
+                                  container_builder);
   box.ComputeBlockStaticDistance(logical_top, logical_bottom, &box,
-                                 css_container);
+                                 css_container, container_builder);
 
   if (parent_style->IsLeftToRightDirection()) {
     if (!logical_left.IsAuto()) {
@@ -154,7 +155,9 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
         box.OverrideContainingBlockContentLogicalHeight() +
         border_scrollbar.BlockSum();
   } else {
-    container_border_box_logical_height = container->LogicalHeight();
+    container_border_box_logical_height = container_builder
+                                              ? container_builder->BlockSize()
+                                              : container->LogicalHeight();
   }
 
   // Then convert it to a physical top or left offset. Since we're already

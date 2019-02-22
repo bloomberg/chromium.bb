@@ -39,12 +39,12 @@ namespace blink {
 class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
+class NGBoxFragmentBuilder;
+class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
 class NGBreakToken;
 class NGLayoutResult;
 struct NGPhysicalBoxStrut;
-class ShapeOutsideInfo;
-
 struct PaintInfo;
 struct WebScrollIntoViewParams;
 
@@ -1651,13 +1651,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       Length& logical_top,
       Length& logical_bottom,
       const LayoutBox* child,
-      const LayoutBoxModelObject* container_block);
+      const LayoutBoxModelObject* container_block,
+      const NGBoxFragmentBuilder* = nullptr);
   static void ComputeInlineStaticDistance(
       Length& logical_left,
       Length& logical_right,
       const LayoutBox* child,
       const LayoutBoxModelObject* container_block,
-      LayoutUnit container_logical_width);
+      LayoutUnit container_logical_width,
+      const NGBoxFragmentBuilder* = nullptr);
   static void ComputeLogicalLeftPositionedOffset(
       LayoutUnit& logical_left_pos,
       const LayoutBox* child,

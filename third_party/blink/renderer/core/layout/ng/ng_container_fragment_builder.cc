@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
@@ -50,6 +51,25 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
                               : child_offset;
         break;
     }
+
+    // We can end up in a case where we need to account for the relative
+    // position of an element to correctly determine the static position of a
+    // descendant. E.g.
+    // <div id="fixed_container">
+    //   <div style="position: relative; top: 10px;">
+    //     <div style="position: fixed;"></div>
+    //   </div>
+    // </div>
+    // TODO(layout-dev): This code should eventually be removed once we handle
+    // relative positioned objects directly in the fragment tree.
+    if (LayoutBox* child_box =
+            ToLayoutBoxOrNull(child.PhysicalFragment()->GetLayoutObject())) {
+      top_left_offset +=
+          NGPhysicalOffset(child_box->OffsetForInFlowPosition())
+              .ConvertToLogical(GetWritingMode(), Direction(), NGPhysicalSize(),
+                                NGPhysicalSize());
+    }
+
     for (const NGOutOfFlowPositionedDescendant& descendant :
          out_of_flow_descendants) {
       oof_positioned_candidates_.push_back(
@@ -109,6 +129,23 @@ NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
   for (wtf_size_t i = 0; i < children_.size(); ++i) {
     if (children_[i]->GetLayoutObject() == child)
       return offsets_[i];
+
+    // TODO(layout-dev): ikilpatrick thinks we may need to traverse
+    // further than the initial line-box children for a nested inline
+    // container. We could not come up with a testcase, it would be
+    // something with split inlines, and nested oof/fixed descendants maybe.
+    if (children_[i]->IsLineBox()) {
+      const auto& line_box_fragment =
+          ToNGPhysicalLineBoxFragment(*children_[i]);
+      for (const auto& line_box_child : line_box_fragment.Children()) {
+        if (line_box_child->GetLayoutObject() == child) {
+          return offsets_[i] + line_box_child.Offset().ConvertToLogical(
+                                   GetWritingMode(), Direction(),
+                                   line_box_fragment.Size(),
+                                   line_box_child->Size());
+        }
+      }
+    }
   }
   NOTREACHED();
   return NGLogicalOffset();
