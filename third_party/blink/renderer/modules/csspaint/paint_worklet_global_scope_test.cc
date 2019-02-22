@@ -138,9 +138,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
       CSSPaintDefinition* definition = global_scope->FindDefinition("test");
       ASSERT_TRUE(definition);
-
-      EXPECT_TRUE(definition->ConstructorForTesting(isolate)->IsFunction());
-      EXPECT_TRUE(definition->PaintFunctionForTesting(isolate)->IsFunction());
     }
 
     {

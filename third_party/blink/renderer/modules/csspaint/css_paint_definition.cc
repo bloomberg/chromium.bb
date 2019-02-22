@@ -5,7 +5,10 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_paint_callback.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -14,7 +17,6 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_size.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
-#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
 namespace blink {
@@ -33,8 +35,8 @@ FloatSize GetSpecifiedSize(const FloatSize& size, float zoom) {
 
 CSSPaintDefinition* CSSPaintDefinition::Create(
     ScriptState* script_state,
-    v8::Local<v8::Function> constructor,
-    v8::Local<v8::Function> paint,
+    V8NoArgumentConstructor* constructor,
+    V8PaintCallback* paint,
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
@@ -46,15 +48,15 @@ CSSPaintDefinition* CSSPaintDefinition::Create(
 
 CSSPaintDefinition::CSSPaintDefinition(
     ScriptState* script_state,
-    v8::Local<v8::Function> constructor,
-    v8::Local<v8::Function> paint,
+    V8NoArgumentConstructor* constructor,
+    V8PaintCallback* paint,
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
     const PaintRenderingContext2DSettings* context_settings)
     : script_state_(script_state),
-      constructor_(script_state->GetIsolate(), constructor),
-      paint_(script_state->GetIsolate(), paint),
+      constructor_(constructor),
+      paint_(paint),
       did_call_constructor_(false),
       context_settings_(context_settings) {
   native_invalidation_properties_ = native_invalidation_properties;
@@ -77,14 +79,12 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   ScriptState::Scope scope(script_state_);
 
   MaybeCreatePaintInstance();
+  // We may have failed to create an instance, in which case produce an
+  // invalid image.
+  if (instance_.IsEmpty())
+    return nullptr;
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
-
-  // We may have failed to create an instance class, in which case produce an
-  // invalid image.
-  if (IsUndefinedOrNull(instance))
-    return nullptr;
 
   DCHECK(layout_object.GetNode());
   CanvasColorParams color_params;
@@ -102,31 +102,19 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
           layout_object.GetNode(), native_invalidation_properties_,
           custom_invalidation_properties_);
 
-  Vector<v8::Local<v8::Value>, 4> argv;
-  if (paint_arguments) {
-    argv = {
-        ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
-        ToV8(paint_size, script_state_->GetContext()->Global(), isolate),
-        ToV8(style_map, script_state_->GetContext()->Global(), isolate),
-        ToV8(*paint_arguments, script_state_->GetContext()->Global(), isolate)};
-  } else {
-    argv = {
-        ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
-        ToV8(paint_size, script_state_->GetContext()->Global(), isolate),
-        ToV8(style_map, script_state_->GetContext()->Global(), isolate)};
-  }
+  CSSStyleValueVector empty_paint_arguments;
+  if (!paint_arguments)
+    paint_arguments = &empty_paint_arguments;
 
-  v8::Local<v8::Function> paint = paint_.NewLocal(isolate);
-
-  v8::TryCatch block(isolate);
-  block.SetVerbose(true);
-
-  V8ScriptRunner::CallFunction(paint, ExecutionContext::From(script_state_),
-                               instance, argv.size(), argv.data(), isolate);
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
 
   // The paint function may have produced an error, in which case produce an
   // invalid image.
-  if (block.HasCaught()) {
+  if (paint_
+          ->Invoke(instance_.NewLocal(isolate), rendering_context, paint_size,
+                   style_map, *paint_arguments)
+          .IsNothing()) {
     return nullptr;
   }
 
@@ -137,20 +125,15 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
 void CSSPaintDefinition::MaybeCreatePaintInstance() {
   if (did_call_constructor_)
     return;
+  did_call_constructor_ = true;
 
   DCHECK(instance_.IsEmpty());
 
-  v8::Isolate* isolate = script_state_->GetIsolate();
-  v8::Local<v8::Function> constructor = constructor_.NewLocal(isolate);
-  DCHECK(!IsUndefinedOrNull(constructor));
+  ScriptValue paint_instance;
+  if (!constructor_->Construct().To(&paint_instance))
+    return;
 
-  v8::Local<v8::Value> paint_instance;
-  if (V8ScriptRunner::CallAsConstructor(
-          isolate, constructor, ExecutionContext::From(script_state_), 0, {})
-          .ToLocal(&paint_instance))
-    instance_.Set(isolate, paint_instance);
-
-  did_call_constructor_ = true;
+  instance_.Set(constructor_->GetIsolate(), paint_instance.V8Value());
 }
 
 void CSSPaintDefinition::Trace(Visitor* visitor) {

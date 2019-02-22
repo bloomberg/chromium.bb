@@ -17,6 +17,7 @@ namespace blink {
 
 class CSSPaintDefinition;
 class ExceptionState;
+class V8NoArgumentConstructor;
 class WorkerReportingProxy;
 
 class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
@@ -48,7 +49,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
 
   bool IsPaintWorkletGlobalScope() const final { return true; }
   void registerPaint(const String& name,
-                     const ScriptValue& constructor_value,
+                     V8NoArgumentConstructor* paint_ctor,
                      ExceptionState&);
 
   CSSPaintDefinition* FindDefinition(const String& name);
