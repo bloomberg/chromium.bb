@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,16 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.sync.ModelType;
 
 /**
- * A simple activity that allows Chrome to expose send tab to self as an
- * option in the share menu.
+ * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
  */
 public class SendTabToSelfShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
-        // TODO(tgupta): Hook up logic to the sync server here
+        Tab tab = triggeringActivity.getActivityTabProvider().getActivityTab();
+        SendTabToSelfAndroidBridge bridge = new SendTabToSelfAndroidBridge(tab.getProfile());
+        // TODO(tgupta): Get the real navigation time here rather than  bogus hard-coded one.
+        bridge.addEntry(tab.getUrl(), tab.getTitle(), 123l);
+        bridge.destroy();
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {
@@ -44,4 +47,3 @@ public class SendTabToSelfShareActivity extends ShareActivity {
         return featureEnabled && contentRequirementsMet && syncRequirementsMet;
     }
 }
-

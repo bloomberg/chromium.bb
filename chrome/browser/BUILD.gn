@@ -2478,6 +2478,8 @@ jumbo_split_static_library("browser") {
       "android/search_permissions/search_permissions_service.h",
       "android/seccomp_support_detector.cc",
       "android/seccomp_support_detector.h",
+      "android/send_tab_to_self/send_tab_to_self_android_bridge.cc",
+      "android/send_tab_to_self/send_tab_to_self_android_bridge.h",
       "android/service_tab_launcher.cc",
       "android/service_tab_launcher.h",
       "android/sessions/session_tab_helper_android.cc",
@@ -2699,6 +2701,7 @@ jumbo_split_static_library("browser") {
       "//components/omnibox/browser",
       "//components/payments/content/android",
       "//components/resources:components_resources",
+      "//components/send_tab_to_self",
       "//media/mojo/clients",
       "//media/mojo/interfaces:constants",
       "//rlz:rlz_utils",
@@ -5093,6 +5096,8 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
       "../android/java/src/org/chromium/chrome/browser/search_engines/TemplateUrl.java",
       "../android/java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java",
+      "../android/java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridge.java",
+      "../android/java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfEntry.java",
       "../android/java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
       "../android/java/src/org/chromium/chrome/browser/signin/AccountManagementScreenHelper.java",
       "../android/java/src/org/chromium/chrome/browser/signin/IdentityServicesProvider.java",
@@ -5485,6 +5490,7 @@ static_library("test_support") {
       "android/download/mock_download_controller.cc",
       "android/download/mock_download_controller.h",
     ]
+    deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {
     sources += [
       "chooser_controller/fake_bluetooth_chooser_controller.cc",

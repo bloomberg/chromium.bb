@@ -22,6 +22,7 @@ class SendTabToSelfLocal;
 // A tab that is being shared. The URL is a unique identifier for an entry, as
 // such it should not be empty and is the only thing considered when comparing
 // entries.
+// The java version of this class: SendTabToSelfEntry.java
 class SendTabToSelfEntry {
  public:
   // Creates a SendTabToSelf entry. |url| and |title| are the main fields of the
