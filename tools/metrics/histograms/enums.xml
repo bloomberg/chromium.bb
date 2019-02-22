@@ -43954,14 +43954,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Subframe navigation"/>
   <int value="3" label="Server Unavailable"/>
   <int value="4" label="Infobar hasn't been seen by the user and needs to be"/>
-  <int value="5" label="Network was not slow"/>
+  <int value="5" label="(DEPRECATED IN M74) Network was not slow"/>
   <int value="6" label="User opted out of this preview (pre-s13n only)"/>
   <int value="7" label="The user has blocked cookies for the original page"/>
-  <int value="8" label="ECT Unknown"/>
+  <int value="8" label="(DEPRECATED IN M74) ECT Unknown"/>
   <int value="9"
       label="Exceeded maximum number of navigation restarts or a redirect
              loop was detected"/>
-  <int value="10" label="Disallowed by PreviewsState"/>
+  <int value="10" label="(DEPRECATED IN M74) Disallowed by PreviewsState"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

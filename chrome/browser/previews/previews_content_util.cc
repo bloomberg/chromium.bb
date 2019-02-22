@@ -4,13 +4,151 @@
 
 #include "chrome/browser/previews/previews_content_util.h"
 
+#include <string>
+#include <vector>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
+#include "net/base/ip_address.h"
+#include "net/base/url_util.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace previews {
+
+bool IsPrivateDomain(const GURL& url) {
+  if (url.host().find(".") == base::StringPiece::npos)
+    return true;
+
+  // Allow localhost check to be skipped if needed, like in testing.
+  if (net::IsLocalhost(url))
+    return !previews::params::LitePagePreviewsTriggerOnLocalhost();
+
+  net::IPAddress ip_addr;
+  if (url.HostIsIPAddress() && ip_addr.AssignFromIPLiteral(url.host()) &&
+      !ip_addr.IsPubliclyRoutable()) {
+    return true;
+  }
+  return false;
+}
+
+bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
+  // This should only occur in unit tests, this behavior is tested in browser
+  // tests.
+  if (!navigation_handle)
+    return true;
+
+  const GURL& url = navigation_handle->GetURL();
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  auto* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  PreviewsLitePageNavigationThrottleManager* manager =
+      previews_service->previews_lite_page_decider();
+
+  std::vector<PreviewsLitePageNavigationThrottle::IneligibleReason>
+      ineligible_reasons;
+
+  if (!url.SchemeIs(url::kHttpsScheme)) {
+    ineligible_reasons.push_back(
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme);
+  }
+
+  if (manager->IsServerUnavailable()) {
+    ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                     IneligibleReason::kServerUnavailable);
+  }
+
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          .get();
+  ContentSetting setting;
+  GURL previews_url =
+      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(url);
+  cookie_settings->GetCookieSetting(previews_url, previews_url, nullptr,
+                                    &setting);
+  if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
+    ineligible_reasons.push_back(
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kCookiesBlocked);
+  }
+
+  // Record UMA.
+  for (PreviewsLitePageNavigationThrottle::IneligibleReason reason :
+       ineligible_reasons) {
+    PreviewsLitePageNavigationThrottle::LogIneligibleReason(reason);
+  }
+  if (!ineligible_reasons.empty())
+    return false;
+
+  // Check dynamic blacklists.
+  std::vector<PreviewsLitePageNavigationThrottle::BlacklistReason>
+      blacklist_reasons;
+
+  if (IsPrivateDomain(url)) {
+    blacklist_reasons.push_back(
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kNavigationToPrivateDomain);
+  }
+
+  std::vector<std::string> blacklisted_path_suffixes =
+      previews::params::LitePagePreviewsBlacklistedPathSuffixes();
+  for (const std::string& suffix : blacklisted_path_suffixes) {
+    if (base::EndsWith(url.path(), suffix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                      BlacklistReason::kPathSuffixBlacklisted);
+      break;
+    }
+  }
+
+  if (manager->HostBlacklistedFromBypass(url.host())) {
+    blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                    BlacklistReason::kHostBypassBlacklisted);
+  }
+
+  // Record UMA
+  for (PreviewsLitePageNavigationThrottle::BlacklistReason reason :
+       blacklist_reasons) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.BlacklistReasons",
+                              reason);
+  }
+
+  if (!blacklist_reasons.empty())
+    return false;
+
+  // This should always be at the end, but before the control group check.
+  if (manager->NeedsToNotifyUser()) {
+    manager->NotifyUser(web_contents);
+    PreviewsLitePageNavigationThrottle::LogIneligibleReason(
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen);
+    return false;
+  }
+
+  // This should always be last.
+  if (previews::params::IsInLitePageRedirectControl()) {
+    previews::PreviewsUserData::ServerLitePageInfo* info =
+        PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
+            navigation_handle, manager);
+    info->status = previews::ServerLitePageStatus::kControl;
+    return false;
+  }
+
+  return true;
+}
 
 bool HasEnabledPreviews(content::PreviewsState previews_state) {
   return previews_state != content::PREVIEWS_UNSPECIFIED &&
@@ -24,8 +162,17 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     bool is_reload,
     bool is_redirect,
     bool is_data_saver_user,
-    previews::PreviewsDecider* previews_decider) {
+    previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+
+  // Either this is a navigation to the lite page via the redirect mechanism and
+  // only Lite Page redirect should be served, or this is a reload in which case
+  // the Lite Page mechanism should redirect to the original URL. Either way,
+  // set the allowed PreviewsState.
+  if (IsLitePageRedirectPreviewURL(url)) {
+    return previews_state = content::LITE_PAGE_REDIRECT_ON;
+  }
 
   // Record whether the hint cache has a matching entry for this pre-commit URL.
   previews_decider->LogHintCacheMatch(url, false /* is_committed */);
@@ -77,15 +224,11 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     has_page_hints = previews_decider->LoadPageHints(url);
   }
 
-  // Note: this is for the beginning of navigation/redirect so we should not
-  // check for https here (since an http request may redirect to https).
-  // TODO(robertogden): Add other eligibility reasons and log scheme/other
-  // previews taking precedence, etc. https://crbug.com/921755
-  if (url.SchemeIsCryptographic() &&
-      (!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
+  if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
       previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
-          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
+          previews::PreviewsType::LITE_PAGE_REDIRECT) &&
+      ShouldAllowRedirectPreview(navigation_handle)) {
     previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
