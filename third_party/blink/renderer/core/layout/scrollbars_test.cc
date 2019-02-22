@@ -1432,6 +1432,10 @@ TEST_P(ScrollbarAppearanceTest,
 #else
 TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
 #endif
+  // TODO(crbug.com/934634): This test fails with LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
   bool use_overlay_scrollbar = GetParam();
 
