@@ -4800,11 +4800,13 @@ void Element::CloneAttributesFrom(const Element& other) {
   // can share it between both elements.
   // We can only do this if there are no presentation attributes and sharing the
   // data won't result in different case sensitivity of class or id.
-  if (other.element_data_->IsUnique() &&
-      !owner_documents_have_different_case_sensitivity &&
-      !other.element_data_->PresentationAttributeStyle())
+  auto* unique_element_data =
+      DynamicTo<UniqueElementData>(other.element_data_.Get());
+  if (unique_element_data && !owner_documents_have_different_case_sensitivity &&
+      !other.element_data_->PresentationAttributeStyle()) {
     const_cast<Element&>(other).element_data_ =
-        ToUniqueElementData(other.element_data_)->MakeShareableCopy();
+        unique_element_data->MakeShareableCopy();
+  }
 
   if (!other.element_data_->IsUnique() &&
       !owner_documents_have_different_case_sensitivity &&
@@ -4828,8 +4830,9 @@ void Element::CreateUniqueElementData() {
   if (!element_data_) {
     element_data_ = UniqueElementData::Create();
   } else {
-    DCHECK(!element_data_->IsUnique());
-    element_data_ = ToShareableElementData(element_data_)->MakeUniqueCopy();
+    DCHECK(!IsA<UniqueElementData>(element_data_.Get()));
+    element_data_ =
+        To<ShareableElementData>(element_data_.Get())->MakeUniqueCopy();
   }
 }
 

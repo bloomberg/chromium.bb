@@ -79,16 +79,17 @@ ElementData::ElementData(const ElementData& other, bool is_unique)
 }
 
 void ElementData::FinalizeGarbageCollectedObject() {
-  if (is_unique_)
-    ToUniqueElementData(this)->~UniqueElementData();
+  if (auto* unique_element_data = DynamicTo<UniqueElementData>(this))
+    unique_element_data->~UniqueElementData();
   else
-    ToShareableElementData(this)->~ShareableElementData();
+    To<ShareableElementData>(this)->~ShareableElementData();
 }
 
 UniqueElementData* ElementData::MakeUniqueCopy() const {
-  if (IsUnique())
-    return MakeGarbageCollected<UniqueElementData>(ToUniqueElementData(*this));
-  return MakeGarbageCollected<UniqueElementData>(ToShareableElementData(*this));
+  if (auto* unique_element_data = DynamicTo<UniqueElementData>(this))
+    return MakeGarbageCollected<UniqueElementData>(*unique_element_data);
+  return MakeGarbageCollected<UniqueElementData>(
+      To<ShareableElementData>(*this));
 }
 
 bool ElementData::IsEquivalent(const ElementData* other) const {
@@ -109,10 +110,10 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
 }
 
 void ElementData::Trace(Visitor* visitor) {
-  if (is_unique_)
-    ToUniqueElementData(this)->TraceAfterDispatch(visitor);
+  if (auto* unique_element_data = DynamicTo<UniqueElementData>(this))
+    unique_element_data->TraceAfterDispatch(visitor);
   else
-    ToShareableElementData(this)->TraceAfterDispatch(visitor);
+    To<ShareableElementData>(this)->TraceAfterDispatch(visitor);
 }
 
 void ElementData::TraceAfterDispatch(blink::Visitor* visitor) {
