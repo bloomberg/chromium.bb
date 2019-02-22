@@ -28,9 +28,9 @@ std::string GetBadgeString(base::Optional<uint64_t> badge_content) {
   if (!badge_content)
     return "•";
 
-  if (badge_content > 99u) {
+  if (badge_content > kMaxBadgeContent) {
     return base::UTF16ToUTF8(l10n_util::GetStringFUTF16(
-        IDS_SATURATED_BADGE_CONTENT, base::FormatNumber(99)));
+        IDS_SATURATED_BADGE_CONTENT, base::FormatNumber(kMaxBadgeContent)));
   }
 
   return base::UTF16ToUTF8(base::FormatNumber(badge_content.value()));
