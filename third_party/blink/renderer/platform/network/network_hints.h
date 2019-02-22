@@ -27,7 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
 
-#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"

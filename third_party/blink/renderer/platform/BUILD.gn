@@ -485,7 +485,6 @@ jumbo_component("platform") {
     "content_setting_callbacks.cc",
     "content_setting_callbacks.h",
     "cpu/mips/common_macros_msa.h",
-    "cross_origin_attribute_value.h",
     "cross_thread_copier.cc",
     "cross_thread_copier.h",
     "cross_thread_functional.h",
