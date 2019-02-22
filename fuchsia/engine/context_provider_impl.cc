@@ -87,17 +87,36 @@ void ContextProviderImpl::SetLaunchCallbackForTests(
 void ContextProviderImpl::Create(
     chromium::web::CreateContextParams params,
     ::fidl::InterfaceRequest<chromium::web::Context> context_request) {
-  DCHECK(context_request.is_valid());
+  chromium::web::CreateContextParams2 convert_params;
 
-  base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
+  convert_params.set_service_directory(std::move(params.service_directory));
+  if (params.data_directory) {
+    convert_params.set_data_directory(std::move(params.data_directory));
+  }
+  Create2(std::move(convert_params), std::move(context_request));
+}
+
+void ContextProviderImpl::Create2(
+    chromium::web::CreateContextParams2 params,
+    ::fidl::InterfaceRequest<chromium::web::Context> context_request) {
+  if (!context_request.is_valid()) {
+    // TODO(crbug.com/934539): Add type epitaph.
+    DLOG(WARNING) << "Invalid |context_request|.";
+    return;
+  }
+  if (!params.has_service_directory()) {
+    // TODO(crbug.com/934539): Add type epitaph.
+    DLOG(WARNING)
+        << "Missing argument |service_directory| in CreateContextParams2.";
+    return;
+  }
 
   base::LaunchOptions launch_options;
-
   service_manager::SandboxPolicyFuchsia sandbox_policy;
   sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
   sandbox_policy.SetServiceDirectory(
       fidl::InterfaceHandle<::fuchsia::io::Directory>(
-          std::move(params.service_directory)));
+          std::move(*params.mutable_service_directory())));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
   if (use_shared_tmp_)
@@ -110,24 +129,36 @@ void ContextProviderImpl::Create(
       {kContextRequestHandleId, context_handle.get()});
 
   // Bind |data_directory| to /data directory, if provided.
-  if (params.data_directory) {
-    if (!IsValidDirectory(params.data_directory.get()))
+  if (params.has_data_directory()) {
+    if (!IsValidDirectory(params.data_directory()->get())) {
+      // TODO(crbug.com/934539): Add type epitaph.
+      DLOG(WARNING)
+          << "Invalid argument |data_directory| in CreateContextParams2.";
       return;
+    }
 
     base::FilePath data_path;
-    CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_path));
-    launch_options.paths_to_transfer.push_back(
-        base::PathToTransfer{data_path, params.data_directory.release()});
+    if (!base::PathService::Get(base::DIR_APP_DATA, &data_path)) {
+      // TODO(crbug.com/934539): Add type epitaph.
+      DLOG(WARNING) << "Failed to get data directory service path.";
+      return;
+    }
+    launch_options.paths_to_transfer.push_back(base::PathToTransfer{
+        data_path, params.mutable_data_directory()->release()});
   }
 
   // Isolate the child Context processes by containing them within their own
   // respective jobs.
   zx::job job;
   zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
-  ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
+  if (status != ZX_OK) {
+    ZX_LOG(FATAL, status) << "zx_job_create";
+    return;
+  }
   launch_options.job_handle = job.get();
 
-  ignore_result(launch_.Run(std::move(launch_command), launch_options));
+  ignore_result(launch_.Run(std::move(*base::CommandLine::ForCurrentProcess()),
+                            launch_options));
 
   ignore_result(context_handle.release());
 }

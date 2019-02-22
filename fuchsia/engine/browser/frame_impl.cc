@@ -447,18 +447,30 @@ void FrameImpl::MaybeSendNavigationEvent() {
 
 void FrameImpl::LoadUrl(std::string url,
                         std::unique_ptr<chromium::web::LoadUrlParams> params) {
+  chromium::web::LoadUrlParams2 converted_params;
+  if (params) {
+    converted_params.set_type(params->type);
+    converted_params.set_referrer(std::move(params->referrer));
+    converted_params.set_user_activated(params->user_activated);
+    converted_params.set_headers(std::move(params->headers));
+  }
+  LoadUrl2(std::move(url), std::move(converted_params));
+}
+
+void FrameImpl::LoadUrl2(std::string url,
+                         chromium::web::LoadUrlParams2 params) {
   GURL validated_url(url);
   if (!validated_url.is_valid()) {
+    // TODO(crbug.com/934539): Add type epitaph.
     DLOG(WARNING) << "Invalid URL: " << url;
     return;
   }
 
   content::NavigationController::LoadURLParams params_converted(validated_url);
-
-  if (params && !params->headers.empty()) {
+  if (params.has_headers()) {
     std::vector<base::StringPiece> extra_headers;
-    extra_headers.reserve(params->headers.size());
-    for (const auto& header : params->headers) {
+    extra_headers.reserve(params.headers()->size());
+    for (const auto& header : *params.headers()) {
       extra_headers.push_back(base::StringPiece(
           reinterpret_cast<const char*>(header.data()), header.size()));
     }
@@ -470,9 +482,11 @@ void FrameImpl::LoadUrl(std::string url,
 
   params_converted.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  params_converted.was_activated = (params && params->user_activated)
-                                       ? content::WasActivatedOption::kYes
-                                       : content::WasActivatedOption::kNo;
+  if (params.has_user_activated() && params.user_activated()) {
+    params_converted.was_activated = content::WasActivatedOption::kYes;
+  } else {
+    params_converted.was_activated = content::WasActivatedOption::kNo;
+  }
   web_contents_->GetController().LoadURLWithParams(params_converted);
 }
 
