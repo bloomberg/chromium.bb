@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
@@ -27,7 +28,10 @@ import android.widget.FrameLayout;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwDrawFnImpl;
 import org.chromium.android_webview.shell.DrawFn;
+import org.chromium.base.Callback;
 import org.chromium.content_public.browser.WebContents;
+
+import java.nio.ByteBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -55,10 +59,12 @@ public class AwTestContainerView extends FrameLayout {
         // are protected by it.
         private final Object mSyncLock = new Object();
         private int mFunctor;
+        private int mLastDrawnFunctor;
         private boolean mSyncDone;
         private boolean mPendingDestroy;
         private int mLastScrollX;
         private int mLastScrollY;
+        private Callback<int[]> mQuadrantReadbackCallback;
 
         // Only used by drawGL on render thread to store the value of scroll offsets at most recent
         // sync for subsequent draws.
@@ -80,7 +86,7 @@ public class AwTestContainerView extends FrameLayout {
 
                 @Override
                 public void onDrawFrame(GL10 gl) {
-                    HardwareView.this.onDrawFrame(mWidth, mHeight);
+                    HardwareView.this.onDrawFrame(gl, mWidth, mHeight);
                 }
 
                 @Override
@@ -96,6 +102,14 @@ public class AwTestContainerView extends FrameLayout {
             });
 
             setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        }
+
+        public void readbackQuadrantColors(Callback<int[]> callback) {
+            synchronized (mSyncLock) {
+                assert mQuadrantReadbackCallback == null;
+                mQuadrantReadbackCallback = callback;
+            }
+            super.requestRender();
         }
 
         public boolean isReadyToRender() {
@@ -169,31 +183,68 @@ public class AwTestContainerView extends FrameLayout {
             }
         }
 
-        public void onDrawFrame(int width, int height) {
+        public void onDrawFrame(GL10 gl, int width, int height) {
             int functor;
             int scrollX;
             int scrollY;
             synchronized (mSyncLock) {
-                functor = mFunctor;
-                mFunctor = 0;
                 scrollX = mLastScrollX;
                 scrollY = mLastScrollY;
 
-                if (functor != 0) {
+                if (mFunctor != 0) {
                     assert !mSyncDone;
+                    functor = mFunctor;
+                    mLastDrawnFunctor = mFunctor;
+                    mFunctor = 0;
                     DrawFn.sync(functor, false);
                     mSyncDone = true;
                     mSyncLock.notifyAll();
-                } else if (mPendingDestroy) {
-                    DrawFn.destroyReleased();
-                    mPendingDestroy = false;
-                    mSyncLock.notifyAll();
-                    return;
+                } else {
+                    functor = mLastDrawnFunctor;
+                    if (mPendingDestroy) {
+                        DrawFn.destroyReleased();
+                        mPendingDestroy = false;
+                        mLastDrawnFunctor = 0;
+                        mSyncLock.notifyAll();
+                        return;
+                    }
                 }
             }
             if (functor != 0) {
                 DrawFn.drawGL(functor, width, height, scrollX, scrollY);
+
+                Callback<int[]> quadrantReadbackCallback = null;
+                synchronized (mSyncLock) {
+                    if (mQuadrantReadbackCallback != null) {
+                        quadrantReadbackCallback = mQuadrantReadbackCallback;
+                        mQuadrantReadbackCallback = null;
+                    }
+                }
+                if (quadrantReadbackCallback != null) {
+                    int quadrantColors[] = new int[4];
+                    int quarterWidth = width / 4;
+                    int quarterHeight = height / 4;
+                    ByteBuffer buffer = ByteBuffer.allocate(4);
+                    gl.glReadPixels(quarterWidth, quarterHeight * 3, 1, 1, GL10.GL_RGBA,
+                            GL10.GL_UNSIGNED_BYTE, buffer);
+                    quadrantColors[0] = readbackToColor(buffer);
+                    gl.glReadPixels(quarterWidth * 3, quarterHeight * 3, 1, 1, GL10.GL_RGBA,
+                            GL10.GL_UNSIGNED_BYTE, buffer);
+                    quadrantColors[1] = readbackToColor(buffer);
+                    gl.glReadPixels(quarterWidth, quarterHeight, 1, 1, GL10.GL_RGBA,
+                            GL10.GL_UNSIGNED_BYTE, buffer);
+                    quadrantColors[2] = readbackToColor(buffer);
+                    gl.glReadPixels(quarterWidth * 3, quarterHeight, 1, 1, GL10.GL_RGBA,
+                            GL10.GL_UNSIGNED_BYTE, buffer);
+                    quadrantColors[3] = readbackToColor(buffer);
+                    quadrantReadbackCallback.onResult(quadrantColors);
+                }
             }
+        }
+
+        private int readbackToColor(ByteBuffer buffer) {
+            return Color.argb(buffer.get(3) & 0xff, buffer.get(0) & 0xff, buffer.get(1) & 0xff,
+                    buffer.get(2) & 0xff);
         }
     }
 
@@ -232,6 +283,14 @@ public class AwTestContainerView extends FrameLayout {
 
     public boolean isBackedByHardwareView() {
         return mHardwareView != null;
+    }
+
+    /**
+     * Use glReadPixels to get 4 pixels from center of 4 quadrants. Result is in row-major order.
+     */
+    public void readbackQuadrantColors(Callback<int[]> callback) {
+        assert isBackedByHardwareView();
+        mHardwareView.readbackQuadrantColors(callback);
     }
 
     public WebContents getWebContents() {
