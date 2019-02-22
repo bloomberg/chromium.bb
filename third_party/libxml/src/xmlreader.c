@@ -32,6 +32,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
 #include <libxml/parserInternals.h>
+
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/relaxng.h>
 #include <libxml/xmlschemas.h>
@@ -238,6 +239,8 @@ xmlFreeID(xmlIDPtr id) {
 
     if (id->value != NULL)
 	DICT_FREE(id->value)
+    if (id->name != NULL)
+	DICT_FREE(id->name)
     xmlFree(id);
 }
 
@@ -271,6 +274,7 @@ xmlTextReaderRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
 	return(-1);
     }
     id->name = attr->name;
+    attr->name = NULL;
     id->attr = NULL;
     return(0);
 }
@@ -1112,11 +1116,11 @@ xmlTextReaderValidateEntity(xmlTextReaderPtr reader) {
 		continue;
 	    } else {
 		/*
-		 * The error has probably be raised already.
+		 * The error has probably been raised already.
 		 */
 		if (node == oldnode)
 		    break;
-		node = node->next;
+                goto skip_children;
 	    }
 #ifdef LIBXML_REGEXP_ENABLED
 	} else if (node->type == XML_ELEMENT_NODE) {
@@ -1138,6 +1142,7 @@ xmlTextReaderValidateEntity(xmlTextReaderPtr reader) {
 	} else if (node->type == XML_ELEMENT_NODE) {
 	    xmlTextReaderValidatePop(reader);
 	}
+skip_children:
 	if (node->next != NULL) {
 	    node = node->next;
 	    continue;
@@ -1711,10 +1716,11 @@ xmlTextReaderReadInnerXml(xmlTextReaderPtr reader ATTRIBUTE_UNUSED)
     if (xmlTextReaderExpand(reader) == NULL) {
         return NULL;
     }
-    doc = reader->doc;
+    doc = reader->node->doc;
     buff = xmlBufferCreate();
     for (cur_node = reader->node->children; cur_node != NULL;
          cur_node = cur_node->next) {
+        /* XXX: Why is the node copied? */
         node = xmlDocCopyNode(cur_node, doc, 1);
         buff2 = xmlBufferCreate();
         if (xmlNodeDump(buff2, doc, node, 0, 0) == -1) {
@@ -1755,10 +1761,11 @@ xmlTextReaderReadOuterXml(xmlTextReaderPtr reader ATTRIBUTE_UNUSED)
     xmlDocPtr doc;
 
     node = reader->node;
-    doc = reader->doc;
+    doc = node->doc;
     if (xmlTextReaderExpand(reader) == NULL) {
         return NULL;
     }
+    /* XXX: Why is the node copied? */
 	if (node->type == XML_DTD_NODE) {
 		node = (xmlNodePtr) xmlCopyDtd((xmlDtdPtr) node);
 	} else {
@@ -1917,12 +1924,9 @@ xmlTextReaderNextTree(xmlTextReaderPtr reader)
 
 	/* if reader->node->next is NULL mean no subtree for current node,
 	so need to move to sibling of parent node if present */
-        if ((reader->node->type == XML_ELEMENT_NODE) ||
-            (reader->node->type == XML_ATTRIBUTE_NODE)) {
-            reader->state = XML_TEXTREADER_BACKTRACK;
-	    /* This will move to parent if present */
-            xmlTextReaderRead(reader);
-        }
+	reader->state = XML_TEXTREADER_BACKTRACK;
+	/* This will move to parent if present */
+	xmlTextReaderRead(reader);
     }
 
     if (reader->node->next != 0) {
@@ -2263,16 +2267,20 @@ xmlFreeTextReader(xmlTextReaderPtr reader) {
     if (reader->ctxt != NULL) {
         if (reader->dict == reader->ctxt->dict)
 	    reader->dict = NULL;
+#ifdef LIBXML_REGEXP_ENABLED
+	if ((reader->ctxt->vctxt.vstateTab != NULL) &&
+	    (reader->ctxt->vctxt.vstateMax > 0)){
+            while (reader->ctxt->vctxt.vstateNr > 0)
+                xmlValidatePopElement(&reader->ctxt->vctxt, NULL, NULL, NULL);
+	    xmlFree(reader->ctxt->vctxt.vstateTab);
+	    reader->ctxt->vctxt.vstateTab = NULL;
+	    reader->ctxt->vctxt.vstateMax = 0;
+	}
+#endif
 	if (reader->ctxt->myDoc != NULL) {
 	    if (reader->preserve == 0)
 		xmlTextReaderFreeDoc(reader, reader->ctxt->myDoc);
 	    reader->ctxt->myDoc = NULL;
-	}
-	if ((reader->ctxt->vctxt.vstateTab != NULL) &&
-	    (reader->ctxt->vctxt.vstateMax > 0)){
-	    xmlFree(reader->ctxt->vctxt.vstateTab);
-	    reader->ctxt->vctxt.vstateTab = NULL;
-	    reader->ctxt->vctxt.vstateMax = 0;
 	}
 	if (reader->allocs & XML_TEXTREADER_CTXT)
 	    xmlFreeParserCtxt(reader->ctxt);
@@ -3006,7 +3014,7 @@ xmlTextReaderAttributeCount(xmlTextReaderPtr reader) {
  * Reference:
  * http://www.gnu.org/software/dotgnu/pnetlib-doc/System/Xml/XmlNodeType.html
  *
- * Returns the xmlNodeType of the current node or -1 in case of error
+ * Returns the xmlReaderTypes of the current node or -1 in case of error
  */
 int
 xmlTextReaderNodeType(xmlTextReaderPtr reader) {

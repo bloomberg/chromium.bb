@@ -7015,7 +7015,7 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
      */
     if (NXT(1) == '#') {
 	int i = 0;
-	xmlChar out[10];
+	xmlChar out[16];
 	int hex = NXT(2);
 	int value = xmlParseCharRef(ctxt);
 
@@ -9264,7 +9264,8 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
                 xmlErrMemory(ctxt, "dictionary allocation failure");
                 if ((attvalue != NULL) && (alloc != 0))
                     xmlFree(attvalue);
-                return(NULL);
+                localname = NULL;
+                goto done;
             }
             if (*URL != 0) {
                 uri = xmlParseURI((const char *) URL);
@@ -9514,7 +9515,8 @@ next_attr:
 
 		    if ((atts == NULL) || (nbatts + 5 > maxatts)) {
 			if (xmlCtxtGrowAttrs(ctxt, nbatts + 5) < 0) {
-			    return(NULL);
+                            localname = NULL;
+                            goto done;
 			}
 			maxatts = ctxt->maxatts;
 			atts = ctxt->atts;
@@ -12479,7 +12481,12 @@ xmlHaltParser(xmlParserCtxtPtr ctxt) {
 	    ctxt->input->free((xmlChar *) ctxt->input->base);
 	    ctxt->input->free = NULL;
 	}
+        if (ctxt->input->buf != NULL) {
+            xmlFreeParserInputBuffer(ctxt->input->buf);
+            ctxt->input->buf = NULL;
+        }
 	ctxt->input->cur = BAD_CAST"";
+        ctxt->input->length = 0;
 	ctxt->input->base = ctxt->input->cur;
         ctxt->input->end = ctxt->input->cur;
     }

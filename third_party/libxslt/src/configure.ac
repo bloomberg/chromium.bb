@@ -3,7 +3,7 @@ AC_PREREQ(2.63)
 
 m4_define([MAJOR_VERSION], [1])
 m4_define([MINOR_VERSION], [1])
-m4_define([MICRO_VERSION], [32])
+m4_define([MICRO_VERSION], [33])
 
 AC_INIT([libxslt], [MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
 AC_CONFIG_SRCDIR([libxslt/xslt.c])
@@ -579,22 +579,11 @@ expanded_libdir=$(
 LIBXSLT_DEFAULT_PLUGINS_PATH="$expanded_libdir/libxslt-plugins"
 AC_SUBST(LIBXSLT_DEFAULT_PLUGINS_PATH)
 
-WIN32_EXTRA_LIBADD=
-WIN32_EXTRA_LDFLAGS=
 case "$host" in
- *-*-cygwin*)
- WIN32_EXTRA_LDFLAGS="-no-undefined"
- ;;
- *-*-mingw*)
- WIN32_EXTRA_LIBADD="-lwsock32"
- WIN32_EXTRA_LDFLAGS="-no-undefined"
- AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
- AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
- AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
+ *-*-cygwin*|*-*-mingw*)
+ LDFLAGS="$LDFLAGS -no-undefined"
  ;;
 esac
-AC_SUBST(WIN32_EXTRA_LIBADD)
-AC_SUBST(WIN32_EXTRA_LDFLAGS)
 
 
 AC_SUBST(XSLTPROCDV)
@@ -670,7 +659,6 @@ tests/exslt/sets/Makefile
 tests/exslt/strings/Makefile
 tests/exslt/date/Makefile
 tests/exslt/dynamic/Makefile
-tests/exslt/crypto/Makefile
 tests/plugins/Makefile
 doc/Makefile
 xslt-config

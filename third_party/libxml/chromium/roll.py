@@ -28,13 +28,10 @@ import tempfile
 # Prerequisites:
 #
 # 1. Check out Chromium somewhere on Linux, Mac and Windows.
-# 2. On each machine, add the experimental remote named 'wip':
-#    git remote add -f wip \
-#        https://chromium.googlesource.com/experimental/chromium/src
-# 3. On Linux:
+# 2. On Linux:
 #    a. sudo apt-get install libicu-dev
-#    b. git clone git://git.gnome.org/libxml2 somewhere
-# 4. On Mac, install these MacPorts:
+#    b. git clone https://github.com/GNOME/libxml2.git somewhere
+# 3. On Mac, install these MacPorts:
 #    autoconf automake libtool pkgconfig icu
 #
 # Procedure:
@@ -54,22 +51,19 @@ import tempfile
 #    head; modify the patch files, this script, and
 #    README.chromium; then commit the result and run it again.
 #
-#    b. git push -f wip HEAD:refs/wip/$USER/roll_libxml
+#    b. Upload a CL, but do not Start Review.
 #
 # 2. On Windows, in the Chromium src directory:
-#    a. git fetch wip refs/wip/$USER/roll_libxml
-#    b. git checkout FETCH_HEAD
-#    c. third_party\libxml\chromium\roll.py --win32
-#    d. git push -f wip HEAD:refs/wip/$USER/roll_libxml
+#    a. git cl patch <Gerrit Issue ID>
+#    b. third_party\libxml\chromium\roll.py --win32
+#    c. git cl upload
 #
 # 3. On Mac, in the Chromium src directory:
-#    a. git fetch wip refs/wip/$USER/roll_libxml
-#    b. git checkout -b roll_libxml_nnnn FETCH_HEAD
-#    c. git branch --set-upstream-to origin/master
-#    d. third_party/libxml/chromium/roll.py --mac
-#    e. Make and commit any final changes to README.chromium, BUILD.gn, etc.
-#    f. Complete the code review process as usual: git cl upload -d;
-#       git cl try-results; etc.
+#    a. git cl patch <Gerrit Issue ID>
+#    b. third_party/libxml/chromium/roll.py --mac
+#    c. Make and commit any final changes to README.chromium, BUILD.gn, etc.
+#    d. git cl upload
+#    e. Complete the review as usual
 
 PATCHES = [
     'chromium-issue-599427.patch',
