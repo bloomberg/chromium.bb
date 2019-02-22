@@ -548,6 +548,11 @@
     // The source of the name.
     NameFromType? nameFrom;
 
+    // The image annotation for image nodes, which may be a human-readable
+    // string that is the contextualized annotation or a status string related
+    // to annotations.
+    DOMString? imageAnnotation;
+
     // The value for this node: for example the <code>value</code> attribute of
     // an <code>&lt;input&gt; element.
     DOMString? value;

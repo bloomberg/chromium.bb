@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "content/app/strings/grit/content_strings.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -38,6 +39,7 @@
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace extensions {
@@ -920,6 +922,35 @@ void AutomationInternalCustomBindings::AddRoutes() {
             node->data().GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
         std::string name_from_str = ui::ToString(name_from);
         result.Set(v8::String::NewFromUtf8(isolate, name_from_str.c_str(),
+                                           v8::NewStringType::kNormal)
+                       .ToLocalChecked());
+      });
+  RouteNodeIDFunction(
+      "GetImageAnnotation",
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::string status_string;
+        auto status = node->data().GetImageAnnotationStatus();
+        switch (status) {
+          case ax::mojom::ImageAnnotationStatus::kNone:
+          case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+            break;
+
+          case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+          case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+          case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+          case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+          case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+            status_string = GetLocalizedStringForImageAnnotationStatus(status);
+            break;
+          case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+            status_string = node->GetStringAttribute(
+                ax::mojom::StringAttribute::kImageAnnotation);
+            break;
+        }
+        if (status_string.empty())
+          return;
+        result.Set(v8::String::NewFromUtf8(isolate, status_string.c_str(),
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
@@ -1861,6 +1892,37 @@ void AutomationInternalCustomBindings::SendNodesRemovedEvent(
 
   bindings_system_->DispatchEventInContext("automationInternal.onNodesRemoved",
                                            &args, nullptr, context());
+}
+
+std::string
+AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
+    ax::mojom::ImageAnnotationStatus status) const {
+  int message_id = 0;
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+      message_id = IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION;
+      break;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+      message_id = IDS_AX_IMAGE_ANNOTATION_PENDING;
+      break;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+      message_id = IDS_AX_IMAGE_ANNOTATION_EMPTY;
+      break;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+      message_id = IDS_AX_IMAGE_ANNOTATION_ADULT;
+      break;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      message_id = IDS_AX_IMAGE_ANNOTATION_PROCESS_FAILED;
+      break;
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      return std::string();
+  }
+
+  DCHECK(message_id);
+
+  return l10n_util::GetStringUTF8(message_id);
 }
 
 }  // namespace extensions
