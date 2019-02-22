@@ -310,7 +310,7 @@ TEST_F(MixerTest, RankerIsDisabledWithFlag) {
   CreateMixer(false);
 
   for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmnibox);
+    Train("omnibox2", RankingItemType::kOmniboxGeneric);
 
   app_provider()->set_count(4);
   app_provider()->set_small_relevance_range();
@@ -327,7 +327,7 @@ TEST_F(MixerTest, RankerImprovesScores) {
   CreateMixer(true, {{"boost_coefficient", "10.0"}});
 
   for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmnibox);
+    Train("omnibox2", RankingItemType::kOmniboxGeneric);
 
   app_provider()->set_count(4);
   app_provider()->set_small_relevance_range();

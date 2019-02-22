@@ -17,8 +17,14 @@ enum class RankingItemType {
   kIgnored,
   kFile,
   kApp,
-  kOmnibox,
-  kArcAppShortcut
+  kOmniboxGeneric,
+  kArcAppShortcut,
+  kOmniboxBookmark,
+  kOmniboxDeprecated,
+  kOmniboxDocument,
+  kOmniboxHistory,
+  kOmniboxNavSuggest,
+  kOmniboxSearch
 };
 
 // Convert a |ChromeSearchResult| into its |RankingItemType|.
