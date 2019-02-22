@@ -55,7 +55,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // will get laid out; any additional ones will be stored as out-of-flow
   // descendants in the builder for use via
   // LayoutResult::OutOfFlowPositionedDescendants.
-  void Run(const LayoutBox* only_layout = nullptr);
+  void Run(LayoutBox* only_layout = nullptr);
 
  private:
   // Information needed to position descendant within a containing block.
