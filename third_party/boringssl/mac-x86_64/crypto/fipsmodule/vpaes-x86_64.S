@@ -13,21 +13,21 @@
 #endif
 .text	
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-##
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_encrypt_core:
@@ -115,11 +115,11 @@ L$enc_entry:
 
 
 
-##
-#
-##
-#
-##
+
+
+
+
+
 
 .p2align	4
 _vpaes_decrypt_core:
@@ -149,9 +149,9 @@ _vpaes_decrypt_core:
 
 .p2align	4
 L$dec_loop:
-##
-#
-##
+
+
+
 	movdqa	-32(%r10),%xmm4
 	movdqa	-16(%r10),%xmm1
 .byte	102,15,56,0,226
@@ -223,11 +223,11 @@ L$dec_entry:
 
 
 
-########################################################
-#
-#
-#
-########################################################
+
+
+
+
+
 
 .p2align	4
 _vpaes_schedule_core:
@@ -268,14 +268,14 @@ L$schedule_go:
 	je	L$schedule_192
 
 
-##
-#
-##
-#
-##
-#
-#
-##
+
+
+
+
+
+
+
+
 L$schedule_128:
 	movl	$10,%esi
 
@@ -286,21 +286,21 @@ L$oop_schedule_128:
 	call	_vpaes_schedule_mangle
 	jmp	L$oop_schedule_128
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .p2align	4
 L$schedule_192:
 	movdqu	8(%rdi),%xmm0
@@ -323,16 +323,16 @@ L$oop_schedule_192:
 	call	_vpaes_schedule_192_smear
 	jmp	L$oop_schedule_192
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
 .p2align	4
 L$schedule_256:
 	movdqu	16(%rdi),%xmm0
@@ -359,16 +359,16 @@ L$oop_schedule_256:
 	jmp	L$oop_schedule_256
 
 
-##
-#
-##
-#
-#
-#
-#
-##
-#
-##
+
+
+
+
+
+
+
+
+
+
 .p2align	4
 L$schedule_mangle_last:
 
@@ -401,20 +401,20 @@ L$schedule_mangle_last_dec:
 
 
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_schedule_192_smear:
@@ -430,24 +430,24 @@ _vpaes_schedule_192_smear:
 
 
 
-##
-#
-##
-#
-##
-#
-#
-#
-##
-#
-#
-##
-#
-#
-##
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_schedule_round:
@@ -508,15 +508,15 @@ _vpaes_schedule_low_round:
 
 
 
-##
-#
-##
-#
-##
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_schedule_transform:
@@ -534,29 +534,29 @@ _vpaes_schedule_transform:
 
 
 
-##
-#
-##
-#
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-#
-#
-##
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_schedule_mangle:
@@ -628,9 +628,9 @@ L$schedule_mangle_both:
 
 
 
-#
 
-#
+
+
 .globl	_vpaes_set_encrypt_key
 .private_extern _vpaes_set_encrypt_key
 
@@ -744,12 +744,12 @@ L$cbc_abort:
 	.byte	0xf3,0xc3
 
 
-##
-#
-##
-#
-#
-##
+
+
+
+
+
+
 
 .p2align	4
 _vpaes_preheat:
@@ -765,11 +765,11 @@ _vpaes_preheat:
 	.byte	0xf3,0xc3
 
 
-########################################################
-#
-#
-#
-########################################################
+
+
+
+
+
 
 .p2align	6
 _vpaes_consts:
@@ -826,10 +826,10 @@ L$k_deskew:
 .quad	0x07E4A34047A4E300, 0x1DFEB95A5DBEF91A
 .quad	0x5F36B5DC83EA6900, 0x2841C2ABF49D1E77
 
-##
-#
-#
-##
+
+
+
+
 L$k_dksd:
 .quad	0xFEB91A5DA3E44700, 0x0740E3A45A1DBEF9
 .quad	0x41C277F4B5368300, 0x5FDC69EAAB289D1E
@@ -843,10 +843,10 @@ L$k_dks9:
 .quad	0xB6116FC87ED9A700, 0x4AED933482255BFC
 .quad	0x4576516227143300, 0x8BB89FACE9DAFDCE
 
-##
-#
-#
-##
+
+
+
+
 L$k_dipt:
 .quad	0x0F505B040B545F00, 0x154A411E114E451A
 .quad	0x86E383E660056500, 0x12771772F491F194

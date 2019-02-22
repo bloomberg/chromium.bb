@@ -13,21 +13,21 @@
 #endif
 .text	
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-##
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .type	_vpaes_encrypt_core,@function
 .align	16
 _vpaes_encrypt_core:
@@ -115,11 +115,11 @@ _vpaes_encrypt_core:
 .cfi_endproc	
 .size	_vpaes_encrypt_core,.-_vpaes_encrypt_core
 
-##
-#
-##
-#
-##
+
+
+
+
+
 .type	_vpaes_decrypt_core,@function
 .align	16
 _vpaes_decrypt_core:
@@ -149,9 +149,9 @@ _vpaes_decrypt_core:
 
 .align	16
 .Ldec_loop:
-##
-#
-##
+
+
+
 	movdqa	-32(%r10),%xmm4
 	movdqa	-16(%r10),%xmm1
 .byte	102,15,56,0,226
@@ -223,11 +223,11 @@ _vpaes_decrypt_core:
 .cfi_endproc	
 .size	_vpaes_decrypt_core,.-_vpaes_decrypt_core
 
-########################################################
-#
-#
-#
-########################################################
+
+
+
+
+
 .type	_vpaes_schedule_core,@function
 .align	16
 _vpaes_schedule_core:
@@ -268,14 +268,14 @@ _vpaes_schedule_core:
 	je	.Lschedule_192
 
 
-##
-#
-##
-#
-##
-#
-#
-##
+
+
+
+
+
+
+
+
 .Lschedule_128:
 	movl	$10,%esi
 
@@ -286,21 +286,21 @@ _vpaes_schedule_core:
 	call	_vpaes_schedule_mangle
 	jmp	.Loop_schedule_128
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .align	16
 .Lschedule_192:
 	movdqu	8(%rdi),%xmm0
@@ -323,16 +323,16 @@ _vpaes_schedule_core:
 	call	_vpaes_schedule_192_smear
 	jmp	.Loop_schedule_192
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
 .align	16
 .Lschedule_256:
 	movdqu	16(%rdi),%xmm0
@@ -359,16 +359,16 @@ _vpaes_schedule_core:
 	jmp	.Loop_schedule_256
 
 
-##
-#
-##
-#
-#
-#
-#
-##
-#
-##
+
+
+
+
+
+
+
+
+
+
 .align	16
 .Lschedule_mangle_last:
 
@@ -401,20 +401,20 @@ _vpaes_schedule_core:
 .cfi_endproc	
 .size	_vpaes_schedule_core,.-_vpaes_schedule_core
 
-##
-#
-##
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .type	_vpaes_schedule_192_smear,@function
 .align	16
 _vpaes_schedule_192_smear:
@@ -430,24 +430,24 @@ _vpaes_schedule_192_smear:
 .cfi_endproc	
 .size	_vpaes_schedule_192_smear,.-_vpaes_schedule_192_smear
 
-##
-#
-##
-#
-##
-#
-#
-#
-##
-#
-#
-##
-#
-#
-##
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .type	_vpaes_schedule_round,@function
 .align	16
 _vpaes_schedule_round:
@@ -508,15 +508,15 @@ _vpaes_schedule_low_round:
 .cfi_endproc	
 .size	_vpaes_schedule_round,.-_vpaes_schedule_round
 
-##
-#
-##
-#
-##
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
 .type	_vpaes_schedule_transform,@function
 .align	16
 _vpaes_schedule_transform:
@@ -534,29 +534,29 @@ _vpaes_schedule_transform:
 .cfi_endproc	
 .size	_vpaes_schedule_transform,.-_vpaes_schedule_transform
 
-##
-#
-##
-#
-#
-##
-#
-#
-#
-#
-##
-#
-#
-#
-#
-#
-##
-##
-#
-#
-#
-#
-##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .type	_vpaes_schedule_mangle,@function
 .align	16
 _vpaes_schedule_mangle:
@@ -628,9 +628,9 @@ _vpaes_schedule_mangle:
 .cfi_endproc	
 .size	_vpaes_schedule_mangle,.-_vpaes_schedule_mangle
 
-#
 
-#
+
+
 .globl	vpaes_set_encrypt_key
 .hidden vpaes_set_encrypt_key
 .type	vpaes_set_encrypt_key,@function
@@ -744,12 +744,12 @@ vpaes_cbc_encrypt:
 	.byte	0xf3,0xc3
 .cfi_endproc	
 .size	vpaes_cbc_encrypt,.-vpaes_cbc_encrypt
-##
-#
-##
-#
-#
-##
+
+
+
+
+
+
 .type	_vpaes_preheat,@function
 .align	16
 _vpaes_preheat:
@@ -765,11 +765,11 @@ _vpaes_preheat:
 	.byte	0xf3,0xc3
 .cfi_endproc	
 .size	_vpaes_preheat,.-_vpaes_preheat
-########################################################
-#
-#
-#
-########################################################
+
+
+
+
+
 .type	_vpaes_consts,@object
 .align	64
 _vpaes_consts:
@@ -826,10 +826,10 @@ _vpaes_consts:
 .quad	0x07E4A34047A4E300, 0x1DFEB95A5DBEF91A
 .quad	0x5F36B5DC83EA6900, 0x2841C2ABF49D1E77
 
-##
-#
-#
-##
+
+
+
+
 .Lk_dksd:
 .quad	0xFEB91A5DA3E44700, 0x0740E3A45A1DBEF9
 .quad	0x41C277F4B5368300, 0x5FDC69EAAB289D1E
@@ -843,10 +843,10 @@ _vpaes_consts:
 .quad	0xB6116FC87ED9A700, 0x4AED933482255BFC
 .quad	0x4576516227143300, 0x8BB89FACE9DAFDCE
 
-##
-#
-#
-##
+
+
+
+
 .Lk_dipt:
 .quad	0x0F505B040B545F00, 0x154A411E114E451A
 .quad	0x86E383E660056500, 0x12771772F491F194

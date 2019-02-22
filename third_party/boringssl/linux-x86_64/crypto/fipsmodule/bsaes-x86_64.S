@@ -221,7 +221,7 @@ _bsaes_encrypt8_bitslice:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
+
 
 
 
@@ -692,7 +692,7 @@ _bsaes_decrypt8:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
+
 
 
 
@@ -1079,7 +1079,7 @@ _bsaes_key_convert:
 	jnz	.Lkey_loop
 
 	movdqa	80(%r11),%xmm7
-#movdqa	%xmm6, (%rax)
+
 	.byte	0xf3,0xc3
 .cfi_endproc	
 .size	_bsaes_key_convert,.-_bsaes_key_convert
