@@ -151,24 +151,27 @@ MessageType GetStatusLabelsImpl(
   syncer::SyncStatus status;
   service->QueryDetailedSyncStatus(&status);
 
+  // First check for an unrecoverable error.
+  if (service->HasUnrecoverableError()) {
+    if (status_label && link_label) {
+      GetStatusForUnrecoverableError(is_user_signout_allowed,
+                                     status.sync_protocol_error.action,
+                                     status_label, link_label, action_type);
+    }
+    return SYNC_ERROR;
+  }
+
+  // TODO(crbug.com/911153): What's the intended meaning of this condition?
+  // Should other disable reasons also be checked?
   if (service->GetUserSettings()->IsFirstSetupComplete() ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
-    // The order or priority is going to be: 1. Unrecoverable errors.
-    // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
+    // The order or priority is going to be:
+    // 1. Auth errors. 2. Actionable protocol errors. 3. Passphrase errors.
 
-    if (service->HasUnrecoverableError()) {
-      if (status_label && link_label) {
-        GetStatusForUnrecoverableError(is_user_signout_allowed,
-                                       status.sync_protocol_error.action,
-                                       status_label, link_label, action_type);
-      }
-      return SYNC_ERROR;
-    }
-
-    // Since there is no auth in progress, check for an auth error first.
+    // Check for an auth error first.
     if (auth_error.state() != GoogleServiceAuthError::NONE) {
       if (status_label && link_label) {
         GetStatusForAuthError(auth_error, status_label, link_label,
@@ -177,7 +180,9 @@ MessageType GetStatusLabelsImpl(
       return SYNC_ERROR;
     }
 
-    // We don't have an auth error. Check for an actionable error.
+    // We don't have an auth error. Check for an actionable protocol error.
+    // TODO(crbug.com/911153): Here the behavior (returned value) depends on
+    // whether the |status_label| param is null. That seems like a bug.
     if (status_label && link_label) {
       GetStatusForActionableError(status.sync_protocol_error.action,
                                   status_label, link_label, action_type);
@@ -210,12 +215,11 @@ MessageType GetStatusLabelsImpl(
       return PRE_SYNCED;
     }
 
-    // There is no error. Display "Last synced..." message.
     return SYNCED;
   }
 
-  // Either show auth error information with a link to re-login, auth in prog,
-  // or provide a link to continue with setup.
+  // If first setup is in progress, either show auth error information or just
+  // an "in progress" message.
   if (service->IsFirstSetupInProgress()) {
     if (auth_error.state() != GoogleServiceAuthError::NONE &&
         auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
@@ -232,15 +236,6 @@ MessageType GetStatusLabelsImpl(
     return PRE_SYNCED;
   }
 
-  if (service->HasUnrecoverableError()) {
-    if (status_label && link_label) {
-      GetStatusForUnrecoverableError(is_user_signout_allowed,
-                                     status.sync_protocol_error.action,
-                                     status_label, link_label, action_type);
-    }
-    return SYNC_ERROR;
-  }
-
   if (ShouldRequestSyncConfirmation(service)) {
     if (status_label && link_label) {
       *status_label =
@@ -252,6 +247,9 @@ MessageType GetStatusLabelsImpl(
     return SYNC_ERROR;
   }
 
+  // TODO(crbug.com/906995): This code is only reachable if IsLocalSyncEnabled()
+  // is true. That should probably be handled more explicitly, and anyway this
+  // doesn't seem like an appropriate message for that case.
   // The user is signed in, but sync has been stopped.
   if (status_label) {
     *status_label =
