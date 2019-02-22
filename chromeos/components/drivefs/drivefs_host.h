@@ -20,7 +20,6 @@
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
 
 namespace drive {
 class DriveNotificationManager;
