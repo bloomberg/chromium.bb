@@ -21,6 +21,7 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -157,6 +158,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
+        mSyncErrorCard.setIcon(
+                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_sync_error_40dp));
         mSyncErrorCard.setOnPreferenceClickListener(
                 SyncPreferenceUtils.toOnClickListener(this, this::onSyncErrorCardClicked));
         mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
