@@ -358,7 +358,7 @@ TEST_P(AudioVideoPipelineImplTest, FullCycle) {
       base::BindOnce(&PipelineHelper::Start,
                      base::Unretained(pipeline_helper_.get()), eos_cb));
   base::RunLoop().Run();
-};
+}
 
 // Test all three types of pipeline: audio-only, video-only, audio-video.
 INSTANTIATE_TEST_SUITE_P(

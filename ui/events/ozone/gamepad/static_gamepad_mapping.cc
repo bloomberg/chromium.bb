@@ -516,7 +516,7 @@ class StaticGamepadMapper : public GamepadMapper {
            GamepadEventType* mapped_type,
            uint16_t* mapped_code) const override {
     return mapper_fp_(type, code, mapped_type, mapped_code);
-  };
+  }
 
  private:
   GamepadMapperFunction mapper_fp_;
