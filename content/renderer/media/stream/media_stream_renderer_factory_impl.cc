@@ -64,7 +64,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
       web_stream.VideoTracks();
-  if (video_tracks.IsEmpty() ||
+  if (video_tracks.empty() ||
       !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
     return nullptr;
   }
@@ -82,7 +82,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       web_stream.AudioTracks();
-  if (audio_tracks.IsEmpty()) {
+  if (audio_tracks.empty()) {
     WebRtcLogMessage("No audio tracks in media stream (return null).");
     return nullptr;
   }

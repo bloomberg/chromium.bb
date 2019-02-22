@@ -2501,7 +2501,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
 
   if (notify_result_) {
     base::ListValue list;
-    if (!result.IsEmpty()) {
+    if (!result.empty()) {
       // It's safe to always use the main world context when converting
       // here. V8ValueConverterImpl shouldn't actually care about the
       // context scope, and it switches to v8::Object's creation context

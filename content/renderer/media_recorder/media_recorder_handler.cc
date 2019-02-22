@@ -249,17 +249,17 @@ bool MediaRecorderHandler::Start(int timeslice) {
   video_tracks_ = media_stream_.VideoTracks();
   audio_tracks_ = media_stream_.AudioTracks();
 
-  if (video_tracks_.IsEmpty() && audio_tracks_.IsEmpty()) {
+  if (video_tracks_.empty() && audio_tracks_.empty()) {
     LOG(WARNING) << __func__ << ": no media tracks.";
     return false;
   }
 
   const bool use_video_tracks =
-      !video_tracks_.IsEmpty() &&
+      !video_tracks_.empty() &&
       video_tracks_[0].Source().GetReadyState() !=
           blink::WebMediaStreamSource::kReadyStateEnded;
   const bool use_audio_tracks =
-      !audio_tracks_.IsEmpty() &&
+      !audio_tracks_.empty() &&
       blink::MediaStreamAudioTrack::From(audio_tracks_[0]) &&
       audio_tracks_[0].Source().GetReadyState() !=
           blink::WebMediaStreamSource::kReadyStateEnded;

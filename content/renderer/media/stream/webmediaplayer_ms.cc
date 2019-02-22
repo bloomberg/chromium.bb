@@ -484,7 +484,7 @@ void WebMediaPlayerMS::ReloadVideo() {
       web_stream_.VideoTracks();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (video_tracks.IsEmpty()) {
+  if (video_tracks.empty()) {
     if (video_frame_provider_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_video_track_id_ = blink::WebString();
@@ -535,7 +535,7 @@ void WebMediaPlayerMS::ReloadAudio() {
       web_stream_.AudioTracks();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (audio_tracks.IsEmpty()) {
+  if (audio_tracks.empty()) {
     if (audio_renderer_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_audio_track_id_ = blink::WebString();

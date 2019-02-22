@@ -144,8 +144,6 @@ class WebVector {
     data_.resize(new_size);
   }
   bool empty() const { return data_.empty(); }
-  // TODO(slangley): Remove all uses of IsEmpty.
-  bool IsEmpty() const { return empty(); }
 
   size_t capacity() const { return data_.capacity(); }
   void reserve(size_t new_capacity) { data_.reserve(new_capacity); }

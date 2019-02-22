@@ -423,7 +423,7 @@ class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
   // WebScriptExecutionCallback:
   void Completed(const WebVector<v8::Local<v8::Value>>& values) override {
     did_complete_ = true;
-    if (!values.IsEmpty()) {
+    if (!values.empty()) {
       if (values[0]->IsString()) {
         string_value_ =
             ToCoreString(values[0]->ToString(context_).ToLocalChecked());
