@@ -382,6 +382,10 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kLazyImageVisibleLoadTimeMetrics))
     WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(true);
 
+  WebRuntimeFeatures::EnableRestrictDeviceSensorEventsToSecureContexts(
+      base::FeatureList::IsEnabled(
+          blink::features::kRestrictDeviceSensorEventsToSecureContexts));
+
   WebRuntimeFeatures::EnableRestrictLazyFrameLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading,

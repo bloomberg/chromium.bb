@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -50,6 +51,10 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
       // DeviceOrientationController.
       if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
         return;
+      if (RuntimeEnabledFeatures::
+              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
+        return;
+      }
     }
   }
 
