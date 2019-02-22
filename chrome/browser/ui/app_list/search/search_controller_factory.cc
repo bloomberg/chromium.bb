@@ -172,6 +172,7 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   if (app_list_features::IsAdaptiveResultRankerEnabled()) {
     RecurrenceRankerConfigProto group_ranker_config;
+    group_ranker_config.set_min_seconds_between_saves(240u);
     auto* predictor =
         group_ranker_config.mutable_zero_state_frecency_predictor();
     predictor->set_target_limit(base::GetFieldTrialParamByFeatureAsInt(

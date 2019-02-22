@@ -12,13 +12,17 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,10 +31,14 @@ class FakeAppListModelUpdater;
 namespace app_list {
 namespace test {
 
+using ResultType = ash::SearchResultType;
+
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
+
+const bool kEphemeralUser = false;
 
 class TestSearchResult : public ChromeSearchResult {
  public:
@@ -64,12 +72,13 @@ int TestSearchResult::instantiation_count = 0;
 
 class TestSearchProvider : public SearchProvider {
  public:
-  explicit TestSearchProvider(const std::string& prefix)
+  TestSearchProvider(const std::string& prefix, ResultType result_type)
       : prefix_(prefix),
         count_(0),
         bad_relevance_range_(false),
         small_relevance_range_(false),
-        display_type_(ash::SearchResultDisplayType::kList) {}
+        display_type_(ash::SearchResultDisplayType::kList),
+        result_type_(result_type) {}
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
@@ -89,6 +98,7 @@ class TestSearchProvider : public SearchProvider {
         relevance = 0.5 - i / 100.0;
       TestSearchResult* result = new TestSearchResult(id, relevance);
       result->SetDisplayType(display_type_);
+      result->SetResultType(result_type_);
       Add(std::unique_ptr<ChromeSearchResult>(result));
     }
   }
@@ -107,6 +117,7 @@ class TestSearchProvider : public SearchProvider {
   bool bad_relevance_range_;
   bool small_relevance_range_;
   ChromeSearchResult::DisplayType display_type_;
+  ResultType result_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
@@ -120,21 +131,45 @@ class MixerTest : public testing::Test {
   void SetUp() override {
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
 
-    providers_.push_back(std::make_unique<TestSearchProvider>("app"));
-    providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
-    providers_.push_back(std::make_unique<TestSearchProvider>("webstore"));
+    providers_.push_back(
+        std::make_unique<TestSearchProvider>("app", ResultType::kInternalApp));
+    providers_.push_back(
+        std::make_unique<TestSearchProvider>("omnibox", ResultType::kOmnibox));
+    providers_.push_back(std::make_unique<TestSearchProvider>(
+        "webstore", ResultType::kWebStoreApp));
   }
 
-  void CreateMixer(bool use_adaptive_ranker) {
+  void CreateMixer(bool use_adaptive_ranker,
+                   const std::map<std::string, std::string>& params = {}) {
     if (use_adaptive_ranker) {
-      scoped_feature_list_.InitWithFeatures(
-          {app_list_features::kEnableAdaptiveResultRanker}, {});
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          app_list_features::kEnableAdaptiveResultRanker, params);
     } else {
       scoped_feature_list_.InitWithFeatures(
           {}, {app_list_features::kEnableAdaptiveResultRanker});
     }
 
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
+
+    if (use_adaptive_ranker) {
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+      RecurrenceRankerConfigProto ranker_config;
+      ranker_config.set_min_seconds_between_saves(240u);
+      auto* predictor = ranker_config.mutable_zero_state_frecency_predictor();
+      predictor->set_target_limit(200u);
+      predictor->set_decay_coeff(0.8f);
+      auto* fallback = ranker_config.mutable_fallback_predictor();
+      fallback->set_target_limit(200u);
+      fallback->set_decay_coeff(0.8f);
+
+      std::unique_ptr<RecurrenceRanker> ranker =
+          std::make_unique<RecurrenceRanker>(
+              temp_dir_.GetPath().AppendASCII("ranker_model.proto"),
+              ranker_config, kEphemeralUser);
+      Wait();
+      mixer_->SetRecurrenceRanker(std::move(ranker));
+    }
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
     // to test answer card/apps group having relevance boost.
@@ -173,13 +208,17 @@ class MixerTest : public testing::Test {
     mixer_->Train(id, type);
   }
 
+  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+
   Mixer* mixer() { return mixer_.get(); }
   TestSearchProvider* app_provider() { return providers_[0].get(); }
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
   TestSearchProvider* webstore_provider() { return providers_[2].get(); }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
@@ -282,6 +321,24 @@ TEST_F(MixerTest, RankerIsDisabledWithFlag) {
   // Expect training calls to have not affected rankings.
   EXPECT_EQ(GetResults(),
             "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3");
+}
+
+TEST_F(MixerTest, RankerImprovesScores) {
+  CreateMixer(true, {{"boost_coefficient", "10.0"}});
+
+  for (int i = 0; i < 20; ++i)
+    Train("omnibox2", RankingItemType::kOmnibox);
+
+  app_provider()->set_count(4);
+  app_provider()->set_small_relevance_range();
+  omnibox_provider()->set_count(4);
+  omnibox_provider()->set_small_relevance_range();
+  RunQuery();
+
+  // Omnibox results exist in the ranker and should be up-weighted to the top of
+  // the list.
+  EXPECT_EQ(GetResults(),
+            "omnibox0,omnibox1,omnibox2,omnibox3,app0,app1,app2,app3");
 }
 
 }  // namespace test

@@ -7,14 +7,15 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 namespace app_list {
 
 using SearchResultType = ash::SearchResultType;
 
-RankingItemType RankingItemTypeFromSearchResultType(
-    const ash::SearchResultType& type) {
-  switch (type) {
+RankingItemType RankingItemTypeFromSearchResult(
+    const ChromeSearchResult& result) {
+  switch (result.result_type()) {
     case SearchResultType::kInstalledApp:
     case SearchResultType::kInternalApp:
       return RankingItemType::kApp;
