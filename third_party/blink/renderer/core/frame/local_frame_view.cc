@@ -2187,10 +2187,9 @@ bool LocalFrameView::UpdateLifecyclePhases(
   base::AutoReset<bool> past_layout_lifecycle_resetter(
       &past_layout_lifecycle_update_, false);
 
-  // If we're throttling, then we don't need to update lifecycle phases, only
-  // the throttling status.
+  // If we're throttling, then we don't need to update lifecycle phases. The
+  // throttling status will get updated in RunPostLifecycleSteps().
   if (ShouldThrottleRendering()) {
-    UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
 
