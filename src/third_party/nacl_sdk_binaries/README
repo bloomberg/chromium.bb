@@ -1,0 +1,10 @@
+Name: NSIS installer plus support files used to build nacl sdk.
+Short Name: nacl_sdk_binaries
+Version: nsis-2.46
+License: zlib/libpng
+
+Description:
+Installer creator used to package NativeClient SDK on windows.
+
+Local Modifications:
+None.
