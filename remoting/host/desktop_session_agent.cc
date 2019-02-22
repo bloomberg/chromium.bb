@@ -198,6 +198,12 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                           OnExecuteActionRequestEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SetScreenResolution,
                           SetScreenResolution)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_ReadFile,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::ReadFile)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_ReadFileChunk,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::ReadChunk)
       IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_WriteFile,
                           &*session_file_operations_handler_,
                           SessionFileOperationsHandler::WriteFile)
@@ -450,6 +456,22 @@ void DesktopSessionAgent::OnResult(uint64_t file_id,
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_FileResult>(
+      file_id, std::move(result)));
+}
+
+void DesktopSessionAgent::OnInfoResult(std::uint64_t file_id,
+                                       ResultHandler::InfoResult result) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_FileInfoResult>(
+      file_id, std::move(result)));
+}
+
+void DesktopSessionAgent::OnDataResult(std::uint64_t file_id,
+                                       ResultHandler::DataResult result) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_FileDataResult>(
       file_id, std::move(result)));
 }
 

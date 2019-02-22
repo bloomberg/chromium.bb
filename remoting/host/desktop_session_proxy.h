@@ -143,6 +143,8 @@ class DesktopSessionProxy
   void ExecuteAction(const protocol::ActionRequest& request);
 
   // IpcFileOperations::RequestHandler implementation.
+  void ReadFile(std::uint64_t file_id) override;
+  void ReadChunk(std::uint64_t file_id, std::uint64_t size) override;
   void WriteFile(std::uint64_t file_id,
                  const base::FilePath& filename) override;
   void WriteChunk(std::uint64_t file_id, std::string data) override;

@@ -90,6 +90,7 @@ source_set("unit_tests") {
   sources = [
     "buffered_file_writer_unittest.cc",
     "file_transfer_message_handler_unittest.cc",
+    "ipc_file_operations_unittest.cc",
     "local_file_operations_unittest.cc",
   ]
 
