@@ -10,6 +10,7 @@
 
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -91,6 +92,12 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
                                   std::make_unique<base::Value>("notepad.exe"));
   prefs_backend()->SetManagedPref(prefs::kAlternativeBrowserParameters,
                                   StringArrayToValue({"a", "b", "c"}));
+#if defined(OS_WIN)
+  prefs_backend()->SetManagedPref(prefs::kChromePath,
+                                  std::make_unique<base::Value>("cmd.exe"));
+  prefs_backend()->SetManagedPref(prefs::kChromeParameters,
+                                  StringArrayToValue({"d", "e", "f"}));
+#endif
   prefs_backend()->SetManagedPref(prefs::kUrlList,
                                   StringArrayToValue({"example.com"}));
   prefs_backend()->SetManagedPref(prefs::kUrlGreylist,
@@ -104,6 +111,15 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
   EXPECT_EQ("a", prefs()->GetAlternativeBrowserParameters()[0]);
   EXPECT_EQ("b", prefs()->GetAlternativeBrowserParameters()[1]);
   EXPECT_EQ("c", prefs()->GetAlternativeBrowserParameters()[2]);
+
+#if defined(OS_WIN)
+  EXPECT_EQ("cmd.exe", prefs()->GetChromePath());
+
+  EXPECT_EQ(3u, prefs()->GetChromeParameters().size());
+  EXPECT_EQ("d", prefs()->GetChromeParameters()[0]);
+  EXPECT_EQ("e", prefs()->GetChromeParameters()[1]);
+  EXPECT_EQ("f", prefs()->GetChromeParameters()[2]);
+#endif
 
   EXPECT_EQ(1u, prefs()->GetRules().sitelist.size());
   EXPECT_EQ("example.com", prefs()->GetRules().sitelist[0]);
