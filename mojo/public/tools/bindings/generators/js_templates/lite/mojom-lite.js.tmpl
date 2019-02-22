@@ -8,11 +8,6 @@ goog.require('mojo.internal');
 {%- if interfaces %}
 goog.require('mojo.internal.interfaceSupport');
 {%- endif %}
-
-{% for import in imports -%}
-goog.require('{{import.namespace}}');
-{% endfor %}
-goog.provide('{{module.namespace}}');
 {% endif %}
 
 mojo.internal.exportModule('{{module.namespace}}');

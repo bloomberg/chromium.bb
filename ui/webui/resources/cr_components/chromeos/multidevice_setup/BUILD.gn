@@ -26,14 +26,14 @@ js_library("button_bar") {
 
 js_library("fake_mojo_service") {
   deps = [
-    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_externs",
+    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("mojo_api") {
   deps = [
-    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_externs",
+    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
   ]
 }

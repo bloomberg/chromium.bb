@@ -24,7 +24,7 @@ struct TestStruct {
 };
 
 interface TestPageHandler {
-  Method1() => (array<string> values);
+  Method1(string p1, int32 p2) => (array<string> values, TestStruct ts);
 };
 
 interface TestPage {

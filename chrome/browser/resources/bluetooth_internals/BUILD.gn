@@ -31,7 +31,7 @@ js_library("bluetooth_internals") {
   ]
 
   deps = [
-    "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js_externs",
+    "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:array_data_model",

@@ -60,14 +60,14 @@ bindings_lite_sources = [
 
 bindings_lite_compiled_file = "$target_gen_dir/mojo_bindings_lite.js"
 
-if (enable_mojom_closure_compile) {
-  js_library("bindings_lite_sources") {
-    sources = [ "compile_preamble.js" ] + bindings_lite_sources
-    deps = [
-      "//mojo/public/interfaces/bindings:bindings_js_library_for_compile",
-    ]
-  }
+js_library("bindings_lite_sources") {
+  sources = [ "compile_preamble.js" ] + bindings_lite_sources
+  deps = [
+    "//mojo/public/interfaces/bindings:bindings_js_library_for_compile",
+  ]
+}
 
+if (enable_mojom_closure_compile || closure_compile) {
   js_binary("bindings_lite") {
     outputs = [
       bindings_lite_compiled_file,

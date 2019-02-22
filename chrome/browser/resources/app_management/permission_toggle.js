@@ -82,7 +82,7 @@ Polymer({
 
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kBool, newPermissionValue);
+        PermissionValueType.kBool, assert(newPermissionValue));
   },
 
   /**
@@ -114,6 +114,6 @@ Polymer({
 
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kTriState, newPermissionValue);
+        PermissionValueType.kTriState, assert(newPermissionValue));
   },
 });
