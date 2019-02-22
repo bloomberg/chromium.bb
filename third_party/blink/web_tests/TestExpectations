@@ -6009,6 +6009,7 @@ crbug.com/934636 virtual/outofblink-cors/http/tests/security/cross-origin-indexe
 crbug.com/934636 virtual/outofblink-cors-ns/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/934768 [ Mac ] http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
 crbug.com/934768 [ Mac ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
+crbug.com/934818 [ Mac Debug ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
