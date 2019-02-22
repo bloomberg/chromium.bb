@@ -560,9 +560,12 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
   } else if (ReplacePrefix(&result, GetCrostiniMountDirectory(profile).value(),
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL))) {
-  } else if (ReplacePrefix(&result, kRemovableMediaPath,
-                           l10n_util::GetStringUTF8(
-                               IDS_FILE_BROWSER_EXTERNAL_STORAGE_ROOT_LABEL))) {
+  } else if (ReplacePrefix(&result,
+                           base::FilePath(kRemovableMediaPath)
+                               .AsEndingWithSeparator()
+                               .value(),
+                           "")) {
+    // Strip prefix of "/media/removable/" including trailing slash.
   }
 
   base::ReplaceChars(result, "/", " \u203a ", &result);
