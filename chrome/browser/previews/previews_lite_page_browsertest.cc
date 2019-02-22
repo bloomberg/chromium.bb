@@ -1004,38 +1004,41 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsReloadEnabled)) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {previews::features::kPreviewsDisallowedOnReloads});
-  {
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-    VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    GetWebContents()->GetController().Reload(content::ReloadType::NORMAL,
-                                             false);
-    VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
-  }
-}
-
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadDisabled)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviewsDisallowedOnReloads}, {});
+  // Start with a non-preview load.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewNotLoaded();
+
+  // Set the conditions so a Preview would trigger if not for the reload.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  VerifyPreviewNotLoaded();
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC(ReloadingLitePagesDisablesLitePages)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviewsReloadsAreSoftOptOuts}, {});
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  VerifyPreviewNotLoaded();
+
+  // Check the the rule is still present.
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
 }
 

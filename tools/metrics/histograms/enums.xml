@@ -43834,7 +43834,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Preview Allowed."/>
   <int value="1" label="Blacklist not created."/>
   <int value="2" label="Blacklist data not loaded yet from disk."/>
-  <int value="3" label="User opted out of a preview recently."/>
+  <int value="3"
+      label="User opted out of a preview recently or reloaded on a preview
+             page recently."/>
   <int value="4" label="User is blacklisted for all hosts."/>
   <int value="5" label="User is blacklisted for the specific host."/>
   <int value="6" label="The network quality estimate is not available."/>

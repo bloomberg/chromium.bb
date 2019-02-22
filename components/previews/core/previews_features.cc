@@ -109,5 +109,10 @@ const base::Feature kHTTPSServerPreviewsUsingURLLoader{
 const base::Feature kDataSaverLiteModeRebranding{
     "DataSaverLiteModeRebranding", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, reloading on a preview will cause the session (5 minute) rule
+// to trigger.
+const base::Feature kPreviewsReloadsAreSoftOptOuts{
+    "PreviewsReloadsAreSoftOptOuts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews
