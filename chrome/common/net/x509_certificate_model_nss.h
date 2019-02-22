@@ -25,8 +25,6 @@ namespace x509_certificate_model {
 
 std::string GetCertNameOrNickname(CERTCertificate* cert_handle);
 
-std::string GetTokenName(CERTCertificate* cert_handle);
-
 std::string GetVersion(CERTCertificate* cert_handle);
 
 net::CertType GetType(CERTCertificate* cert_handle);
