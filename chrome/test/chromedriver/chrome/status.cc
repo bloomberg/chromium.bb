@@ -74,6 +74,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "unable to set cookie";
     case kTargetDetached:
       return "target frame detached";
+    case kElementClickIntercepted:
+      return "element click intercepted";
     default:
       return "<unknown>";
   }
