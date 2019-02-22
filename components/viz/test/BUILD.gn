@@ -25,6 +25,8 @@ viz_static_library("test_support") {
     "fake_host_frame_sink_client.h",
     "fake_output_surface.cc",
     "fake_output_surface.h",
+    "fake_skia_output_surface.cc",
+    "fake_skia_output_surface.h",
     "fake_surface_observer.cc",
     "fake_surface_observer.h",
     "gpu_host_impl_test_api.cc",

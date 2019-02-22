@@ -20,6 +20,7 @@
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -287,6 +288,14 @@ class WebTestDependenciesImpl : public WebTestDependencies,
   }
 
   // TestLayerTreeFrameSinkClient implementation.
+  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface()
+      override {
+    // No test is requesting SkiaRenderer with this WebTestDependenciesImpl,
+    // so return nullptr for now. 
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {

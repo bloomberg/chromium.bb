@@ -78,6 +78,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
@@ -10105,6 +10106,12 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   explicit FrameSinkClient(
       scoped_refptr<viz::ContextProvider> display_context_provider)
       : display_context_provider_(std::move(display_context_provider)) {}
+
+  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface()
+      override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
 
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)

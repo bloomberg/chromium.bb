@@ -5,6 +5,7 @@
 #include "ui/aura/test/aura_test_context_factory.h"
 
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 
@@ -19,6 +20,11 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
       : display_context_provider_(std::move(display_context_provider)) {}
 
   // viz::TestLayerTreeFrameSinkClient:
+  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface()
+      override {
+    return viz::FakeSkiaOutputSurface::Create3d();
+  }
+
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
